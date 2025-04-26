@@ -1,0 +1,27 @@
+{% extends "base_simple.html" %}
+
+{% block content %}
+<div class="alert alert-success">
+    <h4>Login realizado com sucesso!</h4>
+    <p>Bem-vindo, {{ usuario.nome }}!</p>
+    <p>Seu perfil é: {{ usuario.perfil.nome }}</p>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        Sistema de Almoxarifado - Versão Demo
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">Esta é uma versão simplificada do sistema</h5>
+        <p class="card-text">A versão completa inclui funcionalidades de:</p>
+        <ul>
+            <li>Gerenciamento de Naturezas de Despesa</li>
+            <li>Cadastro de Itens</li>
+            <li>Controle de Estoque</li>
+            <li>Requisições</li>
+            <li>Relatórios</li>
+        </ul>
+        <a href="/logout" class="btn btn-primary">Logout</a>
+    </div>
+</div>
+{% endblock %}

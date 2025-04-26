@@ -62,11 +62,30 @@ def login():
     if request.method == 'POST':
         email = request.form.get('email')
         senha = request.form.get('senha')
+        
+        # Adicionar logs para depuração
+        print(f"Tentativa de login: Email={email}")
+        
+        # Verificar se o usuário existe
         usuario = Usuario.query.filter_by(email=email).first()
-        if usuario and usuario.senha == senha:
-            login_user(usuario)
-            return redirect(url_for('main.index'))
+        
+        if usuario:
+            print(f"Usuário encontrado: {usuario.nome}, Perfil: {usuario.perfil.nome}")
+            
+            # Simplificar a verificação de senha
+            if usuario.senha == senha:
+                login_user(usuario)
+                print(f"Login bem-sucedido para {usuario.email}")
+                
+                # Redirecionar para uma página simples após o login
+                return render_template('login_success.html', usuario=usuario)
+            else:
+                print("Senha incorreta")
+        else:
+            print("Usuário não encontrado")
+            
         flash('Email ou senha inválidos', 'danger')
+    
     return render_template('login_simple.html')
 
 @main.route('/logout')

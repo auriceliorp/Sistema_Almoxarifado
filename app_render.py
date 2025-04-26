@@ -5,6 +5,15 @@ import os
 
 # Configuração
 app = Flask(__name__)
+# Adicione este código após a linha "app = Flask(__name__)"
+@app.template_filter('datetimeformat')
+def datetimeformat(value, format='%d/%m/%Y'):
+    if value == "now":
+        value = datetime.datetime.now()
+    return value.strftime(format) if value else ""
+
+# Não esqueça de adicionar o import no topo do arquivo
+import datetime
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'chave-secreta-temporaria')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False

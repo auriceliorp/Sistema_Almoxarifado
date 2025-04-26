@@ -1,0 +1,14 @@
+/* Estilos personalizados para o Sistema de Almoxarifado */
+
+body {
+    padding-top: 56px; /* Ajuste para a navbar fixa no topo, se for usada */
+    padding-bottom: 60px; /* Ajuste para o footer fixo na base, se for usado */
+}
+
+.table-sm th,
+.table-sm td {
+    padding: 0.4rem; /* Ajusta o padding em tabelas pequenas */
+}
+
+/* Adicionar mais estilos conforme necessário */
+

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Relatório de Inventário - Almoxarifado{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Relatório de Inventário (Itens Ativos)</h2>
+    {# TODO: Adicionar botão para exportar (CSV/PDF)? #}
+    {# TODO: Adicionar data/hora da geração do relatório #}
+</div>
+
+{# TODO: Adicionar filtros (por ND) #}
+
+{% if itens %}
+<table class="table table-striped table-hover table-sm">
+    <thead>
+        <tr>
+            <th scope="col">Item</th>
+            <th scope="col">Unidade</th>
+            <th scope="col">Natureza de Despesa</th>
+            <th scope="col">Saldo Atual</th>
+            <th scope="col">Estoque Mínimo</th>
+            <th scope="col">Ponto Ressuprimento</th>
+            <th scope="col">Status Saldo</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in itens %}
+        <tr>
+            <td>{{ item.nome }}</td>
+            <td>{{ item.unidade_medida }}</td>
+            <td>{{ item.natureza_despesa.codigo }} - {{ item.natureza_despesa.descricao }}</td>
+            <td>{{ item.saldo_atual }}</td>
+            <td>{{ item.estoque_minimo }}</td>
+            <td>{{ item.ponto_ressuprimento }}</td>
+            <td>
+                {% if item.saldo_atual <= item.estoque_minimo %}
+                    <span class="badge bg-danger">Abaixo Mínimo</span>
+                {% elif item.saldo_atual <= item.ponto_ressuprimento %}
+                    <span class="badge bg-warning text-dark">Abaixo Ressuprimento</span>
+                {% else %}
+                    <span class="badge bg-success">OK</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="alert alert-info" role="alert">
+    Nenhum item ativo encontrado para gerar o inventário.
+</div>
+{% endif %}
+
+{% endblock %}
+

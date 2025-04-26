@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% set is_edit = item is defined %}
+{% block title %}{{ "Editar" if is_edit else "Novo" }} Item - Almoxarifado{% endblock %}
+
+{% block content %}
+<h2>{{ "Editar" if is_edit else "Novo" }} Item</h2>
+
+{# Usa form_data se houver erro e estiver recarregando, senão usa dados do item (se editando) #}
+{% set current_data = form_data if form_data else item %}
+
+<form method="POST" action="{{ url_for("main.editar_item", id=item.id) if is_edit else url_for("main.criar_item") }}">
+    <div class="row g-3">
+        <div class="col-md-8">
+            <label for="nome" class="form-label">Nome <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="nome" name="nome" value="{{ current_data.nome if current_data else "" }}" required maxlength="150">
+        </div>
+        <div class="col-md-4">
+            <label for="unidade_medida" class="form-label">Unidade de Medida <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="unidade_medida" name="unidade_medida" value="{{ current_data.unidade_medida if current_data else "" }}" required maxlength="30" placeholder="Ex: unidade, kg, pacote">
+        </div>
+
+        <div class="col-12">
+            <label for="descricao" class="form-label">Descrição</label>
+            <textarea class="form-control" id="descricao" name="descricao" rows="3">{{ current_data.descricao if current_data else "" }}</textarea>
+        </div>
+
+        <div class="col-md-6">
+            <label for="natureza_despesa_id" class="form-label">Natureza de Despesa (ND) <span class="text-danger">*</span></label>
+            <select class="form-select" id="natureza_despesa_id" name="natureza_despesa_id" required>
+                <option value="" {% if not current_data or not current_data.natureza_despesa_id %}selected{% endif %} disabled>Selecione...</option>
+                {% for nd in naturezas %}
+                    <option value="{{ nd.id }}" {% if current_data and current_data.natureza_despesa_id == nd.id %}selected{% endif %}>
+                        {{ nd.codigo }} - {{ nd.descricao }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <label for="estoque_minimo" class="form-label">Estoque Mínimo</label>
+            <input type="number" class="form-control" id="estoque_minimo" name="estoque_minimo" value="{{ current_data.estoque_minimo if current_data else 0 }}" min="0">
+        </div>
+        <div class="col-md-3">
+            <label for="ponto_ressuprimento" class="form-label">Ponto de Ressuprimento</label>
+            <input type="number" class="form-control" id="ponto_ressuprimento" name="ponto_ressuprimento" value="{{ current_data.ponto_ressuprimento if current_data else 0 }}" min="0">
+        </div>
+
+        {% if is_edit %}
+        <div class="col-12">
+            <p class="form-text">Saldo Atual: {{ item.saldo_atual }} {{ item.unidade_medida }}. O saldo só é alterado através de movimentos de estoque.</p>
+        </div>
+        {% endif %}
+
+        <div class="col-12">
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="ativo" name="ativo" {% if (current_data and current_data.ativo) or (not is_edit and not form_data) %}checked{% endif %}>
+                <label class="form-check-label" for="ativo">Ativo</label>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-4">
+
+    <a href="{{ url_for("main.listar_itens") }}" class="btn btn-secondary">Cancelar</a>
+    <button type="submit" class="btn btn-primary">{{ "Salvar Alterações" if is_edit else "Criar Item" }}</button>
+</form>
+
+{% endblock %}
+

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Nova Requisição - Almoxarifado{% endblock %}
+
+{% block content %}
+<h2>Nova Requisição Interna</h2>
+<p class="text-muted">Preencha a observação inicial. Os itens serão adicionados na próxima etapa.</p>
+
+{# Usa form_data se houver erro e estiver recarregando #}
+{% set current_data = form_data if form_data else {} %}
+
+<form method="POST" action="{{ url_for("main.criar_requisicao") }}">
+    <div class="mb-3">
+        <label for="observacao_solicitante" class="form-label">Observação / Justificativa</label>
+        <textarea class="form-control" id="observacao_solicitante" name="observacao_solicitante" rows="3">{{ current_data.get("observacao_solicitante", "") }}</textarea>
+    </div>
+
+    <hr class="my-4">
+
+    <a href="{{ url_for("main.listar_requisicoes") }}" class="btn btn-secondary">Cancelar</a>
+    <button type="submit" class="btn btn-primary">Criar Requisição e Adicionar Itens</button>
+</form>
+
+{% endblock %}
+

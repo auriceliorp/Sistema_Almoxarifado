@@ -54,8 +54,8 @@ main = Blueprint('main', __name__)
 @main.route('/')
 def index():
     if current_user.is_authenticated:
-        return render_template('index_logged_in.html')
-    return render_template('index.html')
+        return render_template('index_simple.html')
+    return render_template('index_simple.html')
 
 @main.route('/login', methods=['GET', 'POST'])
 def login():
@@ -67,7 +67,7 @@ def login():
             login_user(usuario)
             return redirect(url_for('main.index'))
         flash('Email ou senha inválidos', 'danger')
-    return render_template('login.html')
+    return render_template('login_simple.html')
 
 @main.route('/logout')
 @login_required

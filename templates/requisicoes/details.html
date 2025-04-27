@@ -1,150 +1,234 @@
 {% extends "base.html" %}
-
-{% block title %}Detalhes da Requisição {{ requisicao.id }} - Almoxarifado{% endblock %}
-
+{% block title %}Detalhes da Requisição - Almoxarifado{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h2>Requisição #{{ requisicao.id }}</h2>
-    <a href="{{ url_for("main.listar_requisicoes") }}" class="btn btn-outline-secondary">Voltar para Lista</a>
+    <a href="{{ url_for('requisicoes.listar_requisicoes') }}" class="btn btn-secondary">Voltar para Lista</a>
 </div>
 
-<div class="card mb-4">
-    <div class="card-header">
-        Informações da Requisição
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Informações da Requisição</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th style="width: 40%">Status:</th>
+                        <td>
+                            {% if requisicao.status == "PENDENTE" %}
+                                <span class="badge bg-warning text-dark">Pendente</span>
+                            {% elif requisicao.status == "APROVADA" %}
+                                <span class="badge bg-primary">Aprovada</span>
+                            {% elif requisicao.status == "REJEITADA" %}
+                                <span class="badge bg-danger">Rejeitada</span>
+                            {% elif requisicao.status == "ATENDIDA_PARCIAL" %}
+                                <span class="badge bg-info text-dark">Atendida Parcialmente</span>
+                            {% elif requisicao.status == "ATENDIDA_TOTAL" %}
+                                <span class="badge bg-success">Atendida Totalmente</span>
+                            {% else %}
+                                {{ requisicao.status }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Data da Requisição:</th>
+                        <td>{{ requisicao.data_requisicao.strftime("%d/%m/%Y %H:%M") if requisicao.data_requisicao else "N/A" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Solicitante:</th>
+                        <td>{{ requisicao.solicitante.nome if requisicao.solicitante else "N/A" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Observação do Solicitante:</th>
+                        <td>{{ requisicao.observacao_solicitante or "Nenhuma observação" }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
     </div>
-    <div class="card-body">
-        <p><strong>Status:</strong>
-            {% if requisicao.status == "PENDENTE" %}
-                <span class="badge bg-warning text-dark">Pendente</span>
-            {% elif requisicao.status == "APROVADA" %}
-                <span class="badge bg-info text-dark">Aprovada</span>
-            {% elif requisicao.status == "REJEITADA" %}
-                <span class="badge bg-danger">Rejeitada</span>
-            {% elif requisicao.status == "ATENDIDA_PARCIAL" %}
-                <span class="badge bg-primary">Atendida Parcialmente</span>
-            {% elif requisicao.status == "ATENDIDA_TOTAL" %}
-                <span class="badge bg-success">Atendida Totalmente</span>
-            {% elif requisicao.status == "CANCELADA" %}
-                <span class="badge bg-secondary">Cancelada</span>
-            {% else %}
-                {{ requisicao.status }}
-            {% endif %}
-        </p>
-        <p><strong>Solicitante:</strong> {{ requisicao.solicitante.nome if requisicao.solicitante else "N/A" }}</p>
-        <p><strong>Data da Requisição:</strong> {{ requisicao.data_requisicao.strftime("%d/%m/%Y %H:%M") if requisicao.data_requisicao else "" }}</p>
-        <p><strong>Observação do Solicitante:</strong> {{ requisicao.observacao_solicitante }}</p>
-        {% if requisicao.aprovador %}
-            <hr>
-            <p><strong>Aprovador/Rejeitor:</strong> {{ requisicao.aprovador.nome }}</p>
-            <p><strong>Data Aprovação/Rejeição:</strong> {{ requisicao.data_aprovacao.strftime("%d/%m/%Y %H:%M") if requisicao.data_aprovacao else "" }}</p>
-            <p><strong>Observação do Aprovador:</strong> {{ requisicao.observacao_aprovador }}</p>
-        {% endif %}
+    
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Informações de Aprovação</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th style="width: 40%">Aprovador:</th>
+                        <td>{{ requisicao.aprovador.nome if requisicao.aprovador else "Aguardando aprovação" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Data de Aprovação:</th>
+                        <td>{{ requisicao.data_aprovacao.strftime("%d/%m/%Y %H:%M") if requisicao.data_aprovacao else "N/A" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Observação do Aprovador:</th>
+                        <td>{{ requisicao.observacao_aprovador or "Nenhuma observação" }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 
+<!-- Itens da Requisição -->
 <div class="card mb-4">
-    <div class="card-header">
-        Itens da Requisição
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Itens da Requisição</h5>
+        {% if requisicao.status == "PENDENTE" and (current_user.is_admin() or requisicao.solicitante_id == current_user.id) %}
+        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addItemModal">
+            + Adicionar Item
+        </button>
+        {% endif %}
     </div>
     <div class="card-body">
-        {% if requisicao.itens_requisicao.all() %}
-        <table class="table table-sm">
-            <thead>
-                <tr>
-                    <th>Item</th>
-                    <th>Qtd. Solicitada</th>
-                    <th>Qtd. Atendida</th>
-                    {% if requisicao.status == "PENDENTE" %} {# TODO: Verificar permissão #}
-                    <th>Ações</th>
-                    {% endif %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for item_req in requisicao.itens_requisicao %}
-                <tr>
-                    <td>{{ item_req.item.nome if item_req.item else "N/A" }}</td>
-                    <td>{{ item_req.quantidade_solicitada }}</td>
-                    <td>{{ item_req.quantidade_atendida }}</td>
-                    {% if requisicao.status == "PENDENTE" %} {# TODO: Verificar permissão #}
-                    <td>
-                        <form action="{{ url_for("main.remover_item_requisicao", req_id=requisicao.id, item_req_id=item_req.id) }}" method="POST" class="d-inline" onsubmit="return confirm("Remover este item da requisição?");">
-                            <button type="submit" class="btn btn-sm btn-outline-danger">Remover</button>
-                        </form>
-                        {# TODO: Adicionar botão/modal para editar quantidade? #}
-                    </td>
-                    {% endif %}
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <p class="text-muted">Nenhum item adicionado a esta requisição ainda.</p>
-        {% endif %}
-
-        {# Formulário para adicionar item (se pendente e permitido) #}
-        {% if requisicao.status == "PENDENTE" %} {# TODO: Verificar permissão #}
-        <hr>
-        <h5>Adicionar Item</h5>
-        <form method="POST" action="{{ url_for("main.adicionar_item_requisicao", id=requisicao.id) }}" class="row g-3 align-items-end">
-            <div class="col-md-6">
-                <label for="item_id" class="form-label">Item</label>
-                <select class="form-select form-select-sm" id="item_id" name="item_id" required>
-                    <option value="" selected disabled>Selecione...</option>
-                    {% for item in itens_ativos %}
-                        <option value="{{ item.id }}">{{ item.nome }} (Saldo: {{ item.saldo_atual }})</option>
+        {% if requisicao.itens_requisicao.count() > 0 %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Quantidade Solicitada</th>
+                        <th>Quantidade Atendida</th>
+                        <th>Status</th>
+                        {% if requisicao.status == "PENDENTE" and (current_user.is_admin() or requisicao.solicitante_id == current_user.id) %}
+                        <th>Ações</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item_req in requisicao.itens_requisicao %}
+                    <tr>
+                        <td>{{ item_req.item.nome if item_req.item else "N/A" }}</td>
+                        <td>{{ item_req.quantidade_solicitada }}</td>
+                        <td>{{ item_req.quantidade_atendida }}</td>
+                        <td>
+                            {% if item_req.quantidade_atendida == 0 %}
+                                <span class="badge bg-secondary">Não Atendido</span>
+                            {% elif item_req.quantidade_atendida < item_req.quantidade_solicitada %}
+                                <span class="badge bg-info text-dark">Atendido Parcialmente</span>
+                            {% else %}
+                                <span class="badge bg-success">Atendido Totalmente</span>
+                            {% endif %}
+                        </td>
+                        {% if requisicao.status == "PENDENTE" and (current_user.is_admin() or requisicao.solicitante_id == current_user.id) %}
+                        <td>
+                            <form method="POST" action="{{ url_for('requisicoes.remover_item_requisicao', req_id=requisicao.id, item_req_id=item_req.id) }}" style="display: inline;">
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja remover este item?')">
+                                    Remover
+                                </button>
+                            </form>
+                        </td>
+                        {% endif %}
+                    </tr>
                     {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label for="quantidade_solicitada" class="form-label">Quantidade</label>
-                <input type="number" class="form-control form-control-sm" id="quantidade_solicitada" name="quantidade_solicitada" required min="1">
-            </div>
-            <div class="col-md-3">
-                <button type="submit" class="btn btn-sm btn-success">Adicionar Item</button>
-            </div>
-        </form>
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info" role="alert">
+            Nenhum item adicionado a esta requisição.
+        </div>
         {% endif %}
     </div>
 </div>
 
-{# Ações do Administrador #}
-{# TODO: Verificar permissão (Admin) #}
+<!-- Ações da Requisição -->
 <div class="card mb-4">
     <div class="card-header">
-        Ações do Administrador
+        <h5 class="mb-0">Ações</h5>
     </div>
     <div class="card-body">
-        {% if requisicao.status == "PENDENTE" %}
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <form method="POST" action="{{ url_for("main.aprovar_requisicao", id=requisicao.id) }}">
-                        <div class="mb-2">
-                            <label for="obs_aprovar" class="form-label">Observação (Opcional ao aprovar):</label>
-                            <input type="text" class="form-control form-control-sm" id="obs_aprovar" name="observacao_aprovador">
-                        </div>
-                        <button type="submit" class="btn btn-success">Aprovar Requisição</button>
-                    </form>
-                </div>
-                <div class="col-md-6">
-                    <form method="POST" action="{{ url_for("main.rejeitar_requisicao", id=requisicao.id) }}">
-                        <div class="mb-2">
-                            <label for="obs_rejeitar" class="form-label">Observação (Obrigatória ao rejeitar):</label>
-                            <input type="text" class="form-control form-control-sm" id="obs_rejeitar" name="observacao_aprovador" required>
-                        </div>
-                        <button type="submit" class="btn btn-danger">Rejeitar Requisição</button>
-                    </form>
+        <div class="row">
+            {% if requisicao.status == "PENDENTE" and current_user.is_admin() %}
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Aprovar Requisição</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('requisicoes.aprovar_requisicao', id=requisicao.id) }}">
+                            <div class="mb-3">
+                                <label for="observacao_aprovador" class="form-label">Observação (opcional)</label>
+                                <textarea class="form-control" id="observacao_aprovador" name="observacao_aprovador" rows="3"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Aprovar</button>
+                        </form>
+                    </div>
                 </div>
             </div>
-        {% elif requisicao.status == "APROVADA" or requisicao.status == "ATENDIDA_PARCIAL" %}
-            <form method="POST" action="{{ url_for("main.atender_requisicao", id=requisicao.id) }}">
-                <p>Esta requisição está aprovada. Clique abaixo para tentar atender os itens pendentes com base no estoque atual.</p>
-                <button type="submit" class="btn btn-primary">Atender Itens Pendentes</button>
-            </form>
-        {% else %}
-            <p class="text-muted">Nenhuma ação administrativa disponível para o status atual ({{ requisicao.status }}).</p>
-        {% endif %}
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0">Rejeitar Requisição</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('requisicoes.rejeitar_requisicao', id=requisicao.id) }}">
+                            <div class="mb-3">
+                                <label for="observacao_aprovador" class="form-label">Observação (obrigatória)</label>
+                                <textarea class="form-control" id="observacao_aprovador" name="observacao_aprovador" rows="3" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-danger">Rejeitar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if (requisicao.status == "APROVADA" or requisicao.status == "ATENDIDA_PARCIAL") and current_user.is_admin() %}
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Atender Requisição</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Ao atender a requisição, serão gerados movimentos de saída para os itens solicitados, de acordo com a disponibilidade em estoque.</p>
+                        <form method="POST" action="{{ url_for('requisicoes.atender_requisicao', id=requisicao.id) }}">
+                            <button type="submit" class="btn btn-success">Atender Requisição</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
     </div>
 </div>
 
+<!-- Modal para Adicionar Item -->
+{% if requisicao.status == "PENDENTE" and (current_user.is_admin() or requisicao.solicitante_id == current_user.id) %}
+<div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addItemModalLabel">Adicionar Item à Requisição</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('requisicoes.adicionar_item_requisicao', id=requisicao.id) }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="item_id" class="form-label">Item</label>
+                        <select class="form-select" id="item_id" name="item_id" required>
+                            <option value="" selected disabled>Selecione um item...</option>
+                            {% for item in itens_disponiveis %}
+                            <option value="{{ item.id }}">{{ item.nome }} ({{ item.unidade_medida }}) - Saldo: {{ item.saldo_atual }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quantidade" class="form-label">Quantidade</label>
+                        <input type="number" class="form-control" id="quantidade" name="quantidade" min="1" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Adicionar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
-

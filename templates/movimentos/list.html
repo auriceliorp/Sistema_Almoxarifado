@@ -3,7 +3,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h2>Histórico de Movimentos de Estoque</h2>
-    <a href="{{ url_for('movimentos.registrar_movimento') }}" class="btn btn-success">+ Registrar Movimento</a>
+    <a href="{{ url_for('main.registrar_movimento') }}" class="btn btn-success">+ Registrar Movimento</a>
 </div>
 
 <!-- Filtros -->
@@ -12,7 +12,7 @@
         <h5 class="mb-0">Filtros</h5>
     </div>
     <div class="card-body">
-        <form method="GET" action="{{ url_for('movimentos.listar_movimentos') }}" class="row g-3">
+        <form method="GET" action="{{ url_for('main.listar_movimentos') }}" class="row g-3">
             <div class="col-md-3">
                 <label for="item_id" class="form-label">Item</label>
                 <select class="form-select" id="item_id" name="item_id">
@@ -45,7 +45,7 @@
             </div>
             <div class="col-12">
                 <button type="submit" class="btn btn-primary">Filtrar</button>
-                <a href="{{ url_for('movimentos.listar_movimentos') }}" class="btn btn-secondary">Limpar Filtros</a>
+                <a href="{{ url_for('main.listar_movimentos') }}" class="btn btn-secondary">Limpar Filtros</a>
             </div>
         </form>
     </div>
@@ -64,7 +64,6 @@
                 <th scope="col">Saldo Posterior</th>
                 <th scope="col">Usuário</th>
                 <th scope="col">Observação</th>
-                <th scope="col">Ref. Requisição</th>
             </tr>
         </thead>
         <tbody>
@@ -92,11 +91,6 @@
                 <td>{{ mov.saldo_posterior }}</td>
                 <td>{{ mov.registrado_por.nome if mov.registrado_por else "N/A" }}</td>
                 <td>{{ mov.observacao }}</td>
-                <td>
-                    {% if mov.requisicao_item_associado %}
-                        <a href="{{ url_for('requisicoes.detalhes_requisicao', id=mov.requisicao_item_associado.requisicao_id) }}">Req. {{ mov.requisicao_item_associado.requisicao_id }}</a>
-                    {% endif %}
-                </td>
             </tr>
             {% endfor %}
         </tbody>
@@ -108,4 +102,3 @@
 </div>
 {% endif %}
 {% endblock %}
-

@@ -1,76 +1,116 @@
 {% extends "base.html" %}
-
 {% block title %}Relatório Mensal por ND - Almoxarifado{% endblock %}
-
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Relatório Mensal por Natureza de Despesa (ND)</h2>
-    {# TODO: Adicionar botão para exportar (CSV/PDF)? #}
+    <h2>Relatório Mensal por Natureza de Despesa</h2>
+    <div>
+        <a href="{{ url_for('relatorios.relatorio_mensal_nd', formato='pdf', mes_ano=mes_ano) }}" class="btn btn-danger">
+            <i class="bi bi-file-pdf"></i> Exportar PDF
+        </a>
+    </div>
 </div>
 
-{# Formulário para selecionar o mês/ano #}
-<form method="GET" action="{{ url_for("main.relatorio_mensal_nd") }}" class="row g-3 mb-4 align-items-end">
-    <div class="col-auto">
-        <label for="mes_ano" class="form-label">Mês/Ano (YYYY-MM):</label>
-        <input type="month" class="form-control" id="mes_ano" name="mes_ano" value="{{ mes_ano }}" required>
-    </div>
-    <div class="col-auto">
-        <button type="submit" class="btn btn-primary">Gerar Relatório</button>
-    </div>
-</form>
-
-{% if relatorio %}
-<p class="text-muted">Exibindo relatório para o mês: <strong>{{ mes_ano }}</strong></p>
-
-{% for nd_data in relatorio %}
-<div class="card mb-3">
+<!-- Filtros -->
+<div class="card mb-4">
     <div class="card-header">
-        <strong>ND: {{ nd_data.nd.codigo }} - {{ nd_data.nd.descricao }}</strong>
+        <h5 class="mb-0">Período</h5>
     </div>
     <div class="card-body">
-        <div class="row mb-2">
-            <div class="col">Saldo Inicial: {{ nd_data.saldo_inicial }}</div>
-            <div class="col text-success">Total Entradas: +{{ nd_data.total_entradas }}</div>
-            <div class="col text-danger">Total Saídas: -{{ nd_data.total_saidas }}</div>
-            <div class="col fw-bold">Saldo Final: {{ nd_data.saldo_final }}</div>
-        </div>
-
-        {% if nd_data.itens %}
-        <details>
-            <summary>Detalhes por Item</summary>
-            <table class="table table-sm table-bordered mt-2">
-                <thead>
-                    <tr>
-                        <th>Item</th>
-                        <th>Saldo Inicial</th>
-                        <th>Entradas</th>
-                        <th>Saídas</th>
-                        <th>Saldo Final</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item_detalhe in nd_data.itens %}
-                    <tr>
-                        <td>{{ item_detalhe.item.nome }}</td>
-                        <td>{{ item_detalhe.saldo_inicial }}</td>
-                        <td>{{ item_detalhe.entradas }}</td>
-                        <td>{{ item_detalhe.saidas }}</td>
-                        <td>{{ item_detalhe.saldo_final }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </details>
-        {% endif %}
+        <form method="GET" action="{{ url_for('relatorios.relatorio_mensal_nd') }}" class="row g-3">
+            <div class="col-md-6">
+                <label for="mes_ano" class="form-label">Mês/Ano</label>
+                <input type="month" class="form-control" id="mes_ano" name="mes_ano" value="{{ mes_ano }}">
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">Filtrar</button>
+            </div>
+        </form>
     </div>
 </div>
-{% endfor %}
 
-{% elif mes_ano %}
+{% if relatorio %}
+    {% for nd_data in relatorio %}
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h4>ND {{ nd_data.nd.codigo }} - {{ nd_data.nd.descricao }}</h4>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">Saldo Inicial</h5>
+                                <p class="card-text fs-4">{{ nd_data.saldo_inicial }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">Entradas</h5>
+                                <p class="card-text fs-4 text-success">{{ nd_data.total_entradas }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">Saídas</h5>
+                                <p class="card-text fs-4 text-danger">{{ nd_data.total_saidas }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">Saldo Final</h5>
+                                <p class="card-text fs-4 fw-bold">{{ nd_data.saldo_final }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if nd_data.itens %}
+                <h5 class="mt-4 mb-3">Detalhamento por Item</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">Item</th>
+                                <th scope="col">Unidade</th>
+                                <th scope="col">Saldo Inicial</th>
+                                <th scope="col">Entradas</th>
+                                <th scope="col">Saídas</th>
+                                <th scope="col">Saldo Final</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item_data in nd_data.itens %}
+                            <tr>
+                                <td>{{ item_data.item.nome }}</td>
+                                <td>{{ item_data.item.unidade_medida }}</td>
+                                <td>{{ item_data.saldo_inicial }}</td>
+                                <td class="text-success">{{ item_data.entradas }}</td>
+                                <td class="text-danger">{{ item_data.saidas }}</td>
+                                <td class="fw-bold">{{ item_data.saldo_final }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info mt-3" role="alert">
+                    Nenhum item encontrado para esta Natureza de Despesa.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
 <div class="alert alert-info" role="alert">
-    Nenhum dado encontrado para o mês {{ mes_ano }}.
+    Nenhum dado encontrado para o período selecionado.
 </div>
 {% endif %}
-
 {% endblock %}
+
 

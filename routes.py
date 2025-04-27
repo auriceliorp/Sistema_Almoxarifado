@@ -20,11 +20,17 @@ def admin_required(f):
     return decorated_function
 
 @main_bp.route("/")
+@main_bp.route("/")
 def index():
-    if current_user.is_authenticated:
-        return render_template("index_logged_in.html")
-    else:
+    try:
+        if current_user.is_authenticated:
+            return render_template("index_logged_in.html")
+        else:
+            return render_template("index.html")
+    except:
+        # Fallback em caso de erro
         return render_template("index.html")
+
 
 @main_bp.route("/login", methods=["GET", "POST"])
 def login():

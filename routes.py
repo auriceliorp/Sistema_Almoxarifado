@@ -256,5 +256,3 @@ def excluir_item(id):
 # Função para registrar o Blueprint na aplicação Flask
 def init_app(app):
     app.register_blueprint(main_bp)
-
-

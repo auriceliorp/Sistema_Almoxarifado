@@ -11,7 +11,7 @@ login_manager.login_view = "main.login"
 login_manager.login_message = "Por favor, faça login para acessar esta página."
 login_manager.login_message_category = "info"
 
-# Modelos simplificados
+# Modelos
 class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
@@ -36,6 +36,26 @@ class Perfil(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(50), unique=True, nullable=False)
 
+# Modelo para Natureza de Despesa
+class NaturezaDespesa(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    codigo = db.Column(db.String(20), unique=True, nullable=False)
+    nome = db.Column(db.String(100), nullable=False)
+    itens = db.relationship('Item', backref='natureza_despesa', lazy=True)
+    
+    def __repr__(self):
+        return f"<NaturezaDespesa {self.codigo} - {self.nome}>"
+
+# Modelo para Item (preparando para a próxima fase)
+class Item(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    codigo = db.Column(db.String(20), unique=True, nullable=False)
+    descricao = db.Column(db.String(200), nullable=False)
+    unidade = db.Column(db.String(20), nullable=False)
+    estoque_atual = db.Column(db.Float, default=0)
+    estoque_minimo = db.Column(db.Float, default=0)
+    natureza_despesa_id = db.Column(db.Integer, db.ForeignKey('natureza_despesa.id'), nullable=False)
+
 # Carregador de usuário para o Flask-Login
 @login_manager.user_loader
 def load_user(user_id):
@@ -50,11 +70,11 @@ def datetimeformat(value, format='%d/%m/%Y'):
 # Criar blueprint
 main = Blueprint('main', __name__)
 
-# Rotas do blueprint
+# Rotas do blueprint - Páginas básicas
 @main.route('/')
 def index():
     if current_user.is_authenticated:
-        return render_template('index_simple.html')
+        return render_template('index_logged_in.html')
     return render_template('index_simple.html')
 
 @main.route('/login', methods=['GET', 'POST'])
@@ -63,26 +83,20 @@ def login():
         email = request.form.get('email')
         senha = request.form.get('senha')
         
-        # Adicionar logs para depuração
-        print(f"Tentativa de login: Email={email}")
-        
         # Verificar se o usuário existe
         usuario = Usuario.query.filter_by(email=email).first()
         
         if usuario:
-            print(f"Usuário encontrado: {usuario.nome}, Perfil: {usuario.perfil.nome}")
-            
             # Simplificar a verificação de senha
             if usuario.senha == senha:
                 login_user(usuario)
-                print(f"Login bem-sucedido para {usuario.email}")
                 
-                # Redirecionar para uma página simples após o login
-                return render_template('login_success.html', usuario=usuario)
+                # Redirecionar para a página inicial após o login
+                return redirect(url_for('main.index'))
             else:
-                print("Senha incorreta")
+                flash('Senha incorreta', 'danger')
         else:
-            print("Usuário não encontrado")
+            flash('Email não encontrado', 'danger')
             
         flash('Email ou senha inválidos', 'danger')
     
@@ -94,9 +108,85 @@ def logout():
     logout_user()
     return redirect(url_for('main.index'))
 
-@main.route('/hello')
-def hello():
-    return "Olá, Mundo! Configuração básica do Flask funcionando."
+# Rotas para Naturezas de Despesa
+@main.route('/naturezas-despesa')
+@login_required
+def listar_naturezas_despesa():
+    naturezas = NaturezaDespesa.query.all()
+    return render_template('naturezas_despesa/list.html', naturezas=naturezas)
+
+@main.route('/naturezas-despesa/nova', methods=['GET', 'POST'])
+@login_required
+def nova_natureza_despesa():
+    if request.method == 'POST':
+        codigo = request.form.get('codigo')
+        nome = request.form.get('nome')
+        
+        # Validar dados
+        if not codigo or not nome:
+            flash('Todos os campos são obrigatórios', 'danger')
+            return render_template('naturezas_despesa/form.html')
+        
+        # Verificar se já existe uma ND com o mesmo código
+        if NaturezaDespesa.query.filter_by(codigo=codigo).first():
+            flash('Já existe uma Natureza de Despesa com este código', 'danger')
+            return render_template('naturezas_despesa/form.html')
+        
+        # Criar nova ND
+        nova_nd = NaturezaDespesa(codigo=codigo, nome=nome)
+        db.session.add(nova_nd)
+        db.session.commit()
+        
+        flash('Natureza de Despesa criada com sucesso', 'success')
+        return redirect(url_for('main.listar_naturezas_despesa'))
+    
+    return render_template('naturezas_despesa/form.html')
+
+@main.route('/naturezas-despesa/editar/<int:id>', methods=['GET', 'POST'])
+@login_required
+def editar_natureza_despesa(id):
+    nd = NaturezaDespesa.query.get_or_404(id)
+    
+    if request.method == 'POST':
+        codigo = request.form.get('codigo')
+        nome = request.form.get('nome')
+        
+        # Validar dados
+        if not codigo or not nome:
+            flash('Todos os campos são obrigatórios', 'danger')
+            return render_template('naturezas_despesa/form.html', nd=nd)
+        
+        # Verificar se já existe outra ND com o mesmo código
+        nd_existente = NaturezaDespesa.query.filter_by(codigo=codigo).first()
+        if nd_existente and nd_existente.id != id:
+            flash('Já existe outra Natureza de Despesa com este código', 'danger')
+            return render_template('naturezas_despesa/form.html', nd=nd)
+        
+        # Atualizar ND
+        nd.codigo = codigo
+        nd.nome = nome
+        db.session.commit()
+        
+        flash('Natureza de Despesa atualizada com sucesso', 'success')
+        return redirect(url_for('main.listar_naturezas_despesa'))
+    
+    return render_template('naturezas_despesa/form.html', nd=nd)
+
+@main.route('/naturezas-despesa/excluir/<int:id>', methods=['POST'])
+@login_required
+def excluir_natureza_despesa(id):
+    nd = NaturezaDespesa.query.get_or_404(id)
+    
+    # Verificar se há itens vinculados a esta ND
+    if nd.itens:
+        flash('Não é possível excluir esta Natureza de Despesa pois existem itens vinculados a ela', 'danger')
+        return redirect(url_for('main.listar_naturezas_despesa'))
+    
+    db.session.delete(nd)
+    db.session.commit()
+    
+    flash('Natureza de Despesa excluída com sucesso', 'success')
+    return redirect(url_for('main.listar_naturezas_despesa'))
 
 # Função para criar a aplicação
 def create_app():

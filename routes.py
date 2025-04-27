@@ -20,15 +20,12 @@ def admin_required(f):
     return decorated_function
 
 @main_bp.route("/")
-@main_bp.route("/")
+
 def index():
-    try:
-        if current_user.is_authenticated:
-            return render_template("index_logged_in.html")
-        else:
-            return render_template("index.html")
-    except:
-        # Fallback em caso de erro
+    if current_user.is_authenticated:
+        # Redirecionar diretamente para a página de Naturezas de Despesa
+        return redirect(url_for('main.listar_naturezas_despesa'))
+    else:
         return render_template("index.html")
 
 

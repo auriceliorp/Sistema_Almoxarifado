@@ -352,18 +352,18 @@ def create_app():
     
     # Inicializar extensões
     db.init_app(app)
-    def create_app():
-    app = Flask(__name__)
-    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'chave-secreta-temporaria')
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    
-    # Inicializar extensões
-    db.init_app(app)
     login_manager.init_app(app)
     
-    # Adicione este bloco para migração do banco de dados
+    # Registrar blueprint
+    app.register_blueprint(main)
+    
+    # Registrar filtro
+    app.jinja_env.filters['datetimeformat'] = datetimeformat
+    
+    # Inicializar banco de dados e realizar migração
     with app.app_context():
+        db.create_all()
+        
         # Verificar se a coluna valor_unitario já existe na tabela item
         inspector = db.inspect(db.engine)
         colunas_existentes = [coluna['name'] for coluna in inspector.get_columns('item')]
@@ -373,22 +373,6 @@ def create_app():
             db.session.execute(db.text("ALTER TABLE item ADD COLUMN valor_unitario FLOAT DEFAULT 0"))
             db.session.commit()
             print("Coluna valor_unitario adicionada com sucesso à tabela item")
-    
-    # Continua com o código existente...
-    # Registrar blueprint
-    app.register_blueprint(main)
-
-    login_manager.init_app(app)
-    
-    # Registrar blueprint
-    app.register_blueprint(main)
-    
-    # Registrar filtro
-    app.jinja_env.filters['datetimeformat'] = datetimeformat
-    
-    # Inicializar banco de dados
-    with app.app_context():
-        db.create_all()
         
         # Verificar se já existem perfis cadastrados
         if Perfil.query.count() == 0:
@@ -409,6 +393,7 @@ def create_app():
             db.session.commit()
     
     return app
+
 
 # Criar a aplicação
 app = create_app()

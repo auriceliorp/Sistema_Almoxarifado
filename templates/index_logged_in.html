@@ -18,7 +18,7 @@
             <div class="card-body">
                 <h5 class="card-title">Gerenciar Naturezas de Despesa</h5>
                 <p class="card-text">Cadastre e gerencie as Naturezas de Despesa do sistema.</p>
-                <a href="/naturezas_despesa" class="btn btn-primary">Acessar</a>
+                <a href="{{ url_for('main.listar_naturezas_despesa') }}" class="btn btn-primary">Acessar</a>
             </div>
         </div>
     </div>
@@ -30,7 +30,46 @@
             <div class="card-body">
                 <h5 class="card-title">Gerenciar Itens</h5>
                 <p class="card-text">Cadastre e gerencie os Itens do sistema, vinculados às Naturezas de Despesa.</p>
-                <a href="/itens" class="btn btn-primary">Acessar</a>
+                <a href="{{ url_for('main.listar_itens') }}" class="btn btn-primary">Acessar</a>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-header">
+                Movimentações
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Gerenciar Movimentações</h5>
+                <p class="card-text">Registre entradas e saídas de itens no estoque.</p>
+                <a href="{{ url_for('main.listar_movimentos') }}" class="btn btn-primary">Acessar</a>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-header">
+                Requisições
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Gerenciar Requisições</h5>
+                <p class="card-text">Crie e gerencie requisições de materiais.</p>
+                <a href="{{ url_for('main.listar_requisicoes') }}" class="btn btn-primary">Acessar</a>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-header">
+                Relatórios
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Gerar Relatórios</h5>
+                <p class="card-text">Acesse relatórios do sistema.</p>
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('main.relatorio_inventario') }}" class="btn btn-primary">Relatório de Inventário</a>
+                    <a href="{{ url_for('main.relatorio_mensal_nd') }}" class="btn btn-primary">Relatório Mensal por ND</a>
+                </div>
             </div>
         </div>
     </div>

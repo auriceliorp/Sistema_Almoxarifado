@@ -46,15 +46,21 @@ class NaturezaDespesa(db.Model):
     def __repr__(self):
         return f"<NaturezaDespesa {self.codigo} - {self.nome}>"
 
-# Modelo para Item (preparando para a próxima fase)
+# Modelo para Item (atualizado com campo de valor)
 class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     codigo = db.Column(db.String(20), unique=True, nullable=False)
     descricao = db.Column(db.String(200), nullable=False)
     unidade = db.Column(db.String(20), nullable=False)
+    valor_unitario = db.Column(db.Float, default=0)  # Campo para valor unitário
     estoque_atual = db.Column(db.Float, default=0)
     estoque_minimo = db.Column(db.Float, default=0)
     natureza_despesa_id = db.Column(db.Integer, db.ForeignKey('natureza_despesa.id'), nullable=False)
+    
+    @property
+    def valor_total(self):
+        """Calcula o valor total do item (quantidade x valor unitário)"""
+        return self.estoque_atual * self.valor_unitario
 
 # Carregador de usuário para o Flask-Login
 @login_manager.user_loader
@@ -187,6 +193,155 @@ def excluir_natureza_despesa(id):
     
     flash('Natureza de Despesa excluída com sucesso', 'success')
     return redirect(url_for('main.listar_naturezas_despesa'))
+
+@main.route('/naturezas-despesa/saldo')
+@login_required
+def saldo_naturezas_despesa():
+    naturezas = NaturezaDespesa.query.all()
+    
+    # Calcular saldo para cada natureza de despesa
+    saldos = []
+    for nd in naturezas:
+        itens = Item.query.filter_by(natureza_despesa_id=nd.id).all()
+        total_itens = len(itens)
+        valor_total = sum(item.valor_total for item in itens)
+        
+        saldos.append({
+            'natureza': nd,
+            'total_itens': total_itens,
+            'valor_total': valor_total
+        })
+    
+    return render_template('naturezas_despesa/saldo.html', saldos=saldos)
+
+# Rotas para Itens
+@main.route('/itens')
+@login_required
+def listar_itens():
+    itens = Item.query.all()
+    return render_template('itens/list.html', itens=itens)
+
+@main.route('/itens/novo', methods=['GET', 'POST'])
+@login_required
+def novo_item():
+    naturezas = NaturezaDespesa.query.all()
+    
+    if request.method == 'POST':
+        codigo = request.form.get('codigo')
+        descricao = request.form.get('descricao')
+        unidade = request.form.get('unidade')
+        estoque_minimo = request.form.get('estoque_minimo')
+        valor_unitario = request.form.get('valor_unitario')
+        natureza_despesa_id = request.form.get('natureza_despesa_id')
+        
+        # Validar dados
+        if not codigo or not descricao or not unidade or not natureza_despesa_id:
+            flash('Todos os campos obrigatórios devem ser preenchidos', 'danger')
+            return render_template('itens/form.html', naturezas=naturezas)
+        
+        # Verificar se já existe um item com o mesmo código
+        if Item.query.filter_by(codigo=codigo).first():
+            flash('Já existe um Item com este código', 'danger')
+            return render_template('itens/form.html', naturezas=naturezas)
+        
+        # Converter estoque_minimo para float
+        try:
+            estoque_minimo = float(estoque_minimo) if estoque_minimo else 0
+        except ValueError:
+            flash('Estoque mínimo deve ser um número válido', 'danger')
+            return render_template('itens/form.html', naturezas=naturezas)
+            
+        # Converter valor_unitario para float
+        try:
+            valor_unitario = float(valor_unitario) if valor_unitario else 0
+        except ValueError:
+            flash('Valor unitário deve ser um número válido', 'danger')
+            return render_template('itens/form.html', naturezas=naturezas)
+        
+        # Criar novo item
+        novo_item = Item(
+            codigo=codigo,
+            descricao=descricao,
+            unidade=unidade,
+            valor_unitario=valor_unitario,
+            estoque_minimo=estoque_minimo,
+            estoque_atual=0,  # Inicia com estoque zero
+            natureza_despesa_id=natureza_despesa_id
+        )
+        db.session.add(novo_item)
+        db.session.commit()
+        
+        flash('Item criado com sucesso', 'success')
+        return redirect(url_for('main.listar_itens'))
+    
+    return render_template('itens/form.html', naturezas=naturezas)
+
+@main.route('/itens/editar/<int:id>', methods=['GET', 'POST'])
+@login_required
+def editar_item(id):
+    item = Item.query.get_or_404(id)
+    naturezas = NaturezaDespesa.query.all()
+    
+    if request.method == 'POST':
+        codigo = request.form.get('codigo')
+        descricao = request.form.get('descricao')
+        unidade = request.form.get('unidade')
+        estoque_minimo = request.form.get('estoque_minimo')
+        valor_unitario = request.form.get('valor_unitario')
+        natureza_despesa_id = request.form.get('natureza_despesa_id')
+        
+        # Validar dados
+        if not codigo or not descricao or not unidade or not natureza_despesa_id:
+            flash('Todos os campos obrigatórios devem ser preenchidos', 'danger')
+            return render_template('itens/form.html', item=item, naturezas=naturezas)
+        
+        # Verificar se já existe outro item com o mesmo código
+        item_existente = Item.query.filter_by(codigo=codigo).first()
+        if item_existente and item_existente.id != id:
+            flash('Já existe outro Item com este código', 'danger')
+            return render_template('itens/form.html', item=item, naturezas=naturezas)
+        
+        # Converter estoque_minimo para float
+        try:
+            estoque_minimo = float(estoque_minimo) if estoque_minimo else 0
+        except ValueError:
+            flash('Estoque mínimo deve ser um número válido', 'danger')
+            return render_template('itens/form.html', item=item, naturezas=naturezas)
+            
+        # Converter valor_unitario para float
+        try:
+            valor_unitario = float(valor_unitario) if valor_unitario else 0
+        except ValueError:
+            flash('Valor unitário deve ser um número válido', 'danger')
+            return render_template('itens/form.html', item=item, naturezas=naturezas)
+        
+        # Atualizar item
+        item.codigo = codigo
+        item.descricao = descricao
+        item.unidade = unidade
+        item.estoque_minimo = estoque_minimo
+        item.valor_unitario = valor_unitario
+        item.natureza_despesa_id = natureza_despesa_id
+        db.session.commit()
+        
+        flash('Item atualizado com sucesso', 'success')
+        return redirect(url_for('main.listar_itens'))
+    
+    return render_template('itens/form.html', item=item, naturezas=naturezas)
+
+@main.route('/itens/excluir/<int:id>', methods=['POST'])
+@login_required
+def excluir_item(id):
+    item = Item.query.get_or_404(id)
+    
+    # Verificar se há movimentações vinculadas a este item
+    # (Esta verificação será implementada na Fase 3, quando criarmos o modelo de Movimentação)
+    
+    db.session.delete(item)
+    db.session.commit()
+    
+    flash('Item excluído com sucesso', 'success')
+    return redirect(url_for('main.listar_itens'))
 
 # Função para criar a aplicação
 def create_app():

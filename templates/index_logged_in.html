@@ -17,7 +17,7 @@
             </div>
             <div class="card-body">
                 <h5 class="card-title">Gerenciar Naturezas de Despesa</h5>
-                <p class="card-text">Cadastre e gerencie as <a href="{{ url_for('main.listar_naturezas_despesa') }}">Naturezas de Despesa</a> do sistema.</p>
+                <p class="card-text">Cadastre e gerencie as Naturezas de Despesa do sistema.</p>
                 <a href="{{ url_for('main.listar_naturezas_despesa') }}" class="btn btn-primary">Acessar</a>
             </div>
         </div>
@@ -29,7 +29,7 @@
             </div>
             <div class="card-body">
                 <h5 class="card-title">Gerenciar Itens</h5>
-                <p class="card-text">Cadastre e gerencie os <a href="{{ url_for('main.listar_itens') }}">Itens</a> do sistema, vinculados às <a href="{{ url_for('main.listar_naturezas_despesa') }}">Naturezas de Despesa</a>.</p>
+                <p class="card-text">Cadastre e gerencie os Itens do sistema, vinculados às Naturezas de Despesa.</p>
                 <a href="{{ url_for('main.listar_itens') }}" class="btn btn-primary">Acessar</a>
             </div>
         </div>
@@ -42,7 +42,11 @@
             <div class="card-body">
                 <h5 class="card-title">Gerenciar Movimentações</h5>
                 <p class="card-text">Registre entradas e saídas de itens no estoque.</p>
-                <a href="{{ url_for('movimentos.listar_movimentos') }}" class="btn btn-primary">Acessar</a>
+                {% if 'movimentos.listar_movimentos' in available_routes %}
+                    <a href="{{ url_for('movimentos.listar_movimentos') }}" class="btn btn-primary">Acessar</a>
+                {% else %}
+                    <button class="btn btn-secondary" disabled>Em desenvolvimento</button>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -54,7 +58,11 @@
             <div class="card-body">
                 <h5 class="card-title">Gerenciar Requisições</h5>
                 <p class="card-text">Crie e gerencie requisições de materiais.</p>
-                <a href="{{ url_for('requisicoes.listar_requisicoes') }}" class="btn btn-primary">Acessar</a>
+                {% if 'requisicoes.listar_requisicoes' in available_routes %}
+                    <a href="{{ url_for('requisicoes.listar_requisicoes') }}" class="btn btn-primary">Acessar</a>
+                {% else %}
+                    <button class="btn btn-secondary" disabled>Em desenvolvimento</button>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -67,8 +75,17 @@
                 <h5 class="card-title">Gerar Relatórios</h5>
                 <p class="card-text">Acesse relatórios do sistema.</p>
                 <div class="d-grid gap-2">
-                    <a href="{{ url_for('relatorios.relatorio_inventario') }}" class="btn btn-primary">Relatório de Inventário</a>
-                    <a href="{{ url_for('relatorios.relatorio_mensal_nd') }}" class="btn btn-primary">Relatório Mensal por ND</a>
+                    {% if 'relatorios.relatorio_inventario' in available_routes %}
+                        <a href="{{ url_for('relatorios.relatorio_inventario') }}" class="btn btn-primary">Relatório de Inventário</a>
+                    {% else %}
+                        <button class="btn btn-secondary" disabled>Relatório de Inventário</button>
+                    {% endif %}
+                    
+                    {% if 'relatorios.relatorio_mensal_nd' in available_routes %}
+                        <a href="{{ url_for('relatorios.relatorio_mensal_nd') }}" class="btn btn-primary">Relatório Mensal por ND</a>
+                    {% else %}
+                        <button class="btn btn-secondary" disabled>Relatório Mensal por ND</button>
+                    {% endif %}
                 </div>
             </div>
         </div>

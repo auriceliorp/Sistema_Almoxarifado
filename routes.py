@@ -1,9 +1,11 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from .models import Usuario, NaturezaDespesa, Item
+from .models import Usuario, NaturezaDespesa, Item, MovimentoEstoque
 from .database import db
 from functools import wraps
+from datetime import datetime, timedelta
+
 
 # Criar um Blueprint para as rotas principais
 main_bp = Blueprint("main", __name__)

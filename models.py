@@ -126,19 +126,23 @@ class RequisicaoItem(db.Model):
 
 class MovimentoEstoque(db.Model):
     __tablename__ = 'movimentos_estoque'
+    
     id = db.Column(db.Integer, primary_key=True)
-    item_id = db.Column(db.Integer, db.ForeignKey('itens.id'), nullable=False, index=True)
-    tipo = db.Column(db.String(20), nullable=False, index=True) # 'ENTRADA', 'SAIDA_REQUISICAO', 'SAIDA_AJUSTE', 'ENTRADA_AJUSTE', 'INVENTARIO_INICIAL'
+    item_id = db.Column(db.Integer, db.ForeignKey('itens.id'), nullable=False)
+    tipo = db.Column(db.String(20), nullable=False)  # ENTRADA, SAIDA_REQUISICAO, SAIDA_AJUSTE, ENTRADA_AJUSTE, INVENTARIO_INICIAL
     quantidade = db.Column(db.Integer, nullable=False)
-    data_movimento = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    data_movimento = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
-    requisicao_item_id = db.Column(db.Integer, db.ForeignKey('requisicao_itens.id'), nullable=True) # Link para item da requisição
     observacao = db.Column(db.Text)
     saldo_anterior = db.Column(db.Integer, nullable=False)
     saldo_posterior = db.Column(db.Integer, nullable=False)
+    requisicao_item_id = db.Column(db.Integer, db.ForeignKey('requisicao_itens.id'), nullable=True)
+    
+    # Relacionamentos
+    item = db.relationship('Item', backref=db.backref('movimentos', lazy=True))
+    registrado_por = db.relationship('Usuario', backref=db.backref('movimentos_registrados', lazy=True))
+    requisicao_item_associado = db.relationship('RequisicaoItem', backref=db.backref('movimentos', lazy=True))
 
-    def __repr__(self):
-        return f'<MovimentoEstoque Item:{self.item_id} Tipo:{self.tipo} Qtd:{self.quantidade}>'
 
 # Nota: A lógica do trigger `atualizar_saldo_item` presente no schema.sql
 # precisará ser implementada na lógica da aplicação (antes de salvar um MovimentoEstoque)

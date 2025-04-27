@@ -21,19 +21,20 @@
         </div>
     </div>
     
-    <!-- Espaço reservado para futuras funcionalidades -->
+    <!-- Cadastro de Itens -->
     <div class="col-md-4 mb-4">
-        <div class="card bg-light">
-            <div class="card-header">
-                Itens (Em breve)
-            </div>
-            <div class="card-body">
-                <h5 class="card-title">Gerenciar Itens</h5>
-                <p class="card-text">Esta funcionalidade será implementada na próxima fase.</p>
-                <button class="btn btn-secondary" disabled>Em desenvolvimento</button>
-            </div>
+    <div class="card">
+        <div class="card-header">
+            Itens
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">Gerenciar Itens</h5>
+            <p class="card-text">Cadastre e gerencie os Itens do sistema, vinculados às Naturezas de Despesa.</p>
+            <a href="{{ url_for('main.listar_itens') }}" class="btn btn-primary">Acessar</a>
         </div>
     </div>
+</div>
+
     
     <div class="col-md-4 mb-4">
         <div class="card bg-light">

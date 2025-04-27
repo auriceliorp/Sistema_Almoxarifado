@@ -253,6 +253,53 @@ def excluir_item(id):
     
     return redirect(url_for("main.listar_itens"))
 
+# Implementação simplificada das novas funcionalidades diretamente no routes.py
+
+# Rotas para Movimentações
+@main_bp.route("/movimentos")
+@login_required
+def listar_movimentos():
+    # Implementação simplificada
+    return render_template("movimentos/list.html", movimentos=[])
+
+@main_bp.route("/movimentos/novo", methods=["GET", "POST"])
+@admin_required
+def registrar_movimento():
+    # Implementação simplificada
+    return render_template("movimentos/form.html", itens=[])
+
+# Rotas para Requisições
+@main_bp.route("/requisicoes")
+@login_required
+def listar_requisicoes():
+    # Implementação simplificada
+    return render_template("requisicoes/list.html", requisicoes=[])
+
+@main_bp.route("/requisicoes/nova", methods=["GET", "POST"])
+@login_required
+def criar_requisicao():
+    # Implementação simplificada
+    return render_template("requisicoes/form.html")
+
+@main_bp.route("/requisicoes/<int:id>")
+@login_required
+def detalhes_requisicao(id):
+    # Implementação simplificada
+    return render_template("requisicoes/details.html", requisicao=None, itens_disponiveis=[])
+
+# Rotas para Relatórios
+@main_bp.route("/relatorios/inventario")
+@login_required
+def relatorio_inventario():
+    # Implementação simplificada
+    return render_template("relatorios/inventario.html", itens=[], naturezas_despesa=[])
+
+@main_bp.route("/relatorios/mensal_nd")
+@login_required
+def relatorio_mensal_nd():
+    # Implementação simplificada
+    return render_template("relatorios/mensal_nd.html", relatorio=[], mes_ano="")
+
 # Função para registrar o Blueprint na aplicação Flask
 def init_app(app):
     app.register_blueprint(main_bp)

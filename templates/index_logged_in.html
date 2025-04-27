@@ -1,59 +1,101 @@
-{% extends "base.html" %}
-
-{% block title %}Página Inicial - Almoxarifado{% endblock %}
+{% extends "base_simple.html" %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    Bem-vindo(a), {{ current_user.nome }}!
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">Sistema de Controle de Almoxarifado</h5>
-                    <p class="card-text">Utilize o menu de navegação acima para acessar as funcionalidades do sistema.</p>
+<div class="alert alert-success">
+    <h4>Login realizado com sucesso!</h4>
+    <p>Bem-vindo, {{ current_user.nome }}!</p>
+    <p>Seu perfil é: {{ current_user.perfil.nome }}</p>
+</div>
 
-                    {# Mensagens Flash gerais #}
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                        {% if messages %}
-                            {% for category, message in messages %}
-                                <div class="alert alert-{{ category }} alert-dismissible fade show mt-3" role="alert">
-                                    {{ message }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-                    {% endwith %}
-
-                    {# Adicionar atalhos ou informações relevantes aqui, se necessário #}
-                    {# Exemplo: Links rápidos baseados no perfil #}
-                    <hr>
-                    <h6>Acesso Rápido:</h6>
-                    <ul>
-                        {% if current_user.is_admin() %}
-                            <li><a href="{{ url_for("main.listar_naturezas_despesa") }}">Gerenciar Naturezas de Despesa</a></li>
-                            <li><a href="{{ url_for("main.listar_itens") }}">Gerenciar Itens</a></li>
-                            <li><a href="{{ url_for("main.listar_requisicoes") }}">Ver Todas as Requisições</a></li>
-                            <li><a href="{{ url_for("main.registrar_movimento") }}">Registrar Movimento Manual</a></li>
-                            <li><a href="{{ url_for("main.relatorio_inventario") }}">Relatório de Inventário</a></li>
-                            <li><a href="{{ url_for("main.relatorio_mensal_nd") }}">Relatório Mensal por ND</a></li>
-                            {# Adicionar link para Gerenciar Usuários se implementado #}
-                        {% endif %}
-                        {% if current_user.is_solicitante() %}
-                            <li><a href="{{ url_for("main.criar_requisicao") }}">Criar Nova Requisição</a></li>
-                            <li><a href="{{ url_for("main.listar_requisicoes") }}">Minhas Requisições</a></li>
-                        {% endif %}
-                         <li><a href="{{ url_for("main.listar_movimentos") }}">Histórico de Movimentos</a></li>
-                    </ul>
-
-                </div>
-                <div class="card-footer text-muted">
-                    Perfil: {{ current_user.perfil.nome }}
-                </div>
+<div class="row mt-4">
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                Naturezas de Despesa
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Gerenciar Naturezas de Despesa</h5>
+                <p class="card-text">Cadastre e gerencie as Naturezas de Despesa do sistema.</p>
+                <a href="{{ url_for('main.listar_naturezas_despesa') }}" class="btn btn-primary">Acessar</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Espaço reservado para futuras funcionalidades -->
+    <div class="col-md-4 mb-4">
+        <div class="card bg-light">
+            <div class="card-header">
+                Itens (Em breve)
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Gerenciar Itens</h5>
+                <p class="card-text">Esta funcionalidade será implementada na próxima fase.</p>
+                <button class="btn btn-secondary" disabled>Em desenvolvimento</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card bg-light">
+            <div class="card-header">
+                Movimentações (Em breve)
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Gerenciar Movimentações</h5>
+                <p class="card-text">Esta funcionalidade será implementada em breve.</p>
+                <button class="btn btn-secondary" disabled>Em desenvolvimento</button>
             </div>
         </div>
     </div>
 </div>
+
+<div class="row mt-2">
+    <div class="col-md-4 mb-4">
+        <div class="card bg-light">
+            <div class="card-header">
+                Requisições (Em breve)
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Gerenciar Requisições</h5>
+                <p class="card-text">Esta funcionalidade será implementada em breve.</p>
+                <button class="btn btn-secondary" disabled>Em desenvolvimento</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card bg-light">
+            <div class="card-header">
+                Relatórios (Em breve)
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Gerar Relatórios</h5>
+                <p class="card-text">Esta funcionalidade será implementada em breve.</p>
+                <button class="btn btn-secondary" disabled>Em desenvolvimento</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <div class="card">
+        <div class="card-header">
+            Implementação Gradual
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">Plano de Desenvolvimento</h5>
+            <p class="card-text">Este sistema está sendo implementado de forma gradual, com as seguintes fases:</p>
+            <ol>
+                <li><strong>Fase 1 (Atual):</strong> Cadastro de Naturezas de Despesa</li>
+                <li><strong>Fase 2:</strong> Cadastro de Itens</li>
+                <li><strong>Fase 3:</strong> Movimentações de Estoque</li>
+                <li><strong>Fase 4:</strong> Requisições</li>
+                <li><strong>Fase 5:</strong> Relatórios</li>
+                <li><strong>Fase 6:</strong> Refinamentos e melhorias</li>
+            </ol>
+        </div>
+    </div>
+</div>
 {% endblock %}
+
 

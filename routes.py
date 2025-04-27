@@ -24,16 +24,17 @@ def admin_required(f):
 @main_bp.route("/")
 def index():
     try:
-        # Verificação segura para current_user e is_authenticated
         if hasattr(current_user, 'is_authenticated') and current_user.is_authenticated:
-            return render_template("index_logged_in.html")
+            # Redirecionar diretamente para a página de Naturezas de Despesa
+            return redirect(url_for('main.listar_naturezas_despesa'))
         else:
             return render_template("index.html")
     except Exception as e:
-        # Log do erro para depuração (visível nos logs do Render)
+        # Log do erro para depuração
         print(f"Erro na rota index: {e}")
         # Fallback para a página de índice básica em caso de erro
         return render_template("index.html")
+
 
 @main_bp.route("/login", methods=["GET", "POST"])
 def login():

@@ -1,0 +1,41 @@
+{% extends "base_simple.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Saldo por Natureza de Despesa</h2>
+    <a href="{{ url_for('main.listar_naturezas_despesa') }}" class="btn btn-secondary">Voltar</a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if saldos %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nome</th>
+                        <th>Total de Itens</th>
+                        <th>Valor Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for saldo in saldos %}
+                    <tr>
+                        <td>{{ saldo.natureza.codigo }}</td>
+                        <td>{{ saldo.natureza.nome }}</td>
+                        <td>{{ saldo.total_itens }}</td>
+                        <td>R$ {{ "%.2f"|format(saldo.valor_total) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            Nenhuma Natureza de Despesa cadastrada.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

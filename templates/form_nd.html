@@ -1,20 +1,82 @@
+<!-- templates/form_nd.html -->
 {% extends 'base.html' %}
 
 {% block conteudo %}
-    <h2>{{ 'Editar ND' if nd else 'Nova ND' }}</h2>
-
+<div class="container">
+    <h2>{{ 'Editar Natureza de Despesa' if nd else 'Cadastrar Nova Natureza de Despesa' }}</h2>
+    
     <form method="POST">
-        <div>
+        <div class="form-group">
+            <label for="codigo">Código:</label>
+            <input type="text" id="codigo" name="codigo" value="{{ nd.codigo if nd else '' }}" required>
+        </div>
+
+        <div class="form-group">
             <label for="numero">Número da ND:</label>
             <input type="text" id="numero" name="numero" value="{{ nd.numero if nd else '' }}" required>
         </div>
-        <div>
+
+        <div class="form-group">
+            <label for="nome">Nome:</label>
+            <input type="text" id="nome" name="nome" value="{{ nd.nome if nd else '' }}" required>
+        </div>
+
+        <div class="form-group">
             <label for="descricao">Descrição:</label>
-            <input type="text" id="descricao" name="descricao" value="{{ nd.descricao if nd else '' }}" required>
+            <textarea id="descricao" name="descricao" rows="4">{{ nd.descricao if nd else '' }}</textarea>
         </div>
-        <div style="margin-top: 10px;">
-            <button type="submit">Salvar</button>
-            <a href="{{ url_for('nd.lista_nd') }}">Cancelar</a>
-        </div>
+
+        <button type="submit" class="btn">Salvar</button>
+        <a href="{{ url_for('nd.lista_nd') }}" class="btn btn-secondary">Cancelar</a>
     </form>
+</div>
+
+<style>
+    .container {
+        max-width: 600px;
+        margin: 40px auto;
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .form-group {
+        margin-bottom: 20px;
+        text-align: left;
+    }
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+    }
+    input[type="text"],
+    textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+    .btn {
+        background-color: #00703c;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        text-decoration: none;
+        cursor: pointer;
+        margin-top: 10px;
+        display: inline-block;
+    }
+    .btn:hover {
+        background-color: #005f33;
+    }
+    .btn-secondary {
+        background-color: #6c757d;
+        margin-left: 10px;
+    }
+    .btn-secondary:hover {
+        background-color: #5a6268;
+    }
+</style>
 {% endblock %}

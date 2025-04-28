@@ -7,7 +7,7 @@ from config import Config
 from database import db
 from models import Usuario, Perfil
 
-# Configuração inicial do Login Manager
+# Inicializa o Login Manager
 login_manager = LoginManager()
 login_manager.login_view = "main.login"
 
@@ -35,7 +35,7 @@ def login():
             login_user(usuario)
             return redirect(url_for('main.dashboard'))
         else:
-            flash('E-mail ou senha inválidos.')
+            flash('E-mail ou senha inválidos.', 'danger')
 
     return render_template('login.html')
 
@@ -57,26 +57,33 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
 
+    # Registra o blueprint principal
     app.register_blueprint(main)
 
-    # Carrega blueprints adicionais se existirem
+    # Registra blueprints adicionais
     try:
         from routes_movimentos import movimentos_bp
         app.register_blueprint(movimentos_bp)
     except ImportError:
         pass
 
+    try:
+        from routes_nd import nd_bp
+        app.register_blueprint(nd_bp)
+    except ImportError:
+        pass
+
     with app.app_context():
         db.create_all()
 
-        # Cria perfil ADMIN se não existir
+        # Criação automática do perfil ADMIN
         perfil_admin = Perfil.query.filter_by(nome='Admin').first()
         if not perfil_admin:
             perfil_admin = Perfil(nome='Admin')
             db.session.add(perfil_admin)
             db.session.commit()
 
-        # Cria usuário ADMIN se não existir
+        # Criação automática do usuário ADMIN
         admin_email = "admin@admin.com"
         if not Usuario.query.filter_by(email=admin_email).first():
             usuario_admin = Usuario(

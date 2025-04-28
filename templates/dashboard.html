@@ -20,7 +20,7 @@
             justify-content: space-between;
         }
         .header img {
-            background-color: white; /* Fundo branco atrás da logo */
+            background-color: white;
             padding: 5px;
             border-radius: 8px;
             width: 150px;
@@ -56,6 +56,26 @@
             width: 100%;
             bottom: 0;
         }
+        .btn {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+            cursor: pointer;
+        }
+        .btn-success {
+            background-color: #28a745;
+        }
+        .btn-primary {
+            background-color: #007bff;
+        }
+        .btn-success:hover, .btn-primary:hover {
+            opacity: 0.9;
+        }
     </style>
 </head>
 <body>
@@ -75,21 +95,20 @@
         <a href="#">Inventário</a>
         <a href="#">Relatórios</a>
         <a href="#">Configurações</a>
-        <a href="#">Cadastros</a> <!-- Novo link -->
+        <a href="#">Cadastros</a>
     </div>
 
     <div class="main-content">
         <h2>Bem-vindo ao Sistema de Almoxarifado da Embrapa Agroindústria de Alimentos</h2>
         <p>Este é seu painel inicial. Escolha uma opção no menu acima para começar.</p>
 
-        <!-- Sugestão de inclusão para futuro submenu -->
-     <div style="margin-top:30px;">
-    <h3>Atalhos Rápidos:</h3>
-    <p>
-        <a href="{{ url_for('nd.lista_nd') }}" class="btn btn-success">Gerenciar Natureza de Despesa (ND)</a>
-        <a href="{{ url_for('item.lista_item') }}" class="btn btn-primary">Gerenciar Itens</a> <!-- Novo botão -->
-    </p>
-</div>
+        <div style="margin-top:30px;">
+            <h3>Atalhos Rápidos:</h3>
+            <p>
+                <a href="{{ url_for('nd.lista_nd') }}" class="btn btn-success">Gerenciar Natureza de Despesa (ND)</a>
+                <a href="{{ url_for('item.lista_item') }}" class="btn btn-primary">Gerenciar Itens</a>
+            </p>
+        </div>
     </div>
 
     <div class="footer">

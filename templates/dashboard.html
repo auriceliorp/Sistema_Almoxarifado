@@ -1,0 +1,84 @@
+<!-- templates/dashboard.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - Almoxarifado Embrapa</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background-color: #003366;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header img {
+            width: 150px;
+        }
+        .nav {
+            background-color: #00703c;
+            padding: 12px;
+            text-align: center;
+        }
+        .nav a {
+            color: white;
+            margin: 0 15px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .nav a:hover {
+            text-decoration: underline;
+        }
+        .main-content {
+            padding: 40px;
+            text-align: center;
+        }
+        .footer {
+            background-color: #e9ecef;
+            padding: 10px;
+            color: #777;
+            text-align: center;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <img src="{{ url_for('static', filename='embrapa_logo.png') }}" alt="Logo Embrapa">
+        <div>
+            Olá, <strong>{{ usuario.nome }}</strong> | 
+            <a href="{{ url_for('main.logout') }}" style="color: #fff; text-decoration: none;">Sair</a>
+        </div>
+    </div>
+
+    <div class="nav">
+        <a href="#">Home</a>
+        <a href="#">Entradas</a>
+        <a href="#">Saídas</a>
+        <a href="#">Inventário</a>
+        <a href="#">Relatórios</a>
+        <a href="#">Configurações</a>
+    </div>
+
+    <div class="main-content">
+        <h2>Bem-vindo ao Sistema de Almoxarifado da Embrapa Agroindústria de Alimentos</h2>
+        <p>Este é seu painel inicial. Escolha uma opção no menu acima para começar.</p>
+    </div>
+
+    <div class="footer">
+        Embrapa Agroindústria de Alimentos - ©2025
+    </div>
+
+</body>
+</html>

@@ -60,6 +60,7 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
 
+    # Importa e registra os Blueprints
     app.register_blueprint(main)
 
     try:

@@ -21,7 +21,7 @@
                     <td>{{ nd.codigo }}</td>
                     <td>{{ nd.descricao }}</td>
                     <td>
-                        <a href="{{ url_for('nd.editar_nd', nd_id=nd.id) }}">Editar</a> |
+                        <a href="{{ url_for('nd.editar_nd', id=nd.id) }}">Editar</a>|
                         <a href="{{ url_for('nd.excluir_nd', nd_id=nd.id) }}" onclick="return confirm('Tem certeza que deseja excluir esta ND?')">Excluir</a>
                     </td>
                 </tr>

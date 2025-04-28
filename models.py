@@ -1,8 +1,9 @@
 from database import db
 from datetime import datetime
+from flask_login import UserMixin
 
-# Classe Usuario
-class Usuario(db.Model):
+# Classe Usuario (com UserMixin obrigatório para Flask-Login)
+class Usuario(db.Model, UserMixin):
     __tablename__ = 'usuario'
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
@@ -10,13 +11,15 @@ class Usuario(db.Model):
     senha = db.Column(db.Text, nullable=False)
     perfil_id = db.Column(db.Integer, db.ForeignKey('perfil.id'), nullable=False)
 
+    perfil = db.relationship('Perfil', backref=db.backref('usuarios', lazy=True))
+
 # Classe Perfil
 class Perfil(db.Model):
     __tablename__ = 'perfil'
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(50), unique=True, nullable=False)
 
-# Classe NaturezaDespesa (corrigida)
+# Classe NaturezaDespesa
 class NaturezaDespesa(db.Model):
     __tablename__ = 'natureza_despesa'
     id = db.Column(db.Integer, primary_key=True)
@@ -26,7 +29,7 @@ class NaturezaDespesa(db.Model):
     def __repr__(self):
         return f"<NaturezaDespesa {self.codigo} - {self.descricao}>"
 
-# Classe Item (corrigida)
+# Classe Item
 class Item(db.Model):
     __tablename__ = 'item'
     id = db.Column(db.Integer, primary_key=True)

@@ -67,7 +67,11 @@ def create_app():
         app.register_blueprint(nd_bp)
     except ImportError:
         pass
-
+try:
+    from routes_usuario import usuario_bp
+    app.register_blueprint(usuario_bp)
+except ImportError:
+    pass
     try:
         from routes_item import item_bp
         app.register_blueprint(item_bp)

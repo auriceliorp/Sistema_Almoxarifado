@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block conteudo %}
+<div class="container mt-4">
+    <h2>Novo Item</h2>
+    <form method="POST">
+        <div class="mb-3">
+            <label for="codigo" class="form-label">Código do Item</label>
+            <input type="text" class="form-control" id="codigo" name="codigo" required>
+        </div>
+        <div class="mb-3">
+            <label for="nome" class="form-label">Nome do Item</label>
+            <input type="text" class="form-control" id="nome" name="nome" required>
+        </div>
+        <div class="mb-3">
+            <label for="natureza_despesa_id" class="form-label">Natureza de Despesa (ND)</label>
+            <select class="form-select" id="natureza_despesa_id" name="natureza_despesa_id" required>
+                <option value="" selected disabled>Selecione a ND</option>
+                {% for nd in nds %}
+                    <option value="{{ nd.id }}">{{ nd.numero }} - {{ nd.descricao }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-success">Cadastrar</button>
+        <a href="{{ url_for('item.lista_item') }}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

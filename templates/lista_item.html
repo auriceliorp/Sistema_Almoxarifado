@@ -3,15 +3,14 @@
 {% block conteudo %}
 <div class="container mt-4">
     <h2>Itens Cadastrados</h2>
-    <a href="{{ url_for('item.novo_item') }}" class="btn btn-primary">Novo Item</a>
-    <table class="table table-striped mt-3">
+    <a href="{{ url_for('item.novo_item') }}" class="btn btn-primary mb-3">Novo Item</a>
+    <table class="table table-striped">
         <thead>
             <tr>
                 <th>ID</th>
                 <th>Código</th>
                 <th>Nome</th>
-                <th>Natureza de Despesa</th>
-                <th>Ações</th>
+                <th>ND</th>
             </tr>
         </thead>
         <tbody>
@@ -20,14 +19,11 @@
                 <td>{{ item.id }}</td>
                 <td>{{ item.codigo }}</td>
                 <td>{{ item.nome }}</td>
-                <td>{{ item.natureza_despesa.nome if item.natureza_despesa else '' }}</td>
-                <td>
-                    <a href="{{ url_for('item.editar_item', item_id=item.id) }}" class="btn btn-warning btn-sm">Editar</a>
-                    <a href="{{ url_for('item.excluir_item', item_id=item.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('Deseja excluir este item?')">Excluir</a>
-                </td>
+                <td>{{ item.natureza_despesa.numero if item.natureza_despesa else 'Não vinculado' }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
 {% endblock %}
+

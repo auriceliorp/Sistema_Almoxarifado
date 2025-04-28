@@ -1,37 +1,28 @@
-# app_render.py
-
 from flask import Flask, Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 import os
+from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.exc import OperationalError
-from sqlalchemy import text  # Importação necessária para comandos SQL diretos
-from werkzeug.security import generate_password_hash
-from config import Config  # Importa a configuração correta
+from config import Config
 from database import db
-from models import Usuario, Perfil  # Importa Usuario e Perfil
+from models import Usuario, Perfil
 
-# Inicializa o login manager
+# Configuração inicial do Login Manager
 login_manager = LoginManager()
 login_manager.login_view = "main.login"
 
 @login_manager.user_loader
 def load_user(user_id):
-    try:
-        if user_id is None or not str(user_id).isdigit():
-            return None
-        user = Usuario.query.get(int(user_id))
-        return user
-    except OperationalError:
-        return None
-    except Exception:
-        return None
+    if user_id is not None and user_id.isdigit():
+        return Usuario.query.get(int(user_id))
+    return None
 
-# Cria o blueprint principal
+# Blueprint principal
 main = Blueprint('main', __name__)
 
 @main.route('/')
 def index():
-    return "Sistema de Almoxarifado Funcionando!"
+    return redirect(url_for('main.login'))
 
 @main.route('/login', methods=['GET', 'POST'])
 def login():
@@ -40,20 +31,24 @@ def login():
         senha = request.form.get('senha')
         usuario = Usuario.query.filter_by(email=email).first()
 
-        if usuario and usuario.check_password(senha):
+        if usuario and check_password_hash(usuario.senha, senha):
             login_user(usuario)
-            return redirect(url_for('main.index'))
+            return redirect(url_for('main.dashboard'))
         else:
-            flash('Email ou senha inválidos. Tente novamente.')
+            flash('E-mail ou senha inválidos.')
 
     return render_template('login.html')
 
+@main.route('/dashboard')
+@login_required
+def dashboard():
+    return render_template('dashboard.html', usuario=current_user)
 
 @main.route('/logout')
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('main.index'))
+    return redirect(url_for('main.login'))
 
 def create_app():
     app = Flask(__name__)
@@ -64,6 +59,7 @@ def create_app():
 
     app.register_blueprint(main)
 
+    # Carrega blueprints adicionais se existirem
     try:
         from routes_movimentos import movimentos_bp
         app.register_blueprint(movimentos_bp)
@@ -74,27 +70,27 @@ def create_app():
         db.create_all()
 
         # Cria perfil ADMIN se não existir
-        if not Perfil.query.filter_by(nome="Admin").first():
-            perfil_admin = Perfil(nome="Admin")
+        perfil_admin = Perfil.query.filter_by(nome='Admin').first()
+        if not perfil_admin:
+            perfil_admin = Perfil(nome='Admin')
             db.session.add(perfil_admin)
             db.session.commit()
 
         # Cria usuário ADMIN se não existir
-        if not Usuario.query.filter_by(email="admin@admin.com").first():
-            admin = Usuario(
+        admin_email = "admin@admin.com"
+        if not Usuario.query.filter_by(email=admin_email).first():
+            usuario_admin = Usuario(
                 nome="Administrador",
-                email="admin@admin.com",
+                email=admin_email,
                 senha=generate_password_hash("admin123"),
-                perfil_id=Perfil.query.filter_by(nome="Admin").first().id
+                perfil_id=perfil_admin.id
             )
-            db.session.add(admin)
+            db.session.add(usuario_admin)
             db.session.commit()
 
     return app
 
-# Cria o app
 app = create_app()
 
-# Só executa localmente
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

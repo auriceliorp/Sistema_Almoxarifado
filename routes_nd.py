@@ -1,21 +1,19 @@
-# routes_nd.py corrigido
+# routes_nd.py
 
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required
-from models import NaturezaDespesa
 from database import db
+from models import NaturezaDespesa
 
-nd_bp = Blueprint('nd', __name__, url_prefix='/nd')
+nd = Blueprint('nd', __name__, url_prefix='/nd')
 
-# Rota para listar todas as ND cadastradas
-@nd_bp.route('/')
+@nd.route('/')
 @login_required
 def lista_nd():
-    nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
+    nds = NaturezaDespesa.query.all()
     return render_template('lista_nd.html', nds=nds)
 
-# Rota para cadastrar nova ND
-@nd_bp.route('/cadastrar', methods=['GET', 'POST'])
+@nd.route('/cadastrar', methods=['GET', 'POST'])
 @login_required
 def cadastrar_nd():
     if request.method == 'POST':
@@ -23,19 +21,14 @@ def cadastrar_nd():
         descricao = request.form.get('descricao')
 
         if not codigo or not descricao:
-            flash('Preencha todos os campos.')
-            return redirect(url_for('nd.cadastrar_nd'))
-
-        if NaturezaDespesa.query.filter_by(codigo=codigo).first():
-            flash('Código de ND já cadastrado.')
+            flash('Código e descrição são obrigatórios.', 'danger')
             return redirect(url_for('nd.cadastrar_nd'))
 
         nova_nd = NaturezaDespesa(codigo=codigo, descricao=descricao)
         db.session.add(nova_nd)
         db.session.commit()
 
-        flash('Natureza de Despesa cadastrada com sucesso!')
+        flash('Natureza de Despesa cadastrada com sucesso!', 'success')
         return redirect(url_for('nd.lista_nd'))
 
     return render_template('cadastrar_nd.html')
-

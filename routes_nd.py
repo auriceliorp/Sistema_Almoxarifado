@@ -1,45 +1,48 @@
+# routes_nd.py atualizado
+
 from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask_login import login_required
 from database import db
 from models import NaturezaDespesa
-from flask_login import login_required
 
-nd_bp = Blueprint('nd_bp', __name__, url_prefix='/nd')
+nd_bp = Blueprint('nd', __name__, url_prefix='/nd')
 
-# Listar NDs
-@nd_bp.route('/')
-def lista_nd():
-    nds = NaturezaDespesa.query.all()
-    return render_template('lista_nd.html', nds=nds)
 @nd_bp.route('/')
 @login_required
-def listar_nd():
-    naturezas = NaturezaDespesa.query.all()
-    return render_template('listar_nd.html', naturezas=naturezas)
-# Cadastrar nova ND
+def lista_nd():
+    nds = NaturezaDespesa.query.all()
+    return render_template('nd/lista.html', nds=nds)
+
 @nd_bp.route('/cadastrar', methods=['GET', 'POST'])
+@login_required
 def cadastrar_nd():
     if request.method == 'POST':
-        codigo = request.form['codigo']
-        descricao = request.form['descricao']
-
-        if NaturezaDespesa.query.filter_by(codigo=codigo).first():
-            flash('Este código já existe.', 'danger')
-            return redirect(url_for('nd_bp.cadastrar_nd'))
-
+        codigo = request.form.get('codigo')
+        descricao = request.form.get('descricao')
         nova_nd = NaturezaDespesa(codigo=codigo, descricao=descricao)
         db.session.add(nova_nd)
         db.session.commit()
+        flash('Natureza de Despesa cadastrada com sucesso!')
+        return redirect(url_for('nd.lista_nd'))
+    return render_template('nd/cadastrar.html')
 
-        flash('ND cadastrada com sucesso!', 'success')
-        return redirect(url_for('nd_bp.lista_nd'))
+@nd_bp.route('/editar/<int:nd_id>', methods=['GET', 'POST'])
+@login_required
+def editar_nd(nd_id):
+    nd = NaturezaDespesa.query.get_or_404(nd_id)
+    if request.method == 'POST':
+        nd.codigo = request.form.get('codigo')
+        nd.descricao = request.form.get('descricao')
+        db.session.commit()
+        flash('Natureza de Despesa atualizada com sucesso!')
+        return redirect(url_for('nd.lista_nd'))
+    return render_template('nd/editar.html', nd=nd)
 
-    return render_template('cadastrar_nd.html')
-
-# Excluir ND
-@nd_bp.route('/excluir/<int:id>', methods=['POST'])
-def excluir_nd(id):
-    nd = NaturezaDespesa.query.get_or_404(id)
+@nd_bp.route('/excluir/<int:nd_id>', methods=['POST'])
+@login_required
+def excluir_nd(nd_id):
+    nd = NaturezaDespesa.query.get_or_404(nd_id)
     db.session.delete(nd)
     db.session.commit()
-    flash('ND excluída com sucesso!', 'success')
-    return redirect(url_for('nd_bp.lista_nd'))
+    flash('Natureza de Despesa excluída com sucesso!')
+    return redirect(url_for('nd.lista_nd'))

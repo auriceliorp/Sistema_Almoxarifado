@@ -1,56 +1,49 @@
-### templates/lista_usuario.html
-
+<!-- templates/lista_usuario.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Usuários - Almoxarifado Embrapa</title>
+    <title>Usuários</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f8f9fa; padding: 20px; }
+        body { font-family: Arial, sans-serif; margin: 20px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
         th { background-color: #00703c; color: white; }
-        .btn { padding: 6px 12px; text-decoration: none; border: none; border-radius: 4px; }
-        .btn-success { background-color: #28a745; color: white; }
-        .btn-danger { background-color: #dc3545; color: white; }
-        .top-bar { display: flex; justify-content: space-between; align-items: center; }
+        .btn { padding: 8px 16px; background-color: #00703c; color: white; text-decoration: none; border-radius: 5px; }
+        .btn-danger { background-color: #dc3545; }
+        .btn:hover { opacity: 0.9; }
     </style>
 </head>
 <body>
-
-<div class="top-bar">
     <h2>Usuários Cadastrados</h2>
-    <a href="{{ url_for('usuario.novo_usuario') }}" class="btn btn-success">Novo Usuário</a>
-</div>
 
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Nome</th>
-            <th>Matrícula</th>
-            <th>Email</th>
-            <th>Perfil</th>
-            <th>Ações</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for usuario in usuarios %}
-        <tr>
-            <td>{{ usuario.id }}</td>
-            <td>{{ usuario.nome }}</td>
-            <td>{{ usuario.matricula }}</td>
-            <td>{{ usuario.email }}</td>
-            <td>{{ usuario.perfil.nome }}</td>
-            <td>
-                <form action="{{ url_for('usuario.excluir_usuario', id=usuario.id) }}" method="post" style="display:inline;">
-                    <button type="submit" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja excluir este usuário?');">Excluir</button>
-                </form>
-            </td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
+    <p>
+        <a href="{{ url_for('usuario_bp.novo_usuario') }}" class="btn">Novo Usuário</a>
+    </p>
 
+    <table>
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Matrícula</th>
+                <th>Perfil</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for usuario in usuarios %}
+            <tr>
+                <td>{{ usuario.nome }}</td>
+                <td>{{ usuario.email }}</td>
+                <td>{{ usuario.matricula }}</td>
+                <td>{{ usuario.perfil.nome if usuario.perfil else 'N/A' }}</td>
+                <td>
+                    <a href="{{ url_for('usuario_bp.excluir_usuario', id=usuario.id) }}" class="btn btn-danger" onclick="return confirm('Deseja excluir este usuário?');">Excluir</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </body>
 </html>

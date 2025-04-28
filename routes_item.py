@@ -1,9 +1,8 @@
-# routes_item.py corrigido
-
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+# routes_item.py atualizado
+from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_required
 from database import db
-from models import Item, NaturezaDespesa
+from models import Item, NaturezaDespesa  # adicione o import de NaturezaDespesa
 
 item_bp = Blueprint('item', __name__, url_prefix='/item')
 
@@ -16,17 +15,20 @@ def lista_item():
 @item_bp.route('/novo', methods=['GET', 'POST'])
 @login_required
 def novo_item():
-    naturezas = NaturezaDespesa.query.all()
+    naturezas = NaturezaDespesa.query.all()  # <-- BUSCAR NDs cadastradas
     if request.method == 'POST':
-        codigo = request.form.get('codigo')
-        nome = request.form.get('nome')
+        codigo = request.form['codigo']
+        nome = request.form['nome']
         natureza_despesa_id = request.form.get('natureza_despesa_id')
 
-        novo_item = Item(codigo=codigo, nome=nome, natureza_despesa_id=natureza_despesa_id)
-        db.session.add(novo_item)
-        db.session.commit()
+        if not codigo or not nome:
+            flash('Código e Nome são obrigatórios.')
+        else:
+            novo = Item(codigo=codigo, nome=nome, natureza_despesa_id=natureza_despesa_id)
+            db.session.add(novo)
+            db.session.commit()
+            flash('Item cadastrado com sucesso!')
+            return redirect(url_for('item.lista_item'))
 
-        flash('Item cadastrado com sucesso!')
-        return redirect(url_for('item.lista_item'))
+    return render_template('novo_item.html', naturezas=naturezas)  # <-- envia NDs para a página
 
-    return render_template('novo_item.html', naturezas=naturezas)

@@ -1,28 +1,29 @@
+<!-- templates/form_nd.html corrigido -->
 {% extends 'base.html' %}
 
 {% block conteudo %}
-<div class="container mt-5">
-    <h2>{{ 'Editar' if nd else 'Nova' }} Natureza de Despesa (ND)</h2>
-    <form method="POST" class="mt-4">
-        <div class="mb-3">
-            <label for="codigo" class="form-label">Código *</label>
-            <input type="text" id="codigo" name="codigo" class="form-control" required value="{{ nd.codigo if nd else '' }}">
+    <h2>{% if nd %}Editar{% else %}Nova{% endif %} Natureza de Despesa</h2>
+
+    <form method="POST">
+        <div class="form-group">
+            <label for="codigo">Código:</label>
+            <input type="text" class="form-control" id="codigo" name="codigo" value="{{ nd.codigo if nd else '' }}" required>
         </div>
-        <div class="mb-3">
-            <label for="numero" class="form-label">Número da ND *</label>
-            <input type="text" id="numero" name="numero" class="form-control" required value="{{ nd.numero if nd else '' }}">
+        <div class="form-group">
+            <label for="numero">Número:</label>
+            <input type="text" class="form-control" id="numero" name="numero" value="{{ nd.numero if nd else '' }}" required>
         </div>
-        <div class="mb-3">
-            <label for="nome" class="form-label">Nome *</label>
-            <input type="text" id="nome" name="nome" class="form-control" required value="{{ nd.nome if nd else '' }}">
+        <div class="form-group">
+            <label for="nome">Nome:</label>
+            <input type="text" class="form-control" id="nome" name="nome" value="{{ nd.nome if nd else '' }}" required>
         </div>
-        <div class="mb-3">
-            <label for="descricao" class="form-label">Descrição</label>
-            <textarea id="descricao" name="descricao" class="form-control">{{ nd.descricao if nd else '' }}</textarea>
+        <div class="form-group">
+            <label for="descricao">Descrição:</label>
+            <textarea class="form-control" id="descricao" name="descricao">{{ nd.descricao if nd else '' }}</textarea>
         </div>
 
-        <button type="submit" class="btn btn-success">{{ 'Atualizar' if nd else 'Cadastrar' }}</button>
-        <a href="{{ url_for('nd_bp.lista_nd') }}" class="btn btn-secondary">Cancelar</a>
+        <br>
+        <button type="submit" class="btn btn-success">Salvar</button>
+        <a href="{{ url_for('nd.lista_nd') }}" class="btn btn-secondary">Cancelar</a>
     </form>
-</div>
 {% endblock %}

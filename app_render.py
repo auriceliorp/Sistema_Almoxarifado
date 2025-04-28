@@ -45,7 +45,7 @@ def logout():
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_object(Config)  # Carrega toda configuração correta (DATABASE_URL, SECRET_KEY, etc.)
+    app.config.from_object(Config)
 
     db.init_app(app)
     login_manager.init_app(app)
@@ -61,26 +61,18 @@ def create_app():
     with app.app_context():
         db.create_all()
 
-        # Primeiro: corrigir a coluna senha para VARCHAR(255)
-        try:
-            db.session.execute(text('ALTER TABLE usuario ALTER COLUMN senha TYPE VARCHAR(255);'))
-            db.session.commit()
-            print("Tabela 'usuario' alterada com sucesso!")
-        except Exception as e:
-            print(f"Erro ao alterar tabela 'usuario': {e}")
-
-        # Depois: cria perfil ADMIN se não existir
+        # Cria perfil ADMIN se não existir
         if not Perfil.query.filter_by(nome="Admin").first():
             perfil_admin = Perfil(nome="Admin")
             db.session.add(perfil_admin)
             db.session.commit()
 
-        # Depois: cria usuário ADMIN se não existir
+        # Cria usuário ADMIN se não existir
         if not Usuario.query.filter_by(email="admin@admin.com").first():
             admin = Usuario(
                 nome="Administrador",
                 email="admin@admin.com",
-                senha=generate_password_hash("admin123"),  # Senha segura
+                senha=generate_password_hash("admin123"),
                 perfil_id=Perfil.query.filter_by(nome="Admin").first().id
             )
             db.session.add(admin)

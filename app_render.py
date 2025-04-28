@@ -1,13 +1,14 @@
 # app_render.py
 
 from flask import Flask, Blueprint, render_template, redirect, url_for, flash, request
-from flask_login import LoginManager, login_user, logout_user, login_required, logout_user, current_user
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 import os
 from sqlalchemy.exc import OperationalError
+from sqlalchemy import text  # Importação necessária para comandos SQL diretos
 from werkzeug.security import generate_password_hash
-from config import Config
+from config import Config  # Importa a configuração correta
 from database import db
-from models import Usuario, Perfil
+from models import Usuario, Perfil  # Importa Usuario e Perfil
 
 # Inicializa o login manager
 login_manager = LoginManager()
@@ -44,7 +45,7 @@ def logout():
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_object(Config)
+    app.config.from_object(Config)  # Carrega toda configuração correta (DATABASE_URL, SECRET_KEY, etc.)
 
     db.init_app(app)
     login_manager.init_app(app)
@@ -60,13 +61,21 @@ def create_app():
     with app.app_context():
         db.create_all()
 
-        # Cria perfil ADMIN se não existir
+        # Primeiro: corrigir a coluna senha para VARCHAR(255)
+        try:
+            db.session.execute(text('ALTER TABLE usuario ALTER COLUMN senha TYPE VARCHAR(255);'))
+            db.session.commit()
+            print("Tabela 'usuario' alterada com sucesso!")
+        except Exception as e:
+            print(f"Erro ao alterar tabela 'usuario': {e}")
+
+        # Depois: cria perfil ADMIN se não existir
         if not Perfil.query.filter_by(nome="Admin").first():
             perfil_admin = Perfil(nome="Admin")
             db.session.add(perfil_admin)
             db.session.commit()
 
-        # Cria usuário ADMIN se não existir
+        # Depois: cria usuário ADMIN se não existir
         if not Usuario.query.filter_by(email="admin@admin.com").first():
             admin = Usuario(
                 nome="Administrador",
@@ -77,10 +86,11 @@ def create_app():
             db.session.add(admin)
             db.session.commit()
 
-    return app  # <-- aqui fechando a função certinha!
+    return app
 
-# >>>>>>>>>>>> Estas duas linhas são fora da função create_app() <<<<<<<<<<<<<<
+# Cria o app
 app = create_app()
 
+# Só executa localmente
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

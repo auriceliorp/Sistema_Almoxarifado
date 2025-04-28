@@ -1,13 +1,13 @@
 # app_render.py
 
 from flask import Flask, Blueprint, render_template, redirect, url_for, flash, request
-from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_login import LoginManager, login_user, logout_user, login_required, logout_user, current_user
 import os
 from sqlalchemy.exc import OperationalError
 from werkzeug.security import generate_password_hash
-from config import Config  # Importa a configuração correta
+from config import Config
 from database import db
-from models import Usuario, Perfil  # Importa Usuario e Perfil
+from models import Usuario, Perfil
 
 # Inicializa o login manager
 login_manager = LoginManager()
@@ -44,7 +44,7 @@ def logout():
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_object(Config)  # Carrega toda configuração correta (DATABASE_URL, SECRET_KEY, etc.)
+    app.config.from_object(Config)
 
     db.init_app(app)
     login_manager.init_app(app)
@@ -76,9 +76,11 @@ def create_app():
             )
             db.session.add(admin)
             db.session.commit()
-            # Cria o app
+
+    return app  # <-- aqui fechando a função certinha!
+
+# >>>>>>>>>>>> Estas duas linhas são fora da função create_app() <<<<<<<<<<<<<<
 app = create_app()
 
-# Só executa se rodar localmente
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

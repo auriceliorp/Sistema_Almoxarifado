@@ -35,7 +35,19 @@ def index():
 
 @main.route('/login', methods=['GET', 'POST'])
 def login():
-    return "Página de login aqui"
+    if request.method == 'POST':
+        email = request.form.get('email')
+        senha = request.form.get('senha')
+        usuario = Usuario.query.filter_by(email=email).first()
+
+        if usuario and usuario.check_password(senha):
+            login_user(usuario)
+            return redirect(url_for('main.index'))
+        else:
+            flash('Email ou senha inválidos. Tente novamente.')
+
+    return render_template('login.html')
+
 
 @main.route('/logout')
 @login_required

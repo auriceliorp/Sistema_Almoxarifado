@@ -20,34 +20,35 @@ def novo_usuario():
     perfis = Perfil.query.all()
     if request.method == 'POST':
         nome = request.form.get('nome')
-        matricula = request.form.get('matricula')
         email = request.form.get('email')
         senha = request.form.get('senha')
+        matricula = request.form.get('matricula')
         perfil_id = request.form.get('perfil_id')
 
         if Usuario.query.filter_by(email=email).first():
-            flash('E-mail já cadastrado.', 'danger')
+            flash('E-mail já cadastrado.')
             return redirect(url_for('usuario.novo_usuario'))
 
         novo_usuario = Usuario(
             nome=nome,
-            matricula=matricula,
             email=email,
             senha=generate_password_hash(senha),
+            matricula=matricula,
             perfil_id=perfil_id
         )
         db.session.add(novo_usuario)
         db.session.commit()
-        flash('Usuário cadastrado com sucesso!', 'success')
+
+        flash('Usuário cadastrado com sucesso!')
         return redirect(url_for('usuario.lista_usuario'))
 
     return render_template('novo_usuario.html', perfis=perfis)
 
-@usuario_bp.route('/deletar/<int:id>', methods=['POST'])
+@usuario_bp.route('/excluir/<int:id>', methods=['POST'])
 @login_required
-def deletar_usuario(id):
+def excluir_usuario(id):
     usuario = Usuario.query.get_or_404(id)
     db.session.delete(usuario)
     db.session.commit()
-    flash('Usuário deletado com sucesso.', 'success')
+    flash('Usuário excluído com sucesso!')
     return redirect(url_for('usuario.lista_usuario'))

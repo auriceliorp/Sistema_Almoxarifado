@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block conteudo %}
+<div class="container mt-5">
+    <h2>Cadastros</h2>
+    <p class="mb-4">Escolha uma categoria para gerenciar:</p>
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Natureza de Despesa (ND)</h5>
+                    <p class="card-text">Gerencie as naturezas de despesa cadastradas no sistema.</p>
+                    <a href="{{ url_for('nd_bp.lista_nd') }}" class="btn btn-success">Gerenciar ND</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Itens / Materiais</h5>
+                    <p class="card-text">Cadastre e gerencie os itens de almoxarifado.</p>
+                    <a href="#" class="btn btn-primary disabled">Em breve</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Usuários</h5>
+                    <p class="card-text">Gerencie os usuários do sistema e seus perfis.</p>
+                    <a href="#" class="btn btn-primary disabled">Em breve</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

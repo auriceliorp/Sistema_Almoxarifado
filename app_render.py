@@ -63,8 +63,8 @@ def create_app():
     app.register_blueprint(main)
 
     try:
-        from routes_nd import nd_bp
-        app.register_blueprint(nd_bp)
+        from routes_nd import nd
+        app.register_blueprint(nd)
     except ImportError:
         pass
 

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Listagem das ND</title>
+</head>
+<body>
+    <h1>Naturezas de Despesa cadastradas</h1>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Descrição</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for nd in naturezas %}
+            <tr>
+                <td>{{ nd.codigo }}</td>
+                <td>{{ nd.descricao }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ url_for('nd.cadastrar_nd') }}">Cadastrar Nova ND</a>
+</body>
+</html>

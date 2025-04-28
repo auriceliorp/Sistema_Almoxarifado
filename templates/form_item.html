@@ -1,11 +1,9 @@
-<!-- templates/form_item.html -->
 {% extends 'base.html' %}
 
 {% block conteudo %}
 <div class="container mt-4">
-    <h2>{{ 'Editar Item' if item else 'Novo Item' }}</h2>
-
-    <form method="POST">
+    <h2>{{ 'Editar' if item else 'Novo' }} Item</h2>
+    <form method="post">
         <div class="mb-3">
             <label for="codigo" class="form-label">Código</label>
             <input type="text" class="form-control" id="codigo" name="codigo" value="{{ item.codigo if item else '' }}" required>
@@ -15,17 +13,14 @@
             <input type="text" class="form-control" id="nome" name="nome" value="{{ item.nome if item else '' }}" required>
         </div>
         <div class="mb-3">
-            <label for="natureza_despesa_id" class="form-label">Natureza de Despesa</label>
-            <select class="form-control" id="natureza_despesa_id" name="natureza_despesa_id" required>
-                <option value="">Selecione...</option>
-                {% for natureza in naturezas %}
-                    <option value="{{ natureza.id }}" {% if item and item.natureza_despesa_id == natureza.id %}selected{% endif %}>
-                        {{ natureza.nome }}
-                    </option>
+            <label for="nd_id" class="form-label">Natureza de Despesa</label>
+            <select class="form-control" id="nd_id" name="nd_id" required>
+                <option value="">Selecione</option>
+                {% for nd in naturezas %}
+                <option value="{{ nd.id }}" {% if item and item.natureza_despesa_id == nd.id %}selected{% endif %}>{{ nd.nome }}</option>
                 {% endfor %}
             </select>
         </div>
-
         <button type="submit" class="btn btn-success">Salvar</button>
         <a href="{{ url_for('item.lista_item') }}" class="btn btn-secondary">Cancelar</a>
     </form>

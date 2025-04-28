@@ -76,3 +76,9 @@ def create_app():
             )
             db.session.add(admin)
             db.session.commit()
+            # Cria o app
+app = create_app()
+
+# Só executa se rodar localmente
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5000)

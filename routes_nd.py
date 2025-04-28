@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from database import db
 from models import NaturezaDespesa
+from flask_login import login_required
 
 nd_bp = Blueprint('nd_bp', __name__, url_prefix='/nd')
 
@@ -9,7 +10,11 @@ nd_bp = Blueprint('nd_bp', __name__, url_prefix='/nd')
 def lista_nd():
     nds = NaturezaDespesa.query.all()
     return render_template('lista_nd.html', nds=nds)
-
+@nd_bp.route('/')
+@login_required
+def listar_nd():
+    naturezas = NaturezaDespesa.query.all()
+    return render_template('listar_nd.html', naturezas=naturezas)
 # Cadastrar nova ND
 @nd_bp.route('/cadastrar', methods=['GET', 'POST'])
 def cadastrar_nd():

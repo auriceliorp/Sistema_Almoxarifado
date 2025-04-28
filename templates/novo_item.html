@@ -1,28 +1,87 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Novo Item - Almoxarifado Embrapa</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            padding: 40px;
+        }
+        h2 {
+            color: #003366;
+        }
+        form {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: auto;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #00703c;
+            color: white;
+            font-weight: bold;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #005f32;
+        }
+        .back-link {
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .back-link a {
+            text-decoration: none;
+            color: #00703c;
+            font-weight: bold;
+        }
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
 
-{% block conteudo %}
-<div class="container mt-4">
-    <h2>Novo Item</h2>
-    <form method="POST">
-        <div class="mb-3">
-            <label for="codigo" class="form-label">Código do Item</label>
-            <input type="text" class="form-control" id="codigo" name="codigo" required>
-        </div>
-        <div class="mb-3">
-            <label for="nome" class="form-label">Nome do Item</label>
-            <input type="text" class="form-control" id="nome" name="nome" required>
-        </div>
-        <div class="mb-3">
-            <label for="natureza_despesa_id" class="form-label">Natureza de Despesa (ND)</label>
-            <select class="form-select" id="natureza_despesa_id" name="natureza_despesa_id" required>
-                <option value="" selected disabled>Selecione a ND</option>
-                {% for nd in nds %}
-                    <option value="{{ nd.id }}">{{ nd.numero }} - {{ nd.descricao }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <button type="submit" class="btn btn-success">Cadastrar</button>
-        <a href="{{ url_for('item.lista_item') }}" class="btn btn-secondary">Cancelar</a>
+    <h2>Cadastrar Novo Item</h2>
+
+    <form method="post">
+        <label for="codigo">Código:</label>
+        <input type="text" id="codigo" name="codigo" required>
+
+        <label for="nome">Nome:</label>
+        <input type="text" id="nome" name="nome" required>
+
+        <label for="natureza_despesa_id">Natureza de Despesa:</label>
+        <select id="natureza_despesa_id" name="natureza_despesa_id" required>
+            <option value="">Selecione...</option>
+            {% for natureza in naturezas %}
+                <option value="{{ natureza.id }}">{{ natureza.numero }} - {{ natureza.descricao }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Salvar Item</button>
     </form>
-</div>
-{% endblock %}
+
+    <div class="back-link">
+        <a href="{{ url_for('item.lista_item') }}">← Voltar para lista de Itens</a>
+    </div>
+
+</body>
+</html>

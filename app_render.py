@@ -1,4 +1,4 @@
-# app_render.py corrigido
+# app_render.py COMPLETO e atualizado!
 
 from flask import Flask, Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -77,7 +77,7 @@ def create_app():
     with app.app_context():
         db.create_all()
 
-        # Corrige colunas se necessário
+        # Correções automáticas
         try:
             db.session.execute(text('ALTER TABLE natureza_despesa ADD COLUMN descricao VARCHAR(255);'))
             db.session.commit()
@@ -109,6 +109,14 @@ def create_app():
         except Exception as e:
             db.session.rollback()
             print(f"(INFO) Coluna 'natureza_despesa_id' pode já existir: {e}")
+
+        try:
+            db.session.execute(text('ALTER TABLE item ADD COLUMN nome VARCHAR(255);'))
+            db.session.commit()
+            print("Coluna 'nome' adicionada na tabela item!")
+        except Exception as e:
+            db.session.rollback()
+            print(f"(INFO) Coluna 'nome' pode já existir: {e}")
 
         # Cria perfil ADMIN se não existir
         perfil_admin = Perfil.query.filter_by(nome='Admin').first()

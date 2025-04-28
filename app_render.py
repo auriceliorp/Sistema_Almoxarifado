@@ -1,4 +1,4 @@
-# app_render.py atualizado
+# app_render.py corrigido
 
 from flask import Flask, Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -63,8 +63,8 @@ def create_app():
     app.register_blueprint(main)
 
     try:
-        from routes_nd import nd
-        app.register_blueprint(nd)
+        from routes_nd import nd_bp
+        app.register_blueprint(nd_bp)
     except ImportError:
         pass
 

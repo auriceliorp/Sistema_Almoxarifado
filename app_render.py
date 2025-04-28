@@ -1,13 +1,15 @@
+# app_render.py
+
 from flask import Flask, Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import OperationalError, ProgrammingError
 from config import Config
 from database import db
 from models import Usuario, Perfil
 
-# Inicializa o Login Manager
+# Configura Login Manager
 login_manager = LoginManager()
 login_manager.login_view = "main.login"
 
@@ -35,7 +37,7 @@ def login():
             login_user(usuario)
             return redirect(url_for('main.dashboard'))
         else:
-            flash('E-mail ou senha inválidos.', 'danger')
+            flash('E-mail ou senha inválidos.')
 
     return render_template('login.html')
 
@@ -59,37 +61,45 @@ def create_app():
 
     app.register_blueprint(main)
 
-    try:
-        from routes_movimentos import movimentos_bp
-        app.register_blueprint(movimentos_bp)
-    except ImportError:
-        pass
-
+    # Carrega blueprints adicionais se existirem
     try:
         from routes_nd import nd_bp
         app.register_blueprint(nd_bp)
     except ImportError:
         pass
 
+    try:
+        from routes_movimentos import movimentos_bp
+        app.register_blueprint(movimentos_bp)
+    except ImportError:
+        pass
+
     with app.app_context():
         db.create_all()
 
-        # Adiciona coluna descricao se não existir
-        from sqlalchemy import text
+        # Verifica e adiciona a coluna 'descricao' em natureza_despesa, caso ainda não exista
         try:
-            db.session.execute(text('ALTER TABLE natureza_despesa ADD COLUMN descricao VARCHAR(255);'))
-            db.session.commit()
-            print("Coluna 'descricao' adicionada com sucesso!")
+            with db.engine.connect() as connection:
+                connection.execute('ALTER TABLE natureza_despesa ADD COLUMN descricao VARCHAR(255);')
+                print("Coluna 'descricao' adicionada com sucesso!")
+        except ProgrammingError as e:
+            db.session.rollback()
+            if 'duplicate column' in str(e).lower() or 'already exists' in str(e).lower():
+                print("Coluna 'descricao' já existe. Prosseguindo...")
+            else:
+                raise
         except Exception as e:
-            print(f"Erro ao adicionar coluna 'descricao' (pode já existir): {e}")
+            db.session.rollback()
+            print(f"Outro erro ao alterar tabela: {e}")
 
-        # Cria perfil e admin
+        # Cria perfil ADMIN se não existir
         perfil_admin = Perfil.query.filter_by(nome='Admin').first()
         if not perfil_admin:
             perfil_admin = Perfil(nome='Admin')
             db.session.add(perfil_admin)
             db.session.commit()
 
+        # Cria usuário ADMIN se não existir
         admin_email = "admin@admin.com"
         if not Usuario.query.filter_by(email=admin_email).first():
             usuario_admin = Usuario(
@@ -102,7 +112,6 @@ def create_app():
             db.session.commit()
 
     return app
-
 
 app = create_app()
 

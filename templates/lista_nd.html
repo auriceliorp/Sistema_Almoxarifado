@@ -1,32 +1,34 @@
 {% extends 'base.html' %}
 
 {% block conteudo %}
-<div class="container mt-4">
-    <h2>Naturezas de Despesa (ND)</h2>
+<div style="margin: 20px;">
+    <h2 class="mb-4">Naturezas de Despesa (ND)</h2>
 
-    <a href="{{ url_for('nd.cadastrar_nd') }}" class="btn btn-success mb-3">Nova ND</a>
+    <a href="{{ url_for('nd.cadastrar_nd') }}" class="btn btn-success" style="margin-bottom: 15px; display: inline-block; padding: 8px 15px; background-color: #28a745; color: white; text-decoration: none; border-radius: 5px;">Nova ND</a>
 
-    <table class="table table-bordered table-striped">
+    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
         <thead>
-            <tr>
-                <th>ID</th>
-                <th>Descrição</th>
-                <th>Ações</th>
+            <tr style="background-color: #f2f2f2;">
+                <th style="border: 1px solid #ddd; padding: 8px;">ID</th>
+                <th style="border: 1px solid #ddd; padding: 8px;">Número</th>
+                <th style="border: 1px solid #ddd; padding: 8px;">Descrição</th>
+                <th style="border: 1px solid #ddd; padding: 8px;">Ações</th>
             </tr>
         </thead>
         <tbody>
             {% for nd in nds %}
             <tr>
-                <td>{{ nd.id }}</td>
-                <td>{{ nd.descricao }}</td>
-                <td>
-                    <a href="{{ url_for('nd.editar_nd', id=nd.id) }}" class="btn btn-primary btn-sm">Editar</a>
-                    <a href="{{ url_for('nd.excluir_nd', id=nd.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir esta ND?');">Excluir</a>
+                <td style="border: 1px solid #ddd; padding: 8px;">{{ nd.id }}</td>
+                <td style="border: 1px solid #ddd; padding: 8px;">{{ nd.numero }}</td>
+                <td style="border: 1px solid #ddd; padding: 8px;">{{ nd.descricao or '' }}</td>
+                <td style="border: 1px solid #ddd; padding: 8px;">
+                    <a href="{{ url_for('nd.editar_nd', id=nd.id) }}" style="color: #007bff; text-decoration: none; margin-right: 10px;">Editar</a>
+                    <a href="{{ url_for('nd.excluir_nd', id=nd.id) }}" style="color: #dc3545; text-decoration: none;" onclick="return confirm('Tem certeza que deseja excluir esta ND?')">Excluir</a>
                 </td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="3" class="text-center">Nenhuma ND cadastrada.</td>
+                <td colspan="4" style="border: 1px solid #ddd; padding: 8px; text-align: center;">Nenhuma ND cadastrada.</td>
             </tr>
             {% endfor %}
         </tbody>

@@ -1,13 +1,14 @@
-# app_render.py
+# app_render.py atualizado
 
 from flask import Flask, Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy.exc import OperationalError, ProgrammingError
+from sqlalchemy.exc import OperationalError
 from config import Config
 from database import db
 from models import Usuario, Perfil
+from sqlalchemy import text
 
 # Configura Login Manager
 login_manager = LoginManager()
@@ -15,7 +16,7 @@ login_manager.login_view = "main.login"
 
 @login_manager.user_loader
 def load_user(user_id):
-    if user_id is not None and user_id.isdigit():
+    if user_id is not None and str(user_id).isdigit():
         return Usuario.query.get(int(user_id))
     return None
 
@@ -61,36 +62,23 @@ def create_app():
 
     app.register_blueprint(main)
 
-    # Carrega blueprints adicionais se existirem
     try:
         from routes_nd import nd_bp
         app.register_blueprint(nd_bp)
     except ImportError:
         pass
 
-    try:
-        from routes_movimentos import movimentos_bp
-        app.register_blueprint(movimentos_bp)
-    except ImportError:
-        pass
-
     with app.app_context():
         db.create_all()
 
-        # Verifica e adiciona a coluna 'descricao' em natureza_despesa, caso ainda não exista
+        # Corrige a coluna descricao na tabela natureza_despesa
         try:
-            with db.engine.connect() as connection:
-                connection.execute('ALTER TABLE natureza_despesa ADD COLUMN descricao VARCHAR(255);')
-                print("Coluna 'descricao' adicionada com sucesso!")
-        except ProgrammingError as e:
-            db.session.rollback()
-            if 'duplicate column' in str(e).lower() or 'already exists' in str(e).lower():
-                print("Coluna 'descricao' já existe. Prosseguindo...")
-            else:
-                raise
+            db.session.execute(text('ALTER TABLE natureza_despesa ADD COLUMN descricao VARCHAR(255);'))
+            db.session.commit()
+            print("Coluna 'descricao' adicionada na tabela natureza_despesa!")
         except Exception as e:
             db.session.rollback()
-            print(f"Outro erro ao alterar tabela: {e}")
+            print(f"(INFO) Coluna 'descricao' pode já existir: {e}")
 
         # Cria perfil ADMIN se não existir
         perfil_admin = Perfil.query.filter_by(nome='Admin').first()

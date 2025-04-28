@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block conteudo %}
+    <h1>{{ 'Editar ND' if nd else 'Cadastrar Nova ND' }}</h1>
+
+    <form method="POST">
+        <div>
+            <label for="codigo">Código:</label>
+            <input type="text" id="codigo" name="codigo" value="{{ nd.codigo if nd else '' }}" required>
+        </div>
+        <div>
+            <label for="descricao">Descrição:</label>
+            <input type="text" id="descricao" name="descricao" value="{{ nd.descricao if nd else '' }}" required>
+        </div>
+        <div>
+            <button type="submit" class="btn btn-primary">{{ 'Atualizar' if nd else 'Cadastrar' }}</button>
+            <a href="{{ url_for('nd.lista_nd') }}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+{% endblock %}

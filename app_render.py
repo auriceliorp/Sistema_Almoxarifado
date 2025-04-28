@@ -57,10 +57,8 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
 
-    # Registra o blueprint principal
     app.register_blueprint(main)
 
-    # Registra blueprints adicionais
     try:
         from routes_movimentos import movimentos_bp
         app.register_blueprint(movimentos_bp)
@@ -76,14 +74,22 @@ def create_app():
     with app.app_context():
         db.create_all()
 
-        # Criação automática do perfil ADMIN
+        # Adiciona coluna descricao se não existir
+        from sqlalchemy import text
+        try:
+            db.session.execute(text('ALTER TABLE natureza_despesa ADD COLUMN descricao VARCHAR(255);'))
+            db.session.commit()
+            print("Coluna 'descricao' adicionada com sucesso!")
+        except Exception as e:
+            print(f"Erro ao adicionar coluna 'descricao' (pode já existir): {e}")
+
+        # Cria perfil e admin
         perfil_admin = Perfil.query.filter_by(nome='Admin').first()
         if not perfil_admin:
             perfil_admin = Perfil(nome='Admin')
             db.session.add(perfil_admin)
             db.session.commit()
 
-        # Criação automática do usuário ADMIN
         admin_email = "admin@admin.com"
         if not Usuario.query.filter_by(email=admin_email).first():
             usuario_admin = Usuario(
@@ -96,6 +102,7 @@ def create_app():
             db.session.commit()
 
     return app
+
 
 app = create_app()
 

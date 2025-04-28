@@ -83,13 +83,13 @@
         <p>Este é seu painel inicial. Escolha uma opção no menu acima para começar.</p>
 
         <!-- Sugestão de inclusão para futuro submenu -->
-        <div style="margin-top:30px;">
-            <h3>Atalhos Rápidos:</h3>
-            <p>
-                <a href="{{ url_for('nd.lista_nd') }}" class="btn btn-success">Gerenciar Natureza de Despesa (ND)</a>
-                <!-- Aqui futuramente pode colocar cadastro de Itens e Usuários -->
-            </p>
-        </div>
+     <div style="margin-top:30px;">
+    <h3>Atalhos Rápidos:</h3>
+    <p>
+        <a href="{{ url_for('nd.lista_nd') }}" class="btn btn-success">Gerenciar Natureza de Despesa (ND)</a>
+        <a href="{{ url_for('item.lista_item') }}" class="btn btn-primary">Gerenciar Itens</a> <!-- Novo botão -->
+    </p>
+</div>
     </div>
 
     <div class="footer">

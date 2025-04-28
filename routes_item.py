@@ -29,7 +29,7 @@ def novo_item():
         novo_item = Item(
             codigo=codigo,
             nome=nome,
-            nd_id=nd_id
+            natureza_despesa_id=nd_id
         )
         db.session.add(novo_item)
         db.session.commit()
@@ -47,9 +47,9 @@ def editar_item(item_id):
     if request.method == 'POST':
         item.codigo = request.form.get('codigo')
         item.nome = request.form.get('nome')
-        item.nd_id = request.form.get('nd_id')
+        item.natureza_despesa_id = request.form.get('nd_id')
 
-        if not item.codigo or not item.nome or not item.nd_id:
+        if not item.codigo or not item.nome or not item.natureza_despesa_id:
             flash('Preencha todos os campos obrigatórios!')
             return redirect(url_for('item.editar_item', item_id=item_id))
 
@@ -67,4 +67,3 @@ def excluir_item(item_id):
     db.session.commit()
     flash('Item excluído com sucesso!')
     return redirect(url_for('item.lista_item'))
-

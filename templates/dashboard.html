@@ -1,4 +1,4 @@
-<!-- templates/dashboard.html -->
+<!-- templates/dashboard.html atualizado -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -15,27 +15,33 @@
             background-color: #003366;
             color: white;
             padding: 15px;
-            text-align: center;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
         .header img {
+            background-color: white; /* Fundo branco atrás da logo */
+            padding: 5px;
+            border-radius: 8px;
             width: 150px;
         }
         .nav {
             background-color: #00703c;
-            padding: 12px;
-            text-align: center;
+            display: flex;
+            justify-content: center;
+            padding: 12px 0;
+            flex-wrap: wrap;
         }
         .nav a {
             color: white;
-            margin: 0 15px;
+            margin: 0 20px;
             text-decoration: none;
             font-weight: bold;
+            transition: color 0.3s, text-decoration 0.3s;
         }
         .nav a:hover {
             text-decoration: underline;
+            color: #cce5cc;
         }
         .main-content {
             padding: 40px;
@@ -63,17 +69,27 @@
     </div>
 
     <div class="nav">
-        <a href="#">Home</a>
+        <a href="{{ url_for('main.dashboard') }}">Home</a>
         <a href="#">Entradas</a>
         <a href="#">Saídas</a>
         <a href="#">Inventário</a>
         <a href="#">Relatórios</a>
         <a href="#">Configurações</a>
+        <a href="#">Cadastros</a> <!-- Novo link -->
     </div>
 
     <div class="main-content">
         <h2>Bem-vindo ao Sistema de Almoxarifado da Embrapa Agroindústria de Alimentos</h2>
         <p>Este é seu painel inicial. Escolha uma opção no menu acima para começar.</p>
+
+        <!-- Sugestão de inclusão para futuro submenu -->
+        <div style="margin-top:30px;">
+            <h3>Atalhos Rápidos:</h3>
+            <p>
+                <a href="{{ url_for('nd.lista_nd') }}" class="btn btn-success">Gerenciar Natureza de Despesa (ND)</a>
+                <!-- Aqui futuramente pode colocar cadastro de Itens e Usuários -->
+            </p>
+        </div>
     </div>
 
     <div class="footer">
@@ -82,3 +98,4 @@
 
 </body>
 </html>
+

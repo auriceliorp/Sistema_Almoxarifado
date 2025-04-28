@@ -1,4 +1,4 @@
-# app_render.py corrigido
+# app_render.py atualizado completo
 
 from flask import Flask, Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -60,7 +60,6 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
 
-    # Importa e registra os Blueprints
     app.register_blueprint(main)
 
     try:
@@ -80,6 +79,15 @@ def create_app():
         except Exception as e:
             db.session.rollback()
             print(f"(INFO) Coluna 'descricao' pode já existir: {e}")
+
+        # Corrige a coluna numero na tabela natureza_despesa
+        try:
+            db.session.execute(text('ALTER TABLE natureza_despesa ADD COLUMN numero VARCHAR(50);'))
+            db.session.commit()
+            print("Coluna 'numero' adicionada na tabela natureza_despesa!")
+        except Exception as e:
+            db.session.rollback()
+            print(f"(INFO) Coluna 'numero' pode já existir: {e}")
 
         # Cria perfil ADMIN se não existir
         perfil_admin = Perfil.query.filter_by(nome='Admin').first()
@@ -106,3 +114,4 @@ app = create_app()
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
+

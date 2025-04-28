@@ -1,6 +1,6 @@
-# routes_nd.py corrigido
+# routes_nd.py
 
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_required
 from database import db
 from models import NaturezaDespesa
@@ -13,19 +13,36 @@ def lista_nd():
     nds = NaturezaDespesa.query.all()
     return render_template('lista_nd.html', nds=nds)
 
-@nd.route('/nova', methods=['GET', 'POST'])
+@nd.route('/cadastrar', methods=['GET', 'POST'])
 @login_required
 def cadastrar_nd():
     if request.method == 'POST':
         codigo = request.form.get('codigo')
         descricao = request.form.get('descricao')
+
         nova_nd = NaturezaDespesa(codigo=codigo, descricao=descricao)
         db.session.add(nova_nd)
         db.session.commit()
-        flash('Natureza de Despesa cadastrada com sucesso!', 'success')
+
+        flash('ND cadastrada com sucesso!', 'success')
         return redirect(url_for('nd.lista_nd'))
 
-    return render_template('cadastrar_nd.html')
+    return render_template('form_nd.html', nd=None)
+
+@nd.route('/editar/<int:id>', methods=['GET', 'POST'])
+@login_required
+def editar_nd(id):
+    nd = NaturezaDespesa.query.get_or_404(id)
+
+    if request.method == 'POST':
+        nd.codigo = request.form.get('codigo')
+        nd.descricao = request.form.get('descricao')
+        db.session.commit()
+
+        flash('ND atualizada com sucesso!', 'success')
+        return redirect(url_for('nd.lista_nd'))
+
+    return render_template('form_nd.html', nd=nd)
 
 @nd.route('/excluir/<int:id>', methods=['POST'])
 @login_required
@@ -33,5 +50,6 @@ def excluir_nd(id):
     nd = NaturezaDespesa.query.get_or_404(id)
     db.session.delete(nd)
     db.session.commit()
-    flash('Natureza de Despesa excluída com sucesso!', 'success')
+
+    flash('ND excluída com sucesso!', 'success')
     return redirect(url_for('nd.lista_nd'))

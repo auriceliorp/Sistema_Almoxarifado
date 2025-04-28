@@ -1,27 +1,35 @@
 {% extends 'base.html' %}
+
 {% block conteudo %}
-<h2>Naturezas de Despesa</h2>
-<a href="{{ url_for('nd.cadastrar_nd') }}" class="btn btn-success mb-2">Nova ND</a>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Código</th>
-            <th>Descrição</th>
-            <th>Ações</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for nd in nds %}
-        <tr>
-            <td>{{ nd.codigo }}</td>
-            <td>{{ nd.descricao }}</td>
-            <td>
-                <form action="{{ url_for('nd.excluir_nd', id=nd.id) }}" method="POST" onsubmit="return confirm('Excluir?');">
-                    <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
-                </form>
-            </td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
+    <h1>Lista de Naturezas de Despesa (NDs)</h1>
+
+    <a href="{{ url_for('nd.cadastrar_nd') }}" class="btn btn-success mb-2">Nova ND</a>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Código</th>
+                <th>Descrição</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for nd in nds %}
+                <tr>
+                    <td>{{ nd.id }}</td>
+                    <td>{{ nd.codigo }}</td>
+                    <td>{{ nd.descricao }}</td>
+                    <td>
+                        <a href="{{ url_for('nd.editar_nd', nd_id=nd.id) }}">Editar</a> |
+                        <a href="{{ url_for('nd.excluir_nd', nd_id=nd.id) }}" onclick="return confirm('Tem certeza que deseja excluir esta ND?')">Excluir</a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="4">Nenhuma ND cadastrada.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 {% endblock %}

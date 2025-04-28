@@ -1,37 +1,68 @@
 {% extends 'base.html' %}
 
 {% block conteudo %}
-<div style="margin: 20px;">
+<div class="container mt-4">
+
     <h2 class="mb-4">Naturezas de Despesa (ND)</h2>
 
-    <a href="{{ url_for('nd.cadastrar_nd') }}" class="btn btn-success" style="margin-bottom: 15px; display: inline-block; padding: 8px 15px; background-color: #28a745; color: white; text-decoration: none; border-radius: 5px;">Nova ND</a>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-info">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
 
-    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-        <thead>
-            <tr style="background-color: #f2f2f2;">
-                <th style="border: 1px solid #ddd; padding: 8px;">ID</th>
-                <th style="border: 1px solid #ddd; padding: 8px;">Número</th>
-                <th style="border: 1px solid #ddd; padding: 8px;">Descrição</th>
-                <th style="border: 1px solid #ddd; padding: 8px;">Ações</th>
+    <!-- Tabela de NDs -->
+    <table class="table table-striped table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th>#</th>
+                <th>Natureza da Despesa (ND)</th>
+                <th>Descrição</th>
+                <th>Ações</th>
             </tr>
         </thead>
         <tbody>
             {% for nd in nds %}
             <tr>
-                <td style="border: 1px solid #ddd; padding: 8px;">{{ nd.id }}</td>
-                <td style="border: 1px solid #ddd; padding: 8px;">{{ nd.numero }}</td>
-                <td style="border: 1px solid #ddd; padding: 8px;">{{ nd.descricao or '' }}</td>
-                <td style="border: 1px solid #ddd; padding: 8px;">
-                    <a href="{{ url_for('nd.editar_nd', id=nd.id) }}" style="color: #007bff; text-decoration: none; margin-right: 10px;">Editar</a>
-                    <a href="{{ url_for('nd.excluir_nd', id=nd.id) }}" style="color: #dc3545; text-decoration: none;" onclick="return confirm('Tem certeza que deseja excluir esta ND?')">Excluir</a>
+                <td>{{ loop.index }}</td>
+                <td>{{ nd.numero }}</td>  {# <-- número da ND #}
+                <td>{{ nd.descricao }}</td>
+                <td>
+                    <a href="{{ url_for('nd.editar_nd', id=nd.id) }}" class="btn btn-warning btn-sm">Editar</a>
+                    <a href="{{ url_for('nd.excluir_nd', id=nd.id) }}" class="btn btn-danger btn-sm"
+                       onclick="return confirm('Tem certeza que deseja excluir esta ND?')">Excluir</a>
                 </td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="4" style="border: 1px solid #ddd; padding: 8px; text-align: center;">Nenhuma ND cadastrada.</td>
+                <td colspan="4" class="text-center">Nenhuma ND cadastrada.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+
+    <!-- Formulário de Nova ND -->
+    <div class="card mt-5">
+        <div class="card-header">
+            Cadastrar Nova ND
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('nd.cadastrar_nd') }}" method="POST">
+                <div class="form-group">
+                    <label for="numero">Número da ND:</label>
+                    <input type="text" class="form-control" id="numero" name="numero" required>
+                </div>
+                <div class="form-group">
+                    <label for="descricao">Descrição:</label>
+                    <input type="text" class="form-control" id="descricao" name="descricao" required>
+                </div>
+                <button type="submit" class="btn btn-success mt-3">Salvar ND</button>
+            </form>
+        </div>
+    </div>
+
 </div>
 {% endblock %}
+

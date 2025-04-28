@@ -175,8 +175,8 @@ def create_app():
 
     # --- IMPORTAR E REGISTRAR O BLUEPRINT 'movimentos' --- 
     try:
-        # Assumindo que routes_movimentos.py está na mesma pasta ou pacote
-        from .routes_movimentos import movimentos_bp
+        # Usar importação absoluta
+        from routes_movimentos import movimentos_bp # <-- CORRIGIDO
         app.register_blueprint(movimentos_bp)
         print("Blueprint 'movimentos_bp' registrado com sucesso.")
     except ImportError as e:
@@ -184,10 +184,18 @@ def create_app():
     # --- FIM DO REGISTRO DE MOVIMENTOS --- 
 
     # --- Registre outros blueprints aqui se existirem (ex: requisicoes, relatorios) ---
-    # from .routes_requisicoes import requisicoes_bp
-    # app.register_blueprint(requisicoes_bp)
-    # from .routes_relatorios import relatorios_bp
-    # app.register_blueprint(relatorios_bp)
+    # try:
+    #     from routes_requisicoes import requisicoes_bp
+    #     app.register_blueprint(requisicoes_bp)
+    #     print("Blueprint 'requisicoes_bp' registrado com sucesso.")
+    # except ImportError as e:
+    #     print(f"ERRO ao importar/registrar 'requisicoes_bp': {e}")
+    # try:
+    #     from routes_relatorios import relatorios_bp
+    #     app.register_blueprint(relatorios_bp)
+    #     print("Blueprint 'relatorios_bp' registrado com sucesso.")
+    # except ImportError as e:
+    #     print(f"ERRO ao importar/registrar 'relatorios_bp': {e}")
     # --- FIM DE OUTROS BLUEPRINTS ---
 
     # Registrar filtro Jinja

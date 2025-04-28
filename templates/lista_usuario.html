@@ -1,0 +1,102 @@
+### templates/lista_usuario.html
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Usuários - Almoxarifado Embrapa</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f8f9fa; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #00703c; color: white; }
+        .btn { padding: 6px 12px; text-decoration: none; border: none; border-radius: 4px; }
+        .btn-success { background-color: #28a745; color: white; }
+        .btn-danger { background-color: #dc3545; color: white; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <h2>Usuários Cadastrados</h2>
+    <a href="{{ url_for('usuario.novo_usuario') }}" class="btn btn-success">Novo Usuário</a>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nome</th>
+            <th>Matrícula</th>
+            <th>Email</th>
+            <th>Perfil</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for usuario in usuarios %}
+        <tr>
+            <td>{{ usuario.id }}</td>
+            <td>{{ usuario.nome }}</td>
+            <td>{{ usuario.matricula }}</td>
+            <td>{{ usuario.email }}</td>
+            <td>{{ usuario.perfil.nome }}</td>
+            <td>
+                <form action="{{ url_for('usuario.excluir_usuario', id=usuario.id) }}" method="post" style="display:inline;">
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja excluir este usuário?');">Excluir</button>
+                </form>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+</body>
+</html>
+
+
+### templates/novo_usuario.html
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Novo Usuário - Almoxarifado Embrapa</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f8f9fa; padding: 20px; }
+        form { max-width: 500px; margin: auto; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        label { display: block; margin-top: 10px; }
+        input, select { width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; }
+        .btn { background-color: #00703c; color: white; padding: 10px; border: none; border-radius: 4px; width: 100%; }
+    </style>
+</head>
+<body>
+
+<h2 style="text-align:center;">Cadastrar Novo Usuário</h2>
+
+<form method="post">
+    <label for="nome">Nome:</label>
+    <input type="text" id="nome" name="nome" required>
+
+    <label for="matricula">Matrícula:</label>
+    <input type="text" id="matricula" name="matricula" required>
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email" required>
+
+    <label for="senha">Senha:</label>
+    <input type="password" id="senha" name="senha" required>
+
+    <label for="perfil">Perfil:</label>
+    <select id="perfil" name="perfil_id" required>
+        {% for perfil in perfis %}
+        <option value="{{ perfil.id }}">{{ perfil.nome }}</option>
+        {% endfor %}
+    </select>
+
+    <button type="submit" class="btn">Salvar</button>
+</form>
+
+</body>
+</html>

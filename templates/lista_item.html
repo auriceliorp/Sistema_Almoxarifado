@@ -1,0 +1,37 @@
+<!-- templates/lista_item.html -->
+{% extends 'base.html' %}
+
+{% block conteudo %}
+<div class="container mt-4">
+    <h2>Lista de Itens</h2>
+    <a href="{{ url_for('item.novo_item') }}" class="btn btn-primary mb-3">Novo Item</a>
+
+    {% if itens %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nome</th>
+                    <th>Natureza de Despesa</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in itens %}
+                <tr>
+                    <td>{{ item.codigo }}</td>
+                    <td>{{ item.nome }}</td>
+                    <td>{{ item.natureza.nome if item.natureza else '' }}</td>
+                    <td>
+                        <a href="{{ url_for('item.editar_item', item_id=item.id) }}" class="btn btn-sm btn-warning">Editar</a>
+                        <a href="{{ url_for('item.excluir_item', item_id=item.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir?')">Excluir</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Não há itens cadastrados.</p>
+    {% endif %}
+</div>
+{% endblock %}

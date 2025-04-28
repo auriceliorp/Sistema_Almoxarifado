@@ -1,8 +1,7 @@
 from .database import db
-from datetime import datetime # Se necessário para valores padrão
-# Colar TODAS as suas classes de modelos aqui
-# (Usuario, Perfil, NaturezaDespesa, Item, MovimentoEstoque)
+from datetime import datetime
 
+# Classe Usuario
 class Usuario(db.Model):
     __tablename__ = 'usuario'
     id = db.Column(db.Integer, primary_key=True)
@@ -10,23 +9,43 @@ class Usuario(db.Model):
     email = db.Column(db.String(100), unique=True, nullable=False)
     senha = db.Column(db.String(255), nullable=False)
     perfil_id = db.Column(db.Integer, db.ForeignKey('perfil.id'), nullable=False)
-    # ... resto da classe Usuario ...
 
+# Classe Perfil
 class Perfil(db.Model):
-    # ... definição de Perfil ...
+    __tablename__ = 'perfil'
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(50), unique=True, nullable=False)
 
+# Classe NaturezaDespesa (corrigida)
 class NaturezaDespesa(db.Model):
-    # ... definição de NaturezaDespesa ...
+    __tablename__ = 'natureza_despesa'
+    id = db.Column(db.Integer, primary_key=True)
+    codigo = db.Column(db.String(10), unique=True, nullable=False)
+    descricao = db.Column(db.String(255), nullable=False)
 
+    def __repr__(self):
+        return f"<NaturezaDespesa {self.codigo} - {self.descricao}>"
+
+# Classe Item (corrigida)
 class Item(db.Model):
-    # ... definição de Item ...
+    __tablename__ = 'item'
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False)
+    descricao = db.Column(db.String(255), nullable=True)
+    quantidade_estoque = db.Column(db.Float, nullable=False, default=0.0)
+    natureza_despesa_id = db.Column(db.Integer, db.ForeignKey('natureza_despesa.id'), nullable=True)
 
-# !! Adicione a definição de MovimentoEstoque aqui !!
+    natureza_despesa = db.relationship('NaturezaDespesa', backref=db.backref('itens', lazy=True))
+
+    def __repr__(self):
+        return f"<Item {self.nome} - Qtd: {self.quantidade_estoque}>"
+
+# Classe MovimentoEstoque
 class MovimentoEstoque(db.Model):
     __tablename__ = 'movimento_estoque'
     id = db.Column(db.Integer, primary_key=True)
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
-    tipo = db.Column(db.String(50), nullable=False) # ENTRADA, SAIDA_AJUSTE, etc.
+    tipo = db.Column(db.String(50), nullable=False)  # ENTRADA, SAIDA_AJUSTE, etc.
     quantidade = db.Column(db.Float, nullable=False)
     data_movimento = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
@@ -34,7 +53,5 @@ class MovimentoEstoque(db.Model):
     saldo_anterior = db.Column(db.Float, nullable=False)
     saldo_posterior = db.Column(db.Float, nullable=False)
 
-    # Relações (ajuste os nomes backref se necessário)
     item = db.relationship('Item', backref=db.backref('movimentos', lazy=True))
     registrado_por = db.relationship('Usuario', backref=db.backref('movimentos_registrados', lazy=True))
-

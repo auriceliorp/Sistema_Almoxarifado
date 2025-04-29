@@ -96,7 +96,7 @@
         <a href="{{ url_for('item.lista_item') }}">Itens</a>
         <a href="{{ url_for('usuario.lista_usuario') }}">Usuários</a>
         <a href="{{ url_for('estoque.lista_estoque') }}">Estoque</a>
-        <a href="{{ url_for('fornecedor.lista_fornecedor') }}" class="btn btn-info">Gerenciar Fornecedores</a>
+        <a href="{{ url_for('fornecedor.lista_fornecedor') }}">Fornecedores</a>
 
     </div>
 
@@ -110,6 +110,7 @@
                 <a href="{{ url_for('nd.lista_nd') }}" class="btn btn-success">Nova ND</a>
                 <a href="{{ url_for('item.lista_item') }}" class="btn btn-primary">Novo Item</a>
                 <a href="{{ url_for('estoque.novo_estoque') }}" class="btn btn-success">Novo Estoque</a> <!-- Novo botão cadastro -->
+                <a href="{{ url_for('fornecedor.lista_fornecedor') }}" class="btn btn-info">Gerenciar Fornecedores</a>
             </p>
         </div>
     </div>

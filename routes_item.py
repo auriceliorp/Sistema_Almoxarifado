@@ -1,57 +1,72 @@
-# routes_item.py atualizado com editar e excluir
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_required
-from models import Item, NaturezaDespesa
 from database import db
+from models import Item, NaturezaDespesa
 
-item_bp = Blueprint('item', __name__, url_prefix='/item')
+item_bp = Blueprint('item_bp', __name__, url_prefix='/item')
 
 @item_bp.route('/')
 @login_required
-def lista_item():
+def lista_itens():
     itens = Item.query.all()
-    return render_template('lista_item.html', itens=itens)
+    return render_template('lista_itens.html', itens=itens)
 
 @item_bp.route('/novo', methods=['GET', 'POST'])
 @login_required
 def novo_item():
-    naturezas = NaturezaDespesa.query.all()
     if request.method == 'POST':
-        codigo = request.form['codigo']
-        nome = request.form['nome']
-        descricao = request.form['descricao']
-        natureza_despesa_id = request.form['natureza_despesa_id'] or None
+        codigo = request.form.get('codigo')
+        nome = request.form.get('nome')
+        descricao = request.form.get('descricao')
+        unidade = request.form.get('unidade')
+        natureza_despesa_id = request.form.get('natureza_despesa_id')
 
-        novo = Item(codigo=codigo, nome=nome, descricao=descricao, natureza_despesa_id=natureza_despesa_id)
+        if not all([codigo, nome, descricao, unidade, natureza_despesa_id]):
+            flash('Todos os campos são obrigatórios.')
+            return redirect(url_for('item_bp.novo_item'))
+
+        novo = Item(
+            codigo=codigo,
+            nome=nome,
+            descricao=descricao,
+            unidade=unidade,
+            natureza_despesa_id=natureza_despesa_id
+        )
         db.session.add(novo)
         db.session.commit()
         flash('Item cadastrado com sucesso!')
-        return redirect(url_for('item.lista_item'))
+        return redirect(url_for('item_bp.lista_itens'))
 
+    naturezas = NaturezaDespesa.query.all()
     return render_template('novo_item.html', naturezas=naturezas)
 
-@item_bp.route('/editar/<int:item_id>', methods=['GET', 'POST'])
+@item_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
-def editar_item(item_id):
-    item = Item.query.get_or_404(item_id)
-    naturezas = NaturezaDespesa.query.all()
+def editar_item(id):
+    item = Item.query.get_or_404(id)
     if request.method == 'POST':
-        item.codigo = request.form['codigo']
-        item.nome = request.form['nome']
-        item.descricao = request.form['descricao']
-        item.natureza_despesa_id = request.form['natureza_despesa_id'] or None
+        item.codigo = request.form.get('codigo')
+        item.nome = request.form.get('nome')
+        item.descricao = request.form.get('descricao')
+        item.unidade = request.form.get('unidade')
+        item.natureza_despesa_id = request.form.get('natureza_despesa_id')
+
+        if not all([item.codigo, item.nome, item.descricao, item.unidade, item.natureza_despesa_id]):
+            flash('Todos os campos são obrigatórios.')
+            return redirect(url_for('item_bp.editar_item', id=id))
 
         db.session.commit()
         flash('Item atualizado com sucesso!')
-        return redirect(url_for('item.lista_item'))
+        return redirect(url_for('item_bp.lista_itens'))
 
+    naturezas = NaturezaDespesa.query.all()
     return render_template('editar_item.html', item=item, naturezas=naturezas)
 
-@item_bp.route('/excluir/<int:item_id>')
+@item_bp.route('/excluir/<int:id>', methods=['POST'])
 @login_required
-def excluir_item(item_id):
-    item = Item.query.get_or_404(item_id)
+def excluir_item(id):
+    item = Item.query.get_or_404(id)
     db.session.delete(item)
     db.session.commit()
     flash('Item excluído com sucesso!')
-    return redirect(url_for('item.lista_item'))
+    return redirect(url_for('item_bp.lista_itens'))

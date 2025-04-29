@@ -1,10 +1,10 @@
-# routes_usuario.py
+# routes_usuario.py atualizado
 
-from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
-from werkzeug.security import generate_password_hash
-from models import Usuario, Perfil
 from database import db
+from models import Usuario, Perfil
+from werkzeug.security import generate_password_hash
 
 usuario_bp = Blueprint('usuario', __name__, url_prefix='/usuario')
 
@@ -17,6 +17,8 @@ def lista_usuario():
 @usuario_bp.route('/novo', methods=['GET', 'POST'])
 @login_required
 def novo_usuario():
+    perfis = Perfil.query.all()
+
     if request.method == 'POST':
         nome = request.form.get('nome')
         email = request.form.get('email')
@@ -24,21 +26,32 @@ def novo_usuario():
         matricula = request.form.get('matricula')
         perfil_id = request.form.get('perfil_id')
 
-        if not nome or not email or not senha or not matricula or not perfil_id:
-            flash('Todos os campos são obrigatórios.', 'error')
+        if not (nome and email and senha and perfil_id):
+            flash('Todos os campos são obrigatórios!')
             return redirect(url_for('usuario.novo_usuario'))
+
+        senha_hash = generate_password_hash(senha)
 
         novo_usuario = Usuario(
             nome=nome,
             email=email,
-            senha=generate_password_hash(senha),
+            senha=senha_hash,
             matricula=matricula,
             perfil_id=perfil_id
         )
         db.session.add(novo_usuario)
         db.session.commit()
-        flash('Usuário cadastrado com sucesso!', 'success')
+
+        flash('Usuário criado com sucesso!')
         return redirect(url_for('usuario.lista_usuario'))
 
-    perfis = Perfil.query.all()
     return render_template('novo_usuario.html', perfis=perfis)
+
+@usuario_bp.route('/excluir/<int:id>', methods=['POST'])
+@login_required
+def excluir_usuario(id):
+    usuario = Usuario.query.get_or_404(id)
+    db.session.delete(usuario)
+    db.session.commit()
+    flash('Usuário excluído com sucesso!')
+    return redirect(url_for('usuario.lista_usuario'))

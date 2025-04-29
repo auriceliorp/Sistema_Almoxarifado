@@ -1,10 +1,52 @@
-{% extends 'base.html' %} {% block content %}
+{% extends 'base.html' %}
+{% block content %}
 
+<!-- Ícone e saudação -->
 <div class="container mt-4">
     <h2>Bem-vindo, {{ usuario.nome }}!</h2>
+
+    <!-- Menu Rápido -->
+    <div class="quick-menu mt-5">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <a href="{{ url_for('nd_bp.nova_nd') }}" class="text-decoration-none">
+                    <div class="card text-white bg-secondary text-center p-3">
+                        <i class="bi bi-list-columns-reverse fs-1"></i>
+                        <h6 class="mt-2">Nova ND</h6>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{{ url_for('item_bp.novo_item') }}" class="text-decoration-none">
+                    <div class="card text-white bg-primary text-center p-3">
+                        <i class="bi bi-plus-circle fs-1"></i>
+                        <h6 class="mt-2">Novo Item</h6>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{{ url_for('estoque_bp.novo_estoque') }}" class="text-decoration-none">
+                    <div class="card text-white bg-success text-center p-3">
+                        <i class="bi bi-box-arrow-in-down fs-1"></i>
+                        <h6 class="mt-2">Nova Entrada</h6>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{{ url_for('fornecedor_bp.novo_fornecedor') }}" class="text-decoration-none">
+                    <div class="card text-white bg-warning text-center p-3">
+                        <i class="bi bi-truck fs-1"></i>
+                        <h6 class="mt-2">Novo Fornecedor</h6>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards de acesso completo -->
     <div class="row mt-5">
         <div class="col-md-4">
-            <div class="card text-white bg-primary mb-3">
+            <div class="card text-white bg-secondary mb-3">
                 <div class="card-body">
                     <h5 class="card-title">Naturezas de Despesa</h5>
                     <p class="card-text">Gerencie as categorias de gastos.</p>
@@ -13,7 +55,7 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card text-white bg-success mb-3">
+            <div class="card text-white bg-primary mb-3">
                 <div class="card-body">
                     <h5 class="card-title">Itens</h5>
                     <p class="card-text">Cadastre e atualize os itens do estoque.</p>
@@ -22,7 +64,7 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card text-white bg-info mb-3">
+            <div class="card text-white bg-success mb-3">
                 <div class="card-body">
                     <h5 class="card-title">Estoque</h5>
                     <p class="card-text">Controle as entradas de estoque.</p>
@@ -50,4 +92,5 @@
         </div>
     </div>
 </div>
+
 {% endblock %}

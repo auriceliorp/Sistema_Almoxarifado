@@ -29,3 +29,15 @@ class Item(db.Model):
     nome = db.Column(db.String(255), nullable=False)
     natureza_despesa_id = db.Column(db.Integer, db.ForeignKey('natureza_despesa.id'), nullable=False)
     natureza_despesa = db.relationship('NaturezaDespesa', backref=db.backref('itens', lazy=True))
+
+class Estoque(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
+    fornecedor = db.Column(db.String(255), nullable=False)
+    nota_fiscal = db.Column(db.String(100), nullable=False)
+    valor_unitario = db.Column(db.Float, nullable=False)
+    quantidade = db.Column(db.Integer, nullable=False)
+    local = db.Column(db.String(100), nullable=False)
+    valor_total = db.Column(db.Float, nullable=False)
+
+    item = db.relationship('Item', backref=db.backref('estoques', lazy=True))

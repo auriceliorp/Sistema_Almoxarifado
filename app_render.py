@@ -1,4 +1,4 @@
-# app_render.py COMPLETO e atualizado!
+# app_render.py corrigido e completo
 
 from flask import Flask, Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -67,66 +67,59 @@ def create_app():
         app.register_blueprint(nd_bp)
     except ImportError:
         pass
-try:
-    from routes_usuario import usuario_bp
-    app.register_blueprint(usuario_bp)
-except ImportError:
-    pass
+
     try:
         from routes_item import item_bp
         app.register_blueprint(item_bp)
     except ImportError:
         pass
 
+    try:
+        from routes_usuario import usuario_bp
+        app.register_blueprint(usuario_bp)
+    except ImportError:
+        pass
+
     with app.app_context():
         db.create_all()
 
-        # Correções automáticas
+        # Corrige colunas se necessário
         try:
             db.session.execute(text('ALTER TABLE natureza_despesa ADD COLUMN descricao VARCHAR(255);'))
             db.session.commit()
-            print("Coluna 'descricao' adicionada na tabela natureza_despesa!")
-        except Exception as e:
+        except Exception:
             db.session.rollback()
-            print(f"(INFO) Coluna 'descricao' pode já existir: {e}")
 
         try:
             db.session.execute(text('ALTER TABLE natureza_despesa ADD COLUMN numero VARCHAR(50);'))
             db.session.commit()
-            print("Coluna 'numero' adicionada na tabela natureza_despesa!")
-        except Exception as e:
+        except Exception:
             db.session.rollback()
-            print(f"(INFO) Coluna 'numero' pode já existir: {e}")
 
         try:
             db.session.execute(text('ALTER TABLE usuario ADD COLUMN matricula VARCHAR(50);'))
             db.session.commit()
-            print("Coluna 'matricula' adicionada na tabela usuario!")
-        except Exception as e:
+        except Exception:
             db.session.rollback()
-            print(f"(INFO) Coluna 'matricula' pode já existir: {e}")
 
         try:
             db.session.execute(text('ALTER TABLE item ADD COLUMN natureza_despesa_id INTEGER REFERENCES natureza_despesa(id);'))
             db.session.commit()
-            print("Coluna 'natureza_despesa_id' adicionada na tabela item!")
-        except Exception as e:
+        except Exception:
             db.session.rollback()
-            print(f"(INFO) Coluna 'natureza_despesa_id' pode já existir: {e}")
-
-        try:
-            db.session.execute(text('ALTER TABLE item ADD COLUMN nome VARCHAR(255);'))
-            db.session.commit()
-            print("Coluna 'nome' adicionada na tabela item!")
-        except Exception as e:
-            db.session.rollback()
-            print(f"(INFO) Coluna 'nome' pode já existir: {e}")
 
         # Cria perfil ADMIN se não existir
         perfil_admin = Perfil.query.filter_by(nome='Admin').first()
         if not perfil_admin:
             perfil_admin = Perfil(nome='Admin')
             db.session.add(perfil_admin)
+            db.session.commit()
+
+        # Cria perfil SOLICITANTE se não existir
+        perfil_solicitante = Perfil.query.filter_by(nome='Solicitante').first()
+        if not perfil_solicitante:
+            perfil_solicitante = Perfil(nome='Solicitante')
+            db.session.add(perfil_solicitante)
             db.session.commit()
 
         # Cria usuário ADMIN se não existir
@@ -141,15 +134,10 @@ except ImportError:
             )
             db.session.add(usuario_admin)
             db.session.commit()
-            # Cria perfil SOLICITANTE se não existir
-perfil_solicitante = Perfil.query.filter_by(nome='Solicitante').first()
-if not perfil_solicitante:
-    perfil_solicitante = Perfil(nome='Solicitante')
-    db.session.add(perfil_solicitante)
-    db.session.commit()
 
     return app
 
+# Aqui é o ponto correto para inicializar a aplicação
 if __name__ == '__main__':
     app = create_app()
     app.run(debug=True, host='0.0.0.0', port=5000)

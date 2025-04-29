@@ -1,4 +1,4 @@
-# app_render.py completo com inclusão automática de 'descricao' em 'item'
+# app_render.py completo com verificação segura de coluna
 
 from flask import Flask, Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -8,7 +8,7 @@ from sqlalchemy.exc import OperationalError
 from config import Config
 from database import db
 from models import Usuario, Perfil
-from sqlalchemy import text
+from sqlalchemy import text, inspect
 
 # Configura Login Manager
 login_manager = LoginManager()
@@ -103,12 +103,21 @@ def create_app():
                 db.session.rollback()
                 print(f"(INFO) Coluna '{coluna_sql}' pode já existir em '{tabela}': {e}")
 
+        def coluna_existe(nome_tabela, nome_coluna):
+            insp = inspect(db.engine)
+            return nome_coluna in [col["name"] for col in insp.get_columns(nome_tabela)]
+
         # Adições de colunas específicas
-        adicionar_coluna('natureza_despesa', 'descricao VARCHAR(255)')
-        adicionar_coluna('natureza_despesa', 'numero VARCHAR(50)')
-        adicionar_coluna('usuario', 'matricula VARCHAR(50)')
-        adicionar_coluna('item', 'natureza_despesa_id INTEGER REFERENCES natureza_despesa(id)')
-        adicionar_coluna('item', 'descricao TEXT NOT NULL DEFAULT '')')
+        if not coluna_existe('natureza_despesa', 'descricao'):
+            adicionar_coluna('natureza_despesa', 'descricao VARCHAR(255)')
+        if not coluna_existe('natureza_despesa', 'numero'):
+            adicionar_coluna('natureza_despesa', 'numero VARCHAR(50)')
+        if not coluna_existe('usuario', 'matricula'):
+            adicionar_coluna('usuario', 'matricula VARCHAR(50)')
+        if not coluna_existe('item', 'natureza_despesa_id'):
+            adicionar_coluna('item', 'natureza_despesa_id INTEGER REFERENCES natureza_despesa(id)')
+        if not coluna_existe('item', 'descricao'):
+            adicionar_coluna('item', "descricao TEXT NOT NULL DEFAULT ''")
 
         # Criação do perfil e usuário admin
         perfil_admin = Perfil.query.filter_by(nome='Admin').first()

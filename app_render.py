@@ -141,6 +141,12 @@ except ImportError:
             )
             db.session.add(usuario_admin)
             db.session.commit()
+            # Cria perfil SOLICITANTE se não existir
+perfil_solicitante = Perfil.query.filter_by(nome='Solicitante').first()
+if not perfil_solicitante:
+    perfil_solicitante = Perfil(nome='Solicitante')
+    db.session.add(perfil_solicitante)
+    db.session.commit()
 
     return app
 

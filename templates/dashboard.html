@@ -1,9 +1,10 @@
-<!-- templates/dashboard.html atualizado -->
+<!-- templates/dashboard.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <title>Dashboard - Almoxarifado Embrapa</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Otimização celular -->
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -18,34 +19,55 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            flex-wrap: wrap;
         }
         .header img {
             background-color: white;
             padding: 5px;
             border-radius: 8px;
-            width: 150px;
+            width: 130px;
+        }
+        .header .user-info {
+            margin-top: 10px;
         }
         .nav {
             background-color: #00703c;
             display: flex;
             justify-content: center;
-            padding: 12px 0;
             flex-wrap: wrap;
+            padding: 12px 0;
         }
         .nav a {
             color: white;
-            margin: 0 20px;
+            margin: 0 10px;
             text-decoration: none;
             font-weight: bold;
-            transition: color 0.3s, text-decoration 0.3s;
+            transition: color 0.3s;
         }
         .nav a:hover {
-            text-decoration: underline;
             color: #cce5cc;
         }
         .main-content {
-            padding: 40px;
+            padding: 30px;
             text-align: center;
+        }
+        .btn {
+            display: inline-block;
+            margin: 10px;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            background-color: #00703c;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+        .btn-primary {
+            background-color: #007bff;
+        }
+        .btn-success {
+            background-color: #28a745;
         }
         .footer {
             background-color: #e9ecef;
@@ -56,33 +78,13 @@
             width: 100%;
             bottom: 0;
         }
-        .btn {
-            display: inline-block;
-            margin: 10px;
-            padding: 10px 20px;
-            font-size: 16px;
-            border: none;
-            border-radius: 5px;
-            text-decoration: none;
-            color: white;
-            cursor: pointer;
-        }
-        .btn-success {
-            background-color: #28a745;
-        }
-        .btn-primary {
-            background-color: #007bff;
-        }
-        .btn-success:hover, .btn-primary:hover {
-            opacity: 0.9;
-        }
     </style>
 </head>
 <body>
 
     <div class="header">
         <img src="{{ url_for('static', filename='embrapa_logo.png') }}" alt="Logo Embrapa">
-        <div>
+        <div class="user-info">
             Olá, <strong>{{ usuario.nome }}</strong> | 
             <a href="{{ url_for('main.logout') }}" style="color: #fff; text-decoration: none;">Sair</a>
         </div>
@@ -90,24 +92,22 @@
 
     <div class="nav">
         <a href="{{ url_for('main.dashboard') }}">Home</a>
-        <a href="#">Entradas</a>
-        <a href="#">Saídas</a>
-        <a href="#">Inventário</a>
-        <a href="#">Relatórios</a>
-        <a href="#">Configurações</a>
-        <a href="#">Cadastros</a>
+        <a href="{{ url_for('nd.lista_nd') }}">NDs</a>
+        <a href="{{ url_for('item.lista_item') }}">Itens</a>
+        <a href="{{ url_for('usuario.lista_usuario') }}">Usuários</a>
+        <a href="{{ url_for('estoque.lista_estoque') }}">Estoque</a>
     </div>
 
     <div class="main-content">
         <h2>Bem-vindo ao Sistema de Almoxarifado da Embrapa Agroindústria de Alimentos</h2>
-        <p>Este é seu painel inicial. Escolha uma opção no menu acima para começar.</p>
+        <p>Utilize o menu para navegar entre as funções.</p>
 
         <div style="margin-top:30px;">
             <h3>Atalhos Rápidos:</h3>
             <p>
-                <a href="{{ url_for('nd.lista_nd') }}" class="btn btn-success">Gerenciar Natureza de Despesa (ND)</a>
-                <a href="{{ url_for('item.lista_item') }}" class="btn btn-primary">Gerenciar Itens</a>
-                <a href="{{ url_for('usuario.lista_usuario') }}" class="btn btn-primary">Gerenciar Usuários</a>
+                <a href="{{ url_for('nd.lista_nd') }}" class="btn btn-success">Nova ND</a>
+                <a href="{{ url_for('item.lista_item') }}" class="btn btn-primary">Novo Item</a>
+                <a href="{{ url_for('estoque.novo_estoque') }}" class="btn btn-success">Novo Estoque</a> <!-- Novo botão cadastro -->
             </p>
         </div>
     </div>

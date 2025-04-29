@@ -59,7 +59,12 @@ def create_app():
     login_manager.init_app(app)
 
     app.register_blueprint(main)
-
+try:
+    from routes_estoque import estoque_bp
+    app.register_blueprint(estoque_bp)
+except ImportError:
+    pass
+    
     try:
         from routes_nd import nd_bp
         app.register_blueprint(nd_bp)

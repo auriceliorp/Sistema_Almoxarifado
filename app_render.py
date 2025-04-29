@@ -1,5 +1,3 @@
-# app_render.py corrigido e completo
-
 from flask import Flask, Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 import os
@@ -83,7 +81,6 @@ def create_app():
     with app.app_context():
         db.create_all()
 
-        # Corrige colunas se necessário
         try:
             db.session.execute(text('ALTER TABLE natureza_despesa ADD COLUMN descricao VARCHAR(255);'))
             db.session.commit()
@@ -108,21 +105,20 @@ def create_app():
         except Exception:
             db.session.rollback()
 
-        # Cria perfil ADMIN se não existir
-        perfil_admin = Perfil.query.filter_by(nome='Admin').first()
-        if not perfil_admin:
+        # Criação automática dos Perfis
+        if not Perfil.query.filter_by(nome='Admin').first():
             perfil_admin = Perfil(nome='Admin')
             db.session.add(perfil_admin)
             db.session.commit()
+        else:
+            perfil_admin = Perfil.query.filter_by(nome='Admin').first()
 
-        # Cria perfil SOLICITANTE se não existir
-        perfil_solicitante = Perfil.query.filter_by(nome='Solicitante').first()
-        if not perfil_solicitante:
+        if not Perfil.query.filter_by(nome='Solicitante').first():
             perfil_solicitante = Perfil(nome='Solicitante')
             db.session.add(perfil_solicitante)
             db.session.commit()
 
-        # Cria usuário ADMIN se não existir
+        # Criação automática do usuário admin padrão
         admin_email = "admin@admin.com"
         if not Usuario.query.filter_by(email=admin_email).first():
             usuario_admin = Usuario(
@@ -137,9 +133,9 @@ def create_app():
 
     return app
 
-# Aqui é o ponto correto para inicializar a aplicação
 if __name__ == '__main__':
     app = create_app()
     app.run(debug=True, host='0.0.0.0', port=5000)
 else:
     app = create_app()
+

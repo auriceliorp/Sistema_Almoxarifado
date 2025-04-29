@@ -1,9 +1,10 @@
 # routes_usuario.py
+
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_required
+from werkzeug.security import generate_password_hash
 from models import Usuario, Perfil
 from database import db
-from werkzeug.security import generate_password_hash
 
 usuario_bp = Blueprint('usuario', __name__, url_prefix='/usuario')
 
@@ -19,17 +20,19 @@ def novo_usuario():
     if request.method == 'POST':
         nome = request.form.get('nome')
         email = request.form.get('email')
-        matricula = request.form.get('matricula')
         senha = request.form.get('senha')
+        matricula = request.form.get('matricula')
         perfil_id = request.form.get('perfil_id')
 
-        senha_hash = generate_password_hash(senha)
+        if not nome or not email or not senha or not matricula or not perfil_id:
+            flash('Todos os campos são obrigatórios.', 'error')
+            return redirect(url_for('usuario.novo_usuario'))
 
         novo_usuario = Usuario(
             nome=nome,
             email=email,
+            senha=generate_password_hash(senha),
             matricula=matricula,
-            senha=senha_hash,
             perfil_id=perfil_id
         )
         db.session.add(novo_usuario)

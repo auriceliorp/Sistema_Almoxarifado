@@ -1,3 +1,5 @@
+# app_render.py completo com inclusão automática de 'descricao' em 'item'
+
 from flask import Flask, Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 import os
@@ -7,7 +9,6 @@ from config import Config
 from database import db
 from models import Usuario, Perfil
 from sqlalchemy import text
-from pathlib import Path
 
 # Configura Login Manager
 login_manager = LoginManager()
@@ -52,26 +53,12 @@ def logout():
     logout_user()
     return redirect(url_for('main.login'))
 
-def executar_migracoes_sql():
-    path_migrations = Path("migrations")
-    for arquivo in sorted(path_migrations.glob("*.sql")):
-        with open(arquivo, "r") as f:
-            sql = f.read()
-        try:
-            db.session.execute(text(sql))
-            db.session.commit()
-            print(f"{arquivo.name} executado com sucesso!")
-        except Exception as e:
-            db.session.rollback()
-            print(f"(ERRO) {arquivo.name}: {e}")
-
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
     db.init_app(app)
     login_manager.init_app(app)
-
     app.register_blueprint(main)
 
     try:
@@ -107,17 +94,29 @@ def create_app():
     with app.app_context():
         db.create_all()
 
-        # Executa scripts SQL da pasta migrations
-        executar_migracoes_sql()
+        def adicionar_coluna(tabela, coluna_sql):
+            try:
+                db.session.execute(text(f'ALTER TABLE {tabela} ADD COLUMN {coluna_sql};'))
+                db.session.commit()
+                print(f"Coluna adicionada: {coluna_sql} em {tabela}")
+            except Exception as e:
+                db.session.rollback()
+                print(f"(INFO) Coluna '{coluna_sql}' pode já existir em '{tabela}': {e}")
 
-        # Cria perfil ADMIN se não existir
+        # Adições de colunas específicas
+        adicionar_coluna('natureza_despesa', 'descricao VARCHAR(255)')
+        adicionar_coluna('natureza_despesa', 'numero VARCHAR(50)')
+        adicionar_coluna('usuario', 'matricula VARCHAR(50)')
+        adicionar_coluna('item', 'natureza_despesa_id INTEGER REFERENCES natureza_despesa(id)')
+        adicionar_coluna('item', 'descricao TEXT NOT NULL DEFAULT '')')
+
+        # Criação do perfil e usuário admin
         perfil_admin = Perfil.query.filter_by(nome='Admin').first()
         if not perfil_admin:
             perfil_admin = Perfil(nome='Admin')
             db.session.add(perfil_admin)
             db.session.commit()
 
-        # Cria usuário ADMIN se não existir
         admin_email = "admin@admin.com"
         if not Usuario.query.filter_by(email=admin_email).first():
             usuario_admin = Usuario(

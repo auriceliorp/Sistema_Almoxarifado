@@ -59,12 +59,7 @@ def create_app():
     login_manager.init_app(app)
 
     app.register_blueprint(main)
-try:
-    from routes_estoque import estoque_bp
-    app.register_blueprint(estoque_bp)
-except ImportError:
-    pass
-    
+
     try:
         from routes_nd import nd_bp
         app.register_blueprint(nd_bp)
@@ -83,9 +78,16 @@ except ImportError:
     except ImportError:
         pass
 
+    try:
+        from routes_estoque import estoque_bp
+        app.register_blueprint(estoque_bp)
+    except ImportError:
+        pass
+
     with app.app_context():
         db.create_all()
 
+        # Ajuste de colunas se necessário
         try:
             db.session.execute(text('ALTER TABLE natureza_despesa ADD COLUMN descricao VARCHAR(255);'))
             db.session.commit()
@@ -110,20 +112,25 @@ except ImportError:
         except Exception:
             db.session.rollback()
 
-        # Criação automática dos Perfis
-        if not Perfil.query.filter_by(nome='Admin').first():
+        # Executa script de criação de estoque
+        try:
+            caminho_script_estoque = os.path.join(os.path.dirname(__file__), 'migrations', '001_criar_estoque.sql')
+            with open(caminho_script_estoque, 'r') as file:
+                sql_script = file.read()
+                db.session.execute(text(sql_script))
+                db.session.commit()
+                print("Tabela 'estoque' e triggers criadas com sucesso!")
+        except Exception as e:
+            db.session.rollback()
+            print(f"(INFO) Tabela 'estoque' pode já existir ou erro ao rodar script: {e}")
+
+        # Criação automática do perfil e admin
+        perfil_admin = Perfil.query.filter_by(nome='Admin').first()
+        if not perfil_admin:
             perfil_admin = Perfil(nome='Admin')
             db.session.add(perfil_admin)
             db.session.commit()
-        else:
-            perfil_admin = Perfil.query.filter_by(nome='Admin').first()
 
-        if not Perfil.query.filter_by(nome='Solicitante').first():
-            perfil_solicitante = Perfil(nome='Solicitante')
-            db.session.add(perfil_solicitante)
-            db.session.commit()
-
-        # Criação automática do usuário admin padrão
         admin_email = "admin@admin.com"
         if not Usuario.query.filter_by(email=admin_email).first():
             usuario_admin = Usuario(
@@ -137,6 +144,7 @@ except ImportError:
             db.session.commit()
 
     return app
+
 
 if __name__ == '__main__':
     app = create_app()

@@ -1,124 +1,55 @@
-<!-- templates/dashboard.html -->
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <title>Dashboard - Almoxarifado Embrapa</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Otimização celular -->
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
-            margin: 0;
-            padding: 0;
-        }
-        .header {
-            background-color: #003366;
-            color: white;
-            padding: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-        }
-        .header img {
-            background-color: white;
-            padding: 5px;
-            border-radius: 8px;
-            width: 130px;
-        }
-        .header .user-info {
-            margin-top: 10px;
-        }
-        .nav {
-            background-color: #00703c;
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            padding: 12px 0;
-        }
-        .nav a {
-            color: white;
-            margin: 0 10px;
-            text-decoration: none;
-            font-weight: bold;
-            transition: color 0.3s;
-        }
-        .nav a:hover {
-            color: #cce5cc;
-        }
-        .main-content {
-            padding: 30px;
-            text-align: center;
-        }
-        .btn {
-            display: inline-block;
-            margin: 10px;
-            padding: 12px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            color: white;
-            background-color: #00703c;
-            border: none;
-            border-radius: 5px;
-            text-decoration: none;
-        }
-        .btn-primary {
-            background-color: #007bff;
-        }
-        .btn-success {
-            background-color: #28a745;
-        }
-        .footer {
-            background-color: #e9ecef;
-            padding: 10px;
-            color: #777;
-            text-align: center;
-            position: fixed;
-            width: 100%;
-            bottom: 0;
-        }
-    </style>
-</head>
-<body>
+{% extends 'base.html' %}
 
-    <div class="header">
-        <img src="{{ url_for('static', filename='embrapa_logo.png') }}" alt="Logo Embrapa">
-        <div class="user-info">
-            Olá, <strong>{{ usuario.nome }}</strong> | 
-            <a href="{{ url_for('main.logout') }}" style="color: #fff; text-decoration: none;">Sair</a>
+{% block content %}
+<div class="container mt-5">
+    <h2>Bem-vindo, {{ usuario.nome }}!</h2>
+
+    <div class="row mt-4">
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Naturezas de Despesa</h5>
+                    <p class="card-text">Gerencie as naturezas de despesa.</p>
+                    <a href="{{ url_for('nd_bp.lista_nd') }}" class="btn btn-primary">Acessar</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Itens</h5>
+                    <p class="card-text">Visualize e adicione itens ao estoque.</p>
+                    <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-primary">Acessar</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Estoque</h5>
+                    <p class="card-text">Gerencie o estoque de itens.</p>
+                    <a href="{{ url_for('estoque_bp.lista_estoque') }}" class="btn btn-primary">Acessar</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Fornecedores</h5>
+                    <p class="card-text">Gerencie os fornecedores cadastrados.</p>
+                    <a href="{{ url_for('fornecedor_bp.lista_fornecedores') }}" class="btn btn-primary">Acessar</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Usuários</h5>
+                    <p class="card-text">Administre os usuários do sistema.</p>
+                    <a href="{{ url_for('usuario_bp.lista_usuarios') }}" class="btn btn-primary">Acessar</a>
+                </div>
+            </div>
         </div>
     </div>
-
-    <div class="nav">
-        <a href="{{ url_for('main.dashboard') }}">Home</a>
-        <a href="{{ url_for('nd.lista_nd') }}">NDs</a>
-        <a href="{{ url_for('item.lista_item') }}">Itens</a>
-        <a href="{{ url_for('usuario.lista_usuario') }}">Usuários</a>
-        <a href="{{ url_for('estoque.lista_estoque') }}">Estoque</a>
-        <a href="{{ url_for('fornecedor.lista_fornecedor') }}">Fornecedores</a>
-
-    </div>
-
-    <div class="main-content">
-        <h2>Bem-vindo ao Sistema de Almoxarifado da Embrapa Agroindústria de Alimentos</h2>
-        <p>Utilize o menu para navegar entre as funções.</p>
-
-        <div style="margin-top:30px;">
-            <h3>Atalhos Rápidos:</h3>
-            <p>
-                <a href="{{ url_for('nd.lista_nd') }}" class="btn btn-success">Nova ND</a>
-                <a href="{{ url_for('item.novo_item') }}" class="btn btn-primary">Novo Item</a>
-                <a href="{{ url_for('estoque.novo_estoque') }}" class="btn btn-success">Novo Estoque</a> <!-- Novo botão cadastro -->
-                <a href="{{ url_for('fornecedor.lista_fornecedor') }}" class="btn btn-info">Gerenciar Fornecedores</a>
-            </p>
-        </div>
-    </div>
-
-    <div class="footer">
-        Embrapa Agroindústria de Alimentos - ©2025
-    </div>
-
-</body>
-</html>
-
+</div>
+{% endblock %}

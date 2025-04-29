@@ -1,5 +1,3 @@
-# app_render.py atualizado e completo
-
 from flask import Flask, Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 import os
@@ -9,6 +7,7 @@ from config import Config
 from database import db
 from models import Usuario, Perfil
 from sqlalchemy import text
+from pathlib import Path
 
 # Configura Login Manager
 login_manager = LoginManager()
@@ -53,6 +52,19 @@ def logout():
     logout_user()
     return redirect(url_for('main.login'))
 
+def executar_migracoes_sql():
+    path_migrations = Path("migrations")
+    for arquivo in sorted(path_migrations.glob("*.sql")):
+        with open(arquivo, "r") as f:
+            sql = f.read()
+        try:
+            db.session.execute(text(sql))
+            db.session.commit()
+            print(f"{arquivo.name} executado com sucesso!")
+        except Exception as e:
+            db.session.rollback()
+            print(f"(ERRO) {arquivo.name}: {e}")
+
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
@@ -86,73 +98,28 @@ def create_app():
     except ImportError:
         pass
 
+    try:
+        from routes_fornecedor import fornecedor_bp
+        app.register_blueprint(fornecedor_bp)
+    except ImportError:
+        pass
+
     with app.app_context():
         db.create_all()
 
-        # Corrige colunas se necessário
-        try:
-            db.session.execute(text('ALTER TABLE natureza_despesa ADD COLUMN descricao VARCHAR(255);'))
-            db.session.commit()
-            print("Coluna 'descricao' adicionada na tabela natureza_despesa!")
-        except Exception as e:
-            db.session.rollback()
-            print(f"(INFO) Coluna 'descricao' pode já existir: {e}")
+        # Executa scripts SQL da pasta migrations
+        executar_migracoes_sql()
 
-        try:
-            db.session.execute(text('ALTER TABLE natureza_despesa ADD COLUMN numero VARCHAR(50);'))
+        # Cria perfil ADMIN se não existir
+        perfil_admin = Perfil.query.filter_by(nome='Admin').first()
+        if not perfil_admin:
+            perfil_admin = Perfil(nome='Admin')
+            db.session.add(perfil_admin)
             db.session.commit()
-            print("Coluna 'numero' adicionada na tabela natureza_despesa!")
-        except Exception as e:
-            db.session.rollback()
-            print(f"(INFO) Coluna 'numero' pode já existir: {e}")
-
-        try:
-            db.session.execute(text('ALTER TABLE usuario ADD COLUMN matricula VARCHAR(50);'))
-            db.session.commit()
-            print("Coluna 'matricula' adicionada na tabela usuario!")
-        except Exception as e:
-            db.session.rollback()
-            print(f"(INFO) Coluna 'matricula' pode já existir: {e}")
-
-        try:
-            db.session.execute(text('ALTER TABLE item ADD COLUMN natureza_despesa_id INTEGER REFERENCES natureza_despesa(id);'))
-            db.session.commit()
-            print("Coluna 'natureza_despesa_id' adicionada na tabela item!")
-        except Exception as e:
-            db.session.rollback()
-            print(f"(INFO) Coluna 'natureza_despesa_id' pode já existir: {e}")
-
-        try:
-            db.session.execute(text('''
-                CREATE TABLE IF NOT EXISTS estoque (
-                    id SERIAL PRIMARY KEY,
-                    item_id INTEGER REFERENCES item(id),
-                    fornecedor VARCHAR(255),
-                    nota_fiscal VARCHAR(100),
-                    valor_unitario NUMERIC(10,2),
-                    quantidade INTEGER,
-                    local VARCHAR(255),
-                    valor_total NUMERIC(10,2)
-                );
-            '''))
-            db.session.commit()
-            print("Tabela 'estoque' criada com sucesso!")
-        except Exception as e:
-            db.session.rollback()
-            print(f"(INFO) Tabela 'estoque' pode já existir: {e}")
-
-        # Cria perfil ADMIN e CONSULTA se não existirem
-        for perfil_nome in ['Admin', 'Consulta']:
-            perfil = Perfil.query.filter_by(nome=perfil_nome).first()
-            if not perfil:
-                novo_perfil = Perfil(nome=perfil_nome)
-                db.session.add(novo_perfil)
-        db.session.commit()
 
         # Cria usuário ADMIN se não existir
         admin_email = "admin@admin.com"
         if not Usuario.query.filter_by(email=admin_email).first():
-            perfil_admin = Perfil.query.filter_by(nome='Admin').first()
             usuario_admin = Usuario(
                 nome="Administrador",
                 email=admin_email,

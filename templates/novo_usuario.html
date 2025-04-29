@@ -5,38 +5,60 @@
     <meta charset="UTF-8">
     <title>Novo Usuário</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        form { max-width: 500px; margin: auto; }
-        label { display: block; margin-top: 10px; }
-        input, select { width: 100%; padding: 8px; margin-top: 5px; }
-        button { margin-top: 20px; padding: 10px 20px; background-color: #00703c; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        button:hover { opacity: 0.9; }
+        form {
+            width: 400px;
+            margin: auto;
+            margin-top: 40px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+        label, input, select {
+            display: block;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+        input, select {
+            padding: 8px;
+        }
+        button {
+            padding: 10px;
+            width: 100%;
+            background-color: #00703c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
-    <h2>Novo Usuário</h2>
+
+    <h2 style="text-align:center;">Cadastrar Novo Usuário</h2>
 
     <form method="POST">
-        <label for="nome">Nome</label>
-        <input type="text" id="nome" name="nome" required>
+        <label for="nome">Nome:</label>
+        <input type="text" name="nome" required>
 
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" required>
+        <label for="email">E-mail:</label>
+        <input type="email" name="email" required>
 
-        <label for="senha">Senha</label>
-        <input type="password" id="senha" name="senha" required>
+        <label for="senha">Senha:</label>
+        <input type="password" name="senha" required>
 
-        <label for="matricula">Matrícula</label>
-        <input type="text" id="matricula" name="matricula" required>
+        <label for="matricula">Matrícula:</label>
+        <input type="text" name="matricula" required>
 
-        <label for="perfil_id">Perfil</label>
-        <select id="perfil_id" name="perfil_id" required>
+        <label for="perfil_id">Perfil:</label>
+        <select name="perfil_id" required>
             {% for perfil in perfis %}
-                <option value="{{ perfil.id }}">{{ perfil.nome }}</option>
+            <option value="{{ perfil.id }}">{{ perfil.nome }}</option>
             {% endfor %}
         </select>
 
         <button type="submit">Cadastrar</button>
     </form>
+
 </body>
 </html>
+

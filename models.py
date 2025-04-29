@@ -33,13 +33,6 @@ class Item(db.Model):
     natureza = db.relationship('NaturezaDespesa', backref='itens')
 
 
-class Item(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    codigo = db.Column(db.String(50), nullable=False)
-    nome = db.Column(db.String(255), nullable=False)
-    natureza_despesa_id = db.Column(db.Integer, db.ForeignKey('natureza_despesa.id'), nullable=False)
-    natureza_despesa = db.relationship('NaturezaDespesa', backref=db.backref('itens', lazy=True))
-
 class Estoque(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)

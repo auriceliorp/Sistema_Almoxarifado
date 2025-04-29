@@ -1,0 +1,44 @@
+<!-- templates/lista_estoque.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Estoque - Almoxarifado</title>
+</head>
+<body>
+    <h1>Controle de Estoque</h1>
+    <a href="{{ url_for('estoque.novo_estoque') }}">Novo Lançamento de Estoque</a>
+    <table border="1" cellpadding="8">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Fornecedor</th>
+                <th>Nota Fiscal</th>
+                <th>Valor Unitário</th>
+                <th>Quantidade</th>
+                <th>Local</th>
+                <th>Valor Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for estoque in estoques %}
+            <tr>
+                <td>{{ estoque.item.nome }}</td>
+                <td>{{ estoque.fornecedor }}</td>
+                <td>{{ estoque.nota_fiscal }}</td>
+                <td>R$ {{ '%.2f' % estoque.valor_unitario }}</td>
+                <td>{{ estoque.quantidade }}</td>
+                <td>{{ estoque.local }}</td>
+                <td>R$ {{ '%.2f' % estoque.valor_total }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7">Nenhum registro de estoque encontrado.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <br>
+    <a href="{{ url_for('main.dashboard') }}">Voltar ao Dashboard</a>
+</body>
+</html>

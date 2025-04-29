@@ -27,7 +27,8 @@ class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     codigo = db.Column(db.String(50), nullable=False)
     nome = db.Column(db.String(255), nullable=False)
-    descricao = db.Column(db.Text, nullable=False)  # <--- Adicionado aqui
+    descricao = db.Column(db.Text, nullable=False)
+    unidade = db.Column(db.String(50), nullable=False)  # <--- Adicione isto
     natureza_despesa_id = db.Column(db.Integer, db.ForeignKey('natureza_despesa.id'), nullable=False)
 
     natureza = db.relationship('NaturezaDespesa', backref='itens')

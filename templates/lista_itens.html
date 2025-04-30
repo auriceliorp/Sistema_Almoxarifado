@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <h2 class="mt-4">Lista de Itens</h2>
+            <div class="table-responsive mt-3">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-success">
+                        <tr>
+                            <th>Código</th>
+                            <th>Nome</th>
+                            <th>Descrição</th>
+                            <th>ND</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in itens %}
+                        <tr>
+                            <td>{{ item.codigo }}</td>
+                            <td>{{ item.nome }}</td>
+                            <td>{{ item.descricao }}</td>
+                            <td>{{ item.natureza.numero if item.natureza else '' }}</td>
+                            <td>
+                                <a href="{{ url_for('item_bp.editar_item', id=item.id) }}" class="btn btn-warning btn-sm">Editar</a>
+                                <form method="POST" action="{{ url_for('item_bp.excluir_item', id=item.id) }}" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir este item?');">Excluir</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary mt-3">Voltar ao Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

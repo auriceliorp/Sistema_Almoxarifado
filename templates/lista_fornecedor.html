@@ -1,89 +1,35 @@
-<!-- templates/lista_fornecedor.html -->
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <title>Fornecedores</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f6f9;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 960px;
-            margin: 40px auto;
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .header {
-            background-color: #0d2c54;
-            color: white;
-            padding: 20px;
-            font-size: 24px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .header a {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 16px;
-            text-decoration: none;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            text-align: left;
-            padding: 16px;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #f0f2f5;
-        }
-        @media (max-width: 600px) {
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .header a {
-                margin-top: 10px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <span>Fornecedores</span>
-            <a href="{{ url_for('fornecedor.novo_fornecedor') }}">+ Novo Fornecedor</a>
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <h2 class="mt-4">Lista de Fornecedores</h2>
+            <div class="table-responsive mt-3">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-success">
+                        <tr>
+                            <th>Nome</th>
+                            <th>CNPJ</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fornecedor in fornecedores %}
+                        <tr>
+                            <td>{{ fornecedor.nome }}</td>
+                            <td>{{ fornecedor.cnpj }}</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('fornecedor.excluir_fornecedor', id=fornecedor.id) }}" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir este fornecedor?');">Excluir</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary mt-3">Voltar ao Dashboard</a>
         </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Nome</th>
-                    <th>Contato</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for fornecedor in fornecedores %}
-                <tr>
-                    <td>{{ fornecedor.nome }}</td>
-                    <td>{{ fornecedor.contato }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <a href="{{ url_for('main.dashboard') }}" class="btn-secondary">← Voltar ao Dashboard</a
     </div>
-</body>
-</html>
+</div>
+{% endblock %}

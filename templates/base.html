@@ -82,7 +82,9 @@
     <div class="wrapper">
       <!-- Sidebar Fixa -->
       <div class="sidebar">
-        <h4>Almox</h4>
+        <div style="text-align: center; padding: 10px;">
+  <img src="{{ url_for('static', filename='embrapa-white.png') }}" alt="Logo Embrapa" style="width: 120px;">
+</div>
         <a href="{{ url_for('main.dashboard') }}" data-title="Dashboard">🏠</a>
         <a href="{{ url_for('nd.lista_nd') }}" data-title="Naturezas">📁</a>
         <a href="{{ url_for('item_bp.lista_itens') }}" data-title="Itens">📦</a>

@@ -1,64 +1,46 @@
-<!-- templates/novo_usuario.html -->
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <title>Novo Usuário</title>
-    <style>
-        form {
-            width: 400px;
-            margin: auto;
-            margin-top: 40px;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            background-color: #f8f9fa;
-        }
-        label, input, select {
-            display: block;
-            width: 100%;
-            margin-bottom: 12px;
-        }
-        input, select {
-            padding: 8px;
-        }
-        button {
-            padding: 10px;
-            width: 100%;
-            background-color: #00703c;
-            color: white;
-            border: none;
-            border-radius: 5px;
-        }
-    </style>
-</head>
-<body>
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Cadastrar Novo Usuário</h2>
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <form method="POST" class="border rounded p-4 shadow-sm bg-light">
+                <div class="mb-3">
+                    <label for="nome" class="form-label">Nome</label>
+                    <input type="text" name="nome" class="form-control" required>
+                </div>
 
-    <h2 style="text-align:center;">Cadastrar Novo Usuário</h2>
+                <div class="mb-3">
+                    <label for="email" class="form-label">E-mail</label>
+                    <input type="email" name="email" class="form-control" required>
+                </div>
 
-    <form method="POST">
-        <label for="nome">Nome:</label>
-        <input type="text" name="nome" required>
+                <div class="mb-3">
+                    <label for="senha" class="form-label">Senha</label>
+                    <input type="password" name="senha" class="form-control" required>
+                </div>
 
-        <label for="email">E-mail:</label>
-        <input type="email" name="email" required>
+                <div class="mb-3">
+                    <label for="matricula" class="form-label">Matrícula</label>
+                    <input type="text" name="matricula" class="form-control" required>
+                </div>
 
-        <label for="senha">Senha:</label>
-        <input type="password" name="senha" required>
+                <div class="mb-3">
+                    <label for="perfil_id" class="form-label">Perfil</label>
+                    <select name="perfil_id" class="form-select" required>
+                        {% for perfil in perfis %}
+                        <option value="{{ perfil.id }}">{{ perfil.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-        <label for="matricula">Matrícula:</label>
-        <input type="text" name="matricula" required>
+                <button type="submit" class="btn btn-success w-100">Cadastrar</button>
+            </form>
 
-        <label for="perfil_id">Perfil:</label>
-        <select name="perfil_id" required>
-            {% for perfil in perfis %}
-            <option value="{{ perfil.id }}">{{ perfil.nome }}</option>
-            {% endfor %}
-        </select>
-
-        <button type="submit">Cadastrar</button>
-    </form>
-
-</body>
-</html>
-
+            <div class="text-center mt-3">
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary">← Voltar ao Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

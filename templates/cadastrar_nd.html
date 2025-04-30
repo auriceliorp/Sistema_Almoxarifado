@@ -1,16 +1,26 @@
 {% extends 'base.html' %}
-{% block conteudo %}
-<h2>Nova ND</h2>
-<form method="POST">
-    <div class="mb-3">
-        <label class="form-label">Código</label>
-        <input type="text" name="codigo" class="form-control" required>
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Descrição</label>
-        <input type="text" name="descricao" class="form-control" required>
-    </div>
-    <button type="submit" class="btn btn-success">Salvar</button>
-    <a href="{{ url_for('nd_bp.lista_nd') }}" class="btn btn-secondary">Cancelar</a>
-</form>
+{% block content %}
+<div class="container mt-4">
+    <h2>Cadastrar Nova Natureza de Despesa</h2>
+    <form method="POST" class="mt-4">
+        <div class="mb-3">
+            <label for="codigo" class="form-label">Código</label>
+            <input type="text" class="form-control" id="codigo" name="codigo" required>
+        </div>
+        <div class="mb-3">
+            <label for="numero" class="form-label">Número</label>
+            <input type="text" class="form-control" id="numero" name="numero" required>
+        </div>
+        <div class="mb-3">
+            <label for="nome" class="form-label">Nome</label>
+            <input type="text" class="form-control" id="nome" name="nome" required>
+        </div>
+        <div class="mb-3">
+            <label for="descricao" class="form-label">Descrição</label>
+            <textarea class="form-control" id="descricao" name="descricao" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn btn-success">Salvar Natureza</button>
+        <a href="{{ url_for('nd.lista_nd') }}" class="btn btn-secondary ms-2">Voltar para Lista</a>
+    </form>
+</div>
 {% endblock %}

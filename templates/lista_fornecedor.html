@@ -28,7 +28,10 @@
                     </tbody>
                 </table>
             </div>
-            <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary mt-3">Voltar ao Dashboard</a>
+            <div class="d-flex justify-content-between mt-3">
+                <a href="{{ url_for('fornecedor.novo_fornecedor') }}" class="btn btn-success">Cadastrar Novo Fornecedor</a>
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary">Voltar ao Dashboard</a>
+            </div>
         </div>
     </div>
 </div>

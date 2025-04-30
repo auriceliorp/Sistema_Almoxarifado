@@ -6,75 +6,77 @@
     <title>Almoxarifado</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-      body, html {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        overflow: hidden;
-      }
-      .wrapper {
-        display: flex;
-        height: 100vh;
-        overflow: hidden;
-      }
-      .sidebar {
-        width: 230px;
-        background-color: #003366;
-        color: white;
-        flex-shrink: 0;
-        display: flex;
-        flex-direction: column;
-        padding-top: 1rem;
-        position: fixed;
-        height: 100vh;
-        overflow-y: auto;
-      }
-      .sidebar h4 {
-        text-align: center;
-        margin-bottom: 1rem;
-      }
-      .sidebar a {
-        color: white;
-        text-decoration: none;
-        padding: 12px 20px;
-        display: block;
-        transition: background 0.3s;
-      }
-      .sidebar a:hover {
-        background-color: #005f99;
-      }
-      .content {
-        margin-left: 230px;
-        padding: 20px;
-        height: 100vh;
-        overflow-y: auto;
-        width: 100%;
-      }
+  body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+  .wrapper {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .sidebar {
+    width: 230px;
+    background-color: #003366;
+    color: white;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    padding-top: 1rem;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  .sidebar h4 {
+    text-align: center;
+    margin-bottom: 1rem;
+    font-size: 20px;
+  }
+  .sidebar a {
+    color: white;
+    text-decoration: none;
+    padding: 12px 20px;
+    display: block;
+    transition: background 0.3s;
+  }
+  .sidebar a:hover {
+    background-color: #005f99;
+  }
+  .content {
+    margin-left: 230px;
+    padding: 20px;
+    height: 100vh;
+    overflow-y: auto;
+    width: 100%;
+  }
 
-      @media (max-width: 768px) {
-        .sidebar {
-          width: 70px;
-          padding: 0.5rem 0;
-        }
-        .sidebar h4 {
-          font-size: 0;
-        }
-        .sidebar a {
-          padding: 10px;
-          text-align: center;
-          font-size: 14px;
-        }
-        .sidebar a::after {
-          content: attr(data-title);
-          display: block;
-          font-size: 10px;
-          color: #ccc;
-        }
-        .content {
-          margin-left: 70px;
-        }
-      }
-    </style>
+  @media (max-width: 768px) {
+    .sidebar {
+      width: 70px;
+      padding: 0.5rem 0;
+    }
+    .sidebar h4 {
+      font-size: 0; /* Só aqui escondemos o título */
+    }
+    .sidebar a {
+      padding: 10px;
+      text-align: center;
+      font-size: 16px;
+    }
+    .sidebar a::after {
+      content: attr(data-title);
+      display: block;
+      font-size: 10px;
+      color: #ccc;
+    }
+    .content {
+      margin-left: 70px;
+    }
+  }
+</style>
+
   </head>
   <body>
     <div class="wrapper">

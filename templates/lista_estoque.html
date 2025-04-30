@@ -1,102 +1,40 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Estoque</title>
-    <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 1000px;
-            margin: 40px auto;
-            padding: 20px;
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h2 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #003366;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        table th, table td {
-            padding: 10px;
-            border: 1px solid #ccc;
-            text-align: center;
-        }
-        table th {
-            background-color: #003366;
-            color: white;
-        }
-        .btn {
-            display: inline-block;
-            padding: 10px 20px;
-            margin-top: 20px;
-            background-color: #00703c;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            text-align: center;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        .btn:hover {
-            background-color: #00562f;
-        }
-        @media (max-width: 600px) {
-            .container {
-                margin: 20px;
-                padding: 15px;
-            }
-            table th, table td {
-                font-size: 14px;
-                padding: 8px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2>Lista de Estoque</h2>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Item</th>
-                    <th>Fornecedor</th>
-                    <th>Nota Fiscal</th>
-                    <th>Valor Unitário</th>
-                    <th>Quantidade</th>
-                    <th>Local</th>
-                    <th>Valor Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for estoque in estoques %}
-                <tr>
-                    <td>{{ estoque.item.codigo }} - {{ estoque.item.nome }}</td>
-                    <td>{{ estoque.fornecedor }}</td>
-                    <td>{{ estoque.nota_fiscal }}</td>
-                    <td>R$ {{ estoque.valor_unitario }}</td>
-                    <td>{{ estoque.quantidade }}</td>
-                    <td>{{ estoque.local }}</td>
-                    <td>R$ {{ estoque.valor_total }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <a href="{{ url_for('estoque.novo_estoque') }}" class="btn">Cadastrar Novo Estoque</a>
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <h2 class="mt-4">Lista de Estoque</h2>
+            <div class="table-responsive mt-3">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-success">
+                        <tr>
+                            <th>Item</th>
+                            <th>Fornecedor</th>
+                            <th>Nota Fiscal</th>
+                            <th>Valor Unitário</th>
+                            <th>Quantidade</th>
+                            <th>Local</th>
+                            <th>Valor Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for estoque in estoques %}
+                        <tr>
+                            <td>{{ estoque.item.codigo }} - {{ estoque.item.nome }}</td>
+                            <td>{{ estoque.fornecedor }}</td>
+                            <td>{{ estoque.nota_fiscal }}</td>
+                            <td>R$ {{ estoque.valor_unitario }}</td>
+                            <td>{{ estoque.quantidade }}</td>
+                            <td>{{ estoque.local }}</td>
+                            <td>R$ {{ estoque.valor_total }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <a href="{{ url_for('estoque.novo_estoque') }}" class="btn btn-primary mt-3">Cadastrar Novo Estoque</a>
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary mt-3">Voltar ao Dashboard</a>
+        </div>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}

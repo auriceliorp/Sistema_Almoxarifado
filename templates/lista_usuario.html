@@ -1,68 +1,41 @@
-<!-- templates/lista_usuario.html -->
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <title>Usuários - Almoxarifado</title>
-    <style>
-        table {
-            width: 80%;
-            margin: auto;
-            border-collapse: collapse;
-            margin-top: 40px;
-        }
-        th, td {
-            padding: 12px;
-            border: 1px solid #ccc;
-            text-align: center;
-        }
-        th {
-            background-color: #00703c;
-            color: white;
-        }
-        a.button {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #00703c;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            margin: 20px;
-        }
-    </style>
-</head>
-<body>
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <h2 class="mt-4">Lista de Usuários</h2>
 
-    <h2 style="text-align:center; margin-top:20px;">Lista de Usuários</h2>
+            <div class="mb-3">
+                <a href="{{ url_for('usuario.novo_usuario') }}" class="btn btn-success">Novo Usuário</a>
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary">← Voltar ao Dashboard</a>
+            </div>
 
-    <div style="text-align: center;">
-        <a href="{{ url_for('usuario.novo_usuario') }}" class="button">Novo Usuário</a>
-        <a href="{{ url_for('main.dashboard') }}" class="button">← Voltar ao Dashboard</a>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle">
+                    <thead class="table-success">
+                        <tr>
+                            <th>ID</th>
+                            <th>Matrícula</th>
+                            <th>Nome</th>
+                            <th>Email</th>
+                            <th>Perfil</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for usuario in usuarios %}
+                        <tr>
+                            <td>{{ usuario.id }}</td>
+                            <td>{{ usuario.matricula }}</td>
+                            <td>{{ usuario.nome }}</td>
+                            <td>{{ usuario.email }}</td>
+                            <td>{{ usuario.perfil.nome if usuario.perfil else '' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
     </div>
-
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Matrícula</th>
-                <th>Nome</th>
-                <th>Email</th>
-                <th>Perfil</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for usuario in usuarios %}
-            <tr>
-                <td>{{ usuario.id }}</td>
-                <td>{{ usuario.matricula }}</td>
-                <td>{{ usuario.nome }}</td>
-                <td>{{ usuario.email }}</td>
-                <td>{{ usuario.perfil.nome if usuario.perfil else '' }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-</body>
-</html>
-
+</div>
+{% endblock %}

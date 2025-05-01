@@ -63,3 +63,18 @@ class Area(db.Model):
 class Setor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(120), nullable=False)
+
+# models.py (adições ao final do arquivo existente)
+from database import db
+
+class Local(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    descricao = db.Column(db.String(120), nullable=False)
+    uls = db.relationship('UL', backref='local', lazy=True)
+
+class UL(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    codigo_ul = db.Column(db.String(20), nullable=False)
+    descricao = db.Column(db.String(120), nullable=False)
+    local_id = db.Column(db.Integer, db.ForeignKey('local.id'), nullable=False)
+

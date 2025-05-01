@@ -67,14 +67,32 @@ class Setor(db.Model):
 # models.py (adições ao final do arquivo existente)
 from database import db
 
-class Local(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    descricao = db.Column(db.String(120), nullable=False)
-    uls = db.relationship('UL', backref='local', lazy=True)
-
 class UL(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     codigo_ul = db.Column(db.String(20), nullable=False)
     descricao = db.Column(db.String(120), nullable=False)
     local_id = db.Column(db.Integer, db.ForeignKey('local.id'), nullable=False)
+
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
+
+class Local(db.Model):
+    __tablename__ = 'local'
+
+    id = db.Column(db.Integer, primary_key=True)
+    descricao = db.Column(db.String(120), nullable=False)
+
+    # Relação reversa automática: local.uls
+
+
+class UnidadeLocal(db.Model):
+    __tablename__ = 'unidade_local'
+
+    id = db.Column(db.Integer, primary_key=True)
+    codigo = db.Column(db.String(20), nullable=False)
+    descricao = db.Column(db.String(120), nullable=False)
+    local_id = db.Column(db.Integer, db.ForeignKey('local.id'), nullable=False)
+
+    local = db.relationship('Local', backref=db.backref('uls', lazy=True))
 

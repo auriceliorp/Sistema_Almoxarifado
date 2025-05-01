@@ -1,14 +1,13 @@
--- Criação da tabela "local"
-CREATE TABLE IF NOT EXISTS local (
+-- Criação da tabela de Locais
+CREATE TABLE local (
     id SERIAL PRIMARY KEY,
-    descricao VARCHAR(255) NOT NULL
+    descricao VARCHAR(120) NOT NULL
 );
 
--- Criação da tabela "ul"
-CREATE TABLE IF NOT EXISTS ul (
+-- Criação da tabela de Unidades Locais (ULs)
+CREATE TABLE unidade_local (
     id SERIAL PRIMARY KEY,
-    codigo VARCHAR(50) NOT NULL,
-    descricao VARCHAR(255) NOT NULL,
-    local_id INTEGER NOT NULL,
-    CONSTRAINT fk_ul_local FOREIGN KEY (local_id) REFERENCES local(id)
+    codigo VARCHAR(20) NOT NULL,
+    descricao VARCHAR(120) NOT NULL,
+    local_id INTEGER NOT NULL REFERENCES local(id)
 );

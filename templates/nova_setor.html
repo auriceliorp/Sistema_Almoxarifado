@@ -1,17 +1,22 @@
-### nova_setor.html
-
+<!-- templates/novo_setor.html -->
 {% extends 'base.html' %}
 {% block content %}
-<div class="container mt-5">
-    <h2 class="mb-4 text-center">Cadastrar Novo Setor</h2>
-    <form method="POST" class="mx-auto" style="max-width: 500px;">
-        <div class="mb-3">
-            <label for="nome" class="form-label">Nome do Setor</label>
-            <input type="text" class="form-control" id="nome" name="nome" required>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <h2 class="mt-4">Cadastrar Nova Unidade Local (UL)</h2>
+            <form method="POST">
+                <div class="mb-3">
+                    <label for="nome" class="form-label">Descrição da UL</label>
+                    <input type="text" class="form-control" id="nome" name="nome" required>
+                </div>
+                <div class="mb-3">
+                    <label for="codigo" class="form-label">Código UL</label>
+                    <input type="text" class="form-control" id="codigo" name="codigo" required>
+                </div>
+                <button type="submit" class="btn btn-success w-100">Salvar</button>
+            </form>
         </div>
-        <div class="d-grid">
-            <button type="submit" class="btn btn-success">Salvar</button>
-        </div>
-    </form>
+    </div>
 </div>
 {% endblock %}

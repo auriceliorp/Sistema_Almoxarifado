@@ -106,6 +106,13 @@ def create_app():
     except ImportError:
         pass
 
+        try:
+        from routes_area_setor import area_setor_bp
+        app.register_blueprint(area_setor_bp)
+    except ImportError:
+        pass
+
+
     with app.app_context():
         db.create_all()
 

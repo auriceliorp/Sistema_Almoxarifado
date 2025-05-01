@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mt-4 text-danger">Confirmar Exclusão</h2>
+    <p class="mt-3">Tem certeza que deseja excluir a UL <strong>{{ ul.descricao }}</strong> (Código: {{ ul.codigo }})?</p>
+    <form method="POST" class="mt-4">
+        <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
+        <a href="{{ url_for('ul.lista_uls') }}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

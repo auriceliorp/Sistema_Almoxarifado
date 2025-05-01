@@ -2,18 +2,33 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h2>Editar Natureza de Despesa</h2>
+    <h2 class="mb-4">Editar Natureza de Despesa</h2>
+
     <form method="POST">
         <div class="mb-3">
             <label for="codigo" class="form-label">Código</label>
             <input type="text" class="form-control" id="codigo" name="codigo" value="{{ nd.codigo }}" required>
         </div>
+
+        <div class="mb-3">
+            <label for="numero" class="form-label">Número</label>
+            <input type="text" class="form-control" id="numero" name="numero" value="{{ nd.numero }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="nome" class="form-label">Nome</label>
+            <input type="text" class="form-control" id="nome" name="nome" value="{{ nd.nome }}" required>
+        </div>
+
         <div class="mb-3">
             <label for="descricao" class="form-label">Descrição</label>
-            <input type="text" class="form-control" id="descricao" name="descricao" value="{{ nd.descricao or '' }}">
+            <textarea class="form-control" id="descricao" name="descricao" rows="3">{{ nd.descricao }}</textarea>
         </div>
-        <button type="submit" class="btn btn-success">Salvar</button>
-        <a href="{{ url_for('nd.lista_nd') }}" class="btn btn-secondary">Cancelar</a>
+
+        <div class="d-flex justify-content-between">
+            <a href="{{ url_for('nd.lista_nd') }}" class="btn btn-secondary">Cancelar</a>
+            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+        </div>
     </form>
 </div>
 {% endblock %}

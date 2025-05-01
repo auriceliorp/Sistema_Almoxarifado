@@ -1,0 +1,27 @@
+### lista_setores.html
+
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Lista de Setores</h2>
+        <a href="{{ url_for('setor.novo_setor') }}" class="btn btn-success">+ Novo Setor</a>
+    </div>
+    <table class="table table-striped">
+        <thead class="table-success">
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for setor in setores %}
+            <tr>
+                <td>{{ setor.id }}</td>
+                <td>{{ setor.nome }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

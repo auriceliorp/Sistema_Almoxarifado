@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5 text-center">
+    <h2 class="mb-5">Escolha uma Seção</h2>
+    <div class="row justify-content-center gy-4">
+        <div class="col-12 col-md-6 col-lg-3">
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-success w-100 py-4 shadow rounded-4">
+                Almoxarifado
+            </a>
+        </div>
+        <div class="col-12 col-md-6 col-lg-3">
+            <button class="btn btn-outline-secondary w-100 py-4 shadow rounded-4" disabled>
+                Patrimônio
+            </button>
+        </div>
+        <div class="col-12 col-md-6 col-lg-3">
+            <button class="btn btn-outline-secondary w-100 py-4 shadow rounded-4" disabled>
+                Compras
+            </button>
+        </div>
+        <div class="col-12 col-md-6 col-lg-3">
+            <a href="https://linktr.ee/ctaa" target="_blank" class="btn btn-outline-info w-100 py-4 shadow rounded-4">
+                Linktree CTAA
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

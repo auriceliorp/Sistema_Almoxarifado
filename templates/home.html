@@ -1,34 +1,22 @@
 {% extends 'base_home.html' %}
 
 {% block content %}
-<div class="container mt-5">
-  <h2 class="mb-4 text-center">Sistema de Almoxarifado</h2>
-
-  <div class="row row-cols-1 row-cols-md-2 g-4">
-    <div class="col">
-      <a href="{{ url_for('estoque.lista_estoque') }}" class="btn btn-outline-primary w-100 py-4 fs-5">Estoque</a>
-    </div>
-    <div class="col">
-      <a href="{{ url_for('item.lista_itens') }}" class="btn btn-outline-primary w-100 py-4 fs-5">Itens</a>
-    </div>
-    <div class="col">
-      <a href="{{ url_for('fornecedor.lista_fornecedor') }}" class="btn btn-outline-primary w-100 py-4 fs-5">Fornecedores</a>
-    </div>
-    <div class="col">
-      <a href="#" class="btn btn-outline-secondary w-100 py-4 fs-5 disabled" tabindex="-1" aria-disabled="true">
-        Patrimônio (em breve)
-      </a>
-    </div>
-    <div class="col">
-      <a href="{{ url_for('area_ul.lista_locais') }}" class="btn btn-outline-success w-100 py-4 fs-5">
-        Cadastro de Locais
-      </a>
-    </div>
-    <div class="col">
-      <a href="{{ url_for('area_ul.lista_uls') }}" class="btn btn-outline-success w-100 py-4 fs-5">
-        Cadastro de ULs
-      </a>
-    </div>
-  </div>
-</div>
-{% endblock %}
+<div class="container mt-4">
+    <div class="row g-3">
+        <div class="col-6 col-md-4">
+            <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-outline-primary w-100 py-4 fs-5">Itens</a>
+        </div>
+        <div class="col-6 col-md-4">
+            <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="btn btn-outline-primary w-100 py-4 fs-5">Fornecedores</a>
+        </div>
+        <div class="col-6 col-md-4">
+            <a href="{{ url_for('area_ul_bp.lista_locais') }}" class="btn btn-outline-primary w-100 py-4 fs-5">Locais</a>
+        </div>
+        <div class="col-6 col-md-4">
+            <a href="{{ url_for('area_ul_bp.lista_uls') }}" class="btn btn-outline-primary w-100 py-4 fs-5">Unidades Locais</a>
+        </div>
+        <div class="col-6 col-md-4">
+            <a href="{{ url_for('estoque_bp.lista_estoque') }}" class="btn btn-outline-primary w-100 py-4 fs-5">Estoque</a>
+        </div>
+        <div class="col-6 col-md-4">
+            <

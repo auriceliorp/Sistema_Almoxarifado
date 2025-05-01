@@ -1,0 +1,35 @@
+<!-- templates/lista_ul.html -->
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <h2 class="mt-4">Unidades Locais (UL)</h2>
+            <div class="d-flex justify-content-end mb-3">
+                <a href="{{ url_for('area_setor.novo_setor') }}" class="btn btn-success">+ Nova UL</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-success">
+                        <tr>
+                            <th>ID</th>
+                            <th>Descrição da UL</th>
+                            <th>Código UL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for setor in setores %}
+                        <tr>
+                            <td>{{ setor.id }}</td>
+                            <td>{{ setor.nome }}</td>
+                            <td>{{ setor.codigo }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary mt-3">← Voltar ao Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

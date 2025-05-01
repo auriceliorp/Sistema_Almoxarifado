@@ -12,8 +12,6 @@ from sqlalchemy import text, inspect
 
 # Configura Login Manager
 login_manager = LoginManager()
-login_manager.login_view = "main.login"
-
 @login_manager.user_loader
 def load_user(user_id):
     if user_id is not None and str(user_id).isdigit():
@@ -74,6 +72,7 @@ def create_app():
 
     db.init_app(app)
     login_manager.init_app(app)
+    login_manager.login_view = "main.login"
     app.register_blueprint(main)
 
     try:
@@ -106,12 +105,11 @@ def create_app():
     except ImportError:
         pass
 
-        try:
+    try:
         from routes_area_setor import area_setor_bp
         app.register_blueprint(area_setor_bp)
     except ImportError:
         pass
-
 
     with app.app_context():
         db.create_all()

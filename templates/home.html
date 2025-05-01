@@ -1,26 +1,27 @@
+<!-- templates/home.html -->
 {% extends 'base.html' %}
 {% block content %}
-<div class="container py-5 text-center">
-    <h2 class="mb-5">Escolha uma Seção</h2>
-    <div class="row justify-content-center gy-4">
-        <div class="col-12 col-md-6 col-lg-3">
-            <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-success w-100 py-4 shadow rounded-4">
-                Almoxarifado
+<div class="container py-5">
+    <h2 class="mb-4">Bem-vindo, {{ usuario.nome }}</h2>
+    <div class="row g-4">
+        <div class="col-12 col-md-6 col-xl-3">
+            <a href="{{ url_for('main.almoxarifado_dashboard') }}" class="btn btn-outline-success w-100 py-4 fs-5">
+                🗃 Almoxarifado
             </a>
         </div>
-        <div class="col-12 col-md-6 col-lg-3">
-            <button class="btn btn-outline-secondary w-100 py-4 shadow rounded-4" disabled>
-                Patrimônio
+        <div class="col-12 col-md-6 col-xl-3">
+            <button class="btn btn-outline-secondary w-100 py-4 fs-5" disabled>
+                🏛 Patrimônio
             </button>
         </div>
-        <div class="col-12 col-md-6 col-lg-3">
-            <button class="btn btn-outline-secondary w-100 py-4 shadow rounded-4" disabled>
-                Compras
+        <div class="col-12 col-md-6 col-xl-3">
+            <button class="btn btn-outline-secondary w-100 py-4 fs-5" disabled>
+                🛒 Compras
             </button>
         </div>
-        <div class="col-12 col-md-6 col-lg-3">
-            <a href="https://linktr.ee/ctaa" target="_blank" class="btn btn-outline-info w-100 py-4 shadow rounded-4">
-                Linktree CTAA
+        <div class="col-12 col-md-6 col-xl-3">
+            <a href="https://linktr.ee/embrapactaa" target="_blank" class="btn btn-outline-primary w-100 py-4 fs-5">
+                🌐 Linktree CTAA
             </a>
         </div>
     </div>

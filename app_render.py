@@ -36,7 +36,7 @@ def login():
 
         if usuario and check_password_hash(usuario.senha, senha):
             login_user(usuario)
-            return redirect(url_for('main.dashboard'))
+            return redirect(url_for('main.home'))
         else:
             flash('E-mail ou senha inválidos.')
 

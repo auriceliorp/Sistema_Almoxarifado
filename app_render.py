@@ -1,4 +1,4 @@
-# app_render.py atualizado com redirecionamento para a tela inicial "home"
+# app_render.py atualizado com rotas "patrimonio" e "compras" fictícias
 
 from flask import Flask, Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -51,6 +51,16 @@ def home():
 @login_required
 def dashboard():
     return render_template('dashboard.html', usuario=current_user)
+
+@main.route('/patrimonio')
+@login_required
+def patrimonio():
+    return render_template('em_construcao.html', titulo="Patrimônio")
+
+@main.route('/compras')
+@login_required
+def compras():
+    return render_template('em_construcao.html', titulo="Compras")
 
 @main.route('/logout')
 @login_required

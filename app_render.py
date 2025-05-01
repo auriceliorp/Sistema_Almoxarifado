@@ -1,15 +1,13 @@
 # app_render.py
 from flask import Flask, Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-import os
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy.exc import OperationalError
 from config import Config
 from database import db
 from models import Usuario, Perfil
 from sqlalchemy import text, inspect
 
-# Configura Login Manager
+# Login Manager
 login_manager = LoginManager()
 login_manager.login_view = "main.login"
 
@@ -62,65 +60,46 @@ def create_app():
 
     db.init_app(app)
     login_manager.init_app(app)
+
+    # Blueprints
     app.register_blueprint(main)
 
-    try:
-        from routes_nd import nd_bp
-        app.register_blueprint(nd_bp)
-    except ImportError:
-        pass
+    # Outros blueprints
+    from routes_nd import nd_bp
+    from routes_item import item_bp
+    from routes_usuario import usuario_bp
+    from routes_estoque import estoque_bp
+    from routes_fornecedor import fornecedor_bp
+    from routes_area_ul import area_ul_bp
 
-    try:
-        from routes_item import item_bp
-        app.register_blueprint(item_bp)
-    except ImportError:
-        pass
-
-    try:
-        from routes_usuario import usuario_bp
-        app.register_blueprint(usuario_bp)
-    except ImportError:
-        pass
-
-    try:
-        from routes_estoque import estoque_bp
-        app.register_blueprint(estoque_bp)
-    except ImportError:
-        pass
-
-    try:
-        from routes_fornecedor import fornecedor_bp
-        app.register_blueprint(fornecedor_bp)
-    except ImportError:
-        pass
-
-    try:
-        from routes_ul_local import ul_local_bp
-        app.register_blueprint(ul_local_bp)
-    except ImportError:
-        pass
+    app.register_blueprint(nd_bp)
+    app.register_blueprint(item_bp)
+    app.register_blueprint(usuario_bp)
+    app.register_blueprint(estoque_bp)
+    app.register_blueprint(fornecedor_bp)
+    app.register_blueprint(area_ul_bp)
 
     with app.app_context():
         db.create_all()
 
+        # Criação automática de colunas (ajuste conforme necessidade)
         def adicionar_coluna(tabela, coluna_sql):
             try:
                 db.session.execute(text(f'ALTER TABLE {tabela} ADD COLUMN {coluna_sql};'))
                 db.session.commit()
                 print(f"Coluna adicionada: {coluna_sql} em {tabela}")
-            except Exception as e:
+            except Exception:
                 db.session.rollback()
-                print(f"(INFO) Coluna '{coluna_sql}' pode já existir em '{tabela}': {e}")
 
         def coluna_existe(nome_tabela, nome_coluna):
             insp = inspect(db.engine)
             return nome_coluna in [col["name"] for col in insp.get_columns(nome_tabela)]
 
-        # Exemplo de adição de colunas, pode manter ou remover se desejar
+        # Exemplo: adiciona campos extras, se não existirem
         if not coluna_existe('usuario', 'matricula'):
             adicionar_coluna('usuario', 'matricula VARCHAR(50)')
 
-        # Criação do perfil e usuário admin
+        # Garante perfil Admin e usuário admin padrão
         perfil_admin = Perfil.query.filter_by(nome='Admin').first()
         if not perfil_admin:
             perfil_admin = Perfil(nome='Admin')
@@ -141,6 +120,7 @@ def create_app():
 
     return app
 
+# Executável
 if __name__ == '__main__':
     app = create_app()
     app.run(debug=True, host='0.0.0.0', port=5000)

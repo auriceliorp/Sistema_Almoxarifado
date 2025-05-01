@@ -1,5 +1,4 @@
-# app_render.py atualizado com rotas "patrimonio" e "compras" fictícias
-
+# app_render.py
 from flask import Flask, Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 import os
@@ -12,6 +11,8 @@ from sqlalchemy import text, inspect
 
 # Configura Login Manager
 login_manager = LoginManager()
+login_manager.login_view = "main.login"
+
 @login_manager.user_loader
 def load_user(user_id):
     if user_id is not None and str(user_id).isdigit():
@@ -34,10 +35,9 @@ def login():
 
         if usuario and check_password_hash(usuario.senha, senha):
             login_user(usuario)
-            return redirect(url_for('main.home'))  # Redireciona para nova tela inicial
+            return redirect(url_for('main.home'))
         else:
             flash('E-mail ou senha inválidos.')
-
     return render_template('login.html')
 
 @main.route('/home')
@@ -49,16 +49,6 @@ def home():
 @login_required
 def dashboard():
     return render_template('dashboard.html', usuario=current_user)
-
-@main.route('/patrimonio')
-@login_required
-def patrimonio():
-    return render_template('em_construcao.html', titulo="Patrimônio")
-
-@main.route('/compras')
-@login_required
-def compras():
-    return render_template('em_construcao.html', titulo="Compras")
 
 @main.route('/logout')
 @login_required
@@ -72,7 +62,6 @@ def create_app():
 
     db.init_app(app)
     login_manager.init_app(app)
-    login_manager.login_view = "main.login"
     app.register_blueprint(main)
 
     try:
@@ -106,8 +95,8 @@ def create_app():
         pass
 
     try:
-        from routes_area_setor import area_setor_bp
-        app.register_blueprint(area_setor_bp)
+        from routes_ul_local import ul_local_bp
+        app.register_blueprint(ul_local_bp)
     except ImportError:
         pass
 
@@ -127,17 +116,9 @@ def create_app():
             insp = inspect(db.engine)
             return nome_coluna in [col["name"] for col in insp.get_columns(nome_tabela)]
 
-        # Adições de colunas específicas
-        if not coluna_existe('natureza_despesa', 'descricao'):
-            adicionar_coluna('natureza_despesa', 'descricao VARCHAR(255)')
-        if not coluna_existe('natureza_despesa', 'numero'):
-            adicionar_coluna('natureza_despesa', 'numero VARCHAR(50)')
+        # Exemplo de adição de colunas, pode manter ou remover se desejar
         if not coluna_existe('usuario', 'matricula'):
             adicionar_coluna('usuario', 'matricula VARCHAR(50)')
-        if not coluna_existe('item', 'natureza_despesa_id'):
-            adicionar_coluna('item', 'natureza_despesa_id INTEGER REFERENCES natureza_despesa(id)')
-        if not coluna_existe('item', 'descricao'):
-            adicionar_coluna('item', "descricao TEXT NOT NULL DEFAULT ''")
 
         # Criação do perfil e usuário admin
         perfil_admin = Perfil.query.filter_by(nome='Admin').first()

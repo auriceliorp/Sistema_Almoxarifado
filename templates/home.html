@@ -1,26 +1,30 @@
 {% extends 'base_home.html' %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row g-3">
-        <div class="col-6 col-md-4">
-            <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-outline-primary w-100 py-4 fs-5">Itens</a>
-        </div>
-        <div class="col-6 col-md-4">
-            <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="btn btn-outline-primary w-100 py-4 fs-5">Fornecedores</a>
-        </div>
-        <div class="col-6 col-md-4">
-            <a href="{{ url_for('area_ul_bp.lista_locais') }}" class="btn btn-outline-primary w-100 py-4 fs-5">Locais</a>
-        </div>
-        <div class="col-6 col-md-4">
-            <a href="{{ url_for('area_ul_bp.lista_uls') }}" class="btn btn-outline-primary w-100 py-4 fs-5">Unidades Locais</a>
-        </div>
-        <div class="col-6 col-md-4">
-            <a href="{{ url_for('estoque_bp.lista_estoque') }}" class="btn btn-outline-primary w-100 py-4 fs-5">Estoque</a>
-        </div>
-        <div class="col-6 col-md-4">
-            <a href="{{ url_for('usuario_bp.lista_usuarios') }}" class="btn btn-outline-primary w-100 py-4 fs-5">Usuários</a>
-        </div>
+<div class="container text-center mt-5">
+  <h2 class="mb-4">Bem-vindo, {{ usuario.nome }}</h2>
+  <div class="row row-cols-1 row-cols-md-2 g-4">
+
+    <div class="col">
+      <a href="{{ url_for('fornecedor.lista_fornecedor') }}" class="btn btn-outline-primary w-100 py-4 fs-5">Fornecedores</a>
     </div>
+
+    <div class="col">
+      <a href="{{ url_for('item.lista_itens') }}" class="btn btn-outline-primary w-100 py-4 fs-5">Itens</a>
+    </div>
+
+    <div class="col">
+      <a href="{{ url_for('estoque.lista_estoque') }}" class="btn btn-outline-primary w-100 py-4 fs-5">Estoque</a>
+    </div>
+
+    <div class="col">
+      <a href="{{ url_for('ul.lista_uls') }}" class="btn btn-outline-primary w-100 py-4 fs-5">Unidades Locais (UL)</a>
+    </div>
+
+    <div class="col">
+      <a href="{{ url_for('local.lista_locais') }}" class="btn btn-outline-primary w-100 py-4 fs-5">Locais</a>
+    </div>
+
+  </div>
 </div>
 {% endblock %}

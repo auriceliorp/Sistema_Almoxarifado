@@ -42,10 +42,10 @@ def login():
 
     return render_template('login.html')
 
-@main.route('/dashboard')
+@main.route('/home')
 @login_required
 def dashboard():
-    return render_template('dashboard.html', usuario=current_user)
+    return render_template('home.html', usuario=current_user)
 
 @main.route('/logout')
 @login_required

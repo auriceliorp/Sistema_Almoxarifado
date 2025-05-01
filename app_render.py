@@ -1,4 +1,4 @@
-# app_render.py completo com verificação segura de coluna
+# app_render.py completo com nova tela inicial e dashboard movido
 
 from flask import Flask, Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -36,16 +36,23 @@ def login():
 
         if usuario and check_password_hash(usuario.senha, senha):
             login_user(usuario)
-            return redirect(url_for('main.home'))
+            return redirect(url_for('main.dashboard'))  # Primeira tela após login
         else:
             flash('E-mail ou senha inválidos.')
 
     return render_template('login.html')
 
-@main.route('/home')
+# ✅ Primeira tela após login com os botões
+@main.route('/dashboard')
 @login_required
 def dashboard():
     return render_template('home.html', usuario=current_user)
+
+# ✅ Dashboard original movido aqui
+@main.route('/almoxarifado')
+@login_required
+def almoxarifado_dashboard():
+    return render_template('dashboard.html', usuario=current_user)
 
 @main.route('/logout')
 @login_required
@@ -61,6 +68,7 @@ def create_app():
     login_manager.init_app(app)
     app.register_blueprint(main)
 
+    # Importa os blueprints de rotas adicionais
     try:
         from routes_nd import nd_bp
         app.register_blueprint(nd_bp)

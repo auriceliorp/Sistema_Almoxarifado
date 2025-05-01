@@ -1,0 +1,33 @@
+<!-- templates/lista_locais.html -->
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <h2 class="mt-4">Locais (Unidades Locais)</h2>
+            <div class="d-flex justify-content-end mb-3">
+                <a href="{{ url_for('area_setor.nova_area') }}" class="btn btn-success">+ Novo Local</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-success">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome do Local</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for area in areas %}
+                        <tr>
+                            <td>{{ area.id }}</td>
+                            <td>{{ area.nome }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary mt-3">← Voltar ao Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

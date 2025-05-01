@@ -1,8 +1,6 @@
 # models.py
-from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
-
-db = SQLAlchemy()
+from database import db
 
 # ------------------- USUÁRIO E PERFIL -------------------
 class Perfil(db.Model):
@@ -54,45 +52,26 @@ class Fornecedor(db.Model):
     nome = db.Column(db.String(120), nullable=False)
     cnpj = db.Column(db.String(20), nullable=False)
 
-# ------------------- ÁREA -------------------
+# ------------------- ÁREA E SETOR (DESATIVADOS, MANTIDOS PARA REFERÊNCIA) -------------------
 class Area(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(120), nullable=False)
 
-# ------------------- SETOR -------------------
 class Setor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(120), nullable=False)
 
-# models.py (adições ao final do arquivo existente)
-from database import db
-
-class UL(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    codigo_ul = db.Column(db.String(20), nullable=False)
-    descricao = db.Column(db.String(120), nullable=False)
-    local_id = db.Column(db.Integer, db.ForeignKey('local.id'), nullable=False)
-
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
-
+# ------------------- LOCAL E UNIDADE LOCAL (UL) -------------------
 class Local(db.Model):
     __tablename__ = 'local'
-
     id = db.Column(db.Integer, primary_key=True)
     descricao = db.Column(db.String(120), nullable=False)
-
-    # Relação reversa automática: local.uls
-
+    uls = db.relationship('UnidadeLocal', back_populates='local', lazy=True)
 
 class UnidadeLocal(db.Model):
     __tablename__ = 'unidade_local'
-
     id = db.Column(db.Integer, primary_key=True)
     codigo = db.Column(db.String(20), nullable=False)
     descricao = db.Column(db.String(120), nullable=False)
     local_id = db.Column(db.Integer, db.ForeignKey('local.id'), nullable=False)
-
-    local = db.relationship('Local', backref=db.backref('uls', lazy=True))
-
+    local = db.relationship('Local', back_populates='uls')

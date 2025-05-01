@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 text-danger">Excluir Local</h2>
+    <p>Tem certeza de que deseja excluir o local <strong>{{ local.descricao }}</strong>?</p>
+    <form method="POST">
+        <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
+        <a href="{{ url_for('local.lista_locais') }}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

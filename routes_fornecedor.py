@@ -2,12 +2,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
 from database import db
-
-# Modelo simples do fornecedor
-class Fornecedor(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(120), nullable=False)
-    cnpj = db.Column(db.String(20), nullable=False)
+from models import Fornecedor  # Importa corretamente o modelo já definido
 
 fornecedor_bp = Blueprint('fornecedor', __name__, url_prefix='/fornecedor')
 

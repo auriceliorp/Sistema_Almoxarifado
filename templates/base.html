@@ -1,4 +1,4 @@
-<!-- templates/base.html -->
+    <!-- templates/base.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -77,11 +77,11 @@
         <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
         <a href="{{ url_for('item_bp.lista_itens') }}">Itens</a>
         <a href="{{ url_for('nd.lista_nd') }}">Naturezas de Despesa</a>
-        <a href="{{ url_for('estoque.lista_estoque') }}">Estoque</a>
-        <a href="{{ url_for('fornecedor.lista_fornecedor') }}">Fornecedores</a>
-        <a href="{{ url_for('usuario.lista_usuario') }}">Usuários</a>
-        <a href="{{ url_for('area_ul.lista_uls') }}">ULs</a>
-        <a href="{{ url_for('area_ul.lista_locais') }}">Locais</a>
+        <a href="{{ url_for('estoque_bp.lista_estoque') }}">Estoque</a>
+        <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}">Fornecedores</a>
+        <a href="{{ url_for('usuario_bp.lista_usuario') }}">Usuários</a>
+        <a href="{{ url_for('area_ul_bp.lista_uls') }}">ULs</a>
+        <a href="{{ url_for('area_ul_bp.lista_locais') }}">Locais</a>
         <a href="{{ url_for('main.logout') }}" class="text-danger mt-auto">Sair</a>
     </div>
 

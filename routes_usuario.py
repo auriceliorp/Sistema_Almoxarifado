@@ -1,4 +1,4 @@
-# routes_usuario.py atualizado
+# routes_usuario.py
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
@@ -28,7 +28,7 @@ def novo_usuario():
 
         if not (nome and email and senha and perfil_id):
             flash('Todos os campos são obrigatórios!')
-            return redirect(url_for('usuario.novo_usuario'))
+            return redirect(url_for('usuario_bp.novo_usuario'))
 
         senha_hash = generate_password_hash(senha)
 
@@ -43,7 +43,7 @@ def novo_usuario():
         db.session.commit()
 
         flash('Usuário criado com sucesso!')
-        return redirect(url_for('usuario.lista_usuario'))
+        return redirect(url_for('usuario_bp.lista_usuario'))
 
     return render_template('novo_usuario.html', perfis=perfis)
 
@@ -51,7 +51,4 @@ def novo_usuario():
 @login_required
 def excluir_usuario(id):
     usuario = Usuario.query.get_or_404(id)
-    db.session.delete(usuario)
-    db.session.commit()
-    flash('Usuário excluído com sucesso!')
-    return redirect(url_for('usuario.lista_usuario'))
+    db.session.delete

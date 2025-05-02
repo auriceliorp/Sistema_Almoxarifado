@@ -1,18 +1,23 @@
 {% extends 'base_simplificada.html' %}
+
 {% block content %}
-<div class="container py-5">
+<div class="container text-center py-5">
+    <img src="{{ url_for('static', filename='embrapa_logo.png') }}" alt="Logo da Embrapa" class="mb-4" style="max-width: 250px; height: auto;">
+
+    <h1 class="mb-5 text-primary">Sistema de Gestão CTAA - SPS</h1>
+
     <div class="row row-cols-1 row-cols-md-2 g-4">
         <div class="col">
             <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-primary w-100 py-4 fs-5">Almoxarifado</a>
         </div>
         <div class="col">
-            <a href="#" class="btn btn-outline-secondary w-100 py-4 fs-5" disabled>Compras (em breve)</a>
+            <button class="btn btn-outline-secondary w-100 py-4 fs-5" disabled>Compras</button>
         </div>
         <div class="col">
-            <a href="#" class="btn btn-outline-secondary w-100 py-4 fs-5" disabled>Patrimônio (em breve)</a>
+            <button class="btn btn-outline-secondary w-100 py-4 fs-5" disabled>Patrimônio</button>
         </div>
         <div class="col">
-            <a href="https://linktr.ee/ctaasps" target="_blank" class="btn btn-outline-info w-100 py-4 fs-5">Linktree CTAA - SPS</a>
+            <a href="https://linktr.ee/ctaa.sps" target="_blank" class="btn btn-outline-success w-100 py-4 fs-5">CTAA - SPS</a>
         </div>
     </div>
 </div>

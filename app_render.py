@@ -49,6 +49,11 @@ def home():
 def dashboard():
     return render_template('dashboard.html', usuario=current_user)
 
+@main.route('/almoxarifado')
+@login_required
+def almoxarifado():
+    return render_template('almoxarifado.html', usuario=current_user)
+
 @main.route('/logout')
 @login_required
 def logout():

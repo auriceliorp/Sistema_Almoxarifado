@@ -5,7 +5,7 @@ from flask_login import login_required
 from database import db
 from models import Local, UnidadeLocal
 
-area_ul_bp = Blueprint('area_ul', __name__, url_prefix='/organizacao')
+area_ul_bp = Blueprint('area_ul_bp', __name__, url_prefix='/organizacao')
 
 # ROTAS DE LOCAL
 @area_ul_bp.route('/locais')

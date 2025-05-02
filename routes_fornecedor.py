@@ -4,7 +4,7 @@ from flask_login import login_required
 from database import db
 from models import Fornecedor  # Importa corretamente o modelo já definido
 
-fornecedor_bp = Blueprint('fornecedor', __name__, url_prefix='/fornecedor')
+fornecedor_bp = Blueprint('fornecedor_bp', __name__, url_prefix='/fornecedor')
 
 @fornecedor_bp.route('/')
 @login_required

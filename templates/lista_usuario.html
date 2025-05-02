@@ -1,41 +1,38 @@
-{% extends 'base.html' %}
+{% extends 'base_simples.html' %}
+{% block title %}Usuários{% endblock %}
+
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col">
-            <h2 class="mt-4">Lista de Usuários</h2>
+<div class="container py-5">
+    <h2 class="mb-4">Lista de Usuários</h2>
 
-            <div class="mb-3">
-                <a href="{{ url_for('usuario_bp.novo_usuario') }}" class="btn btn-success">Novo Usuário</a>
-                <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary">← Voltar ao Dashboard</a>
-            </div>
+    <div class="mb-4 d-flex justify-content-between flex-wrap gap-2">
+        <a href="{{ url_for('usuario_bp.novo_usuario') }}" class="btn btn-success btn-lg flex-fill">Novo Usuário</a>
+        <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary btn-lg flex-fill">← Voltar ao Dashboard</a>
+    </div>
 
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover align-middle">
-                    <thead class="table-success">
-                        <tr>
-                            <th>ID</th>
-                            <th>Matrícula</th>
-                            <th>Nome</th>
-                            <th>Email</th>
-                            <th>Perfil</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for usuario in usuarios %}
-                        <tr>
-                            <td>{{ usuario.id }}</td>
-                            <td>{{ usuario.matricula }}</td>
-                            <td>{{ usuario.nome }}</td>
-                            <td>{{ usuario.email }}</td>
-                            <td>{{ usuario.perfil.nome if usuario.perfil else '' }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-
-        </div>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-success">
+                <tr>
+                    <th>ID</th>
+                    <th>Matrícula</th>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Perfil</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for usuario in usuarios %}
+                <tr>
+                    <td>{{ usuario.id }}</td>
+                    <td>{{ usuario.matricula }}</td>
+                    <td>{{ usuario.nome }}</td>
+                    <td>{{ usuario.email }}</td>
+                    <td>{{ usuario.perfil.nome if usuario.perfil else '' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock %}

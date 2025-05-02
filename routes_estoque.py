@@ -5,7 +5,7 @@ from flask_login import login_required
 from database import db
 from models import Estoque, Item
 
-estoque_bp = Blueprint('estoque', __name__, url_prefix='/estoque')
+estoque_bp = Blueprint('estoque_bp', __name__, url_prefix='/estoque')
 
 @estoque_bp.route('/')
 @login_required

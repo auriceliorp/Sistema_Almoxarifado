@@ -1,3 +1,4 @@
+
 # app_render.py
 from flask import Flask, Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -64,25 +65,25 @@ def create_app():
     # Blueprints
     app.register_blueprint(main)
 
-    # Outros blueprints
-    from routes_nd import nd_bp
-    from routes_item import item_bp
-    from routes_usuario import usuario_bp
-    from routes_estoque import estoque_bp
-    from routes_fornecedor import fornecedor_bp
-    from routes_area_ul import area_ul_bp
+    # Outros blueprints (importados com os nomes corretos)
+    from routes_nd import nd
+    from routes_item import item
+    from routes_usuario import usuario
+    from routes_estoque import estoque
+    from routes_fornecedor import fornecedor
+    from routes_area_ul import area_ul
 
-    app.register_blueprint(nd_bp)
-    app.register_blueprint(item_bp)
-    app.register_blueprint(usuario_bp)
-    app.register_blueprint(estoque_bp)
-    app.register_blueprint(fornecedor_bp)
-    app.register_blueprint(area_ul_bp)
+    app.register_blueprint(nd)
+    app.register_blueprint(item)
+    app.register_blueprint(usuario)
+    app.register_blueprint(estoque)
+    app.register_blueprint(fornecedor)
+    app.register_blueprint(area_ul)
 
     with app.app_context():
         db.create_all()
 
-        # Criação automática de colunas (ajuste conforme necessidade)
+        # Criação automática de colunas
         def adicionar_coluna(tabela, coluna_sql):
             try:
                 db.session.execute(text(f'ALTER TABLE {tabela} ADD COLUMN {coluna_sql};'))

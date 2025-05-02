@@ -1,63 +1,24 @@
-{% extends 'base.html' %}
+{% extends 'base_simplificada.html' %}
 {% block content %}
+<div class="container py-5">
+    <h2 class="mb-4">Bem-vindo, {{ usuario.nome }}!</h2>
 
-<h2>Bem-vindo, {{ usuario.nome }}!</h2>
-
-<div class="row mt-4">
-    <!-- Naturezas de Despesa -->
-    <div class="col-md-4">
-        <div class="card text-white bg-primary mb-3">
-            <div class="card-body">
-                <h5 class="card-title">Naturezas de Despesa</h5>
-                <p class="card-text">Gerencie as categorias de gastos.</p>
-                <a href="{{ url_for('nd_bp.lista_nd') }}" class="btn btn-light">Acessar</a>
-            </div>
-        </div>
+    <div class="mb-4 d-flex flex-wrap gap-2">
+        <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">Início</a>
+        <button class="btn btn-outline-secondary" disabled>Relatórios</button>
+        <button class="btn btn-outline-secondary" disabled>Cadastro de Apoio</button>
+        <a href="https://linktr.ee/ctaa.sps" target="_blank" class="btn btn-outline-info">Linktree CTAA - SPS</a>
     </div>
 
-    <!-- Itens -->
-    <div class="col-md-4">
-        <div class="card text-white bg-success mb-3">
-            <div class="card-body">
-                <h5 class="card-title">Itens</h5>
-                <p class="card-text">Cadastre e atualize os itens do estoque.</p>
-                <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-light">Acessar</a>
-            </div>
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+        <div class="col">
+            <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-outline-success w-100 py-4 fs-5">Itens</a>
         </div>
-    </div>
-
-    <!-- Estoque -->
-    <div class="col-md-4">
-        <div class="card text-white bg-info mb-3">
-            <div class="card-body">
-                <h5 class="card-title">Estoque</h5>
-                <p class="card-text">Controle as entradas de estoque.</p>
-                <a href="{{ url_for('estoque_bp.lista_estoque') }}" class="btn btn-light">Acessar</a>
-            </div>
+        <div class="col">
+            <a href="{{ url_for('estoque_bp.lista_estoque') }}" class="btn btn-outline-primary w-100 py-4 fs-5">Estoque</a>
         </div>
-    </div>
-
-    <!-- Fornecedores -->
-    <div class="col-md-4">
-        <div class="card text-white bg-warning mb-3">
-            <div class="card-body">
-                <h5 class="card-title">Fornecedores</h5>
-                <p class="card-text">Gerencie os fornecedores cadastrados.</p>
-                <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="btn btn-light">Acessar</a>
-            </div>
+        <div class="col">
+            <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="btn btn-outline-warning w-100 py-4 fs-5">Fornecedores</a>
         </div>
-    </div>
-
-    <!-- Usuários -->
-    <div class="col-md-4">
-        <div class="card text-white bg-dark mb-3">
-            <div class="card-body">
-                <h5 class="card-title">Usuários</h5>
-                <p class="card-text">Controle os acessos ao sistema.</p>
-                <a href="{{ url_for('usuario_bp.lista_usuario') }}" class="btn btn-light">Acessar</a>
-            </div>
-        </div>
-    </div>
-</div>
-
-{% endblock %}
+        <div class="col">
+            <a href="{{ url_for('usuario_bp.lista_usuario') }}" class="btn btn-outline-dark w-100 py-4 fs-5">Usuários

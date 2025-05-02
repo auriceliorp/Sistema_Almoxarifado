@@ -4,7 +4,7 @@ from flask_login import login_required
 from database import db
 from models import NaturezaDespesa
 
-nd_bp = Blueprint('nd', __name__, url_prefix='/nd')
+nd_bp = Blueprint('nd_bp', __name__, url_prefix='/nd')
 
 @nd_bp.route('/')
 @login_required

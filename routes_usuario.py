@@ -6,7 +6,7 @@ from database import db
 from models import Usuario, Perfil
 from werkzeug.security import generate_password_hash
 
-usuario_bp = Blueprint('usuario', __name__, url_prefix='/usuario')
+usuario_bp = Blueprint('usuario_bp', __name__, url_prefix='/usuario')
 
 @usuario_bp.route('/')
 @login_required

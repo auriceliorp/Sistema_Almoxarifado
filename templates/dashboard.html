@@ -3,11 +3,19 @@
 <div class="container py-5">
     <h2 class="mb-4">Bem-vindo, {{ usuario.nome }}!</h2>
 
-    <div class="mb-4 d-flex flex-wrap gap-2">
-        <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">Início</a>
-        <button class="btn btn-outline-secondary" disabled>Relatórios</button>
-        <button class="btn btn-outline-secondary" disabled>Cadastro de Apoio</button>
-        <a href="https://linktr.ee/ctaa.sps" target="_blank" class="btn btn-outline-info">Linktree CTAA - SPS</a>
+    <div class="row row-cols-1 row-cols-md-2 g-4 mb-4">
+        <div class="col">
+            <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary w-100 py-4 fs-5">Início</a>
+        </div>
+        <div class="col">
+            <button class="btn btn-outline-secondary w-100 py-4 fs-5" disabled>Relatórios</button>
+        </div>
+        <div class="col">
+            <button class="btn btn-outline-secondary w-100 py-4 fs-5" disabled>Cadastro de Apoio</button>
+        </div>
+        <div class="col">
+            <a href="https://linktr.ee/ctaa.sps" target="_blank" class="btn btn-outline-info w-100 py-4 fs-5">Linktree CTAA - SPS</a>
+        </div>
     </div>
 
     <div class="row row-cols-1 row-cols-md-2 g-4">

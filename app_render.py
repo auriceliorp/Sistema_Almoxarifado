@@ -1,10 +1,15 @@
 # app_render.py
 
 from flask import Flask, Blueprint, render_template, redirect, url_for, flash, request
+
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+
 from werkzeug.security import generate_password_hash, check_password_hash
+
 from config import Config
+
 from database import db
+
 from models import Usuario, Perfil, NaturezaDespesa, Item
 from sqlalchemy import text, inspect
 

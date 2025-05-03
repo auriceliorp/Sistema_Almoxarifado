@@ -9,6 +9,9 @@ from database import db
 from models import Item, NaturezaDespesa
 from sqlalchemy import inspect
 from models import Usuario, Perfil
+from werkzeug.security import check_password_hash
+from werkzeug.security import generate_password_hash
+
 
 
 # Login Manager

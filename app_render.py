@@ -1,7 +1,7 @@
 # app_render.py
 
 from flask import Blueprint, render_template, redirect, url_for, request, flash
-from flask_login import loginManager
+from flask_login import LoginManager
 from database import db
 from models import Item, NaturezaDespesa
 

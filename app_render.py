@@ -8,6 +8,8 @@ from flask_login import LoginManager
 from database import db
 from models import Item, NaturezaDespesa
 from sqlalchemy import inspect
+from models import Usuario, Perfil
+
 
 # Login Manager
 login_manager = LoginManager()

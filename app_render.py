@@ -34,7 +34,7 @@ def login():
 
         if usuario and check_password_hash(usuario.senha, senha):
             login_user(usuario)
-            if usuario.senha_temporaria:
+            if getattr(usuario, 'senha_temporaria', False):
                 return redirect(url_for('main.trocar_senha'))
             return redirect(url_for('main.home'))
         else:

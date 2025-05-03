@@ -77,6 +77,3 @@ class UnidadeLocal(db.Model):
     local_id = db.Column(db.Integer, db.ForeignKey('local.id'), nullable=False)
     local = db.relationship('Local', back_populates='uls')
 
-class Perfil(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(50), nullable=False, unique=True)

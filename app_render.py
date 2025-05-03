@@ -41,5 +41,116 @@ def login():
             flash('E-mail ou senha inválidos.')
     return render_template('login.html')
 
-@main.route('/trocar_s
+@main.route('/trocar_senha', methods=['GET', 'POST'])
+@login_required
+def trocar_senha():
+    if request.method == 'POST':
+        nova_senha = request.form.get('nova_senha')
+        confirmar_senha = request.form.get('confirmar_senha')
+
+        if nova_senha != confirmar_senha:
+            flash('As senhas não coincidem.')
+        else:
+            current_user.senha = generate_password_hash(nova_senha)
+            current_user.senha_temporaria = False
+            db.session.commit()
+            flash('Senha alterada com sucesso.')
+            return redirect(url_for('main.home'))
+
+    return render_template('trocar_senha.html')
+
+@main.route('/home')
+@login_required
+def home():
+    return render_template('home.html', usuario=current_user)
+
+@main.route('/dashboard')
+@login_required
+def dashboard():
+    return render_template('dashboard.html', usuario=current_user)
+
+@main.route('/almoxarifado')
+@login_required
+def almoxarifado():
+    return render_template('almoxarifado.html', usuario=current_user)
+
+@main.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('main.login'))
+
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object(Config)
+
+    db.init_app(app)
+    login_manager.init_app(app)
+
+    # Registro de Blueprints
+    app.register_blueprint(main)
+
+    from routes_nd import nd_bp
+    from routes_item import item_bp
+    from routes_usuario import usuario_bp
+    from routes_estoque import estoque_bp
+    from routes_fornecedor import fornecedor_bp
+    from routes_area_ul import area_ul_bp
+
+    app.register_blueprint(nd_bp)
+    app.register_blueprint(item_bp)
+    app.register_blueprint(usuario_bp)
+    app.register_blueprint(estoque_bp)
+    app.register_blueprint(fornecedor_bp)
+    app.register_blueprint(area_ul_bp)
+
+    with app.app_context():
+        db.create_all()
+
+        def adicionar_coluna(tabela, coluna_sql):
+            try:
+                db.session.execute(text(f'ALTER TABLE {tabela} ADD COLUMN {coluna_sql};'))
+                db.session.commit()
+                print(f"Coluna adicionada: {coluna_sql} em {tabela}")
+            except Exception:
+                db.session.rollback()
+
+        def coluna_existe(nome_tabela, nome_coluna):
+            insp = inspect(db.engine)
+            return nome_coluna in [col["name"] for col in insp.get_columns(nome_tabela)]
+
+        if not coluna_existe('usuario', 'matricula'):
+            adicionar_coluna('usuario', 'matricula VARCHAR(50)')
+        if not coluna_existe('usuario', 'senha_temporaria'):
+            adicionar_coluna('usuario', 'senha_temporaria BOOLEAN DEFAULT FALSE')
+
+        # Cria perfil Admin e usuário admin padrão
+        perfil_admin = Perfil.query.filter_by(nome='Admin').first()
+        if not perfil_admin:
+            perfil_admin = Perfil(nome='Admin')
+            db.session.add(perfil_admin)
+            db.session.commit()
+
+        admin_email = "admin@admin.com"
+        if not Usuario.query.filter_by(email=admin_email).first():
+            usuario_admin = Usuario(
+                nome="Administrador",
+                email=admin_email,
+                senha=generate_password_hash("admin123"),
+                perfil_id=perfil_admin.id,
+                matricula="0001",
+                senha_temporaria=True
+            )
+            db.session.add(usuario_admin)
+            db.session.commit()
+
+    return app
+
+# Execução local
+if __name__ == '__main__':
+    app = create_app()
+    app.run(debug=True, host='0.0.0.0', port=5000)
+else:
+    app = create_app()
+
 

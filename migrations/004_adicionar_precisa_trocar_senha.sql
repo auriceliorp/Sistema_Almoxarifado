@@ -1,2 +1,3 @@
 ALTER TABLE usuario
 ADD COLUMN precisa_trocar_senha BOOLEAN DEFAULT TRUE;
+ALTER TABLE usuario ADD COLUMN senha_temporaria BOOLEAN DEFAULT FALSE;

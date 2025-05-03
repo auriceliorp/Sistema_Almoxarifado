@@ -1,3 +1,5 @@
+# app_render.py
+
 from flask import Flask, Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -48,13 +50,12 @@ def trocar_senha():
 
         if nova_senha != confirmar_senha:
             flash('As senhas não coincidem.')
-            return redirect(url_for('main.trocar_senha'))
-
-        current_user.senha = generate_password_hash(nova_senha)
-        current_user.senha_temporaria = False
-        db.session.commit()
-        flash('Senha atualizada com sucesso.')
-        return redirect(url_for('main.home'))
+        else:
+            current_user.senha = generate_password_hash(nova_senha)
+            current_user.senha_temporaria = False
+            db.session.commit()
+            flash('Senha alterada com sucesso.')
+            return redirect(url_for('main.home'))
 
     return render_template('trocar_senha.html')
 
@@ -120,9 +121,8 @@ def create_app():
 
         if not coluna_existe('usuario', 'matricula'):
             adicionar_coluna('usuario', 'matricula VARCHAR(50)')
-
         if not coluna_existe('usuario', 'senha_temporaria'):
-            adicionar_coluna('usuario', 'senha_temporaria BOOLEAN DEFAULT TRUE')
+            adicionar_coluna('usuario', 'senha_temporaria BOOLEAN DEFAULT FALSE')
 
         # Cria perfil Admin e usuário admin padrão
         perfil_admin = Perfil.query.filter_by(nome='Admin').first()
@@ -139,7 +139,7 @@ def create_app():
                 senha=generate_password_hash("admin123"),
                 perfil_id=perfil_admin.id,
                 matricula="0001",
-                senha_temporaria=False
+                senha_temporaria=True
             )
             db.session.add(usuario_admin)
             db.session.commit()

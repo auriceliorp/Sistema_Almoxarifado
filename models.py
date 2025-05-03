@@ -15,6 +15,7 @@ class Usuario(UserMixin, db.Model):
     matricula = db.Column(db.String(50))
     perfil_id = db.Column(db.Integer, db.ForeignKey('perfil.id'))
     perfil = db.relationship('Perfil', backref='usuarios')
+    senha_temporaria = db.Column(db.Boolean, default=True)
 
 # ------------------- NATUREZA DE DESPESA -------------------
 class NaturezaDespesa(db.Model):

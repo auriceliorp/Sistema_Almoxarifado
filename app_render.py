@@ -1,13 +1,18 @@
 # app_render.py
 from flask import Flask
+
 from config import Config
+
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 
 from flask_login import login_required
 
 from flask_login import LoginManager
+
 from database import db
+
 from models import Item, NaturezaDespesa
+
 
 # Login Manager
 login_manager = LoginManager()

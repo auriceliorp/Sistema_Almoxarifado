@@ -7,6 +7,7 @@ from flask_login import login_required
 from flask_login import LoginManager
 from database import db
 from models import Item, NaturezaDespesa
+from sqlalchemy import inspect
 
 # Login Manager
 login_manager = LoginManager()

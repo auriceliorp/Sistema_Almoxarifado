@@ -1,5 +1,6 @@
 # app_render.py
 from flask import Flask
+from config import Config
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 
 from flask_login import login_required

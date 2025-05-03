@@ -1,4 +1,3 @@
-<!-- templates/novo_item.html atualizado -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -17,32 +16,57 @@
     </style>
 </head>
 <body>
-    <div class="mb-3">
-    <label for="unidade" class="form-label">Unidade</label>
-    <input type="text" class="form-control" id="unidade" name="unidade" required>
-</div>
     <div class="container">
         <h2>Cadastrar Novo Item</h2>
         <form method="POST">
             <div class="form-group">
-                <label for="codigo">Código do Item</label>
+                <label for="codigo">Código do Item *</label>
                 <input type="text" name="codigo" id="codigo" required>
             </div>
             <div class="form-group">
-                <label for="nome">Nome</label>
+                <label for="nome">Nome *</label>
                 <input type="text" name="nome" id="nome" required>
             </div>
             <div class="form-group">
                 <label for="descricao">Descrição Detalhada</label>
-                <textarea name="descricao" id="descricao" rows="4" required></textarea>
+                <textarea name="descricao" id="descricao" rows="3"></textarea>
             </div>
             <div class="form-group">
-                <label for="natureza_despesa_id">Natureza de Despesa</label>
+                <label for="unidade">Unidade de Medida *</label>
+                <input type="text" name="unidade" id="unidade" required>
+            </div>
+            <div class="form-group">
+                <label for="natureza_despesa_id">Natureza de Despesa *</label>
                 <select name="natureza_despesa_id" id="natureza_despesa_id" required>
                     {% for nd in naturezas %}
                         <option value="{{ nd.id }}">{{ nd.numero }} - {{ nd.descricao }}</option>
                     {% endfor %}
                 </select>
+            </div>
+            <!-- Campos opcionais -->
+            <div class="form-group">
+                <label for="marca">Marca</label>
+                <input type="text" name="marca" id="marca">
+            </div>
+            <div class="form-group">
+                <label for="modelo">Modelo</label>
+                <input type="text" name="modelo" id="modelo">
+            </div>
+            <div class="form-group">
+                <label for="especificacoes">Especificações Técnicas</label>
+                <textarea name="especificacoes" id="especificacoes" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="codigo_fabricante">Código do Fabricante</label>
+                <input type="text" name="codigo_fabricante" id="codigo_fabricante">
+            </div>
+            <div class="form-group">
+                <label for="codigo_barras">Código de Barras</label>
+                <input type="text" name="codigo_barras" id="codigo_barras">
+            </div>
+            <div class="form-group">
+                <label for="observacoes">Observações</label>
+                <textarea name="observacoes" id="observacoes" rows="2"></textarea>
             </div>
             <button type="submit">Salvar Item</button>
         </form>

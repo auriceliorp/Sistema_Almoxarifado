@@ -1,40 +1,52 @@
-{% extends 'base.html' %}
+{% extends 'base_simplificada.html' %}
+
+{% block title %}Lista de Itens{% endblock %}
+
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col">
-            <h2 class="mt-4">Lista de Itens</h2>
-            <div class="table-responsive mt-3">
-                <table class="table table-bordered table-hover">
-                    <thead class="table-success">
-                        <tr>
-                            <th>Código</th>
-                            <th>Nome</th>
-                            <th>Descrição</th>
-                            <th>ND</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in itens %}
-                        <tr>
-                            <td>{{ item.codigo }}</td>
-                            <td>{{ item.nome }}</td>
-                            <td>{{ item.descricao }}</td>
-                            <td>{{ item.natureza.numero if item.natureza else '' }}</td>
-                            <td>
-                                <a href="{{ url_for('item_bp.editar_item', id=item.id) }}" class="btn btn-warning btn-sm">Editar</a>
-                                <form method="POST" action="{{ url_for('item_bp.excluir_item', id=item.id) }}" style="display:inline;">
-                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir este item?');">Excluir</button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary mt-3">Voltar ao Dashboard</a>
+<div class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary me-2">Início</a>
+            <a href="{{ request.referrer or url_for('main.home') }}" class="btn btn-outline-secondary">Voltar</a>
         </div>
+        <h4 class="mb-0 text-center flex-grow-1">Lista de Materiais ou Serviços</h4>
+        <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">Sair</a>
     </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle shadow-sm bg-light">
+            <thead class="table-success text-center">
+                <tr>
+                    <th>Código SAP</th>
+                    <th>Nome</th>
+                    <th>Descrição</th>
+                    <th>Natureza de Despesa</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in itens %}
+                <tr>
+                    <td>{{ item.codigo }}</td>
+                    <td>{{ item.nome }}</td>
+                    <td>{{ item.descricao }}</td>
+                    <td>{{ item.natureza.numero if item.natureza else '' }}</td>
+                    <td class="text-center">
+                        <a href="{{ url_for('item_bp.editar_item', id=item.id) }}" class="btn btn-sm btn-warning">Editar</a>
+                        <form method="POST" action="{{ url_for('item_bp.excluir_item', id=item.id) }}" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir este item?');">Excluir</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted">Nenhum item cadastrado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
 </div>
 {% endblock %}

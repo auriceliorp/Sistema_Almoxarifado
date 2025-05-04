@@ -1,76 +1,74 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Novo Item</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #f8f9fa; margin: 0; padding: 0; }
-        .container { max-width: 600px; margin: 40px auto; padding: 20px; background-color: white; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h2 { color: #003366; text-align: center; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
-        button { background-color: #00703c; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
-        button:hover { background-color: #00582e; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2>Cadastrar Novo Item</h2>
-        <form method="POST">
-            <div class="form-group">
-                <label for="codigo">Código do Item *</label>
-                <input type="text" name="codigo" id="codigo" required>
-            </div>
-            <div class="form-group">
-                <label for="nome">Nome *</label>
-                <input type="text" name="nome" id="nome" required>
-            </div>
-            <div class="form-group">
-                <label for="descricao">Descrição Detalhada</label>
-                <textarea name="descricao" id="descricao" rows="3"></textarea>
-            </div>
-            <div class="form-group">
-                <label for="unidade">Unidade de Medida *</label>
-                <input type="text" name="unidade" id="unidade" required>
-            </div>
-            <div class="form-group">
-                <label for="natureza_despesa_id">Natureza de Despesa *</label>
-                <select name="natureza_despesa_id" id="natureza_despesa_id" required>
-                    {% for nd in naturezas %}
-                        <option value="{{ nd.id }}">{{ nd.numero }} - {{ nd.descricao }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <!-- Campos opcionais -->
-            <div class="form-group">
-                <label for="marca">Marca</label>
-                <input type="text" name="marca" id="marca">
-            </div>
-            <div class="form-group">
-                <label for="modelo">Modelo</label>
-                <input type="text" name="modelo" id="modelo">
-            </div>
-            <div class="form-group">
-                <label for="especificacoes">Especificações Técnicas</label>
-                <textarea name="especificacoes" id="especificacoes" rows="3"></textarea>
-            </div>
-            <div class="form-group">
-                <label for="codigo_fabricante">Código do Fabricante</label>
-                <input type="text" name="codigo_fabricante" id="codigo_fabricante">
-            </div>
-            <div class="form-group">
-                <label for="codigo_barras">Código de Barras</label>
-                <input type="text" name="codigo_barras" id="codigo_barras">
-            </div>
-            <div class="form-group">
-                <label for="observacoes">Observações</label>
-                <textarea name="observacoes" id="observacoes" rows="2"></textarea>
-            </div>
-            <button type="submit">Salvar Item</button>
-        </form>
+{% extends 'base_simplificada.html' %}
+{% block title %}Cadastro de Item{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary me-2">Início</a>
+            <a href="javascript:history.back()" class="btn btn-outline-secondary">Voltar</a>
+        </div>
+        <h4 class="mb-0 text-center">CADASTRO DE MATERIAL OU SERVIÇO</h4>
+        <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">Sair</a>
     </div>
-</body>
-</html>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <form method="POST" class="border rounded p-4 shadow-sm bg-light">
+                <div class="mb-3">
+                    <label for="codigo" class="form-label">Código SAP</label>
+                    <input type="text" name="codigo" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="codigo_siads" class="form-label">Código SIADS</label>
+                    <input type="text" name="codigo_siads" class="form-control">
+                </div>
+
+                <div class="mb-3">
+                    <label for="tipo" class="form-label">Tipo</label>
+                    <select name="tipo" class="form-select" required>
+                        <option value="Material">Material</option>
+                        <option value="Serviço">Serviço</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="nome" class="form-label">Nome</label>
+                    <input type="text" name="nome" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="unidade" class="form-label">Unidade de Medida</label>
+                    <select name="unidade" class="form-select" required>
+                        <option value="UN">Unidade</option>
+                        <option value="KG">Quilograma</option>
+                        <option value="L">Litro</option>
+                        <option value="CX">Caixa</option>
+                        <option value="PC">Peça</option>
+                        <option value="MT">Metro</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="natureza_despesa_id" class="form-label">Natureza da Despesa</label>
+                    <select name="natureza_despesa_id" class="form-select">
+                        {% for natureza in naturezas %}
+                        <option value="{{ natureza.id }}">{{ natureza.codigo }} - {{ natureza.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="descricao" class="form-label">Descrição</label>
+                    <textarea name="descricao" class="form-control" rows="3"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-success w-100">Salvar</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
 

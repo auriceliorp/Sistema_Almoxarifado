@@ -66,7 +66,7 @@ def novo_item():
 
         if not all([codigo, nome, unidade, natureza_despesa_id]):
             flash('Preencha os campos obrigatórios: Código, Nome, Unidade de Medida e Natureza de Despesa.')
-            return redirect(url_for('item_bp.form_item'))
+            return redirect(url_for('item_bp.novo_item'))
 
         novo = Item(
             codigo=codigo,
@@ -81,7 +81,7 @@ def novo_item():
         return redirect(url_for('item_bp.lista_itens'))
 
     naturezas = NaturezaDespesa.query.order_by(NaturezaDespesa.numero).all()
-    return render_template('form_item.html', naturezas=naturezas)
+    return render_template('novo_item.html', naturezas=naturezas)
 
 # Edição de Item
 @item_bp.route('/editar/<int:id>', methods=['GET', 'POST'])

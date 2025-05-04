@@ -10,13 +10,16 @@ item_bp = Blueprint('item_bp', __name__, url_prefix='/item')
 @item_bp.route('/itens')
 @login_required
 def lista_itens():
-    nd_id = request.args.get('nd', type=int)
+    nd_param = request.args.get('nd')
+    nd_id = int(nd_param) if nd_param and nd_param.isdigit() else None
+
     if nd_id:
         itens = Item.query.filter_by(natureza_despesa_id=nd_id).all()
     else:
         itens = Item.query.all()
+
     naturezas = NaturezaDespesa.query.order_by(NaturezaDespesa.numero).all()
-    return render_template('lista_itens.html', itens=itens, naturezas=naturezas)
+    return render_template('lista_itens.html', itens=itens, naturezas=naturezas, nd_selecionado=nd_id)
 
 # Exportar Itens para Excel
 @item_bp.route('/exportar_excel')
@@ -50,10 +53,10 @@ def exportar_excel():
     response.headers["Content-type"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     return response
 
-# Cadastro de Novo Item
-@item_bp.route('/novo', methods=['GET', 'POST'])
+# Formulário de Cadastro de Novo Item usando form_item.html
+@item_bp.route('/form', methods=['GET', 'POST'])
 @login_required
-def novo_item():
+def form_item():
     if request.method == 'POST':
         codigo = request.form.get('codigo')
         nome = request.form.get('nome')
@@ -63,53 +66,8 @@ def novo_item():
 
         if not all([codigo, nome, unidade, natureza_despesa_id]):
             flash('Preencha os campos obrigatórios: Código, Nome, Unidade de Medida e Natureza de Despesa.')
-            return redirect(url_for('item_bp.novo_item'))
+            return redirect(url_for('item_bp.form_item'))
 
         novo = Item(
             codigo=codigo,
-            nome=nome,
-            descricao=descricao or '',
-            unidade=unidade,
-            natureza_despesa_id=natureza_despesa_id
-        )
-        db.session.add(novo)
-        db.session.commit()
-        flash('Item cadastrado com sucesso!')
-        return redirect(url_for('item_bp.lista_itens'))
-
-    naturezas = NaturezaDespesa.query.order_by(NaturezaDespesa.numero).all()
-    return render_template('novo_item.html', naturezas=naturezas)
-
-# Edição de Item
-@item_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
-@login_required
-def editar_item(id):
-    item = Item.query.get_or_404(id)
-
-    if request.method == 'POST':
-        item.codigo = request.form.get('codigo')
-        item.nome = request.form.get('nome')
-        item.descricao = request.form.get('descricao')
-        item.unidade = request.form.get('unidade')
-        item.natureza_despesa_id = request.form.get('natureza_despesa_id')
-
-        if not all([item.codigo, item.nome, item.unidade, item.natureza_despesa_id]):
-            flash('Preencha os campos obrigatórios: Código, Nome, Unidade de Medida e Natureza de Despesa.')
-            return redirect(url_for('item_bp.editar_item', id=id))
-
-        db.session.commit()
-        flash('Item atualizado com sucesso!')
-        return redirect(url_for('item_bp.lista_itens'))
-
-    naturezas = NaturezaDespesa.query.order_by(NaturezaDespesa.numero).all()
-    return render_template('editar_item.html', item=item, naturezas=naturezas)
-
-# Exclusão de Item
-@item_bp.route('/excluir/<int:id>', methods=['POST'])
-@login_required
-def excluir_item(id):
-    item = Item.query.get_or_404(id)
-    db.session.delete(item)
-    db.session.commit()
-    flash('Item excluído com sucesso!')
-    return redirect(url_for('item_bp.lista_itens'))
+            nome=nome

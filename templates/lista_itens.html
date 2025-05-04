@@ -1,22 +1,24 @@
 {% extends 'base_simplificada.html' %}
 
-{% block title %}Lista de Itens{% endblock %}
+{% block title %}Lista Materiais/Serviços{% endblock %}
 
 {% block content %}
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">Início</a>
-        <a href="{{ request.referrer or url_for('main.home') }}" class="btn btn-outline-secondary">Voltar</a>
-        <h4 class="mb-0 text-center">Lista de Itens</h4>
-        <div>
-            <a href="{{ url_for('item_bp.novo_item') }}" class="btn btn-outline-success me-2">Cadastrar Novo</a>
+        <div class="d-flex gap-2">
+            <a href="javascript:history.back()" class="btn btn-outline-secondary">Voltar</a>
+            <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">Início</a>
+        </div>
+        <h4 class="mb-0 text-center">Lista Materiais/Serviços</h4>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('item_bp.novo_item') }}" class="btn btn-outline-success">Cadastrar Novo</a>
             <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">Sair</a>
         </div>
     </div>
 
     <div class="table-responsive">
         <table class="table table-bordered table-hover align-middle">
-            <thead class="table-success">
+            <thead class="table-success text-center">
                 <tr>
                     <th>Código</th>
                     <th>Nome</th>
@@ -26,7 +28,8 @@
                     <th>Quantidade</th>
                     <th>Valor Unitário</th>
                     <th>Valor Total</th>
-                    <th class="text-center">Ações</th>
+                    <th>Validade</th>
+                    <th>Ações</th>
                 </tr>
             </thead>
             <tbody>
@@ -37,9 +40,10 @@
                     <td>{{ item.descricao }}</td>
                     <td>{{ item.natureza.numero if item.natureza else '' }}</td>
                     <td>{{ item.unidade }}</td>
-                    <td>{{ item.quantidade or 0 }}</td>
-                    <td>R$ {{ '%.2f'|format(item.valor_unitario or 0) }}</td>
-                    <td>R$ {{ '%.2f'|format((item.quantidade or 0) * (item.valor_unitario or 0)) }}</td>
+                    <td class="text-end">{{ item.quantidade or 0 }}</td>
+                    <td class="text-end">R$ {{ '%.2f'|format(item.valor_unitario or 0) }}</td>
+                    <td class="text-end">R$ {{ '%.2f'|format((item.quantidade or 0) * (item.valor_unitario or 0)) }}</td>
+                    <td class="text-center">{{ item.data_validade.strftime('%d/%m/%Y') if item.data_validade else '-' }}</td>
                     <td class="text-center">
                         <div class="d-flex justify-content-center gap-2">
                             <a href="{{ url_for('item_bp.editar_item', id=item.id) }}" class="btn btn-warning btn-sm">Editar</a>

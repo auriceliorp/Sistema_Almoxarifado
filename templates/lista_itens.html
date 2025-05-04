@@ -11,7 +11,10 @@
             <a href="{{ request.referrer or url_for('main.home') }}" class="btn btn-outline-secondary">Voltar</a>
         </div>
         <h4 class="mb-0 text-center flex-grow-1">Lista de Materiais ou Serviços</h4>
-        <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">Sair</a>
+        <div>
+            <a href="{{ url_for('item_bp.novo_item') }}" class="btn btn-outline-success me-2">Cadastrar Novo</a>
+            <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">Sair</a>
+        </div>
     </div>
 
     <div class="table-responsive">
@@ -22,6 +25,8 @@
                     <th>Nome</th>
                     <th>Descrição</th>
                     <th>Natureza de Despesa</th>
+                    <th>Unidade</th>
+                    <th>Quantidade Disponível</th>
                     <th>Ações</th>
                 </tr>
             </thead>
@@ -32,6 +37,8 @@
                     <td>{{ item.nome }}</td>
                     <td>{{ item.descricao }}</td>
                     <td>{{ item.natureza.numero if item.natureza else '' }}</td>
+                    <td>{{ item.unidade }}</td>
+                    <td>0</td> <!-- será atualizado futuramente com controle de estoque -->
                     <td class="text-center">
                         <a href="{{ url_for('item_bp.editar_item', id=item.id) }}" class="btn btn-sm btn-warning">Editar</a>
                         <form method="POST" action="{{ url_for('item_bp.excluir_item', id=item.id) }}" style="display:inline;">
@@ -41,7 +48,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="5" class="text-center text-muted">Nenhum item cadastrado.</td>
+                    <td colspan="7" class="text-center text-muted">Nenhum item cadastrado.</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -50,3 +57,4 @@
 
 </div>
 {% endblock %}
+

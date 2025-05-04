@@ -5,6 +5,7 @@ from models import Item, NaturezaDespesa
 
 item_bp = Blueprint('item_bp', __name__, url_prefix='/item')
 
+# Lista de Itens com filtro por Natureza de Despesa
 @item_bp.route('/itens')
 @login_required
 def lista_itens():
@@ -16,13 +17,7 @@ def lista_itens():
     naturezas = NaturezaDespesa.query.order_by(NaturezaDespesa.numero).all()
     return render_template('lista_itens.html', itens=itens, naturezas=naturezas)
 
-
-@item_bp.route('/')
-@login_required
-def lista_itens():
-    itens = Item.query.all()
-    return render_template('lista_itens.html', itens=itens)
-
+# Cadastro de Novo Item
 @item_bp.route('/novo', methods=['GET', 'POST'])
 @login_required
 def novo_item():
@@ -52,6 +47,7 @@ def novo_item():
     naturezas = NaturezaDespesa.query.order_by(NaturezaDespesa.numero).all()
     return render_template('novo_item.html', naturezas=naturezas)
 
+# Edição de Item
 @item_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
 def editar_item(id):
@@ -75,6 +71,7 @@ def editar_item(id):
     naturezas = NaturezaDespesa.query.order_by(NaturezaDespesa.numero).all()
     return render_template('editar_item.html', item=item, naturezas=naturezas)
 
+# Exclusão de Item
 @item_bp.route('/excluir/<int:id>', methods=['POST'])
 @login_required
 def excluir_item(id):
@@ -83,6 +80,3 @@ def excluir_item(id):
     db.session.commit()
     flash('Item excluído com sucesso!')
     return redirect(url_for('item_bp.lista_itens'))
-
-
-

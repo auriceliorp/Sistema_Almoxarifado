@@ -53,7 +53,7 @@ def exportar_excel():
     response.headers["Content-type"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     return response
 
-# Formulário de Cadastro de Novo Item usando form_item.html
+# Formulário de Cadastro de Novo Item usando novo_item.html
 @item_bp.route('/form', methods=['GET', 'POST'])
 @login_required
 def form_item():

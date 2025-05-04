@@ -5,6 +5,18 @@ from models import Item, NaturezaDespesa
 
 item_bp = Blueprint('item_bp', __name__, url_prefix='/item')
 
+@item_bp.route('/itens')
+@login_required
+def lista_itens():
+    nd_id = request.args.get('nd', type=int)
+    if nd_id:
+        itens = Item.query.filter_by(natureza_despesa_id=nd_id).all()
+    else:
+        itens = Item.query.all()
+    naturezas = NaturezaDespesa.query.order_by(NaturezaDespesa.numero).all()
+    return render_template('lista_itens.html', itens=itens, naturezas=naturezas)
+
+
 @item_bp.route('/')
 @login_required
 def lista_itens():

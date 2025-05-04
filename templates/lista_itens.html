@@ -1,39 +1,35 @@
 {% extends 'base_simplificada.html' %}
-{% block title %}Lista de Materiais/Serviços{% endblock %}
+{% block title %}Lista Materiais/Serviços{% endblock %}
 
 {% block content %}
 <div class="container py-4">
-
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary me-2">Início</a>
-            <a href="{{ request.referrer or url_for('main.dashboard') }}" class="btn btn-outline-secondary">Voltar</a>
+            <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">Início</a>
+            <a href="javascript:history.back()" class="btn btn-outline-secondary">Voltar</a>
         </div>
-        <h4 class="mb-0 text-center">Lista de Materiais/Serviços</h4>
+        <h4 class="mb-0 text-center">Lista Materiais/Serviços</h4>
         <div>
-            <a href="{{ url_for('item_bp.novo_item') }}" class="btn btn-success me-2">Cadastrar Novo</a>
+            <a href="{{ url_for('item_bp.novo_item') }}" class="btn btn-success">Cadastrar Novo</a>
             <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">Sair</a>
         </div>
     </div>
 
-    <form method="GET" class="mb-3">
-        <div class="row g-2">
-            <div class="col-md-4">
-                <select name="nd" class="form-select" onchange="this.form.submit()">
-                    <option value="">Todos os Grupos (ND)</option>
-                    {% for nd in naturezas %}
-                    <option value="{{ nd.id }}" {% if request.args.get('nd')|int == nd.id %}selected{% endif %}>
-                        {{ nd.numero }} - {{ nd.nome }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-        </div>
+    <form method="GET" class="mb-3 d-flex align-items-center gap-2">
+        <label for="nd" class="form-label mb-0">Filtrar por ND:</label>
+        <select name="nd" id="nd" class="form-select w-auto" onchange="this.form.submit()">
+            <option value="">Todos</option>
+            {% for nd in naturezas %}
+                <option value="{{ nd.id }}" {% if nd.id == nd_selecionado %}selected{% endif %}>
+                    {{ nd.numero }} - {{ nd.nome }}
+                </option>
+            {% endfor %}
+        </select>
     </form>
 
-    <div class="table-responsive mt-3">
-        <table class="table table-bordered table-hover">
-            <thead class="table-success">
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-success text-center">
                 <tr>
                     <th>Código</th>
                     <th>Nome</th>
@@ -44,7 +40,7 @@
                     <th>Valor Total</th>
                     <th>Validade</th>
                     <th>ND</th>
-                    <th style="min-width: 120px;">Ações</th>
+                    <th>Ações</th>
                 </tr>
             </thead>
             <tbody>
@@ -54,24 +50,18 @@
                     <td>{{ item.nome }}</td>
                     <td>{{ item.descricao }}</td>
                     <td>{{ item.unidade }}</td>
-                    <td>{{ item.quantidade or 0 }}</td>
-                    <td>
-                        {% if item.valor_unitario is not none %}
-                            R$ {{ '%.2f' | format(item.valor_unitario) }}
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if item.valor_total is not none %}
-                            R$ {{ '%.2f' | format(item.valor_total) }}
-                        {% endif %}
-                    </td>
-                    <td>{{ item.validade.strftime('%d/%m/%Y') if item.validade else '' }}</td>
+                    <td class="text-end">{{ item.quantidade or 0 }}</td>
+                    <td class="text-end">{{ '{:,.2f}'.format(item.valor_unitario or 0) }}</td>
+                    <td class="text-end">{{ '{:,.2f}'.format((item.quantidade or 0) * (item.valor_unitario or 0)) }}</td>
+                    <td>{{ item.data_validade.strftime('%d/%m/%Y') if item.data_validade else '' }}</td>
                     <td>{{ item.natureza.numero if item.natureza else '' }}</td>
                     <td class="text-center">
-                        <a href="{{ url_for('item_bp.editar_item', id=item.id) }}" class="btn btn-sm btn-warning me-1">Editar</a>
-                        <form method="POST" action="{{ url_for('item_bp.excluir_item', id=item.id) }}" style="display:inline;">
-                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir este item?');">Excluir</button>
-                        </form>
+                        <div class="d-flex justify-content-center gap-1">
+                            <a href="{{ url_for('item_bp.editar_item', id=item.id) }}" class="btn btn-warning btn-sm">Editar</a>
+                            <form method="POST" action="{{ url_for('item_bp.excluir_item', id=item.id) }}" onsubmit="return confirm('Tem certeza que deseja excluir este item?');">
+                                <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -79,4 +69,29 @@
         </table>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('th').forEach((header, index) => {
+        header.style.cursor = 'pointer';
+        header.addEventListener('click', () => {
+            const table = header.closest('table');
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            const asc = !header.classList.contains('asc');
+            rows.sort((a, b) => {
+                const aText = a.children[index].textContent.trim();
+                const bText = b.children[index].textContent.trim();
+                return asc
+                    ? aText.localeCompare(bText, undefined, {numeric: true})
+                    : bText.localeCompare(aText, undefined, {numeric: true});
+            });
+            header.classList.toggle('asc', asc);
+            header.classList.toggle('desc', !asc);
+            rows.forEach(row => tbody.appendChild(row));
+        });
+    });
+});
+</script>
+
 {% endblock %}

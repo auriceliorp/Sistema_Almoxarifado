@@ -15,6 +15,22 @@
             <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">Sair</a>
         </div>
     </div>
+<form method="GET" class="row g-3 mb-4">
+    <div class="col-md-4">
+        <label for="nd" class="form-label">Filtrar por ND</label>
+        <select name="nd" id="nd" class="form-select">
+            <option value="">Todos</option>
+            {% for nd in naturezas %}
+            <option value="{{ nd.id }}" {% if request.args.get('nd', type=int) == nd.id %}selected{% endif %}>
+                {{ nd.numero }} - {{ nd.nome }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-2 align-self-end">
+        <button type="submit" class="btn btn-outline-primary w-100">Filtrar</button>
+    </div>
+</form>
 
     <div class="table-responsive">
         <table class="table table-bordered table-hover align-middle">

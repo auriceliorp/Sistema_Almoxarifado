@@ -56,7 +56,7 @@ def exportar_excel():
 # Formulário de Cadastro de Novo Item usando novo_item.html
 @item_bp.route('/form', methods=['GET', 'POST'])
 @login_required
-def form_item():
+def novo_item():
     if request.method == 'POST':
         codigo = request.form.get('codigo')
         nome = request.form.get('nome')

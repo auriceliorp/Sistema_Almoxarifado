@@ -1,7 +1,8 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash
+ from flask import Blueprint, render_template, redirect, url_for, request, flash, make_response
 from flask_login import login_required
 from database import db
 from models import Item, NaturezaDespesa
+import pandas as pd
 
 item_bp = Blueprint('item_bp', __name__, url_prefix='/item')
 
@@ -16,6 +17,38 @@ def lista_itens():
         itens = Item.query.all()
     naturezas = NaturezaDespesa.query.order_by(NaturezaDespesa.numero).all()
     return render_template('lista_itens.html', itens=itens, naturezas=naturezas)
+
+# Exportar Itens para Excel
+@item_bp.route('/exportar_excel')
+@login_required
+def exportar_excel():
+    nd_id = request.args.get('nd', type=int)
+    if nd_id:
+        itens = Item.query.filter_by(natureza_despesa_id=nd_id).all()
+    else:
+        itens = Item.query.all()
+
+    dados = []
+    for item in itens:
+        dados.append({
+            'Código': item.codigo,
+            'Nome': item.nome,
+            'Descrição': item.descricao,
+            'Unidade': item.unidade,
+            'Quantidade': item.quantidade or 0,
+            'Valor Unitário': float(item.valor_unitario or 0),
+            'Valor Total': float((item.quantidade or 0) * (item.valor_unitario or 0)),
+            'Validade': item.data_validade.strftime('%d/%m/%Y') if item.data_validade else '',
+            'ND': item.natureza.numero if item.natureza else ''
+        })
+
+    df = pd.DataFrame(dados)
+    output = df.to_excel(index=False, engine='openpyxl')
+
+    response = make_response(output)
+    response.headers["Content-Disposition"] = "attachment; filename=itens.xlsx"
+    response.headers["Content-type"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    return response
 
 # Cadastro de Novo Item
 @item_bp.route('/novo', methods=['GET', 'POST'])
@@ -60,4 +93,23 @@ def editar_item(id):
         item.unidade = request.form.get('unidade')
         item.natureza_despesa_id = request.form.get('natureza_despesa_id')
 
-        if not all([item.codigo, item.nome, item.unidade, 
+        if not all([item.codigo, item.nome, item.unidade, item.natureza_despesa_id]):
+            flash('Preencha os campos obrigatórios: Código, Nome, Unidade de Medida e Natureza de Despesa.')
+            return redirect(url_for('item_bp.editar_item', id=id))
+
+        db.session.commit()
+        flash('Item atualizado com sucesso!')
+        return redirect(url_for('item_bp.lista_itens'))
+
+    naturezas = NaturezaDespesa.query.order_by(NaturezaDespesa.numero).all()
+    return render_template('editar_item.html', item=item, naturezas=naturezas)
+
+# Exclusão de Item
+@item_bp.route('/excluir/<int:id>', methods=['POST'])
+@login_required
+def excluir_item(id):
+    item = Item.query.get_or_404(id)
+    db.session.delete(item)
+    db.session.commit()
+    flash('Item excluído com sucesso!')
+    return redirect(url_for('item_bp.lista_itens'))

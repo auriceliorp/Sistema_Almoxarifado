@@ -30,3 +30,22 @@ def novo_grupo():
 
     naturezas = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
     return render_template('form_grupo.html', naturezas=naturezas)
+
+@grupo_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
+@login_required
+def editar_grupo(id):
+    grupo = Grupo.query.get_or_404(id)
+    if request.method == 'POST':
+        grupo.nome = request.form.get('nome')
+        grupo.natureza_despesa_id = request.form.get('natureza_despesa_id')
+
+        if not grupo.nome or not grupo.natureza_despesa_id:
+            flash('Preencha todos os campos obrigatórios.')
+            return redirect(url_for('grupo_bp.editar_grupo', id=grupo.id))
+
+        db.session.commit()
+        flash('Grupo atualizado com sucesso!')
+        return redirect(url_for('grupo_bp.lista_grupos'))
+
+    naturezas = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
+    return render_template('form_grupo.html', grupo=grupo, naturezas=naturezas)

@@ -14,7 +14,7 @@ class Usuario(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     senha = db.Column(db.String(255), nullable=False)
     matricula = db.Column(db.String(50))
-    perfil_id = db.Column(db.Integer, db.ForeignKey('perfil.id'))
+    perfil_id = db.Column(db.Integer, db.ForeignKey('perfis.id'))
     perfil = db.relationship('Perfil', backref='usuarios')
     senha_temporaria = db.Column(db.Boolean, default=True)
 

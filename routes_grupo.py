@@ -41,7 +41,7 @@ def editar_grupo(id):
 
         if not grupo.nome or not grupo.natureza_despesa_id:
             flash('Preencha todos os campos obrigatórios.')
-            return redirect(url_for('grupo_bp.editar_grupo', id=grupo.id))
+            return redirect(url_for('grupo_bp.editar_grupo', id=id))
 
         db.session.commit()
         flash('Grupo atualizado com sucesso!')
@@ -49,3 +49,12 @@ def editar_grupo(id):
 
     naturezas = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
     return render_template('form_grupo.html', grupo=grupo, naturezas=naturezas)
+
+@grupo_bp.route('/excluir/<int:id>', methods=['POST'])
+@login_required
+def excluir_grupo(id):
+    grupo = Grupo.query.get_or_404(id)
+    db.session.delete(grupo)
+    db.session.commit()
+    flash('Grupo excluído com sucesso!')
+    return redirect(url_for('grupo_bp.lista_grupos'))

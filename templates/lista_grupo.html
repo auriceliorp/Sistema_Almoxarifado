@@ -1,49 +1,30 @@
 {% extends 'base_simplificada.html' %}
-{% block title %}Grupos de Itens{% endblock %}
-
 {% block content %}
-<div class="container py-4">
-
-    <!-- Cabeçalho -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <a href="{{ url_for('main.home') }}" class="btn btn-outline-secondary">← Início</a>
-        <h4 class="mb-0">Grupos de Itens</h4>
-        <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">Sair</a>
-    </div>
-
-    <!-- Botões de ação -->
-    <div class="d-flex justify-content-between flex-wrap gap-2 mb-3">
-        <a href="{{ url_for('grupo_bp.novo_grupo') }}" class="btn btn-success">+ Novo Grupo</a>
-        <a href="{{ url_for('nd_bp.novo_nd') }}" class="btn btn-outline-primary">+ Nova Natureza de Despesa</a>
-    </div>
-
-    <!-- Tabela -->
-    <div class="table-responsive">
-        <table class="table table-bordered table-hover align-middle">
-            <thead class="table-success">
-                <tr>
-                    <th>ID</th>
-                    <th>Nome</th>
-                    <th>Natureza de Despesa</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for grupo in grupos %}
-                <tr>
-                    <td>{{ grupo.id }}</td>
-                    <td>{{ grupo.nome }}</td>
-                    <td>{{ grupo.natureza_despesa.nome }}</td>
-                    <td class="text-nowrap">
-                        <a href="{{ url_for('grupo_bp.editar_grupo', id=grupo.id) }}" class="btn btn-sm btn-outline-primary">Editar</a>
-                        <form method="POST" action="{{ url_for('grupo_bp.excluir_grupo', id=grupo.id) }}" style="display:inline;" onsubmit="return confirm('Tem certeza que deseja excluir este grupo?');">
-                            <button type="submit" class="btn btn-sm btn-outline-danger ms-1">Excluir</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+<div class="container mt-4">
+    <h2>Grupos de Itens</h2>
+    <a href="{{ url_for('grupo_bp.novo_grupo') }}" class="btn btn-primary mb-3">+ Novo Grupo</a>
+    <a href="{{ url_for('nd_bp.nova_nd') }}" class="btn btn-outline-primary mb-3">+ Nova Natureza de Despesa</a>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Natureza de Despesa</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for grupo in grupos %}
+            <tr>
+                <td>{{ grupo.nome }}</td>
+                <td>{{ grupo.natureza.nome }}</td>
+                <td>
+                    <a href="{{ url_for('grupo_bp.editar_grupo', id=grupo.id) }}" class="btn btn-sm btn-warning">Editar</a>
+                    <a href="{{ url_for('grupo_bp.excluir_grupo', id=grupo.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir este grupo?')">Excluir</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{{ url_for('home') }}" class="btn btn-secondary mt-3">Voltar</a>
 </div>
 {% endblock %}

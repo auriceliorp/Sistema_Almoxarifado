@@ -52,6 +52,30 @@ def novo_usuario():
 
     return render_template('novo_usuario.html', perfis=perfis)
 
+# ------------------- EDIÇÃO DE USUÁRIO -------------------
+@usuario_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
+@login_required
+def editar_usuario(id):
+    usuario = Usuario.query.get_or_404(id)
+    perfis = Perfil.query.all()
+
+    if request.method == 'POST':
+        usuario.nome = request.form.get('nome')
+        usuario.email = request.form.get('email')
+        usuario.matricula = request.form.get('matricula')
+        usuario.perfil_id = request.form.get('perfil_id')
+
+        nova_senha = request.form.get('senha')
+        if nova_senha:
+            usuario.senha = generate_password_hash(nova_senha)
+
+        db.session.commit()
+        flash('Usuário atualizado com sucesso!', 'success')
+        return redirect(url_for('usuario_bp.lista_usuario'))
+
+    return render_template('editar_usuario.html', usuario=usuario, perfis=perfis)
+
+
 # ------------------- EXCLUSÃO DE USUÁRIO -------------------
 @usuario_bp.route('/excluir/<int:id>', methods=['POST'])
 @login_required

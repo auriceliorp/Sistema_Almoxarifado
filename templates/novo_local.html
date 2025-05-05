@@ -1,16 +1,17 @@
-{% extends 'base_simplificada.html' %}
-{% block title %}Novo Local{% endblock %}
+{# templates/novo_local.html #}
+{% extends 'base.html' %}
+{% block title %}{{ 'Editar' if local else 'Novo' }} Local{% endblock %}
 
 {% block content %}
 <div class="container py-4">
-    <h3 class="mb-4">Cadastrar Novo Local</h3>
+    <h2 class="mb-4">{{ 'Editar' if local else 'Novo' }} Local</h2>
     <form method="POST">
         <div class="mb-3">
-            <label for="descricao" class="form-label">Descrição do Local *</label>
-            <input type="text" class="form-control" id="descricao" name="descricao" required>
+            <label for="descricao" class="form-label">Descrição</label>
+            <input type="text" class="form-control" id="descricao" name="descricao" required value="{{ local.descricao if local else '' }}">
         </div>
         <button type="submit" class="btn btn-success">Salvar</button>
-        <a href="{{ url_for('area_ul_bp.lista_locais') }}" class="btn btn-secondary">Voltar</a>
+        <a href="{{ url_for('area_ul_bp.lista_locais') }}" class="btn btn-secondary">Cancelar</a>
     </form>
 </div>
 {% endblock %}

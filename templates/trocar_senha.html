@@ -4,9 +4,13 @@
 {% block content %}
 <div class="container py-5">
     <div class="text-center mb-4 d-flex justify-content-between">
-        <a href="{{ url_for('main.home') }}" class="btn btn-outline-success">Início</a>
-        <h3 class="flex-fill text-center">Trocar Senha</h3>
         <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">Sair</a>
+        <h3 class="flex-fill text-center">Trocar Senha</h3>
+        <div style="width: 80px;"></div>
+    </div>
+
+    <div class="alert alert-warning text-center" role="alert">
+        <strong>Primeiro acesso:</strong> Para sua segurança, altere a senha temporária fornecida.
     </div>
 
     <div class="row justify-content-center">

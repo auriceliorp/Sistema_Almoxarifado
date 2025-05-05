@@ -5,43 +5,59 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">Início</a>
-        <h4 class="m-0">Novo Usuário</h4>
+        <h4 class="m-0">Cadastro de Novo Usuário</h4>
         <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">Sair</a>
     </div>
 
     <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
+        <div class="col-md-8 col-lg-6">
             <form method="POST" class="border rounded p-4 shadow-sm bg-light">
-                <div class="mb-3">
-                    <label for="nome" class="form-label">Nome</label>
-                    <input type="text" name="nome" class="form-control" required>
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label for="nome" class="form-label">Nome *</label>
+                        <input type="text" name="nome" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="email" class="form-label">E-mail *</label>
+                        <input type="email" name="email" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="senha" class="form-label">Senha *</label>
+                        <input type="password" name="senha" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="matricula" class="form-label">Matrícula *</label>
+                        <input type="text" name="matricula" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="ramal" class="form-label">Ramal</label>
+                        <input type="text" name="ramal" class="form-control">
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="perfil_id" class="form-label">Perfil *</label>
+                        <select name="perfil_id" class="form-select" required>
+                            {% for perfil in perfis %}
+                            <option value="{{ perfil.id }}">{{ perfil.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="ul_id" class="form-label">Setor / Unidade Local *</label>
+                        <select name="ul_id" class="form-select" required>
+                            {% for ul in unidades_locais %}
+                            <option value="{{ ul.id }}">{{ ul.descricao }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label for="email" class="form-label">E-mail</label>
-                    <input type="email" name="email" class="form-control" required>
-                </div>
-
-                <div class="mb-3">
-                    <label for="senha" class="form-label">Senha</label>
-                    <input type="password" name="senha" class="form-control" required>
-                </div>
-
-                <div class="mb-3">
-                    <label for="matricula" class="form-label">Matrícula</label>
-                    <input type="text" name="matricula" class="form-control" required>
-                </div>
-
-                <div class="mb-3">
-                    <label for="perfil_id" class="form-label">Perfil</label>
-                    <select name="perfil_id" class="form-select" required>
-                        {% for perfil in perfis %}
-                        <option value="{{ perfil.id }}">{{ perfil.nome }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <button type="submit" class="btn btn-success w-100">Cadastrar</button>
+                <button type="submit" class="btn btn-success w-100 mt-3">Cadastrar Usuário</button>
             </form>
         </div>
     </div>

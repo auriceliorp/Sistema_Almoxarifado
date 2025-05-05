@@ -39,16 +39,13 @@
                     <td>{{ usuario.ramal or '' }}</td>
                     <td>{{ usuario.unidade_local.descricao if usuario.unidade_local else '' }}</td>
                     <td>{{ usuario.perfil.nome if usuario.perfil else '' }}</td>
-                    <td>
-                        <a href="{{ url_for('usuario_bp.editar_usuario', id=usuario.id) }}" class="btn btn-sm btn-outline-primary">Editar</a>
-                    </td>
                     <td class="text-nowrap">
-    <a href="{{ url_for('usuario_bp.editar_usuario', id=usuario.id) }}" class="btn btn-sm btn-outline-primary">Editar</a>
+                    <a href="{{ url_for('usuario_bp.editar_usuario', id=usuario.id) }}" class="btn btn-sm btn-outline-primary">Editar</a>
 
-    <form action="{{ url_for('usuario_bp.excluir_usuario', id=usuario.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Tem certeza que deseja excluir este usuário?');">
-        <button type="submit" class="btn btn-sm btn-outline-danger ms-1">Excluir</button>
-    </form>
-</td>
+                    <form action="{{ url_for('usuario_bp.excluir_usuario', id=usuario.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Tem certeza que deseja excluir este usuário?');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger ms-1">Excluir</button>
+            </form>
+            </td>
                 </tr>
                 {% endfor %}
             </tbody>

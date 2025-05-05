@@ -1,15 +1,12 @@
 # app_render.py
 
-from flask import Flask
+from flask import Flask, Blueprint, render_template, redirect, url_for, request, flash
+from flask_login import LoginManager, login_user, logout_user, current_user, login_required
+from werkzeug.security import generate_password_hash, check_password_hash
 from config import Config
-from flask import Blueprint, render_template, redirect, url_for, request, flash
-from flask_login import login_user, logout_user, current_user, login_required
-from flask_login import LoginManager
 from database import db
-from models import Item, NaturezaDespesa
 from sqlalchemy import inspect, text
-from models import Usuario, Perfil
-from werkzeug.security import check_password_hash, generate_password_hash
+from models import Usuario, Perfil, Item, NaturezaDespesa
 
 # Login Manager
 login_manager = LoginManager()
@@ -39,7 +36,16 @@ def login():
             login_user(usuario)
             if getattr(usuario, 'senha_temporaria', False):
                 return redirect(url_for('main.trocar_senha'))
-            return redirect(url_for('main.home'))
+            # Redireciona com base no nome do perfil
+            perfil = usuario.perfil.nome.lower() if usuario.perfil else ''
+            if perfil == 'admin':
+                return redirect(url_for('main.home'))
+            elif perfil == 'solicitante':
+                return redirect(url_for('main.home_solicitante'))
+            elif perfil == 'consultor':
+                return redirect(url_for('main.home_consultor'))
+            else:
+                return redirect(url_for('main.home'))  # fallback
         else:
             flash('E-mail ou senha inválidos.')
     return render_template('login.html')
@@ -66,6 +72,16 @@ def trocar_senha():
 @login_required
 def home():
     return render_template('home.html', usuario=current_user)
+
+@main.route('/home_solicitante')
+@login_required
+def home_solicitante():
+    return render_template('home_solicitante.html', usuario=current_user)
+
+@main.route('/home_consultor')
+@login_required
+def home_consultor():
+    return render_template('home_consultor.html', usuario=current_user)
 
 @main.route('/dashboard')
 @login_required
@@ -114,7 +130,6 @@ def create_app():
             try:
                 db.session.execute(text(f'ALTER TABLE {tabela} ADD COLUMN {coluna_sql};'))
                 db.session.commit()
-                print(f"Coluna adicionada: {coluna_sql} em {tabela}")
             except Exception:
                 db.session.rollback()
 
@@ -127,19 +142,20 @@ def create_app():
         if not coluna_existe('usuario', 'senha_temporaria'):
             adicionar_coluna('usuario', 'senha_temporaria BOOLEAN DEFAULT FALSE')
 
-        # Criação do perfil Admin se não existir
+        # Cria perfil Admin e usuário admin padrão se não existir nenhum
         perfil_admin = Perfil.query.filter_by(nome='Admin').first()
         if not perfil_admin:
             perfil_admin = Perfil(nome='Admin')
             db.session.add(perfil_admin)
             db.session.commit()
 
-        # Cria usuário admin apenas se não houver nenhum usuário com perfil Admin
-        usuario_admin_existe = Usuario.query.join(Perfil).filter(Perfil.nome == 'Admin').first()
-        if not usuario_admin_existe:
+        # Verifica se já existe algum usuário com perfil Admin
+        usuarios_admin = Usuario.query.join(Perfil).filter(Perfil.nome == 'Admin').first()
+        if not usuarios_admin:
+            admin_email = "admin@admin.com"
             usuario_admin = Usuario(
                 nome="Administrador",
-                email="admin@admin.com",
+                email=admin_email,
                 senha=generate_password_hash("admin123"),
                 perfil_id=perfil_admin.id,
                 matricula="0001",

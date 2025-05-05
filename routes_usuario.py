@@ -2,65 +2,66 @@
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
-from database import db
-from models import Usuario, Perfil
 from werkzeug.security import generate_password_hash
-from sqlalchemy.orm import joinedload
+from database import db
+from models import Usuario, Perfil, UnidadeLocal
 
 usuario_bp = Blueprint('usuario_bp', __name__, url_prefix='/usuario')
 
 # ------------------- LISTAGEM DE USUÁRIOS -------------------
 @usuario_bp.route('/')
 @login_required
-def lista_usuario():
-    # joinedload força o carregamento da relação 'perfil'
-    usuarios = Usuario.query.options(joinedload(Usuario.perfil)).all()
-    return render_template('lista_usuario.html', usuarios=usuarios)
+def lista_usuarios():
+    usuarios = Usuario.query.all()
+    return render_template('lista_usuarios.html', usuarios=usuarios)
 
-# ------------------- CADASTRO DE NOVO USUÁRIO -------------------
+# ------------------- CRIAÇÃO DE NOVO USUÁRIO -------------------
 @usuario_bp.route('/novo', methods=['GET', 'POST'])
 @login_required
 def novo_usuario():
-    perfis = Perfil.query.all()
+    perfis = Perfil.query.all()  # Busca todos os perfis disponíveis
+    uls = UnidadeLocal.query.all()  # Busca todas as unidades locais cadastradas
 
     if request.method == 'POST':
         nome = request.form.get('nome')
         email = request.form.get('email')
         senha = request.form.get('senha')
         matricula = request.form.get('matricula')
+        ramal = request.form.get('ramal')
         perfil_id = request.form.get('perfil_id')
+        unidade_local_id = request.form.get('unidade_local_id')
 
-        if not (nome and email and senha and perfil_id):
-            flash('Todos os campos obrigatórios devem ser preenchidos!', 'warning')
+        # Validação de campos obrigatórios
+        if not (nome and email and senha and matricula and perfil_id and unidade_local_id):
+            flash('Preencha todos os campos obrigatórios.')
             return redirect(url_for('usuario_bp.novo_usuario'))
 
-        senha_hash = generate_password_hash(senha)
-
-        novo_usuario = Usuario(
+        # Criação do usuário com senha já criptografada
+        usuario = Usuario(
             nome=nome,
             email=email,
-            senha=senha_hash,
+            senha=generate_password_hash(senha),
             matricula=matricula,
-            perfil_id=perfil_id
+            ramal=ramal,
+            perfil_id=perfil_id,
+            unidade_local_id=unidade_local_id,
+            senha_temporaria=False  # Senha já definitiva
         )
-
-        db.session.add(novo_usuario)
+        db.session.add(usuario)
         db.session.commit()
+        flash('Usuário cadastrado com sucesso!')
+        return redirect(url_for('usuario_bp.lista_usuarios'))
 
-        flash('Usuário criado com sucesso!', 'success')
-        return redirect(url_for('usuario_bp.lista_usuario'))
-
-    return render_template('novo_usuario.html', perfis=perfis)
+    # Renderiza o formulário de criação com os dados necessários
+    return render_template('novo_usuario.html', perfis=perfis, uls=uls)
 
 # ------------------- EDIÇÃO DE USUÁRIO -------------------
-from models import Usuario, Perfil, UnidadeLocal
-
 @usuario_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
 def editar_usuario(id):
     usuario = Usuario.query.get_or_404(id)
     perfis = Perfil.query.all()
-    unidades_locais = UnidadeLocal.query.all()
+    uls = UnidadeLocal.query.all()
 
     if request.method == 'POST':
         usuario.nome = request.form.get('nome')
@@ -68,31 +69,21 @@ def editar_usuario(id):
         usuario.matricula = request.form.get('matricula')
         usuario.ramal = request.form.get('ramal')
         usuario.perfil_id = request.form.get('perfil_id')
-        usuario.unidade_local_id = request.form.get('unidade_local_id') or None
-
-        nova_senha = request.form.get('senha')
-        if nova_senha:
-            usuario.senha = generate_password_hash(nova_senha)
+        usuario.unidade_local_id = request.form.get('unidade_local_id')
 
         db.session.commit()
-        flash('Usuário atualizado com sucesso!', 'success')
-        return redirect(url_for('usuario_bp.lista_usuario'))
+        flash('Usuário atualizado com sucesso!')
+        return redirect(url_for('usuario_bp.lista_usuarios'))
 
-    return render_template('editar_usuario.html', usuario=usuario, perfis=perfis, unidades_locais=unidades_locais)
-
+    # Reaproveita o formulário de criação para edição
+    return render_template('novo_usuario.html', usuario=usuario, perfis=perfis, uls=uls)
 
 # ------------------- EXCLUSÃO DE USUÁRIO -------------------
-@usuario_bp.route('/excluir/<int:id>', methods=['POST'])
+@usuario_bp.route('/excluir/<int:id>', methods=['GET'])
 @login_required
 def excluir_usuario(id):
     usuario = Usuario.query.get_or_404(id)
-
-    # Opcional: impedir exclusão de si mesmo ou do admin
-    if usuario.email == 'admin@admin.com':
-        flash('Não é permitido excluir o usuário administrador padrão.', 'danger')
-        return redirect(url_for('usuario_bp.lista_usuario'))
-
     db.session.delete(usuario)
     db.session.commit()
-    flash('Usuário excluído com sucesso!', 'success')
-    return redirect(url_for('usuario_bp.lista_usuario'))
+    flash('Usuário excluído com sucesso!')
+    return redirect(url_for('usuario_bp.lista_usuarios'))

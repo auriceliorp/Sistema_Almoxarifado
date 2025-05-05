@@ -53,17 +53,22 @@ def novo_usuario():
     return render_template('novo_usuario.html', perfis=perfis)
 
 # ------------------- EDIÇÃO DE USUÁRIO -------------------
+from models import Usuario, Perfil, UnidadeLocal
+
 @usuario_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
 def editar_usuario(id):
     usuario = Usuario.query.get_or_404(id)
     perfis = Perfil.query.all()
+    unidades_locais = UnidadeLocal.query.all()
 
     if request.method == 'POST':
         usuario.nome = request.form.get('nome')
         usuario.email = request.form.get('email')
         usuario.matricula = request.form.get('matricula')
+        usuario.ramal = request.form.get('ramal')
         usuario.perfil_id = request.form.get('perfil_id')
+        usuario.unidade_local_id = request.form.get('unidade_local_id') or None
 
         nova_senha = request.form.get('senha')
         if nova_senha:
@@ -73,7 +78,7 @@ def editar_usuario(id):
         flash('Usuário atualizado com sucesso!', 'success')
         return redirect(url_for('usuario_bp.lista_usuario'))
 
-    return render_template('editar_usuario.html', usuario=usuario, perfis=perfis)
+    return render_template('editar_usuario.html', usuario=usuario, perfis=perfis, unidades_locais=unidades_locais)
 
 
 # ------------------- EXCLUSÃO DE USUÁRIO -------------------

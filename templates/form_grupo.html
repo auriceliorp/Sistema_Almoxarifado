@@ -1,35 +1,23 @@
 {% extends 'base_simplificada.html' %}
-{% block title %}{{ 'Editar Grupo' if grupo else 'Novo Grupo' }}{% endblock %}
-
 {% block content %}
-<div class="container py-4">
-    <h4 class="mb-4">{{ 'Editar Grupo' if grupo else 'Cadastrar Novo Grupo' }}</h4>
-
-    <form method="POST">
+<div class="container mt-4">
+    <h2>Cadastrar Novo Grupo</h2>
+    <form method="post">
         <div class="mb-3">
             <label for="nome" class="form-label">Nome do Grupo *</label>
-            <input type="text" class="form-control" id="nome" name="nome" value="{{ grupo.nome if grupo else '' }}" required>
+            <input type="text" class="form-control" id="nome" name="nome" required>
         </div>
-
         <div class="mb-3">
             <label for="natureza_despesa_id" class="form-label">Natureza de Despesa *</label>
             <select class="form-select" id="natureza_despesa_id" name="natureza_despesa_id" required>
                 <option value="">Selecione...</option>
-                {% for nd in nds %}
-                    <option value="{{ nd.id }}"
-                        {% if grupo and grupo.natureza_despesa_id == nd.id %}selected{% endif %}>
-                        {{ nd.codigo }} - {{ nd.nome }}
-                    </option>
+                {% for nd in naturezas %}
+                    <option value="{{ nd.id }}">{{ nd.codigo }} - {{ nd.nome }}</option>
                 {% endfor %}
             </select>
         </div>
-
-        <div class="d-flex justify-content-between">
-            <a href="{{ url_for('grupo_bp.lista_grupos') }}" class="btn btn-secondary">Cancelar</a>
-            <button type="submit" class="btn btn-primary">
-                {{ 'Salvar Alterações' if grupo else 'Cadastrar' }}
-            </button>
-        </div>
+        <button type="submit" class="btn btn-primary">Cadastrar</button>
+        <a href="{{ url_for('grupo_bp.lista_grupos') }}" class="btn btn-secondary ms-2">Cancelar</a>
     </form>
 </div>
 {% endblock %}

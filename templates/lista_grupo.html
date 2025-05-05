@@ -1,0 +1,46 @@
+{% extends 'base_simplificada.html' %}
+{% block title %}Grupos de Itens{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <a href="{{ url_for('main.home') }}" class="btn btn-outline-secondary">← Início</a>
+        <h4 class="m-0">Grupos de Itens</h4>
+        <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">Sair</a>
+    </div>
+
+    <div class="mb-4 d-flex justify-content-between flex-wrap gap-2">
+        <a href="{{ url_for('grupo_bp.novo_grupo') }}" class="btn btn-success btn-lg flex-fill">Novo Grupo</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-success">
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Natureza de Despesa</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for grupo in grupos %}
+                <tr>
+                    <td>{{ grupo.id }}</td>
+                    <td>{{ grupo.nome }}</td>
+                    <td>{{ grupo.natureza_despesa.nome if grupo.natureza_despesa else '' }}</td>
+                    <td class="text-nowrap">
+                        <a href="{{ url_for('grupo_bp.editar_grupo', grupo_id=grupo.id) }}" class="btn btn-sm btn-outline-primary">Editar</a>
+                        <form action="{{ url_for('grupo_bp.excluir_grupo', grupo_id=grupo.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Tem certeza que deseja excluir este grupo?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger ms-1">Excluir</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" class="text-center">Nenhum grupo cadastrado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

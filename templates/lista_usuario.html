@@ -12,7 +12,7 @@
 
     <div class="mb-4 d-flex justify-content-between flex-wrap gap-2">
         <a href="{{ url_for('usuario_bp.novo_usuario') }}" class="btn btn-success btn-lg flex-fill">Novo Usuário</a>
-        <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary btn-lg flex-fill">Dashboard</a>
+        <a href="{{ url_for('main.home') }}" class="btn btn-secondary btn-lg flex-fill">Início</a>
     </div>
 
     <div class="table-responsive">
@@ -42,6 +42,13 @@
                     <td>
                         <a href="{{ url_for('usuario_bp.editar_usuario', id=usuario.id) }}" class="btn btn-sm btn-outline-primary">Editar</a>
                     </td>
+                    <td class="text-nowrap">
+    <a href="{{ url_for('usuario_bp.editar_usuario', id=usuario.id) }}" class="btn btn-sm btn-outline-primary">Editar</a>
+
+    <form action="{{ url_for('usuario_bp.excluir_usuario', id=usuario.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Tem certeza que deseja excluir este usuário?');">
+        <button type="submit" class="btn btn-sm btn-outline-danger ms-1">Excluir</button>
+    </form>
+</td>
                 </tr>
                 {% endfor %}
             </tbody>

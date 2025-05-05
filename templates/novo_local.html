@@ -1,17 +1,25 @@
-{# templates/novo_local.html #}
-{% extends 'base.html' %}
-{% block title %}{{ 'Editar' if local else 'Novo' }} Local{% endblock %}
+{% extends 'base_simplificada.html' %}
+{% block title %}Novo Local{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <h2 class="mb-4">{{ 'Editar' if local else 'Novo' }} Local</h2>
-    <form method="POST">
-        <div class="mb-3">
-            <label for="descricao" class="form-label">Descrição</label>
-            <input type="text" class="form-control" id="descricao" name="descricao" required value="{{ local.descricao if local else '' }}">
+<div class="container py-5">
+    <div class="text-center mb-4 d-flex justify-content-between">
+        <a href="{{ url_for('main.home') }}" class="btn btn-outline-success">Início</a>
+        <h3 class="flex-fill text-center">Cadastrar Local</h3>
+        <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">Sair</a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <form method="POST" class="border rounded p-4 shadow-sm bg-light">
+                <div class="mb-3">
+                    <label for="descricao" class="form-label">Descrição do Local *</label>
+                    <input type="text" name="descricao" id="descricao" class="form-control" value="{{ local.descricao if local else '' }}" required>
+                </div>
+                <button type="submit" class="btn btn-success w-100">Salvar</button>
+                <a href="{{ url_for('area_ul_bp.lista_locais') }}" class="btn btn-secondary w-100 mt-2">Cancelar</a>
+            </form>
         </div>
-        <button type="submit" class="btn btn-success">Salvar</button>
-        <a href="{{ url_for('area_ul_bp.lista_locais') }}" class="btn btn-secondary">Cancelar</a>
-    </form>
+    </div>
 </div>
 {% endblock %}

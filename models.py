@@ -25,19 +25,25 @@ class NaturezaDespesa(db.Model):
     codigo = db.Column(db.String(50), nullable=False)
     nome = db.Column(db.String(120), nullable=False)
 
-    # Relacionamento com Grupo
     grupos = db.relationship('Grupo', back_populates='natureza_despesa', lazy=True)
+    itens = db.relationship('Item', back_populates='natureza')  # opcional se quiser o acesso reverso
 
 
 # ------------------- ITEM -------------------
 class Item(db.Model):
+    __tablename__ = 'item'
     id = db.Column(db.Integer, primary_key=True)
     codigo = db.Column(db.String(50), nullable=False)
     nome = db.Column(db.String(120), nullable=False)
     descricao = db.Column(db.Text, nullable=False, default='')
     unidade = db.Column(db.String(50), nullable=False)
-    natureza_despesa_id = db.Column(db.Integer, db.ForeignKey('natureza_despesa.id'))
-    natureza = db.relationship('NaturezaDespesa', backref='itens')
+    
+    grupo_id = db.Column(db.Integer, db.ForeignKey('grupos.id'))
+    grupo = db.relationship('Grupo', backref='itens')
+
+    natureza_despesa_id = db.Column(db.Integer, db.ForeignKey('naturezas_despesa.id'), nullable=False)
+    natureza = db.relationship('NaturezaDespesa', back_populates='itens')
+
     valor_unitario = db.Column(db.Float, default=0.0)
     estoque_atual = db.Column(db.Float, default=0.0)
     estoque_minimo = db.Column(db.Float, default=0.0)

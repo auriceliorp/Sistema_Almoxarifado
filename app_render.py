@@ -7,13 +7,9 @@ from flask_login import login_user, logout_user, current_user, login_required
 from flask_login import LoginManager
 from database import db
 from models import Item, NaturezaDespesa
-from sqlalchemy import inspect
+from sqlalchemy import inspect, text
 from models import Usuario, Perfil
-from werkzeug.security import check_password_hash
-from werkzeug.security import generate_password_hash
-
-
-
+from werkzeug.security import check_password_hash, generate_password_hash
 
 # Login Manager
 login_manager = LoginManager()
@@ -131,18 +127,19 @@ def create_app():
         if not coluna_existe('usuario', 'senha_temporaria'):
             adicionar_coluna('usuario', 'senha_temporaria BOOLEAN DEFAULT FALSE')
 
-        # Cria perfil Admin e usuário admin padrão
+        # Criação do perfil Admin se não existir
         perfil_admin = Perfil.query.filter_by(nome='Admin').first()
         if not perfil_admin:
             perfil_admin = Perfil(nome='Admin')
             db.session.add(perfil_admin)
             db.session.commit()
 
-        admin_email = "admin@admin.com"
-        if not Usuario.query.filter_by(email=admin_email).first():
+        # Cria usuário admin apenas se não houver nenhum usuário com perfil Admin
+        usuario_admin_existe = Usuario.query.join(Perfil).filter(Perfil.nome == 'Admin').first()
+        if not usuario_admin_existe:
             usuario_admin = Usuario(
                 nome="Administrador",
-                email=admin_email,
+                email="admin@admin.com",
                 senha=generate_password_hash("admin123"),
                 perfil_id=perfil_admin.id,
                 matricula="0001",
@@ -159,5 +156,3 @@ if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
 else:
     app = create_app()
-
-

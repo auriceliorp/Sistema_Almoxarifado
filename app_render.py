@@ -1,12 +1,15 @@
 # app_render.py
 
-from flask import Flask, Blueprint, render_template, redirect, url_for, request, flash
+from flask import Flask, render_template, redirect, url_for, request, flash, Blueprint
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
+from sqlalchemy import inspect, text
 from config import Config
 from database import db
-from sqlalchemy import inspect, text
-from models import Usuario, Perfil, Item, NaturezaDespesa
+from models import Usuario, Perfil
+import os
+import smtplib
+from email.mime.text import MIMEText
 
 # Login Manager
 login_manager = LoginManager()
@@ -36,16 +39,7 @@ def login():
             login_user(usuario)
             if getattr(usuario, 'senha_temporaria', False):
                 return redirect(url_for('main.trocar_senha'))
-            # Redireciona com base no nome do perfil
-            perfil = usuario.perfil.nome.lower() if usuario.perfil else ''
-            if perfil == 'admin':
-                return redirect(url_for('main.home'))
-            elif perfil == 'solicitante':
-                return redirect(url_for('main.home_solicitante'))
-            elif perfil == 'consultor':
-                return redirect(url_for('main.home_consultor'))
-            else:
-                return redirect(url_for('main.home'))  # fallback
+            return redirecionar_por_perfil(usuario)
         else:
             flash('E-mail ou senha inválidos.')
     return render_template('login.html')
@@ -63,25 +57,16 @@ def trocar_senha():
             current_user.senha = generate_password_hash(nova_senha)
             current_user.senha_temporaria = False
             db.session.commit()
+            enviar_email_troca_senha(current_user.email)
             flash('Senha alterada com sucesso.')
-            return redirect(url_for('main.home'))
+            return redirecionar_por_perfil(current_user)
 
     return render_template('trocar_senha.html')
 
 @main.route('/home')
 @login_required
 def home():
-    return render_template('home.html', usuario=current_user)
-
-@main.route('/home_solicitante')
-@login_required
-def home_solicitante():
-    return render_template('home_solicitante.html', usuario=current_user)
-
-@main.route('/home_consultor')
-@login_required
-def home_consultor():
-    return render_template('home_consultor.html', usuario=current_user)
+    return redirecionar_por_perfil(current_user)
 
 @main.route('/dashboard')
 @login_required
@@ -99,6 +84,40 @@ def logout():
     logout_user()
     return redirect(url_for('main.login'))
 
+def redirecionar_por_perfil(usuario):
+    nome_perfil = usuario.perfil.nome.lower()
+    if nome_perfil == 'administrador':
+        return render_template('home.html', usuario=usuario)
+    elif nome_perfil == 'solicitante':
+        return render_template('home_solicitante.html', usuario=usuario)
+    elif nome_perfil == 'consultor':
+        return render_template('home_consultor.html', usuario=usuario)
+    else:
+        flash('Perfil desconhecido.')
+        return redirect(url_for('main.login'))
+
+def enviar_email_troca_senha(destinatario):
+    try:
+        remetente = os.environ.get('EMAIL_REMETENTE')
+        senha = os.environ.get('EMAIL_SENHA')
+        smtp_server = os.environ.get('SMTP_SERVER')
+        smtp_port = int(os.environ.get('SMTP_PORT', 587))
+
+        assunto = "Senha alterada com sucesso"
+        corpo = "Sua senha foi alterada com sucesso no sistema Almoxarifado Embrapa. Caso não tenha sido você, informe imediatamente o administrador."
+
+        msg = MIMEText(corpo)
+        msg['Subject'] = assunto
+        msg['From'] = remetente
+        msg['To'] = destinatario
+
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()
+            server.login(remetente, senha)
+            server.send_message(msg)
+    except Exception as e:
+        print(f"Erro ao enviar e-mail de troca de senha: {e}")
+
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
@@ -106,7 +125,6 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
 
-    # Registro de Blueprints
     app.register_blueprint(main)
 
     from routes_nd import nd_bp
@@ -130,6 +148,7 @@ def create_app():
             try:
                 db.session.execute(text(f'ALTER TABLE {tabela} ADD COLUMN {coluna_sql};'))
                 db.session.commit()
+                print(f"Coluna adicionada: {coluna_sql} em {tabela}")
             except Exception:
                 db.session.rollback()
 
@@ -142,17 +161,14 @@ def create_app():
         if not coluna_existe('usuario', 'senha_temporaria'):
             adicionar_coluna('usuario', 'senha_temporaria BOOLEAN DEFAULT FALSE')
 
-        # Cria perfil Admin e usuário admin padrão se não existir nenhum
         perfil_admin = Perfil.query.filter_by(nome='Admin').first()
         if not perfil_admin:
             perfil_admin = Perfil(nome='Admin')
             db.session.add(perfil_admin)
             db.session.commit()
 
-        # Verifica se já existe algum usuário com perfil Admin
-        usuarios_admin = Usuario.query.join(Perfil).filter(Perfil.nome == 'Admin').first()
-        if not usuarios_admin:
-            admin_email = "admin@admin.com"
+        admin_email = "admin@admin.com"
+        if not Usuario.query.filter_by(email=admin_email).first():
             usuario_admin = Usuario(
                 nome="Administrador",
                 email=admin_email,
@@ -166,7 +182,6 @@ def create_app():
 
     return app
 
-# Execução local
 if __name__ == '__main__':
     app = create_app()
     app.run(debug=True, host='0.0.0.0', port=5000)

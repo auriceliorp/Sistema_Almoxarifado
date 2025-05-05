@@ -1,15 +1,33 @@
-# app_render.py
-
-from flask import Flask, render_template, redirect, url_for, request, flash, Blueprint
-from flask_login import LoginManager, login_user, logout_user, current_user, login_required
-from werkzeug.security import check_password_hash, generate_password_hash
-from sqlalchemy import inspect, text
-from config import Config
-from database import db
-from models import Usuario, Perfil
 import os
 import smtplib
+from dotenv import load_dotenv
+from flask import Flask, Blueprint, render_template, redirect, url_for, request, flash
+from flask_login import login_user, logout_user, current_user, login_required, LoginManager
+from werkzeug.security import check_password_hash, generate_password_hash
+from database import db
+from models import Usuario, Perfil, Item, NaturezaDespesa
+from sqlalchemy import inspect, text
 from email.mime.text import MIMEText
+from config import Config
+
+# Carrega variáveis de ambiente
+basedir = os.path.abspath(os.path.dirname(__file__))
+load_dotenv(os.path.join(basedir, '.env'))
+
+# Função de envio de e-mail
+def enviar_email(destinatario, assunto, mensagem):
+    try:
+        msg = MIMEText(mensagem, "plain")
+        msg["Subject"] = assunto
+        msg["From"] = Config.EMAIL_REMETENTE
+        msg["To"] = destinatario
+
+        with smtplib.SMTP(Config.SMTP_SERVER, Config.SMTP_PORT) as servidor:
+            servidor.starttls()
+            servidor.login(Config.EMAIL_REMETENTE, Config.EMAIL_SENHA)
+            servidor.sendmail(Config.EMAIL_REMETENTE, destinatario, msg.as_string())
+    except Exception as e:
+        print("Erro ao enviar e-mail:", e)
 
 # Login Manager
 login_manager = LoginManager()
@@ -39,7 +57,16 @@ def login():
             login_user(usuario)
             if getattr(usuario, 'senha_temporaria', False):
                 return redirect(url_for('main.trocar_senha'))
-            return redirecionar_por_perfil(usuario)
+
+            perfil_nome = usuario.perfil.nome if usuario.perfil else ''
+            if perfil_nome == 'Administrador':
+                return redirect(url_for('main.home'))
+            elif perfil_nome == 'Solicitante':
+                return redirect(url_for('main.home_solicitante'))
+            elif perfil_nome == 'Consultor':
+                return redirect(url_for('main.home_consultor'))
+            else:
+                return redirect(url_for('main.home'))
         else:
             flash('E-mail ou senha inválidos.')
     return render_template('login.html')
@@ -57,16 +84,42 @@ def trocar_senha():
             current_user.senha = generate_password_hash(nova_senha)
             current_user.senha_temporaria = False
             db.session.commit()
-            enviar_email_troca_senha(current_user.email)
             flash('Senha alterada com sucesso.')
-            return redirecionar_por_perfil(current_user)
+
+            # Envia e-mail após alteração da senha
+            if current_user.email:
+                enviar_email(
+                    current_user.email,
+                    'Senha alterada com sucesso',
+                    f'Olá {current_user.nome}, sua senha foi atualizada com sucesso no sistema Almoxarifado Embrapa.'
+                )
+
+            perfil_nome = current_user.perfil.nome if current_user.perfil else ''
+            if perfil_nome == 'Administrador':
+                return redirect(url_for('main.home'))
+            elif perfil_nome == 'Solicitante':
+                return redirect(url_for('main.home_solicitante'))
+            elif perfil_nome == 'Consultor':
+                return redirect(url_for('main.home_consultor'))
+            else:
+                return redirect(url_for('main.home'))
 
     return render_template('trocar_senha.html')
 
 @main.route('/home')
 @login_required
 def home():
-    return redirecionar_por_perfil(current_user)
+    return render_template('home.html', usuario=current_user)
+
+@main.route('/home_solicitante')
+@login_required
+def home_solicitante():
+    return render_template('home_solicitante.html', usuario=current_user)
+
+@main.route('/home_consultor')
+@login_required
+def home_consultor():
+    return render_template('home_consultor.html', usuario=current_user)
 
 @main.route('/dashboard')
 @login_required
@@ -83,40 +136,6 @@ def almoxarifado():
 def logout():
     logout_user()
     return redirect(url_for('main.login'))
-
-def redirecionar_por_perfil(usuario):
-    nome_perfil = usuario.perfil.nome.lower()
-    if nome_perfil == 'administrador':
-        return render_template('home.html', usuario=usuario)
-    elif nome_perfil == 'solicitante':
-        return render_template('home_solicitante.html', usuario=usuario)
-    elif nome_perfil == 'consultor':
-        return render_template('home_consultor.html', usuario=usuario)
-    else:
-        flash('Perfil desconhecido.')
-        return redirect(url_for('main.login'))
-
-def enviar_email_troca_senha(destinatario):
-    try:
-        remetente = os.environ.get('EMAIL_REMETENTE')
-        senha = os.environ.get('EMAIL_SENHA')
-        smtp_server = os.environ.get('SMTP_SERVER')
-        smtp_port = int(os.environ.get('SMTP_PORT', 587))
-
-        assunto = "Senha alterada com sucesso"
-        corpo = "Sua senha foi alterada com sucesso no sistema Almoxarifado Embrapa. Caso não tenha sido você, informe imediatamente o administrador."
-
-        msg = MIMEText(corpo)
-        msg['Subject'] = assunto
-        msg['From'] = remetente
-        msg['To'] = destinatario
-
-        with smtplib.SMTP(smtp_server, smtp_port) as server:
-            server.starttls()
-            server.login(remetente, senha)
-            server.send_message(msg)
-    except Exception as e:
-        print(f"Erro ao enviar e-mail de troca de senha: {e}")
 
 def create_app():
     app = Flask(__name__)

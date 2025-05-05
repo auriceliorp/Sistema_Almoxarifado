@@ -3,12 +3,12 @@ from database import db
 
 # ------------------- USUÁRIO E PERFIL -------------------
 class Perfil(db.Model):
-    __tablename__ = 'perfis'  # <-- isso corrige a referência
+    __tablename__ = 'perfis'
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(50), nullable=False)
 
-
 class Usuario(UserMixin, db.Model):
+    __tablename__ = 'usuario'
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -20,14 +20,21 @@ class Usuario(UserMixin, db.Model):
 
 # ------------------- NATUREZA DE DESPESA -------------------
 class NaturezaDespesa(db.Model):
-    __tablename__ = 'naturezas_despesa'
+    __tablename__ = 'natureza_despesa'
     id = db.Column(db.Integer, primary_key=True)
     codigo = db.Column(db.String(50), nullable=False)
     nome = db.Column(db.String(120), nullable=False)
 
-    grupos = db.relationship('Grupo', back_populates='natureza_despesa', lazy=True)
-    itens = db.relationship('Item', back_populates='natureza')  # opcional se quiser o acesso reverso
+    grupos = db.relationship('Grupo', backref='natureza_despesa', lazy=True)
 
+# ------------------- GRUPO DE ITENS -------------------
+class Grupo(db.Model):
+    __tablename__ = 'grupos'
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(120), nullable=False)
+    natureza_despesa_id = db.Column(db.Integer, db.ForeignKey('natureza_despesa.id'), nullable=False)
+
+    itens = db.relationship('Item', backref='grupo', lazy=True)
 
 # ------------------- ITEM -------------------
 class Item(db.Model):
@@ -37,19 +44,14 @@ class Item(db.Model):
     nome = db.Column(db.String(120), nullable=False)
     descricao = db.Column(db.Text, nullable=False, default='')
     unidade = db.Column(db.String(50), nullable=False)
-    
     grupo_id = db.Column(db.Integer, db.ForeignKey('grupos.id'))
-    grupo = db.relationship('Grupo', backref='itens')
-
-    natureza_despesa_id = db.Column(db.Integer, db.ForeignKey('naturezas_despesa.id'), nullable=False)
-    natureza = db.relationship('NaturezaDespesa', back_populates='itens')
-
     valor_unitario = db.Column(db.Float, default=0.0)
     estoque_atual = db.Column(db.Float, default=0.0)
     estoque_minimo = db.Column(db.Float, default=0.0)
 
 # ------------------- ESTOQUE -------------------
 class Estoque(db.Model):
+    __tablename__ = 'estoque'
     id = db.Column(db.Integer, primary_key=True)
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'))
     item = db.relationship('Item')
@@ -62,16 +64,19 @@ class Estoque(db.Model):
 
 # ------------------- FORNECEDOR -------------------
 class Fornecedor(db.Model):
+    __tablename__ = 'fornecedor'
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(120), nullable=False)
     cnpj = db.Column(db.String(20), nullable=False)
 
 # ------------------- ÁREA E SETOR (DESATIVADOS, MANTIDOS PARA REFERÊNCIA) -------------------
 class Area(db.Model):
+    __tablename__ = 'area'
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(120), nullable=False)
 
 class Setor(db.Model):
+    __tablename__ = 'setor'
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(120), nullable=False)
 
@@ -89,13 +94,3 @@ class UnidadeLocal(db.Model):
     descricao = db.Column(db.String(120), nullable=False)
     local_id = db.Column(db.Integer, db.ForeignKey('local.id'), nullable=False)
     local = db.relationship('Local', back_populates='uls')
-
-# ------------------- GRUPO DE ITENS -------------------
-class Grupo(db.Model):
-    __tablename__ = 'grupos'
-    id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(120), nullable=False)
-    natureza_despesa_id = db.Column(db.Integer, db.ForeignKey('naturezas_despesa.id'), nullable=False)
-
-    natureza_despesa = db.relationship('NaturezaDespesa', back_populates='grupos')
-

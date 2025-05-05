@@ -20,11 +20,14 @@ class Usuario(UserMixin, db.Model):
 
 # ------------------- NATUREZA DE DESPESA -------------------
 class NaturezaDespesa(db.Model):
+    __tablename__ = 'naturezas_despesa'
     id = db.Column(db.Integer, primary_key=True)
     codigo = db.Column(db.String(50), nullable=False)
-    numero = db.Column(db.String(50))
     nome = db.Column(db.String(120), nullable=False)
-    descricao = db.Column(db.String(255))
+
+    # Relacionamento com Grupo
+    grupos = db.relationship('Grupo', back_populates='natureza_despesa', lazy=True)
+
 
 # ------------------- ITEM -------------------
 class Item(db.Model):
@@ -80,3 +83,13 @@ class UnidadeLocal(db.Model):
     descricao = db.Column(db.String(120), nullable=False)
     local_id = db.Column(db.Integer, db.ForeignKey('local.id'), nullable=False)
     local = db.relationship('Local', back_populates='uls')
+
+# ------------------- GRUPO DE ITENS -------------------
+class Grupo(db.Model):
+    __tablename__ = 'grupos'
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(120), nullable=False)
+    natureza_despesa_id = db.Column(db.Integer, db.ForeignKey('naturezas_despesa.id'), nullable=False)
+
+    natureza_despesa = db.relationship('NaturezaDespesa', back_populates='grupos')
+

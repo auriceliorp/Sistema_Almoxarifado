@@ -3,8 +3,10 @@ from database import db
 
 # ------------------- USUÁRIO E PERFIL -------------------
 class Perfil(db.Model):
+    __tablename__ = 'perfis'  # <-- isso corrige a referência
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(50), nullable=False)
+
 
 class Usuario(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)

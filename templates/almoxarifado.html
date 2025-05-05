@@ -13,46 +13,42 @@
 
     <!-- Grid de botões do menu -->
     <div class="row row-cols-1 row-cols-md-2 g-4">
-        
-        <!-- Botões ativos -->
-        <div class="row row-cols-1 row-cols-md-2 g-4">
-    <div class="col">
-        <a href="{{ url_for('usuario_bp.lista_usuarios') }}" class="btn btn-outline-dark w-100 py-4 fs-5">Usuários</a>
-    </div>
-    <div class="col">
-        <a href="{{ url_for('fornecedor_bp.lista_fornecedores') }}" class="btn btn-outline-dark w-100 py-4 fs-5">Fornecedores</a>
-    </div>
-    <div class="col">
-        <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-outline-dark w-100 py-4 fs-5">Itens</a>
-    </div>
-    <div class="col">
-        <a href="{{ url_for('grupo_bp.lista_grupos') }}" class="btn btn-outline-dark w-100 py-4 fs-5">Grupos de Itens</a>
-    </div>
-    <div class="col">
-        <a href="{{ url_for('estoque_bp.lista_estoque') }}" class="btn btn-outline-dark w-100 py-4 fs-5">Estoque</a>
-    </div>
-    <div class="col">
-        <a href="{{ url_for('area_ul_bp.lista_uls') }}" class="btn btn-outline-dark w-100 py-4 fs-5">Unidades Locais (UL)</a>
-    </div>
-    <div class="col">
-        <a href="{{ url_for('area_ul_bp.lista_locais') }}" class="btn btn-outline-dark w-100 py-4 fs-5">Locais</a>
-    </div>
-    <div class="col">
-        <a href="https://linktr.ee/ctaa.sps" target="_blank" rel="noopener noreferrer" class="btn btn-outline-dark w-100 py-4 fs-5">Linktree CTAA - SPS</a>
-    </div>
-    <div class="col">
-        <button class="btn btn-outline-secondary w-100 py-4 fs-5" disabled>Relatórios</button>
-    </div>
-    <div class="col">
-        <button class="btn btn-outline-secondary w-100 py-4 fs-5" disabled>Cadastro de Apoio</button>
-    </div>
-            <div class="col">
-    <a href="{{ url_for('nd_bp.lista_nd') }}" class="btn btn-outline-dark w-100 py-4 fs-5">Naturezas de Despesa</a>
-</div>
 
-</div>
+        <div class="col">
+            <a href="{{ url_for('usuario_bp.lista_usuarios') }}" class="btn btn-outline-dark w-100 py-4 fs-5">Usuários</a>
+        </div>
+        <div class="col">
+            <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="btn btn-outline-dark w-100 py-4 fs-5">Fornecedores</a>
+        </div>
+        <div class="col">
+            <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-outline-dark w-100 py-4 fs-5">Itens</a>
+        </div>
+        <div class="col">
+            <a href="{{ url_for('estoque_bp.lista_estoque') }}" class="btn btn-outline-dark w-100 py-4 fs-5">Estoque</a>
+        </div>
+        <div class="col">
+            <a href="{{ url_for('area_ul_bp.lista_uls') }}" class="btn btn-outline-dark w-100 py-4 fs-5">Unidades Locais (UL)</a>
+        </div>
+        <div class="col">
+            <a href="{{ url_for('area_ul_bp.lista_locais') }}" class="btn btn-outline-dark w-100 py-4 fs-5">Locais</a>
+        </div>
+        <div class="col">
+            <a href="{{ url_for('grupo_bp.lista_grupos') }}" class="btn btn-outline-dark w-100 py-4 fs-5">Grupos de Itens</a>
+        </div>
+        <div class="col">
+            <a href="{{ url_for('nd_bp.lista_nd') }}" class="btn btn-outline-dark w-100 py-4 fs-5">Naturezas de Despesa</a>
+        </div>
+        <div class="col">
+            <a href="https://linktr.ee/ctaa.sps" target="_blank" rel="noopener noreferrer" class="btn btn-outline-dark w-100 py-4 fs-5">Linktree CTAA - SPS</a>
+        </div>
 
-        
+        <!-- Botões desativados -->
+        <div class="col">
+            <button class="btn btn-outline-secondary w-100 py-4 fs-5" disabled>Relatórios</button>
+        </div>
+        <div class="col">
+            <button class="btn btn-outline-secondary w-100 py-4 fs-5" disabled>Cadastro de Apoio</button>
+        </div>
     </div>
 </div>
 {% endblock %}

@@ -21,15 +21,11 @@ class Usuario(UserMixin, db.Model):
 # ------------------- NATUREZA DE DESPESA -------------------
 class NaturezaDespesa(db.Model):
     __tablename__ = 'natureza_despesa'
-
     id = db.Column(db.Integer, primary_key=True)
     codigo = db.Column(db.String(10), nullable=False)
     nome = db.Column(db.String(100), nullable=False)
-    descricao = db.Column(db.String(200))  # se for opcional, não precisa do nullable
-    numero = db.Column(db.String(10))  # ou Integer, dependendo do tipo no banco
 
     grupos = db.relationship('Grupo', back_populates='natureza_despesa')
-
 
 # ------------------- GRUPO DE ITENS -------------------
 class Grupo(db.Model):
@@ -37,11 +33,9 @@ class Grupo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(120), nullable=False)
     natureza_despesa_id = db.Column(db.Integer, db.ForeignKey('natureza_despesa.id'), nullable=False)
+    natureza_despesa = db.relationship('NaturezaDespesa', back_populates='grupos')
 
-    natureza_despesa = db.relationship('NaturezaDespesa', back_populates='grupos')  # <-- ESTA LINHA FALTAVA
     itens = db.relationship('Item', backref='grupo', lazy=True)
-
-
 
 # ------------------- ITEM -------------------
 class Item(db.Model):
@@ -76,18 +70,7 @@ class Fornecedor(db.Model):
     nome = db.Column(db.String(120), nullable=False)
     cnpj = db.Column(db.String(20), nullable=False)
 
-# ------------------- ÁREA E SETOR (DESATIVADOS, MANTIDOS PARA REFERÊNCIA) -------------------
-class Area(db.Model):
-    __tablename__ = 'area'
-    id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(120), nullable=False)
-
-class Setor(db.Model):
-    __tablename__ = 'setor'
-    id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(120), nullable=False)
-
-# ------------------- LOCAL E UNIDADE LOCAL (UL) -------------------
+# ------------------- LOCAL E UNIDADE LOCAL -------------------
 class Local(db.Model):
     __tablename__ = 'local'
     id = db.Column(db.Integer, primary_key=True)

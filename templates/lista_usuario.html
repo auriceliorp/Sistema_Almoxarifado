@@ -5,14 +5,14 @@
 <div class="container py-4">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">Início</a>
+        <button onclick="window.history.back()" class="btn btn-outline-secondary">← Voltar</button>
         <h4 class="m-0">Usuários</h4>
         <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">Sair</a>
     </div>
 
     <div class="mb-4 d-flex justify-content-between flex-wrap gap-2">
         <a href="{{ url_for('usuario_bp.novo_usuario') }}" class="btn btn-success btn-lg flex-fill">Novo Usuário</a>
-        <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary btn-lg flex-fill">← Voltar ao Dashboard</a>
+        <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary btn-lg flex-fill">Dashboard</a>
     </div>
 
     <div class="table-responsive">
@@ -23,7 +23,10 @@
                     <th>Matrícula</th>
                     <th>Nome</th>
                     <th>Email</th>
+                    <th>Ramal</th>
+                    <th>Unidade Local</th>
                     <th>Perfil</th>
+                    <th>Ações</th>
                 </tr>
             </thead>
             <tbody>
@@ -33,7 +36,12 @@
                     <td>{{ usuario.matricula }}</td>
                     <td>{{ usuario.nome }}</td>
                     <td>{{ usuario.email }}</td>
+                    <td>{{ usuario.ramal or '' }}</td>
+                    <td>{{ usuario.unidade_local.descricao if usuario.unidade_local else '' }}</td>
                     <td>{{ usuario.perfil.nome if usuario.perfil else '' }}</td>
+                    <td>
+                        <a href="{{ url_for('usuario_bp.editar_usuario', id=usuario.id) }}" class="btn btn-sm btn-outline-primary">Editar</a>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

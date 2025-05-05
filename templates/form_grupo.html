@@ -1,23 +1,27 @@
 {% extends 'base_simplificada.html' %}
 {% block content %}
 <div class="container mt-4">
-    <h2>Cadastrar Novo Grupo</h2>
+    <h2>{{ grupo.id if grupo else 'Novo' }} Grupo de Itens</h2>
     <form method="post">
         <div class="mb-3">
-            <label for="nome" class="form-label">Nome do Grupo *</label>
-            <input type="text" class="form-control" id="nome" name="nome" required>
+            <label for="nome" class="form-label">Nome *</label>
+            <input type="text" class="form-control" id="nome" name="nome"
+                   value="{{ grupo.nome if grupo else '' }}" required>
         </div>
         <div class="mb-3">
             <label for="natureza_despesa_id" class="form-label">Natureza de Despesa *</label>
             <select class="form-select" id="natureza_despesa_id" name="natureza_despesa_id" required>
                 <option value="">Selecione...</option>
                 {% for nd in naturezas %}
-                    <option value="{{ nd.id }}">{{ nd.codigo }} - {{ nd.nome }}</option>
+                    <option value="{{ nd.id }}"
+                        {% if grupo and grupo.natureza_despesa_id == nd.id %}selected{% endif %}>
+                        {{ nd.codigo }} - {{ nd.nome }}
+                    </option>
                 {% endfor %}
             </select>
         </div>
-        <button type="submit" class="btn btn-primary">Cadastrar</button>
-        <a href="{{ url_for('grupo_bp.lista_grupos') }}" class="btn btn-secondary ms-2">Cancelar</a>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+        <a href="{{ url_for('grupo_bp.lista_grupos') }}" class="btn btn-secondary">Cancelar</a>
     </form>
 </div>
 {% endblock %}

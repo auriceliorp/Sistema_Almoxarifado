@@ -1,65 +1,71 @@
 {% extends 'base_simplificada.html' %}
+{% block title %}Cadastrar Usuário{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container py-4">
 
+    <!-- Título e ações -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">Início</a>
-        <h4 class="m-0">Cadastro de Novo Usuário</h4>
-        <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">Sair</a>
+        <h4 class="m-0">{{ 'Editar Usuário' if usuario else 'Cadastrar Novo Usuário' }}</h4>
+        <a href="{{ url_for('usuario_bp.lista_usuarios') }}" class="btn btn-secondary">← Voltar</a>
     </div>
 
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <form method="POST" class="border rounded p-4 shadow-sm bg-light">
-                <div class="row">
-                    <div class="col-md-12 mb-3">
-                        <label for="nome" class="form-label">Nome *</label>
-                        <input type="text" name="nome" class="form-control" required>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label for="email" class="form-label">E-mail *</label>
-                        <input type="email" name="email" class="form-control" required>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label for="senha" class="form-label">Senha *</label>
-                        <input type="password" name="senha" class="form-control" required>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label for="matricula" class="form-label">Matrícula *</label>
-                        <input type="text" name="matricula" class="form-control" required>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label for="ramal" class="form-label">Ramal</label>
-                        <input type="text" name="ramal" class="form-control">
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label for="perfil_id" class="form-label">Perfil *</label>
-                        <select name="perfil_id" class="form-select" required>
-                            {% for perfil in perfis %}
-                            <option value="{{ perfil.id }}">{{ perfil.nome }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label for="ul_id" class="form-label">Setor / Unidade Local *</label>
-                        <select name="ul_id" class="form-select" required>
-                            {% for ul in unidades_locais %}
-                            <option value="{{ ul.id }}">{{ ul.descricao }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn-success w-100 mt-3">Cadastrar Usuário</button>
-            </form>
+    <!-- Formulário de cadastro/edição -->
+    <form method="POST" class="border rounded p-4 shadow-sm bg-light">
+        <div class="mb-3">
+            <label for="nome" class="form-label">Nome *</label>
+            <input type="text" class="form-control" id="nome" name="nome" value="{{ usuario.nome if usuario else '' }}" required>
         </div>
-    </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">E-mail *</label>
+            <input type="email" class="form-control" id="email" name="email" value="{{ usuario.email if usuario else '' }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="matricula" class="form-label">Matrícula *</label>
+            <input type="text" class="form-control" id="matricula" name="matricula" value="{{ usuario.matricula if usuario else '' }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="ramal" class="form-label">Ramal</label>
+            <input type="text" class="form-control" id="ramal" name="ramal" value="{{ usuario.ramal if usuario else '' }}">
+        </div>
+
+        <!-- Campo senha só aparece no cadastro -->
+        {% if not usuario %}
+        <div class="mb-3">
+            <label for="senha" class="form-label">Senha *</label>
+            <input type="password" class="form-control" id="senha" name="senha" required>
+        </div>
+        {% endif %}
+
+        <!-- Seleção de perfil -->
+        <div class="mb-3">
+            <label for="perfil_id" class="form-label">Perfil *</label>
+            <select class="form-select" id="perfil_id" name="perfil_id" required>
+                <option value="">Selecione...</option>
+                {% for perfil in perfis %}
+                <option value="{{ perfil.id }}" {% if usuario and usuario.perfil_id == perfil.id %}selected{% endif %}>
+                    {{ perfil.nome }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Seleção de Unidade Local -->
+        <div class="mb-3">
+            <label for="unidade_local_id" class="form-label">Unidade Local *</label>
+            <select class="form-select" id="unidade_local_id" name="unidade_local_id" required>
+                <option value="">Selecione...</option>
+                {% for ul in uls %}
+                <option value="{{ ul.id }}" {% if usuario and usuario.unidade_local_id == ul.id %}selected{% endif %}>
+                    {{ ul.codigo }} - {{ ul.descricao }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-success w-100">
+            {{ 'Atualizar' if usuario else 'Cadastrar' }}
+        </button>
+    </form>
 </div>
 {% endblock %}

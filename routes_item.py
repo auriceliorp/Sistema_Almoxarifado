@@ -18,7 +18,7 @@ def lista_itens():
     else:
         itens = Item.query.all()
 
-    naturezas = NaturezaDespesa.query.order_by(NaturezaDespesa.numero).all()
+    naturezas = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
     return render_template('lista_itens.html', itens=itens, naturezas=naturezas, nd_selecionado=nd_id)
 
 # Exportar Itens para Excel
@@ -42,7 +42,7 @@ def exportar_excel():
             'Valor Unitário': float(item.valor_unitario or 0),
             'Valor Total': float((item.quantidade or 0) * (item.valor_unitario or 0)),
             'Validade': item.data_validade.strftime('%d/%m/%Y') if item.data_validade else '',
-            'ND': item.natureza.numero if item.natureza else ''
+            'ND': item.natureza.codigo if item.natureza else ''
         })
 
     df = pd.DataFrame(dados)
@@ -53,7 +53,7 @@ def exportar_excel():
     response.headers["Content-type"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     return response
 
-# Formulário de Cadastro de Novo Item usando novo_item.html
+# Formulário de Cadastro de Novo Item
 @item_bp.route('/form', methods=['GET', 'POST'])
 @login_required
 def novo_item():
@@ -80,7 +80,7 @@ def novo_item():
         flash('Item cadastrado com sucesso!')
         return redirect(url_for('item_bp.lista_itens'))
 
-    naturezas = NaturezaDespesa.query.order_by(NaturezaDespesa.numero).all()
+    naturezas = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
     return render_template('novo_item.html', naturezas=naturezas)
 
 # Edição de Item
@@ -104,7 +104,7 @@ def editar_item(id):
         flash('Item atualizado com sucesso!')
         return redirect(url_for('item_bp.lista_itens'))
 
-    naturezas = NaturezaDespesa.query.order_by(NaturezaDespesa.numero).all()
+    naturezas = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
     return render_template('editar_item.html', item=item, naturezas=naturezas)
 
 # Exclusão de Item

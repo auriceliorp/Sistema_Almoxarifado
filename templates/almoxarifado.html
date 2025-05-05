@@ -1,19 +1,25 @@
 {% extends 'base_simplificada.html' %}
 {% block title %}Almoxarifado{% endblock %}
+
 {% block content %}
 <div class="container py-4">
+
+    <!-- Cabeçalho com navegação -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">Início</a>
         <h4 class="mb-0 text-center">Almoxarifado</h4>
         <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">Sair</a>
     </div>
 
+    <!-- Grid de botões do menu -->
     <div class="row row-cols-1 row-cols-md-2 g-4">
+        
+        <!-- Botões ativos -->
         <div class="col">
             <a href="{{ url_for('usuario_bp.lista_usuarios') }}" class="btn btn-outline-dark w-100 py-4 fs-5">Usuários</a>
         </div>
         <div class="col">
-            <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="btn btn-outline-dark w-100 py-4 fs-5">Fornecedores</a>
+            <a href="{{ url_for('fornecedor_bp.lista_fornecedores') }}" class="btn btn-outline-dark w-100 py-4 fs-5">Fornecedores</a>
         </div>
         <div class="col">
             <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-outline-dark w-100 py-4 fs-5">Itens</a>
@@ -28,8 +34,10 @@
             <a href="{{ url_for('area_ul_bp.lista_locais') }}" class="btn btn-outline-dark w-100 py-4 fs-5">Locais</a>
         </div>
         <div class="col">
-            <a href="https://linktr.ee/ctaa.sps" target="_blank" class="btn btn-outline-dark w-100 py-4 fs-5">Linktree CTAA - SPS</a>
+            <a href="https://linktr.ee/ctaa.sps" target="_blank" rel="noopener noreferrer" class="btn btn-outline-dark w-100 py-4 fs-5">Linktree CTAA - SPS</a>
         </div>
+
+        <!-- Botões desativados -->
         <div class="col">
             <button class="btn btn-outline-secondary w-100 py-4 fs-5" disabled>Relatórios</button>
         </div>

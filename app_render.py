@@ -152,6 +152,7 @@ def create_app():
     from routes_estoque import estoque_bp
     from routes_fornecedor import fornecedor_bp
     from routes_area_ul import area_ul_bp
+    from routes_grupo import grupo_bp  # <- Inclui blueprint do grupo
 
     app.register_blueprint(nd_bp)
     app.register_blueprint(item_bp)
@@ -159,6 +160,7 @@ def create_app():
     app.register_blueprint(estoque_bp)
     app.register_blueprint(fornecedor_bp)
     app.register_blueprint(area_ul_bp)
+    app.register_blueprint(grupo_bp)
 
     with app.app_context():
         db.create_all()

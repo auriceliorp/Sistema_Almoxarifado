@@ -28,7 +28,7 @@ def novo_nd():
         db.session.commit()
         flash('Natureza de Despesa cadastrada com sucesso!')
         return redirect(url_for('nd_bp.lista_nd'))
-    
+
     return render_template('form_nd.html', nd=None)
 
 @nd_bp.route('/editar/<int:nd_id>', methods=['GET', 'POST'])
@@ -47,7 +47,7 @@ def editar_nd(nd_id):
         db.session.commit()
         flash('Natureza de Despesa atualizada com sucesso!')
         return redirect(url_for('nd_bp.lista_nd'))
-    
+
     return render_template('form_nd.html', nd=nd)
 
 @nd_bp.route('/excluir/<int:nd_id>')

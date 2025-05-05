@@ -1,0 +1,29 @@
+{% extends 'base_simplificada.html' %}
+{% block title %}Nova Unidade Local{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h3 class="mb-4">Cadastrar Nova Unidade Local</h3>
+    <form method="POST">
+        <div class="mb-3">
+            <label for="codigo_ul" class="form-label">Código UL *</label>
+            <input type="text" class="form-control" id="codigo_ul" name="codigo_ul" required>
+        </div>
+        <div class="mb-3">
+            <label for="descricao" class="form-label">Descrição *</label>
+            <input type="text" class="form-control" id="descricao" name="descricao" required>
+        </div>
+        <div class="mb-3">
+            <label for="local_id" class="form-label">Local *</label>
+            <select name="local_id" id="local_id" class="form-select" required>
+                <option value="">Selecione...</option>
+                {% for local in locais %}
+                    <option value="{{ local.id }}">{{ local.descricao }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-success">Salvar</button>
+        <a href="{{ url_for('area_ul_bp.lista_uls') }}" class="btn btn-secondary">Voltar</a>
+    </form>
+</div>
+{% endblock %}

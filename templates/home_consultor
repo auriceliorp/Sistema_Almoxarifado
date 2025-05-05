@@ -1,0 +1,31 @@
+{% extends 'base_simplificada.html' %}
+
+{% block title %}Início - Sistema Almoxarifado{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Bem-vindo</h2>
+        <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">Sair</a>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+        <div class="col">
+            <a href="#" class="btn btn-outline-secondary w-100 py-4 fs-5 disabled">
+                Almoxarifado - Consultas (em desenvolvimento)
+            </a>
+        </div>
+        <div class="col">
+            <a href="#" class="btn btn-outline-secondary w-100 py-4 fs-5 disabled">
+                Compras - Consultas (em desenvolvimento)
+            </a>
+        </div>
+        <div class="col">
+            <a href="#" class="btn btn-outline-secondary w-100 py-4 fs-5 disabled">
+                Patrimônio - Comnsultas (em desenvolvimento)
+            </a>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

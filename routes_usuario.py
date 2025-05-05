@@ -86,6 +86,12 @@ def editar_usuario(id):
 @login_required
 def excluir_usuario(id):
     usuario = Usuario.query.get_or_404(id)
+
+    # Opcional: impedir exclusão de si mesmo ou do admin
+    if usuario.email == 'admin@admin.com':
+        flash('Não é permitido excluir o usuário administrador padrão.', 'danger')
+        return redirect(url_for('usuario_bp.lista_usuario'))
+
     db.session.delete(usuario)
     db.session.commit()
     flash('Usuário excluído com sucesso!', 'success')

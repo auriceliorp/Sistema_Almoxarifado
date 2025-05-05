@@ -1,0 +1,49 @@
+{% extends 'base_simplificada.html' %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">Início</a>
+        <h4 class="m-0">Editar Usuário</h4>
+        <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">Sair</a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <form method="POST" class="border rounded p-4 shadow-sm bg-light">
+                <div class="mb-3">
+                    <label for="nome" class="form-label">Nome</label>
+                    <input type="text" name="nome" class="form-control" value="{{ usuario.nome }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="email" class="form-label">E-mail</label>
+                    <input type="email" name="email" class="form-control" value="{{ usuario.email }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="matricula" class="form-label">Matrícula</label>
+                    <input type="text" name="matricula" class="form-control" value="{{ usuario.matricula }}">
+                </div>
+
+                <div class="mb-3">
+                    <label for="perfil_id" class="form-label">Perfil</label>
+                    <select name="perfil_id" class="form-select" required>
+                        {% for perfil in perfis %}
+                        <option value="{{ perfil.id }}" {% if usuario.perfil_id == perfil.id %}selected{% endif %}>{{ perfil.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="senha" class="form-label">Nova Senha (deixe em branco para manter)</label>
+                    <input type="password" name="senha" class="form-control">
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">Salvar Alterações</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

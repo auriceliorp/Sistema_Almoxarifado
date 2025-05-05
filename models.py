@@ -21,11 +21,15 @@ class Usuario(UserMixin, db.Model):
 # ------------------- NATUREZA DE DESPESA -------------------
 class NaturezaDespesa(db.Model):
     __tablename__ = 'natureza_despesa'
-    id = db.Column(db.Integer, primary_key=True)
-    codigo = db.Column(db.String(50), nullable=False)
-    nome = db.Column(db.String(120), nullable=False)
 
-    grupos = db.relationship('Grupo', backref='natureza_despesa', lazy=True)
+    id = db.Column(db.Integer, primary_key=True)
+    codigo = db.Column(db.String(10), nullable=False)
+    nome = db.Column(db.String(100), nullable=False)
+    descricao = db.Column(db.String(200))  # se for opcional, não precisa do nullable
+    numero = db.Column(db.String(10))  # ou Integer, dependendo do tipo no banco
+
+    grupos = db.relationship('Grupo', back_populates='natureza_despesa')
+
 
 # ------------------- GRUPO DE ITENS -------------------
 class Grupo(db.Model):

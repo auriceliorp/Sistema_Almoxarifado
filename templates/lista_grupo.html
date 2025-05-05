@@ -1,30 +1,24 @@
 {% extends 'base_simplificada.html' %}
 {% block content %}
 <div class="container mt-4">
-    <h2>Grupos de Itens</h2>
-    <a href="{{ url_for('grupo_bp.novo_grupo') }}" class="btn btn-primary mb-3">+ Novo Grupo</a>
-    <a href="{{ url_for('nd_bp.nova_nd') }}" class="btn btn-outline-primary mb-3">+ Nova Natureza de Despesa</a>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Nome</th>
-                <th>Natureza de Despesa</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for grupo in grupos %}
-            <tr>
-                <td>{{ grupo.nome }}</td>
-                <td>{{ grupo.natureza.nome }}</td>
-                <td>
-                    <a href="{{ url_for('grupo_bp.editar_grupo', id=grupo.id) }}" class="btn btn-sm btn-warning">Editar</a>
-                    <a href="{{ url_for('grupo_bp.excluir_grupo', id=grupo.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir este grupo?')">Excluir</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <a href="{{ url_for('home') }}" class="btn btn-secondary mt-3">Voltar</a>
+  <h2>Grupos de Itens</h2>
+  <a href="{{ url_for('grupo_bp.novo_grupo') }}" class="btn btn-primary mb-3">Novo Grupo</a>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Natureza de Despesa</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for grupo in grupos %}
+      <tr>
+        <td>{{ grupo.nome }}</td>
+        <td>{{ grupo.natureza_despesa.nome }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <a href="{{ url_for('main.home') }}" class="btn btn-secondary mt-3">Voltar</a>
 </div>
 {% endblock %}

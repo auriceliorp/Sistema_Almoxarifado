@@ -38,7 +38,9 @@ class Grupo(db.Model):
     nome = db.Column(db.String(120), nullable=False)
     natureza_despesa_id = db.Column(db.Integer, db.ForeignKey('natureza_despesa.id'), nullable=False)
 
+    natureza_despesa = db.relationship('NaturezaDespesa', back_populates='grupos')
     itens = db.relationship('Item', backref='grupo', lazy=True)
+
 
 # ------------------- ITEM -------------------
 class Item(db.Model):

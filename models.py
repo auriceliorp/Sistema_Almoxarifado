@@ -1,5 +1,6 @@
 from flask_login import UserMixin
 from database import db
+from app import db
 
 # ------------------- USUÁRIO E PERFIL -------------------
 class Perfil(db.Model):
@@ -53,13 +54,16 @@ class Item(db.Model):
     descricao = db.Column(db.Text, nullable=False, default='')
     unidade = db.Column(db.String(50), nullable=False)
     grupo_id = db.Column(db.Integer, db.ForeignKey('grupos.id'))
+    natureza_despesa_id = db.Column(db.Integer, db.ForeignKey('natureza_despesa.id'), nullable=False)
     valor_unitario = db.Column(db.Float, default=0.0)
     saldo_financeiro = db.Column(db.Float, default=0.0)
     estoque_atual = db.Column(db.Float, default=0.0)
     estoque_minimo = db.Column(db.Float, default=0.0)
     localizacao = db.Column(db.String(120), default='')
     data_validade = db.Column(db.Date, nullable=True)
-
+    
+    grupo = db.relationship('Grupo', backref=db.backref('itens', lazy=True))
+    natureza_despesa = db.relationship('NaturezaDespesa', backref=db.backref('itens', lazy=True)
 # ------------------- ESTOQUE -------------------
 class Estoque(db.Model):
     __tablename__ = 'estoque'

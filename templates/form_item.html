@@ -1,28 +1,71 @@
-{% extends 'base.html' %}
+{% extends 'base_simplificada.html' %}
 
 {% block conteudo %}
 <div class="container mt-4">
     <h2>{{ 'Editar' if item else 'Novo' }} Item</h2>
     <form method="post">
         <div class="mb-3">
-            <label for="codigo" class="form-label">Código</label>
-            <input type="text" class="form-control" id="codigo" name="codigo" value="{{ item.codigo if item else '' }}" required>
+            <label for="codigo_sap" class="form-label">Código SAP *</label>
+            <input type="text" class="form-control" id="codigo_sap" name="codigo_sap" value="{{ item.codigo_sap if item else '' }}" required>
         </div>
+
         <div class="mb-3">
-            <label for="nome" class="form-label">Nome</label>
+            <label for="codigo_siads" class="form-label">Código SIADS</label>
+            <input type="text" class="form-control" id="codigo_siads" name="codigo_siads" value="{{ item.codigo_siads if item else '' }}">
+        </div>
+
+        <div class="mb-3">
+            <label for="nome" class="form-label">Nome *</label>
             <input type="text" class="form-control" id="nome" name="nome" value="{{ item.nome if item else '' }}" required>
         </div>
+
         <div class="mb-3">
-            <label for="nd_id" class="form-label">Natureza de Despesa</label>
-            <select class="form-control" id="nd_id" name="nd_id" required>
+            <label for="descricao" class="form-label">Descrição *</label>
+            <textarea class="form-control" id="descricao" name="descricao" required>{{ item.descricao if item else '' }}</textarea>
+        </div>
+
+        <div class="mb-3">
+            <label for="unidade" class="form-label">Unidade de Medida *</label>
+            <input type="text" class="form-control" id="unidade" name="unidade" value="{{ item.unidade if item else '' }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="grupo_id" class="form-label">Grupo de Item *</label>
+            <select class="form-control" id="grupo_id" name="grupo_id" required>
                 <option value="">Selecione</option>
-                {% for nd in naturezas %}
-                <option value="{{ nd.id }}" {% if item and item.natureza_despesa_id == nd.id %}selected{% endif %}>{{ nd.nome }}</option>
+                {% for grupo in grupos %}
+                <option value="{{ grupo.id }}" {% if item and item.grupo_id == grupo.id %}selected{% endif %}>{{ grupo.nome }} - {{ grupo.natureza_despesa.codigo }}</option>
                 {% endfor %}
             </select>
         </div>
+
+        <div class="mb-3">
+            <label for="valor_unitario" class="form-label">Valor Unitário</label>
+            <input type="number" step="0.01" class="form-control" id="valor_unitario" name="valor_unitario" value="{{ item.valor_unitario if item else '' }}">
+        </div>
+
+        <div class="mb-3">
+            <label for="saldo_financeiro" class="form-label">Saldo Financeiro</label>
+            <input type="number" step="0.01" class="form-control" id="saldo_financeiro" name="saldo_financeiro" value="{{ item.saldo_financeiro if item else '' }}">
+        </div>
+
+        <div class="mb-3">
+            <label for="estoque_atual" class="form-label">Quantidade em Estoque</label>
+            <input type="number" step="0.01" class="form-control" id="estoque_atual" name="estoque_atual" value="{{ item.estoque_atual if item else '' }}">
+        </div>
+
+        <div class="mb-3">
+            <label for="estoque_minimo" class="form-label">Estoque Mínimo</label>
+            <input type="number" step="0.01" class="form-control" id="estoque_minimo" name="estoque_minimo" value="{{ item.estoque_minimo if item else '' }}">
+        </div>
+
+        <div class="mb-3">
+            <label for="localizacao" class="form-label">Localização</label>
+            <input type="text" class="form-control" id="localizacao" name="localizacao" value="{{ item.localizacao if item else '' }}">
+        </div>
+
         <button type="submit" class="btn btn-success">Salvar</button>
-        <a href="{{ url_for('item.lista_item') }}" class="btn btn-secondary">Cancelar</a>
+        <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-secondary">Cancelar</a>
     </form>
 </div>
 {% endblock %}

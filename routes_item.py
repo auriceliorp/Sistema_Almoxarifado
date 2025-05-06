@@ -9,112 +9,79 @@ item_bp = Blueprint('item_bp', __name__)
 
 @item_bp.route('/item/itens')
 @login_required
+from flask import Blueprint, render_template, request, redirect, url_for, flash, send_file
+from flask_login import login_required
+from io import BytesIO
+import pandas as pd
+from fpdf import FPDF
+from models import db, Item, GrupoItem, NaturezaDespesa
+
+item_bp = Blueprint('item', __name__)
+
+@item_bp.route('/item/itens')
+@login_required
 def lista_itens():
-    nd_id = request.args.get('nd', type=int)
+    nd_id = request.args.get('nd')
     if nd_id:
-        itens = Item.query.filter_by(natureza_id=nd_id).all()
+        itens = Item.query.join(GrupoItem).filter(GrupoItem.natureza_id == nd_id).all()
     else:
         itens = Item.query.all()
-    naturezas = NaturezaDespesa.query.all()
-    return render_template('lista_itens.html', itens=itens, naturezas=naturezas, nd_selecionado=nd_id)
+    return render_template('itens.html', itens=itens)
 
 @item_bp.route('/item/novo', methods=['GET', 'POST'])
 @login_required
 def novo_item():
-    naturezas = NaturezaDespesa.query.all()
     if request.method == 'POST':
-        item = Item(
-            codigo_sap=request.form['codigo'],
-            codigo_siads=request.form.get('codigo_siads'),
-            nome=request.form['nome'],
-            descricao=request.form.get('descricao'),
-            unidade=request.form['unidade'],
-            natureza_id=request.form['natureza_despesa_id'],
-            valor_unitario=request.form.get('valor_unitario') or 0,
-            estoque_atual=request.form.get('estoque_atual') or 0,
-            estoque_minimo=request.form.get('estoque_minimo') or 0
-        )
+        codigo = request.form['codigo']
+        nome = request.form['nome']
+        descricao = request.form['descricao']
+        grupo_id = request.form['grupo_id']
+
+        item = Item(codigo=codigo, nome=nome, descricao=descricao, grupo_id=grupo_id)
         db.session.add(item)
         db.session.commit()
-        return redirect(url_for('item_bp.lista_itens'))
-    return render_template('novo_item.html', naturezas=naturezas)
+        flash('Item cadastrado com sucesso!', 'success')
+        return redirect(url_for('item.lista_itens'))
 
-@item_bp.route('/item/editar/<int:id>', methods=['GET', 'POST'])
-@login_required
-def editar_item(id):
-    item = Item.query.get_or_404(id)
-    naturezas = NaturezaDespesa.query.all()
-    if request.method == 'POST':
-        item.codigo_sap = request.form['codigo']
-        item.codigo_siads = request.form.get('codigo_siads')
-        item.nome = request.form['nome']
-        item.descricao = request.form.get('descricao')
-        item.unidade = request.form['unidade']
-        item.natureza_id = request.form['natureza_despesa_id']
-        item.valor_unitario = request.form.get('valor_unitario') or 0
-        item.estoque_atual = request.form.get('estoque_atual') or 0
-        item.estoque_minimo = request.form.get('estoque_minimo') or 0
-        db.session.commit()
-        return redirect(url_for('item_bp.lista_itens'))
-    return render_template('editar_item.html', item=item, naturezas=naturezas)
-
-@item_bp.route('/item/excluir/<int:id>', methods=['POST'])
-@login_required
-def excluir_item(id):
-    item = Item.query.get_or_404(id)
-    db.session.delete(item)
-    db.session.commit()
-    return redirect(url_for('item_bp.lista_itens'))
+    grupos = GrupoItem.query.all()
+    return render_template('form_item.html', grupos=grupos)
 
 @item_bp.route('/item/exportar_excel')
 @login_required
 def exportar_excel():
-    nd_id = request.args.get('nd', type=int)
-    if nd_id:
-        itens = Item.query.filter_by(natureza_id=nd_id).all()
-    else:
-        itens = Item.query.all()
-
+    itens = Item.query.all()
     data = [{
-        'Código SAP': item.codigo_sap,
-        'Código SIADS': item.codigo_siads,
+        'Código': item.codigo,
         'Nome': item.nome,
         'Descrição': item.descricao,
-        'Unidade': item.unidade,
-        'Valor Unitário': item.valor_unitario,
-        'Estoque Atual': item.estoque_atual,
-        'Estoque Mínimo': item.estoque_minimo,
-        'ND': item.natureza.nome if item.natureza else ''
+        'Grupo': item.grupo.nome if item.grupo else '',
+        'ND': item.grupo.natureza.nome if item.grupo and item.grupo.natureza else ''
     } for item in itens]
 
     df = pd.DataFrame(data)
     output = BytesIO()
-    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
         df.to_excel(writer, index=False, sheet_name='Itens')
     output.seek(0)
 
-    return send_file(output, download_name='itens.xlsx', as_attachment=True)
+    return send_file(output, download_name="itens.xlsx", as_attachment=True)
 
 @item_bp.route('/item/exportar_pdf')
 @login_required
 def exportar_pdf():
-    nd_id = request.args.get('nd', type=int)
-    if nd_id:
-        itens = Item.query.filter_by(natureza_id=nd_id).all()
-    else:
-        itens = Item.query.all()
-
+    itens = Item.query.all()
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font('Arial', 'B', 12)
-    pdf.cell(0, 10, 'Lista de Materiais/Serviços', ln=True, align='C')
-    pdf.set_font('Arial', '', 10)
+    pdf.set_font("Arial", size=12)
 
     for item in itens:
-        pdf.cell(0, 10, txt=f"{item.codigo_sap} - {item.nome} ({item.unidade})", ln=True)
+        grupo_nome = item.grupo.nome if item.grupo else ''
+        nd_nome = item.grupo.natureza.nome if item.grupo and item.grupo.natureza else ''
+        pdf.cell(0, 10, txt=f"{item.codigo} - {item.nome} ({grupo_nome} / {nd_nome})", ln=True)
 
     output = BytesIO()
-    pdf.output(output)
+    pdf.output(output, 'F')
     output.seek(0)
 
-    return send_file(output, download_name='itens.pdf', as_attachment=True)
+    return send_file(output, download_name="itens.pdf", as_attachment=True)
+

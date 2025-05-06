@@ -1,58 +1,25 @@
 {% extends 'base_simplificada.html' %}
-{% block content %}
-<div class="container my-5">
-  <div class="text-center mb-5">
-    <img src="{{ url_for('static', filename='embrapa_logo.png') }}" alt="Logo" class="mb-3" style="max-height: 100px;">
-    <h1 class="fw-bold text-primary">Sistema de Almoxarifado</h1>
-    <p class="text-muted">Gerencie com eficiência os módulos da unidade</p>
-  </div>
 
-  <div class="row row-cols-1 row-cols-md-2 g-4">
-    <div class="col">
-      <a href="{{ url_for('item_bp.lista_itens') }}" class="text-decoration-none">
-        <div class="card h-100 border-0 rounded-4 shadow-sm bg-light">
-          <div class="card-body text-center">
-            <i class="bi bi-box-seam fs-1 text-success mb-3"></i>
-            <h5 class="card-title fw-bold text-dark">Almoxarifado</h5>
-            <p class="card-text text-muted">Itens e movimentações de estoque</p>
-          </div>
-        </div>
-      </a>
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4">Bem-vindo, {{ usuario.nome }}!</h2>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <a href="{{ url_for('item_bp.novo_item') }}" class="btn btn-primary w-100">Cadastro de Itens</a>
     </div>
-    <div class="col">
-      <a href="#" class="text-decoration-none">
-        <div class="card h-100 border-0 rounded-4 shadow-sm bg-light">
-          <div class="card-body text-center">
-            <i class="bi bi-cart-check fs-1 text-success mb-3"></i>
-            <h5 class="card-title fw-bold text-dark">Compras</h5>
-            <p class="card-text text-muted">Solicitações e controle de aquisições</p>
-          </div>
-        </div>
-      </a>
+    <div class="col-md-6 mb-3">
+      <a href="{{ url_for('natureza_despesa_bp.listar_naturezas') }}" class="btn btn-primary w-100">Naturezas de Despesa</a>
     </div>
-    <div class="col">
-      <a href="#" class="text-decoration-none">
-        <div class="card h-100 border-0 rounded-4 shadow-sm bg-light">
-          <div class="card-body text-center">
-            <i class="bi bi-hdd-stack fs-1 text-success mb-3"></i>
-            <h5 class="card-title fw-bold text-dark">Patrimônio</h5>
-            <p class="card-text text-muted">Gestão dos bens permanentes</p>
-          </div>
-        </div>
-      </a>
+    <div class="col-md-6 mb-3">
+      <a href="{{ url_for('grupo_item_bp.listar_grupos') }}" class="btn btn-primary w-100">Grupos de Itens</a>
     </div>
-    <div class="col">
-      <a href="https://linktr.ee/spsctaa" target="_blank" class="text-decoration-none">
-        <div class="card h-100 border-0 rounded-4 shadow-sm bg-light">
-          <div class="card-body text-center">
-            <i class="bi bi-link-45deg fs-1 text-success mb-3"></i>
-            <h5 class="card-title fw-bold text-dark">SPS CTAA</h5>
-            <p class="card-text text-muted">Acesse nossos canais institucionais</p>
-          </div>
-        </div>
-      </a>
+    <div class="col-md-6 mb-3">
+      <a href="{{ url_for('usuarios_bp.listar_usuarios') }}" class="btn btn-primary w-100">Usuários</a>
+    </div>
+    <div class="col-md-6 mb-3">
+      <a href="https://linktr.ee/ctaasps" class="btn btn-secondary w-100" target="_blank">Linktree do CTAA - SPS</a>
     </div>
   </div>
 </div>
 {% endblock %}
-

@@ -1,83 +1,70 @@
 {% extends 'base_simplificada.html' %}
+{% block title %}Usuários{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="text-primary">Usuários Cadastrados</h2>
-    <a href="{{ url_for('auth.cadastro') }}" class="btn btn-primary">
-      <i class="bi bi-person-plus-fill"></i> Novo Usuário
-    </a>
-  </div>
+<div class="container py-4">
 
-  <table class="table table-hover table-bordered table-striped shadow-sm">
-    <thead class="table-primary">
-      <tr>
-        <th>Nome</th>
-        <th>Email</th>
-        <th>Perfil</th>
-        <th>Ramal</th>
-        <th>Unidade/Local</th>
-        <th style="width: 100px;">Ações</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for usuario in usuarios.items %}
-      <tr>
-        <td>{{ usuario.nome }}</td>
-        <td>{{ usuario.email }}</td>
-        <td>{{ usuario.perfil.nome }}</td>
-        <td>{{ usuario.ramal }}</td>
-        <td>{{ usuario.unidade_local.descricao if usuario.unidade_local else '' }}</td>
-        <td class="text-center">
-          <a href="{{ url_for('auth.editar_usuario', id=usuario.id) }}" class="btn btn-sm btn-outline-primary" title="Editar">
-            <i class="bi bi-pencil-fill"></i>
-          </a>
-          <a href="{{ url_for('auth.excluir_usuario', id=usuario.id) }}" class="btn btn-sm btn-outline-danger" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir este usuário?');">
-            <i class="bi bi-trash-fill"></i>
-          </a>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-
-  <!-- Paginação -->
-  <nav aria-label="Paginação" class="mt-4">
-    <ul class="pagination justify-content-center">
-      {% if usuarios.has_prev %}
-      <li class="page-item">
-        <a class="page-link" href="{{ url_for('auth.listar_usuarios', page=usuarios.prev_num) }}">&laquo; Anterior</a>
-      </li>
-      {% else %}
-      <li class="page-item disabled"><span class="page-link">&laquo; Anterior</span></li>
-      {% endif %}
-
-      {% for page_num in usuarios.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
-      {% if page_num %}
-        {% if page_num == usuarios.page %}
-        <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
-        {% else %}
-        <li class="page-item"><a class="page-link" href="{{ url_for('auth.listar_usuarios', page=page_num) }}">{{ page_num }}</a></li>
+    <!-- Mensagem flash para feedback -->
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="alert alert-success">{{ messages[0] }}</div>
         {% endif %}
-      {% else %}
-      <li class="page-item disabled"><span class="page-link">…</span></li>
-      {% endif %}
-      {% endfor %}
+    {% endwith %}
 
-      {% if usuarios.has_next %}
-      <li class="page-item">
-        <a class="page-link" href="{{ url_for('auth.listar_usuarios', page=usuarios.next_num) }}">Próxima &raquo;</a>
-      </li>
-      {% else %}
-      <li class="page-item disabled"><span class="page-link">Próxima &raquo;</span></li>
-      {% endif %}
-    </ul>
-  </nav>
+    <!-- Cabeçalho com botão voltar, título e logout -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">Início</a>
+        <h4 class="mb-0 text-center flex-grow-1">Usuários</h4>
+        <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">Sair</a>
+    </div>
 
-  <div class="mt-4 text-center">
-    <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">
-      <i class="bi bi-arrow-left-circle"></i> Voltar
-    </a>
-  </div>
+    <!-- Botões principais -->
+    <div class="mb-4 d-flex justify-content-between flex-wrap gap-2">
+        <a href="{{ url_for('usuario_bp.novo_usuario') }}" class="btn btn-success btn-lg flex-fill">Novo Usuário</a>
+        <a href="{{ url_for('main.home') }}" class="btn btn-secondary btn-lg flex-fill">Início</a>
+    </div>
+
+    <!-- Tabela de usuários -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-success">
+                <tr>
+                    <th>ID</th>
+                    <th>Matrícula</th>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Ramal</th>
+                    <th>Unidade Local</th>
+                    <th>Perfil</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if usuarios %}
+                    {% for usuario in usuarios %}
+                    <tr>
+                        <td>{{ usuario.id }}</td>
+                        <td>{{ usuario.matricula }}</td>
+                        <td>{{ usuario.nome }}</td>
+                        <td>{{ usuario.email }}</td>
+                        <td>{{ usuario.ramal or '' }}</td>
+                        <td>{{ usuario.unidade_local.descricao if usuario.unidade_local else '' }}</td>
+                        <td>{{ usuario.perfil.nome if usuario.perfil else '' }}</td>
+                        <td class="text-nowrap">
+                            <a href="{{ url_for('usuario_bp.editar_usuario', id=usuario.id) }}" class="btn btn-sm btn-outline-primary">Editar</a>
+                            <form action="{{ url_for('usuario_bp.excluir_usuario', id=usuario.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Tem certeza que deseja excluir este usuário?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger ms-1">Excluir</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center">Nenhum usuário cadastrado.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}
-

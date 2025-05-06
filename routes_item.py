@@ -4,6 +4,7 @@ from flask_login import login_required
 from io import BytesIO  # Para arquivos em memória
 import pandas as pd  # Para gerar Excel
 from fpdf import FPDF  # Para gerar PDF
+from datetime import datetime  # Para lidar com datas
 
 # Importa os modelos do sistema
 from models import db, Item, Grupo, NaturezaDespesa
@@ -23,7 +24,9 @@ def lista_itens():
         itens = Item.query.all()
 
     naturezas = NaturezaDespesa.query.all()
-    return render_template('lista_itens.html', itens=itens, naturezas=naturezas, nd_selecionado=int(nd_id) if nd_id else '')
+    nd_selecionado = int(nd_id) if nd_id else None
+
+    return render_template('lista_itens.html', itens=itens, naturezas=naturezas, nd_selecionado=nd_selecionado)
 
 
 # ------------------------------ CADASTRAR NOVO ITEM ------------------------------
@@ -31,20 +34,35 @@ def lista_itens():
 @login_required
 def novo_item():
     if request.method == 'POST':
+        codigo = request.form['codigo']
+        nome = request.form['nome']
+        descricao = request.form['descricao']
+        grupo_id = request.form['grupo_id']
+        unidade = request.form['unidade']
+        codigo_siads = request.form.get('codigo_siads')
+        valor_unitario = request.form.get('valor_unitario', type=float)
+        estoque_atual = request.form.get('estoque_atual', type=float)
+        estoque_minimo = request.form.get('estoque_minimo', type=float)
+        localizacao = request.form.get('localizacao')
+        data_validade_str = request.form.get('data_validade')
+        data_validade = datetime.strptime(data_validade_str, '%Y-%m-%d') if data_validade_str else None
+
         item = Item(
-            codigo_sap=request.form['codigo'],
-            codigo_siads=request.form.get('codigo_siads'),
-            nome=request.form['nome'],
-            descricao=request.form['descricao'],
-            unidade=request.form['unidade'],
-            grupo_id=request.form['grupo_id'],
-            valor_unitario=request.form.get('valor_unitario', type=float),
-            estoque_atual=request.form.get('estoque_atual', type=float),
-            estoque_minimo=request.form.get('estoque_minimo', type=float),
-            localizacao=request.form.get('localizacao')
+            codigo_sap=codigo,
+            codigo_siads=codigo_siads,
+            nome=nome,
+            descricao=descricao,
+            unidade=unidade,
+            grupo_id=grupo_id,
+            valor_unitario=valor_unitario,
+            estoque_atual=estoque_atual,
+            estoque_minimo=estoque_minimo,
+            localizacao=localizacao,
+            data_validade=data_validade
         )
         db.session.add(item)
         db.session.commit()
+
         flash('Item cadastrado com sucesso!', 'success')
         return redirect(url_for('item_bp.lista_itens'))
 
@@ -60,7 +78,7 @@ def editar_item(id):
 
     if request.method == 'POST':
         item.codigo_sap = request.form['codigo']
-        item.codigo_siads = request.form.get('codigo_siads')
+        item.codigo_siads = request.form['codigo_siads']
         item.nome = request.form['nome']
         item.descricao = request.form['descricao']
         item.unidade = request.form['unidade']
@@ -69,6 +87,8 @@ def editar_item(id):
         item.estoque_atual = request.form.get('estoque_atual', type=float)
         item.estoque_minimo = request.form.get('estoque_minimo', type=float)
         item.localizacao = request.form['localizacao']
+        data_validade_str = request.form.get('data_validade')
+        item.data_validade = datetime.strptime(data_validade_str, '%Y-%m-%d') if data_validade_str else None
 
         db.session.commit()
         flash('Item atualizado com sucesso!', 'success')
@@ -85,6 +105,7 @@ def excluir_item(id):
     item = Item.query.get_or_404(id)
     db.session.delete(item)
     db.session.commit()
+
     flash('Item excluído com sucesso!', 'success')
     return redirect(url_for('item_bp.lista_itens'))
 
@@ -106,10 +127,7 @@ def exportar_excel():
         'Descrição': item.descricao,
         'Unidade': item.unidade,
         'Grupo': item.grupo.nome if item.grupo else '',
-        'Natureza de Despesa': item.grupo.natureza_despesa.nome if item.grupo and item.grupo.natureza_despesa else '',
-        'Valor Unitário': item.valor_unitario,
-        'Quantidade': item.estoque_atual,
-        'Valor Total': (item.valor_unitario or 0) * (item.estoque_atual or 0)
+        'Natureza de Despesa': item.grupo.natureza_despesa.nome if item.grupo and item.grupo.natureza_despesa else ''
     } for item in itens]
 
     df = pd.DataFrame(data)
@@ -117,6 +135,7 @@ def exportar_excel():
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
         df.to_excel(writer, index=False, sheet_name='Itens')
     output.seek(0)
+
     return send_file(output, download_name="itens.xlsx", as_attachment=True)
 
 
@@ -141,6 +160,7 @@ def exportar_pdf():
         pdf.cell(0, 10, txt=texto, ln=True)
 
     output = BytesIO()
-    output.write(pdf.output(dest='S').encode('latin1'))
+    pdf.output(output)
     output.seek(0)
+
     return send_file(output, download_name="itens.pdf", as_attachment=True)

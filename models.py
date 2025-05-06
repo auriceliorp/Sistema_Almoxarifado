@@ -63,7 +63,7 @@ class Item(db.Model):
     data_validade = db.Column(db.Date, nullable=True)
     
     grupo = db.relationship('Grupo', backref=db.backref('itens', lazy=True))
-    natureza_despesa = db.relationship('NaturezaDespesa', backref=db.backref('itens', lazy=True)
+    natureza_despesa = db.relationship('NaturezaDespesa', backref=db.backref('itens', lazy=True))
 # ------------------- ESTOQUE -------------------
 class Estoque(db.Model):
     __tablename__ = 'estoque'

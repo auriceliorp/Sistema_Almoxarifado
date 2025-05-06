@@ -29,7 +29,10 @@
         </select>
     </form>
 
-    <a href="{{ url_for('item_bp.exportar_excel', nd=nd_selecionado) }}" class="btn btn-outline-success mb-3">Exportar Excel</a>
+    <div class="d-flex gap-2 mb-3">
+        <a href="{{ url_for('item_bp.exportar_excel', nd=nd_selecionado) }}" class="btn btn-outline-success">Exportar Excel</a>
+        <a href="{{ url_for('item_bp.exportar_pdf', nd=nd_selecionado) }}" class="btn btn-outline-danger">Exportar PDF</a>
+    </div>
 
     <div class="table-responsive">
         <table class="table table-bordered table-hover align-middle">
@@ -73,29 +76,4 @@
         </table>
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('th').forEach((header, index) => {
-        header.style.cursor = 'pointer';
-        header.addEventListener('click', () => {
-            const table = header.closest('table');
-            const tbody = table.querySelector('tbody');
-            const rows = Array.from(tbody.querySelectorAll('tr'));
-            const asc = !header.classList.contains('asc');
-            rows.sort((a, b) => {
-                const aText = a.children[index].textContent.trim();
-                const bText = b.children[index].textContent.trim();
-                return asc
-                    ? aText.localeCompare(bText, undefined, {numeric: true})
-                    : bText.localeCompare(aText, undefined, {numeric: true});
-            });
-            header.classList.toggle('asc', asc);
-            header.classList.toggle('desc', !asc);
-            rows.forEach(row => tbody.appendChild(row));
-        });
-    });
-});
-</script>
-
 {% endblock %}

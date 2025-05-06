@@ -5,7 +5,8 @@ import pandas as pd
 from fpdf import FPDF
 from models import db, Item, NaturezaDespesa
 
-item_bp = Blueprint('item', __name__)
+item_bp = Blueprint('item_bp', __name__, url_prefix='/item')
+
 
 @item_bp.route('/item/itens')
 @login_required

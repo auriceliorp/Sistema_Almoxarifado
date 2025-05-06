@@ -30,39 +30,37 @@ def lista_itens():
 
 
 # ------------------------------ CADASTRAR NOVO ITEM ------------------------------
-@item_bp.route("/item/novo", methods=["GET", "POST"])
+@item_bp.route('/novo', methods=['GET', 'POST'])
 @login_required
 def novo_item():
-    form = ItemForm()
-
-    grupos = GrupoItem.query.order_by(GrupoItem.nome).all()
-    naturezas = NaturezaDespesa.query.order_by(NaturezaDespesa.nome).all()
-
-    form.grupo_id.choices = [(g.id, f"{g.nome}") for g in grupos]
-    form.natureza_despesa_id.choices = [(n.id, f"{n.codigo} - {n.nome}") for n in naturezas]
-
-    if form.validate_on_submit():
+    if request.method == 'POST':
+        # Coleta dados do formulário
         item = Item(
-            codigo_sap=form.codigo_sap.data,
-            codigo_siads=form.codigo_siads.data,
-            nome=form.nome.data,
-            descricao=form.descricao.data,
-            unidade=form.unidade.data,
-            grupo_id=form.grupo_id.data,
-            natureza_despesa_id=form.natureza_despesa_id.data,
-            valor_unitario=form.valor_unitario.data or 0,
+            codigo_sap=request.form['codigo'],
+            codigo_siads=request.form['codigo_siads'],
+            nome=request.form['nome'],
+            descricao=request.form['descricao'],
+            unidade=request.form['unidade'],
+            grupo_id=request.form['grupo_id'],
+            natureza_despesa_id=request.form['natureza_despesa_id'],
+            valor_unitario=request.form.get('valor_unitario', type=float) or 0,
             saldo_financeiro=0,
-            estoque_atual=form.estoque_atual.data or 0,
-            estoque_minimo=form.estoque_minimo.data or 0,
-            localizacao=form.localizacao.data,
-            data_validade=form.data_validade.data
+            estoque_atual=request.form.get('estoque_atual', type=float) or 0,
+            estoque_minimo=request.form.get('estoque_minimo', type=float) or 0,
+            localizacao=request.form['localizacao'],
+            data_validade=request.form.get('data_validade') or None
         )
+
         db.session.add(item)
         db.session.commit()
-        flash("Item cadastrado com sucesso!", "success")
-        return redirect(url_for("item_bp.lista_itens"))
 
-    return render_template("form_item.html", form=form)
+        flash('Item cadastrado com sucesso!', 'success')
+        return redirect(url_for('item_bp.lista_itens'))
+
+    # GET: carrega lista de grupos e naturezas
+    grupos = Grupo.query.all()
+    naturezas = NaturezaDespesa.query.all()
+    return render_template('form_item.html', grupos=grupos, naturezas=naturezas)
 
 
 

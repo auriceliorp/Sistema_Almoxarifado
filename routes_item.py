@@ -1,15 +1,41 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, send_file from flask_login import login_required from io import BytesIO import pandas as pd from fpdf import FPDF from models import db, Item, NaturezaDespesa
+from flask import Blueprint, render_template, request, redirect, url_for, flash, send_file 
+from flask_login import login_required 
+from io import BytesIO import pandas as pd 
+from fpdf import FPDF 
+from models import db, Item, NaturezaDespesa
 
 item_bp = Blueprint('item_bp', name)
 
-@item_bp.route('/item/itens') @login_required def lista_itens(): nd_id = request.args.get('nd', type=int) if nd_id: itens = Item.query.filter_by(natureza_id=nd_id).all() else: itens = Item.query.all() naturezas = NaturezaDespesa.query.all() return render_template('lista_itens.html', itens=itens, naturezas=naturezas, nd_selecionado=nd_id)
-
-@item_bp.route('/item/novo', methods=['GET', 'POST']) @login_required def novo_item(): naturezas = NaturezaDespesa.query.all() if request.method == 'POST': item = Item( codigo_sap=request.form['codigo'], codigo_siads=request.form.get('codigo_siads'), nome=request.form['nome'], descricao=request.form.get('descricao'), unidade=request.form['unidade'], natureza_id=request.form['natureza_despesa_id'], valor_unitario=request.form.get('valor_unitario') or 0, estoque_atual=request.form.get('estoque_atual') or 0, estoque_minimo=request.form.get('estoque_minimo') or 0 ) db.session.add(item) db.session.commit() return redirect(url_for('item_bp.lista_itens')) return render_template('novo_item.html', naturezas=naturezas)
-
+@item_bp.route('/item/itens') 
+@login_required 
+def lista_itens(): 
+    nd_id = request.args.get('nd', type=int) 
+    if nd_id: itens = 
+        Item.query.filter_by(natureza_id=nd_id).all() 
+    else: itens = Item.query.all() 
+        naturezas = NaturezaDespesa.query.all() return render_template('lista_itens.html', itens=itens, naturezas=naturezas, nd_selecionado=nd_id)
+@item_bp.route('/item/novo', methods=['GET', 'POST']) 
+@login_required 
+def novo_item(): 
+    naturezas = NaturezaDespesa.query.all() 
+    if request.method == 'POST': 
+        item = Item( 
+            codigo_sap=request.form['codigo'], 
+            codigo_siads=request.form.get('codigo_siads'), 
+            nome=request.form['nome'], 
+            descricao=request.form.get('descricao'), 
+            unidade=request.form['unidade'], 
+            natureza_id=request.form['natureza_despesa_id'], 
+            valor_unitario=request.form.get('valor_unitario') or 0, e
+            stoque_atual=request.form.get('estoque_atual') or 0, 
+            estoque_minimo=request.form.get('estoque_minimo') or 0 
+        ) 
+        db.session.add(item) 
+        db.session.commit() 
+        return redirect(url_for('item_bp.lista_itens')) 
+        return render_template('novo_item.html', naturezas=naturezas)
 @item_bp.route('/item/editar/int:id', methods=['GET', 'POST']) @login_required def editar_item(id): item = Item.query.get_or_404(id) naturezas = NaturezaDespesa.query.all() if request.method == 'POST': item.codigo_sap = request.form['codigo'] item.codigo_siads = request.form.get('codigo_siads') item.nome = request.form['nome'] item.descricao = request.form.get('descricao') item.unidade = request.form['unidade'] item.natureza_id = request.form['natureza_despesa_id'] item.valor_unitario = request.form.get('valor_unitario') or 0 item.estoque_atual = request.form.get('estoque_atual') or 0 item.estoque_minimo = request.form.get('estoque_minimo') or 0 db.session.commit() return redirect(url_for('item_bp.lista_itens')) return render_template('editar_item.html', item=item, naturezas=naturezas)
-
 @item_bp.route('/item/excluir/int:id', methods=['POST']) @login_required def excluir_item(id): item = Item.query.get_or_404(id) db.session.delete(item) db.session.commit() return redirect(url_for('item_bp.lista_itens'))
-
 @item_bp.route('/item/exportar_excel') @login_required def exportar_excel(): nd_id = request.args.get('nd', type=int) if nd_id: itens = Item.query.filter_by(natureza_id=nd_id).all() else: itens = Item.query.all()
 
 data = [{

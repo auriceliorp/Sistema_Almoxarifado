@@ -79,6 +79,18 @@ def editar_item(id):
     grupos = Grupo.query.all()
     return render_template('form_item.html', item=item, grupos=grupos)
 
+# ------------------------------ EXCLUIR ITENS ------------------------------
+@item_bp.route('/excluir/<int:id>', methods=['POST'])
+@login_required
+def excluir_item(id):
+    item = Item.query.get_or_404(id)
+
+    db.session.delete(item)
+    db.session.commit()
+
+    flash('Item excluído com sucesso!', 'success')
+    return redirect(url_for('item_bp.lista_itens'))
+
 
 # ------------------------------ EXPORTAR PARA EXCEL ------------------------------
 @item_bp.route('/exportar_excel')

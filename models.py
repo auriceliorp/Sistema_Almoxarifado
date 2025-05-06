@@ -14,9 +14,15 @@ class Usuario(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     senha = db.Column(db.String(255), nullable=False)
     matricula = db.Column(db.String(50))
+    ramal = db.Column(db.String(20))  # NOVO CAMPO
+    unidade_local_id = db.Column(db.Integer, db.ForeignKey('unidade_local.id'))  # NOVO CAMPO
+    unidade_local = db.relationship('UnidadeLocal', backref='usuarios')  # RELACIONAMENTO
+
     perfil_id = db.Column(db.Integer, db.ForeignKey('perfis.id'))
     perfil = db.relationship('Perfil', backref='usuarios')
+
     senha_temporaria = db.Column(db.Boolean, default=True)
+
 
 # ------------------- NATUREZA DE DESPESA -------------------
 class NaturezaDespesa(db.Model):

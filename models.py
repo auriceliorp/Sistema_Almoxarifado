@@ -58,6 +58,7 @@ class Item(db.Model):
     estoque_atual = db.Column(db.Float, default=0.0)
     estoque_minimo = db.Column(db.Float, default=0.0)
     localizacao = db.Column(db.String(120), default='')
+    data_validade = db.Column(db.Date, nullable=True)
 
 # ------------------- ESTOQUE -------------------
 class Estoque(db.Model):

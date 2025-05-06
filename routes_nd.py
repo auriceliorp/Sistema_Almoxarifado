@@ -28,7 +28,25 @@ def nova_nd():
         flash('Natureza de Despesa cadastrada com sucesso!')
         return redirect(url_for('nd_bp.lista_nd'))
 
-    return render_template('form_nd.html')
+    return render_template('form_nd.html', nd=None)
+
+@nd_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
+@login_required
+def editar_nd(id):
+    nd = NaturezaDespesa.query.get_or_404(id)
+    if request.method == 'POST':
+        nd.codigo = request.form.get('codigo')
+        nd.nome = request.form.get('nome')
+
+        if not nd.codigo or not nd.nome:
+            flash('Preencha todos os campos obrigatórios.')
+            return redirect(url_for('nd_bp.editar_nd', id=id))
+
+        db.session.commit()
+        flash('Natureza de Despesa atualizada com sucesso!')
+        return redirect(url_for('nd_bp.lista_nd'))
+
+    return render_template('form_nd.html', nd=nd)
 
 @nd_bp.route('/excluir/<int:id>', methods=['POST'])
 @login_required

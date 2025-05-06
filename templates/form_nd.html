@@ -1,25 +1,18 @@
 {% extends 'base_simplificada.html' %}
-{% block title %}{{ 'Editar' if nd else 'Nova' }} ND{% endblock %}
-
 {% block content %}
-<div class="container py-4">
-    <h4 class="mb-4">{{ 'Editar Natureza de Despesa' if nd else 'Cadastrar Nova Natureza de Despesa' }}</h4>
-
-    <form method="POST">
+<div class="container mt-4">
+    <h2>{{ 'Editar ND' if nd else 'Nova ND' }}</h2>
+    <form method="post">
         <div class="mb-3">
             <label for="codigo" class="form-label">Código *</label>
             <input type="text" class="form-control" id="codigo" name="codigo" value="{{ nd.codigo if nd else '' }}" required>
         </div>
-
         <div class="mb-3">
             <label for="nome" class="form-label">Nome *</label>
             <input type="text" class="form-control" id="nome" name="nome" value="{{ nd.nome if nd else '' }}" required>
         </div>
-
-        <div class="d-flex justify-content-between">
-            <a href="{{ url_for('nd_bp.lista_nd') }}" class="btn btn-secondary">Voltar</a>
-            <button type="submit" class="btn btn-primary">{{ 'Salvar Alterações' if nd else 'Cadastrar' }}</button>
-        </div>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+        <a href="{{ url_for('nd_bp.lista_nd') }}" class="btn btn-secondary">Cancelar</a>
     </form>
 </div>
 {% endblock %}

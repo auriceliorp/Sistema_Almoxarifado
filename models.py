@@ -1,6 +1,5 @@
 from flask_login import UserMixin
 from database import db
-from app import db
 
 # ------------------- USUÁRIO E PERFIL -------------------
 class Perfil(db.Model):

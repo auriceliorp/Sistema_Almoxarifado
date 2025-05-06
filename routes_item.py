@@ -16,7 +16,7 @@ def lista_itens():
         itens = Item.query.join(GrupoItem).filter(GrupoItem.natureza_id == nd_id).all()
     else:
         itens = Item.query.all()
-    return render_template('itens.html', itens=itens)
+    return render_template('lista_itens.html', itens=itens)
 
 @item_bp.route('/item/novo', methods=['GET', 'POST'])
 @login_required

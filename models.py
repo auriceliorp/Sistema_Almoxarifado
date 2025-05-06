@@ -41,14 +41,17 @@ class Grupo(db.Model):
 class Item(db.Model):
     __tablename__ = 'item'
     id = db.Column(db.Integer, primary_key=True)
-    codigo = db.Column(db.String(50), nullable=False)
+    codigo_sap = db.Column(db.String(50), nullable=False)
+    codigo_siads = db.Column(db.String(50))
     nome = db.Column(db.String(120), nullable=False)
     descricao = db.Column(db.Text, nullable=False, default='')
     unidade = db.Column(db.String(50), nullable=False)
     grupo_id = db.Column(db.Integer, db.ForeignKey('grupos.id'))
     valor_unitario = db.Column(db.Float, default=0.0)
+    saldo_financeiro = db.Column(db.Float, default=0.0)
     estoque_atual = db.Column(db.Float, default=0.0)
     estoque_minimo = db.Column(db.Float, default=0.0)
+    localizacao = db.Column(db.String(120), default='')
 
 # ------------------- ESTOQUE -------------------
 class Estoque(db.Model):

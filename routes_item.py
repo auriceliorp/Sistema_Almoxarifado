@@ -51,6 +51,34 @@ def novo_item():
     grupos = Grupo.query.all()
     return render_template('form_item.html', grupos=grupos)
 
+# ------------------------------ EDITAR ITEM ------------------------------
+@item_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
+@login_required
+def editar_item(id):
+    # Busca o item no banco de dados ou retorna 404 se não existir
+    item = Item.query.get_or_404(id)
+
+    if request.method == 'POST':
+        # Atualiza os campos do item com os dados do formulário
+        item.codigo_sap = request.form['codigo']
+        item.codigo_siads = request.form['codigo_siads']
+        item.nome = request.form['nome']
+        item.descricao = request.form['descricao']
+        item.unidade = request.form['unidade']
+        item.grupo_id = request.form['grupo_id']
+        item.valor_unitario = request.form.get('valor_unitario', type=float)
+        item.estoque_atual = request.form.get('estoque_atual', type=float)
+        item.estoque_minimo = request.form.get('estoque_minimo', type=float)
+        item.localizacao = request.form['localizacao']
+
+        db.session.commit()
+        flash('Item atualizado com sucesso!', 'success')
+        return redirect(url_for('item_bp.lista_itens'))
+
+    # Para o formulário: carrega todos os grupos disponíveis
+    grupos = Grupo.query.all()
+    return render_template('form_item.html', item=item, grupos=grupos)
+
 
 # ------------------------------ EXPORTAR PARA EXCEL ------------------------------
 @item_bp.route('/exportar_excel')

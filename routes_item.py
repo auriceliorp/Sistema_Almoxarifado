@@ -6,62 +6,61 @@ import pandas as pd  # Para gerar Excel
 from fpdf import FPDF  # Para gerar PDF
 
 # Importa os modelos do sistema
-from models import db, Item, Grupo, NaturezaDespesa  # Corrigido: GrupoItem -> Grupo
+from models import db, Item, Grupo, NaturezaDespesa
 
 # Criação do blueprint para o módulo de itens
 item_bp = Blueprint('item_bp', __name__, url_prefix='/item')
 
 
 # ------------------------------ LISTAR ITENS ------------------------------
-@item_bp.route('/itens')  # URL completa: /item/itens
+@item_bp.route('/itens')
 @login_required
 def lista_itens():
-    # Verifica se há um filtro por natureza de despesa (nd)
     nd_id = request.args.get('nd')
     if nd_id:
-        # Filtra itens com base na natureza vinculada ao grupo
         itens = Item.query.join(Grupo).filter(Grupo.natureza_despesa_id == nd_id).all()
     else:
-        # Caso contrário, retorna todos os itens
         itens = Item.query.all()
 
-    return render_template('lista_itens.html', itens=itens)
+    naturezas = NaturezaDespesa.query.all()
+    return render_template('lista_itens.html', itens=itens, naturezas=naturezas, nd_selecionado=int(nd_id) if nd_id else '')
 
 
 # ------------------------------ CADASTRAR NOVO ITEM ------------------------------
-@item_bp.route('/novo', methods=['GET', 'POST'])  # URL: /item/novo
+@item_bp.route('/novo', methods=['GET', 'POST'])
 @login_required
 def novo_item():
     if request.method == 'POST':
-        # Obtém dados do formulário
-        codigo = request.form['codigo']
-        nome = request.form['nome']
-        descricao = request.form['descricao']
-        grupo_id = request.form['grupo_id']
-
-        # Cria o novo item
-        item = Item(codigo_sap=codigo, nome=nome, descricao=descricao, grupo_id=grupo_id)
+        item = Item(
+            codigo_sap=request.form['codigo'],
+            codigo_siads=request.form.get('codigo_siads'),
+            nome=request.form['nome'],
+            descricao=request.form['descricao'],
+            unidade=request.form['unidade'],
+            grupo_id=request.form['grupo_id'],
+            valor_unitario=request.form.get('valor_unitario', type=float),
+            estoque_atual=request.form.get('estoque_atual', type=float),
+            estoque_minimo=request.form.get('estoque_minimo', type=float),
+            localizacao=request.form.get('localizacao')
+        )
         db.session.add(item)
         db.session.commit()
-
         flash('Item cadastrado com sucesso!', 'success')
         return redirect(url_for('item_bp.lista_itens'))
 
-    # Para método GET, exibe formulário com lista de grupos
     grupos = Grupo.query.all()
     return render_template('form_item.html', grupos=grupos)
+
 
 # ------------------------------ EDITAR ITEM ------------------------------
 @item_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
 def editar_item(id):
-    # Busca o item no banco de dados ou retorna 404 se não existir
     item = Item.query.get_or_404(id)
 
     if request.method == 'POST':
-        # Atualiza os campos do item com os dados do formulário
         item.codigo_sap = request.form['codigo']
-        item.codigo_siads = request.form['codigo_siads']
+        item.codigo_siads = request.form.get('codigo_siads')
         item.nome = request.form['nome']
         item.descricao = request.form['descricao']
         item.unidade = request.form['unidade']
@@ -75,19 +74,17 @@ def editar_item(id):
         flash('Item atualizado com sucesso!', 'success')
         return redirect(url_for('item_bp.lista_itens'))
 
-    # Para o formulário: carrega todos os grupos disponíveis
     grupos = Grupo.query.all()
     return render_template('form_item.html', item=item, grupos=grupos)
+
 
 # ------------------------------ EXCLUIR ITENS ------------------------------
 @item_bp.route('/excluir/<int:id>', methods=['POST'])
 @login_required
 def excluir_item(id):
     item = Item.query.get_or_404(id)
-
     db.session.delete(item)
     db.session.commit()
-
     flash('Item excluído com sucesso!', 'success')
     return redirect(url_for('item_bp.lista_itens'))
 
@@ -96,25 +93,30 @@ def excluir_item(id):
 @item_bp.route('/exportar_excel')
 @login_required
 def exportar_excel():
-    itens = Item.query.all()
+    nd_id = request.args.get('nd')
+    if nd_id:
+        itens = Item.query.join(Grupo).filter(Grupo.natureza_despesa_id == nd_id).all()
+    else:
+        itens = Item.query.all()
 
-    # Estrutura de dados para exportação
     data = [{
         'Código SAP': item.codigo_sap,
+        'Código SIADS': item.codigo_siads,
         'Nome': item.nome,
         'Descrição': item.descricao,
+        'Unidade': item.unidade,
         'Grupo': item.grupo.nome if item.grupo else '',
-        'Natureza de Despesa': item.grupo.natureza_despesa.nome if item.grupo and item.grupo.natureza_despesa else ''
+        'Natureza de Despesa': item.grupo.natureza_despesa.nome if item.grupo and item.grupo.natureza_despesa else '',
+        'Valor Unitário': item.valor_unitario,
+        'Quantidade': item.estoque_atual,
+        'Valor Total': (item.valor_unitario or 0) * (item.estoque_atual or 0)
     } for item in itens]
 
     df = pd.DataFrame(data)
-
-    # Salva Excel em memória
     output = BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
         df.to_excel(writer, index=False, sheet_name='Itens')
     output.seek(0)
-
     return send_file(output, download_name="itens.xlsx", as_attachment=True)
 
 
@@ -122,7 +124,11 @@ def exportar_excel():
 @item_bp.route('/exportar_pdf')
 @login_required
 def exportar_pdf():
-    itens = Item.query.all()
+    nd_id = request.args.get('nd')
+    if nd_id:
+        itens = Item.query.join(Grupo).filter(Grupo.natureza_despesa_id == nd_id).all()
+    else:
+        itens = Item.query.all()
 
     pdf = FPDF()
     pdf.add_page()
@@ -135,7 +141,6 @@ def exportar_pdf():
         pdf.cell(0, 10, txt=texto, ln=True)
 
     output = BytesIO()
-    pdf.output(output, 'F')
+    output.write(pdf.output(dest='S').encode('latin1'))
     output.seek(0)
-
     return send_file(output, download_name="itens.pdf", as_attachment=True)

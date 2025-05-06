@@ -3,17 +3,6 @@ from flask_login import login_required
 from io import BytesIO
 import pandas as pd
 from fpdf import FPDF
-from models import db, Item, NaturezaDespesa
-
-item_bp = Blueprint('item_bp', __name__)
-
-@item_bp.route('/item/itens')
-@login_required
-from flask import Blueprint, render_template, request, redirect, url_for, flash, send_file
-from flask_login import login_required
-from io import BytesIO
-import pandas as pd
-from fpdf import FPDF
 from models import db, Item, GrupoItem, NaturezaDespesa
 
 item_bp = Blueprint('item', __name__)
@@ -84,4 +73,3 @@ def exportar_pdf():
     output.seek(0)
 
     return send_file(output, download_name="itens.pdf", as_attachment=True)
-

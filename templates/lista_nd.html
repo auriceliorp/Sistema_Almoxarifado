@@ -17,8 +17,9 @@
                 <td>{{ nd.codigo }}</td>
                 <td>{{ nd.nome }}</td>
                 <td>
+                    <a href="{{ url_for('nd_bp.editar_nd', id=nd.id) }}" class="btn btn-sm btn-warning">Editar</a>
                     <form action="{{ url_for('nd_bp.excluir_nd', id=nd.id) }}" method="post" style="display:inline;">
-                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir esta ND?')">Excluir</button>
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Deseja realmente excluir esta ND?')">Excluir</button>
                     </form>
                 </td>
             </tr>

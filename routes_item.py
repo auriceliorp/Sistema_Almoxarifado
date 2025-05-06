@@ -54,6 +54,7 @@ def novo_item():
             descricao=descricao,
             unidade=unidade,
             grupo_id=grupo_id,
+            natureza_despesa_id=form.natureza_despesa_id.data,
             valor_unitario=valor_unitario,
             estoque_atual=estoque_atual,
             estoque_minimo=estoque_minimo,

@@ -3,7 +3,7 @@ from flask_login import login_required
 from io import BytesIO
 import pandas as pd
 from fpdf import FPDF
-from models import db, Item, GrupoItem, NaturezaDespesa
+from models import db, Item, NaturezaDespesa
 
 item_bp = Blueprint('item', __name__)
 

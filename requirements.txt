@@ -10,3 +10,4 @@ psycopg2-binary==2.9.5
 pandas
 openpyxl
 fpdf==1.7.2
+flask-migrate==4.0.5

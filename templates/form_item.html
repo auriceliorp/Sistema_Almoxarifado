@@ -23,10 +23,24 @@
                 <label for="descricao" class="form-label">Descrição *</label>
                 <textarea class="form-control" id="descricao" name="descricao" required>{{ item.descricao if item else '' }}</textarea>
             </div>
-            <div class="col-md-6 mb-3">
-                <label for="unidade" class="form-label">Unidade de Medida *</label>
-                <input type="text" class="form-control" id="unidade" name="unidade" required value="{{ item.unidade if item else '' }}">
-            </div>
+            <div class="mb-3">
+  <label for="unidade" class="form-label">Unidade de Medida *</label>
+  <select class="form-select" id="unidade" name="unidade" required>
+    <option value="">Selecione</option>
+    <option value="UN">Unidade</option>
+    <option value="KG">KG</option>
+    <option value="L">Litro</option>
+    <option value="M">Metro</option>
+    <option value="CX">Caixa</option>
+    <option value="PCT">Pacote</option>
+    <option value="SC">Saco</option>
+    <option value="PAR">Par</option>
+    <option value="M2">Metro Quadrado</option>
+    <option value="M3">Metro Cúbico</option>
+      <option value="RM">Resma</option>
+  </select>
+</div>
+
             <div class="col-md-6 mb-3">
                 <label for="grupo_id" class="form-label">Grupo *</label>
                 <select class="form-select" id="grupo_id" name="grupo_id" required>

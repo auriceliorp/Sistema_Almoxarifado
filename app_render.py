@@ -4,17 +4,21 @@ from dotenv import load_dotenv
 from flask import Flask, Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_user, logout_user, current_user, login_required, LoginManager
 from werkzeug.security import check_password_hash, generate_password_hash
-from database import db
-from models import Usuario, Perfil, Item, NaturezaDespesa
 from sqlalchemy import inspect, text
 from email.mime.text import MIMEText
 from config import Config
+from database import db
+from models import Usuario, Perfil, Item, NaturezaDespesa
 
+# ------------------------------
 # Carrega variáveis de ambiente
+# ------------------------------
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))
 
-# Função de envio de e-mail
+# ------------------------------
+# Função para envio de e-mail
+# ------------------------------
 def enviar_email(destinatario, assunto, mensagem):
     try:
         msg = MIMEText(mensagem, "plain")
@@ -29,7 +33,9 @@ def enviar_email(destinatario, assunto, mensagem):
     except Exception as e:
         print("Erro ao enviar e-mail:", e)
 
-# Login Manager
+# ------------------------------
+# Configuração do Login Manager
+# ------------------------------
 login_manager = LoginManager()
 login_manager.login_view = "main.login"
 
@@ -39,7 +45,9 @@ def load_user(user_id):
         return Usuario.query.get(int(user_id))
     return None
 
+# ------------------------------
 # Blueprint principal
+# ------------------------------
 main = Blueprint('main', __name__)
 
 @main.route('/')
@@ -86,7 +94,7 @@ def trocar_senha():
             db.session.commit()
             flash('Senha alterada com sucesso.')
 
-            # Envia e-mail após alteração da senha
+            # Envia e-mail após alteração de senha
             if current_user.email:
                 enviar_email(
                     current_user.email,
@@ -137,6 +145,22 @@ def logout():
     logout_user()
     return redirect(url_for('main.login'))
 
+# ------------------------------
+# Função para executar arquivos SQL da pasta migrations
+# ------------------------------
+def executar_migracoes():
+    caminho_migrations = os.path.join(os.path.dirname(__file__), 'migrations')
+    arquivos = sorted(f for f in os.listdir(caminho_migrations) if f.endswith('.sql'))
+
+    for arquivo in arquivos:
+        with open(os.path.join(caminho_migrations, arquivo), 'r', encoding='utf-8') as f:
+            sql = f.read()
+            with db.engine.connect() as conn:
+                conn.execute(text(sql))
+
+# ------------------------------
+# Função principal de criação do app Flask
+# ------------------------------
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
@@ -144,15 +168,15 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
 
+    # Registra todos os blueprints
     app.register_blueprint(main)
-
     from routes_nd import nd_bp
     from routes_item import item_bp
     from routes_usuario import usuario_bp
     from routes_estoque import estoque_bp
     from routes_fornecedor import fornecedor_bp
     from routes_area_ul import area_ul_bp
-    from routes_grupo import grupo_bp  # <- Inclui blueprint do grupo
+    from routes_grupo import grupo_bp
 
     app.register_blueprint(nd_bp)
     app.register_blueprint(item_bp)
@@ -165,6 +189,10 @@ def create_app():
     with app.app_context():
         db.create_all()
 
+        # Executa arquivos .sql da pasta migrations
+        executar_migracoes()
+
+        # Criação de colunas adicionais, se não existirem
         def adicionar_coluna(tabela, coluna_sql):
             try:
                 db.session.execute(text(f'ALTER TABLE {tabela} ADD COLUMN {coluna_sql};'))
@@ -182,6 +210,7 @@ def create_app():
         if not coluna_existe('usuario', 'senha_temporaria'):
             adicionar_coluna('usuario', 'senha_temporaria BOOLEAN DEFAULT FALSE')
 
+        # Garante que exista o perfil Admin e o usuário administrador padrão
         perfil_admin = Perfil.query.filter_by(nome='Admin').first()
         if not perfil_admin:
             perfil_admin = Perfil(nome='Admin')
@@ -203,6 +232,9 @@ def create_app():
 
     return app
 
+# ------------------------------
+# Execução direta da aplicação
+# ------------------------------
 if __name__ == '__main__':
     app = create_app()
     app.run(debug=True, host='0.0.0.0', port=5000)

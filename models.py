@@ -1,3 +1,5 @@
+# ------------------------------ IMPORTAÇÕES ------------------------------
+from database import db
 from flask_login import UserMixin
 from app_render import db
 
@@ -76,10 +78,28 @@ class Estoque(db.Model):
 
 # ------------------- FORNECEDOR -------------------
 class Fornecedor(db.Model):
-    __tablename__ = 'fornecedor'
+    """Modelo para representar fornecedores cadastrados no sistema."""
+    
+    __tablename__ = 'fornecedores'  # Nome da tabela no banco de dados
+
+    # Campo identificador primário, gerado automaticamente
     id = db.Column(db.Integer, primary_key=True)
+
+    # Nome do fornecedor (campo obrigatório)
     nome = db.Column(db.String(120), nullable=False)
+
+    # CNPJ do fornecedor (campo obrigatório)
     cnpj = db.Column(db.String(20), nullable=False)
+
+    # E-mail do fornecedor (campo opcional)
+    email = db.Column(db.String(120), nullable=True)
+
+    # Telefone do fornecedor (campo opcional)
+    telefone = db.Column(db.String(20), nullable=True)
+
+    def __repr__(self):
+        """Representação da instância do modelo para depuração."""
+        return f'<Fornecedor {self.nome}>'
 
 # ------------------- LOCAL E UNIDADE LOCAL -------------------
 class Local(db.Model):

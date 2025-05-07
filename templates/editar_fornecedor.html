@@ -82,4 +82,26 @@
   </form>
 
 </div>
+{# Máscaras de entrada com JavaScript #}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const cnpj = document.getElementById('cnpj');
+    const telefone = document.getElementById('telefone');
+    const celular = document.getElementById('celular');
+    const cep = document.getElementById('cep');
+
+    function aplicarMascara(input, mascara) {
+      input.addEventListener('input', function () {
+        let i = 0;
+        const v = input.value.replace(/\D/g, '');
+        input.value = mascara.replace(/#/g, _ => v[i++] || '');
+      });
+    }
+
+    aplicarMascara(cnpj, '##.###.###/####-##');
+    aplicarMascara(telefone, '(##) ####-####');
+    aplicarMascara(celular, '(##) #####-####');
+    aplicarMascara(cep, '#####-###');
+  });
+</script>
 {% endblock %}

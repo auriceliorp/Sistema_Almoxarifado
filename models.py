@@ -1,4 +1,6 @@
 from flask_login import UserMixin
+from app_render import db
+
 
 
 # ------------------- USUÁRIO E PERFIL -------------------

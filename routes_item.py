@@ -35,6 +35,7 @@ def lista_itens():
 def novo_item():
     if request.method == 'POST':
         # Coleta dados do formulário
+        grupo = Grupo.query.get(int(request.form['grupo_id']))
         item = Item(
             codigo_sap=request.form['codigo'],
             codigo_siads=request.form['codigo_siads'],
@@ -42,7 +43,7 @@ def novo_item():
             descricao=request.form['descricao'],
             unidade=request.form['unidade'],
             grupo_id=request.form['grupo_id'],
-            natureza_despesa_id=request.form['natureza_despesa_id'],
+            natureza_despesa_id=grupo.natureza_despesa_id,
             valor_unitario=request.form.get('valor_unitario', type=float) or 0,
             saldo_financeiro=0,
             estoque_atual=request.form.get('estoque_atual', type=float) or 0,
@@ -59,7 +60,6 @@ def novo_item():
 
     # GET: carrega lista de grupos e naturezas
     grupos = Grupo.query.all()
-    naturezas = NaturezaDespesa.query.all()
     return render_template('form_item.html', grupos=grupos, naturezas=naturezas)
 
 

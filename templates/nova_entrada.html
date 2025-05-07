@@ -1,108 +1,127 @@
-<!-- templates/novo_estoque.html - Visual moderno otimizado para celular -->
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Cadastrar Entrada de Estoque - Almoxarifado Embrapa</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f2f2f2;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 500px;
-            margin: 50px auto;
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        h2 {
-            text-align: center;
-            color: #003366;
-        }
-        form {
-            display: flex;
-            flex-direction: column;
-        }
-        label {
-            margin-top: 15px;
-            font-weight: bold;
-            color: #333;
-        }
-        input, select {
-            padding: 10px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 16px;
-        }
-        .btn {
-            background-color: #00703c;
-            color: white;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            margin-top: 20px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .btn:hover {
-            background-color: #00572c;
-        }
-        .back-link {
-            display: block;
-            text-align: center;
-            margin-top: 15px;
-            color: #003366;
-            text-decoration: none;
-        }
-        .back-link:hover {
-            text-decoration: underline;
-        }
-        @media (max-width: 600px) {
-            .container {
-                margin: 20px;
-                padding: 20px;
-            }
-        }
-    </style>
-</head>
-<body>
+{# nova_entrada.html #}
+{% extends 'base_simplificada.html' %}
 
-<div class="container">
-    <h2>Nova Entrada de Estoque</h2>
-    <form action="{{ url_for('estoque.novo_estoque') }}" method="POST">
-        <label for="item_id">Item</label>
-        <select name="item_id" id="item_id" required>
-            {% for item in itens %}
-                <option value="{{ item.id }}">{{ item.codigo }} - {{ item.nome }}</option>
-            {% endfor %}
+{% block title %}Nova Entrada de Material{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h4 class="mb-4">Registrar Nova Entrada de Material</h4>
+
+  <form method="POST">
+    {# Dados da Nota Fiscal #}
+    <div class="row mb-3">
+      <div class="col-md-3">
+        <label for="data_movimento" class="form-label">Data do Movimento *</label>
+        <input type="date" class="form-control" name="data_movimento" required>
+      </div>
+      <div class="col-md-3">
+        <label for="data_nota_fiscal" class="form-label">Data da Nota Fiscal *</label>
+        <input type="date" class="form-control" name="data_nota_fiscal" required>
+      </div>
+      <div class="col-md-3">
+        <label for="numero_nota_fiscal" class="form-label">Número da Nota Fiscal *</label>
+        <input type="text" class="form-control" name="numero_nota_fiscal" required>
+      </div>
+      <div class="col-md-3">
+        <label for="fornecedor" class="form-label">Fornecedor *</label>
+        <select name="fornecedor" class="form-select" required>
+          <option value="" selected disabled>Selecione...</option>
+          {% for fornecedor in fornecedores %}
+          <option value="{{ fornecedor.id }}">{{ fornecedor.nome }}</option>
+          {% endfor %}
         </select>
+      </div>
+    </div>
 
-        <label for="fornecedor">Fornecedor</label>
-        <input type="text" id="fornecedor" name="fornecedor" required>
+    {# Tabela de Itens da Entrada #}
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle" id="tabela-itens">
+        <thead class="table-light">
+          <tr>
+            <th>Item</th>
+            <th>Quantidade</th>
+            <th>Valor Unitário (R$)</th>
+            <th>Valor Total (R$)</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <select name="item_id[]" class="form-select" required>
+                <option value="" disabled selected>Selecione...</option>
+                {% for item in itens %}
+                <option value="{{ item.id }}">{{ item.nome }}</option>
+                {% endfor %}
+              </select>
+            </td>
+            <td><input type="number" name="quantidade[]" class="form-control" min="1" required oninput="atualizarTotais(this)"></td>
+            <td><input type="number" name="valor_unitario[]" class="form-control" min="0" step="0.01" required oninput="atualizarTotais(this)"></td>
+            <td class="valor_total">0.00</td>
+            <td><button type="button" class="btn btn-danger btn-sm" onclick="removerLinha(this)">Remover</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-        <label for="nota_fiscal">Nota Fiscal</label>
-        <input type="text" id="nota_fiscal" name="nota_fiscal" required>
+    <div class="mb-3">
+      <button type="button" class="btn btn-secondary" onclick="adicionarLinha()">+ Adicionar Item</button>
+    </div>
 
-        <label for="valor_unitario">Valor Unitário</label>
-        <input type="number" id="valor_unitario" name="valor_unitario" step="0.01" required>
+    {# Total da Nota Fiscal #}
+    <div class="mb-4 text-end">
+      <strong>Total da Nota Fiscal (R$):</strong>
+      <span id="totalNota">0.00</span>
+    </div>
 
-        <label for="quantidade">Quantidade</label>
-        <input type="number" id="quantidade" name="quantidade" required>
-
-        <label for="local">Local</label>
-        <input type="text" id="local" name="local" required>
-
-        <button type="submit" class="btn">Cadastrar</button>
-    </form>
-
-    <a href="{{ url_for('estoque.lista_estoque') }}" class="back-link">Voltar ao Estoque</a>
+    {# Botões de ação #}
+    <div class="d-flex justify-content-end gap-2">
+      <button type="submit" class="btn btn-success">Salvar Entrada</button>
+      <a href="{{ url_for('main.home') }}" class="btn btn-secondary">Cancelar</a>
+    </div>
+  </form>
 </div>
 
-</body>
-</html>
+{# JavaScript para cálculo automático e manipulação de linhas #}
+<script>
+function atualizarTotais(input) {
+  const linha = input.closest('tr');
+  const qtd = parseFloat(linha.querySelector('input[name="quantidade[]"]').value) || 0;
+  const valor = parseFloat(linha.querySelector('input[name="valor_unitario[]"]').value) || 0;
+  const total = qtd * valor;
+  linha.querySelector('.valor_total').innerText = total.toFixed(2);
+  atualizarTotalNota();
+}
+
+function atualizarTotalNota() {
+  let totalNota = 0;
+  document.querySelectorAll('.valor_total').forEach(td => {
+    totalNota += parseFloat(td.innerText) || 0;
+  });
+  document.getElementById('totalNota').innerText = totalNota.toFixed(2);
+}
+
+function adicionarLinha() {
+  const tbody = document.querySelector('#tabela-itens tbody');
+  const novaLinha = tbody.rows[0].cloneNode(true);
+
+  novaLinha.querySelectorAll('input').forEach(input => {
+    input.value = '';
+  });
+
+  novaLinha.querySelector('.valor_total').innerText = '0.00';
+  tbody.appendChild(novaLinha);
+}
+
+function removerLinha(botao) {
+  const linha = botao.closest('tr');
+  const tbody = linha.parentElement;
+  if (tbody.rows.length > 1) {
+    linha.remove();
+    atualizarTotalNota();
+  } else {
+    alert('A entrada deve conter pelo menos um item.');
+  }
+}
+</script>
+{% endblock %}

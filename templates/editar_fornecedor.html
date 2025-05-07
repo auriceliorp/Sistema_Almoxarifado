@@ -1,0 +1,52 @@
+{# ------------------------------ TEMPLATE DE EDIÇÃO DE FORNECEDOR ------------------------------ #}
+{% extends 'base_simplificada.html' %}
+
+{# Define o título da aba do navegador #}
+{% block title %}Editar Fornecedor{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  {# Cabeçalho com botões de navegação #}
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">Início</a>
+      <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="btn btn-outline-secondary">Voltar</a>
+    </div>
+    <h4 class="mb-0 text-center">Editar Fornecedor</h4>
+    <div>
+      <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">Sair</a>
+    </div>
+  </div>
+
+  {# Formulário de edição do fornecedor #}
+  <form method="POST">
+    <div class="mb-3">
+      <label for="nome" class="form-label">Nome do Fornecedor *</label>
+      <input type="text" class="form-control" id="nome" name="nome" required value="{{ fornecedor.nome }}">
+    </div>
+
+    <div class="mb-3">
+      <label for="cnpj" class="form-label">CNPJ *</label>
+      <input type="text" class="form-control" id="cnpj" name="cnpj" required value="{{ fornecedor.cnpj }}">
+    </div>
+
+    <div class="mb-3">
+      <label for="email" class="form-label">E-mail</label>
+      <input type="email" class="form-control" id="email" name="email" value="{{ fornecedor.email }}">
+    </div>
+
+    <div class="mb-3">
+      <label for="telefone" class="form-label">Telefone</label>
+      <input type="text" class="form-control" id="telefone" name="telefone" value="{{ fornecedor.telefone }}">
+    </div>
+
+    {# Botões de ação #}
+    <div class="d-flex justify-content-end gap-2">
+      <button type="submit" class="btn btn-success">Salvar Alterações</button>
+      <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="btn btn-secondary">Cancelar</a>
+    </div>
+  </form>
+
+</div>
+{% endblock %}

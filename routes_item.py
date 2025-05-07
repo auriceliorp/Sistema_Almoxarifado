@@ -1,10 +1,10 @@
 # ------------------------------ IMPORTAÇÕES ------------------------------
 from flask import Blueprint, render_template, request, redirect, url_for, flash, send_file
 from flask_login import login_required
-from io import BytesIO  # Para arquivos em memória
-import pandas as pd  # Para gerar Excel
-from fpdf import FPDF  # Para gerar PDF
-from datetime import datetime  # Para lidar com datas
+from io import BytesIO
+import pandas as pd
+from fpdf import FPDF
+from datetime import datetime
 
 # Importa os modelos do sistema
 from models import db, Item, Grupo, NaturezaDespesa
@@ -34,15 +34,16 @@ def lista_itens():
 @login_required
 def novo_item():
     if request.method == 'POST':
-        # Coleta dados do formulário
         grupo = Grupo.query.get(int(request.form['grupo_id']))
+        
+        # Cria o item com a ND herdada do grupo
         item = Item(
             codigo_sap=request.form['codigo'],
             codigo_siads=request.form['codigo_siads'],
             nome=request.form['nome'],
             descricao=request.form['descricao'],
             unidade=request.form['unidade'],
-            grupo_id=request.form['grupo_id'],
+            grupo_id=grupo.id,
             natureza_despesa_id=grupo.natureza_despesa_id,
             valor_unitario=request.form.get('valor_unitario', type=float) or 0,
             saldo_financeiro=0,
@@ -58,10 +59,9 @@ def novo_item():
         flash('Item cadastrado com sucesso!', 'success')
         return redirect(url_for('item_bp.lista_itens'))
 
-    # GET: carrega lista de grupos e naturezas
+    # GET: apenas lista de grupos (ND será herdada)
     grupos = Grupo.query.all()
-    return render_template('form_item.html', grupos=grupos, naturezas=naturezas)
-
+    return render_template('form_item.html', grupos=grupos)
 
 
 # ------------------------------ EDITAR ITEM ------------------------------
@@ -71,12 +71,15 @@ def editar_item(id):
     item = Item.query.get_or_404(id)
 
     if request.method == 'POST':
+        grupo = Grupo.query.get(int(request.form['grupo_id']))
+
         item.codigo_sap = request.form['codigo']
         item.codigo_siads = request.form['codigo_siads']
         item.nome = request.form['nome']
         item.descricao = request.form['descricao']
         item.unidade = request.form['unidade']
-        item.grupo_id = request.form['grupo_id']
+        item.grupo_id = grupo.id
+        item.natureza_despesa_id = grupo.natureza_despesa_id  # Atualiza ND conforme grupo
         item.valor_unitario = request.form.get('valor_unitario', type=float)
         item.estoque_atual = request.form.get('estoque_atual', type=float)
         item.estoque_minimo = request.form.get('estoque_minimo', type=float)
@@ -92,7 +95,7 @@ def editar_item(id):
     return render_template('form_item.html', item=item, grupos=grupos)
 
 
-# ------------------------------ EXCLUIR ITENS ------------------------------
+# ------------------------------ EXCLUIR ITEM ------------------------------
 @item_bp.route('/excluir/<int:id>', methods=['POST'])
 @login_required
 def excluir_item(id):

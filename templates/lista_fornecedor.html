@@ -1,28 +1,32 @@
 {# ------------------------------ LISTA DE FORNECEDORES ------------------------------ #}
 {% extends 'base_simplificada.html' %}
 
-{# Define o título da aba do navegador #}
 {% block title %}Lista de Fornecedores{% endblock %}
 
 {% block content %}
 <div class="container py-4">
 
-  {# ------------------------------ CABEÇALHO COM BOTÕES ------------------------------ #}
+  {# Cabeçalho com botões #}
   <div class="d-flex justify-content-between align-items-center mb-4">
     <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">Início</a>
     <h4 class="mb-0 text-center">Fornecedores Cadastrados</h4>
     <a href="{{ url_for('fornecedor_bp.novo_fornecedor') }}" class="btn btn-success">+ Novo Fornecedor</a>
   </div>
 
-  {# ------------------------------ TABELA DE FORNECEDORES ------------------------------ #}
+  {# Tabela de fornecedores #}
   <div class="table-responsive">
-    <table class="table table-bordered table-hover align-middle">
+    <table class="table table-striped table-bordered align-middle">
       <thead class="table-light">
         <tr>
           <th>Nome</th>
           <th>CNPJ</th>
           <th>Email</th>
           <th>Telefone</th>
+          <th>Celular</th>
+          <th>Endereço</th>
+          <th>CEP</th>
+          <th>Inscrição Estadual</th>
+          <th>Inscrição Municipal</th>
           <th style="width: 160px;">Ações</th>
         </tr>
       </thead>
@@ -33,6 +37,15 @@
           <td>{{ fornecedor.cnpj }}</td>
           <td>{{ fornecedor.email or '-' }}</td>
           <td>{{ fornecedor.telefone or '-' }}</td>
+          <td>{{ fornecedor.celular or '-' }}</td>
+          <td>
+            {{ fornecedor.endereco or '' }},
+            {{ fornecedor.numero or '' }}
+            {% if fornecedor.complemento %} - {{ fornecedor.complemento }}{% endif %}
+          </td>
+          <td>{{ fornecedor.cep or '-' }}</td>
+          <td>{{ fornecedor.inscricao_estadual or '-' }}</td>
+          <td>{{ fornecedor.inscricao_municipal or '-' }}</td>
           <td>
             <a href="{{ url_for('fornecedor_bp.editar_fornecedor', id=fornecedor.id) }}" class="btn btn-sm btn-warning">Editar</a>
             <form action="{{ url_for('fornecedor_bp.excluir_fornecedor', id=fornecedor.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Tem certeza que deseja excluir este fornecedor?');">
@@ -42,16 +55,11 @@
         </tr>
         {% else %}
         <tr>
-          <td colspan="5" class="text-center">Nenhum fornecedor cadastrado.</td>
+          <td colspan="10" class="text-center">Nenhum fornecedor cadastrado.</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
-  </div>
-
-  {# ------------------------------ BOTÃO DE VOLTAR ------------------------------ #}
-  <div class="mt-4">
-    <a href="{{ url_for('main.home') }}" class="btn btn-secondary">Voltar</a>
   </div>
 
 </div>

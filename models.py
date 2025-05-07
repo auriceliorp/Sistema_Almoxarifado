@@ -116,4 +116,34 @@ class UnidadeLocal(db.Model):
     local_id = db.Column(db.Integer, db.ForeignKey('local.id'), nullable=False)
     local = db.relationship('Local', back_populates='uls')
     usuarios = db.relationship('Usuario', back_populates='unidade_local')
+
+
+# ------------------- ENTRADA DE MATERIAL -------------------
+
+class EntradaMaterial(db.Model):
+    __tablename__ = 'entrada_material'
+    id = db.Column(db.Integer, primary_key=True)
+    data_movimento = db.Column(db.Date, nullable=False)
+    data_nota_fiscal = db.Column(db.Date, nullable=False)
+    numero_nota_fiscal = db.Column(db.String(50), nullable=False)
+    fornecedor_id = db.Column(db.Integer, db.ForeignKey('fornecedor.id'), nullable=False)
+
+    fornecedor = db.relationship('Fornecedor', backref='entradas')
+    itens = db.relationship('EntradaItem', backref='entrada_material', cascade="all, delete-orphan")
+
+
+class EntradaItem(db.Model):
+    __tablename__ = 'entrada_item'
+    id = db.Column(db.Integer, primary_key=True)
+    entrada_id = db.Column(db.Integer, db.ForeignKey('entrada_material.id'), nullable=False)
+    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
+    quantidade = db.Column(db.Integer, nullable=False)
+    valor_unitario = db.Column(db.Numeric(10, 2), nullable=False)
+
+    item = db.relationship('Item', backref='entradas')
+
+    @property
+    def valor_total(self):
+        return self.quantidade * self.valor_unitario
+
   

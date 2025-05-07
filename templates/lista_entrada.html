@@ -1,40 +1,53 @@
+{# ------------------------------ LISTA DE ENTRADAS DE MATERIAIS ------------------------------ #}
 {% extends 'base_simplificada.html' %}
+
+{# Define o título da aba do navegador #}
+{% block title %}Entradas de Materiais{% endblock %}
+
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col">
-            <h2 class="mt-4">Lista de Estoque</h2>
-            <div class="table-responsive mt-3">
-                <table class="table table-bordered table-hover">
-                    <thead class="table-success">
-                        <tr>
-                            <th>Item</th>
-                            <th>Fornecedor</th>
-                            <th>Nota Fiscal</th>
-                            <th>Valor Unitário</th>
-                            <th>Quantidade</th>
-                            <th>Local</th>
-                            <th>Valor Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for estoque in estoques %}
-                        <tr>
-                            <td>{{ estoque.item.codigo }} - {{ estoque.item.nome }}</td>
-                            <td>{{ estoque.fornecedor }}</td>
-                            <td>{{ estoque.nota_fiscal }}</td>
-                            <td>R$ {{ estoque.valor_unitario }}</td>
-                            <td>{{ estoque.quantidade }}</td>
-                            <td>{{ estoque.local }}</td>
-                            <td>R$ {{ estoque.valor_total }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <a href="{{ url_for('estoque_bp.novo_estoque') }}" class="btn btn-primary mt-3">Cadastrar Novo Estoque</a>
-            <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary mt-3">Voltar ao Dashboard</a>
-        </div>
-    </div>
+<div class="container py-4">
+
+  {# ------------------------------ CABEÇALHO COM BOTÕES ------------------------------ #}
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">Início</a>
+    <h4 class="mb-0 text-center">Entradas de Materiais</h4>
+    <a href="{{ url_for('entrada_bp.nova_entrada') }}" class="btn btn-success">+ Nova Entrada</a>
+  </div>
+
+  {# ------------------------------ TABELA DE ENTRADAS ------------------------------ #}
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Nº Nota Fiscal</th>
+          <th>Fornecedor</th>
+          <th>Data NF</th>
+          <th>Data Movimento</th>
+          <th style="width: 140px;">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entrada in entradas %}
+        <tr>
+          <td>{{ entrada.numero_nota_fiscal }}</td>
+          <td>{{ entrada.fornecedor.nome }}</td>
+          <td>{{ entrada.data_nota_fiscal.strftime('%d/%m/%Y') }}</td>
+          <td>{{ entrada.data_movimento.strftime('%d/%m/%Y') }}</td>
+          <td>
+            <a href="{{ url_for('entrada_bp.detalhar_entrada', entrada_id=entrada.id) }}" class="btn btn-sm btn-primary">Detalhes</a>
+            <form method="POST" action="{{ url_for('entrada_bp.excluir_entrada', entrada_id=entrada.id) }}" style="display:inline;" onsubmit="return confirm('Deseja realmente excluir esta entrada?');">
+              <button type="submit" class="btn btn-sm btn-danger">Excluir</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5" class="text-center">Nenhuma entrada registrada.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
 </div>
 {% endblock %}

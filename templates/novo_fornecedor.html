@@ -1,58 +1,39 @@
+{# ------------------------------ FORMULÁRIO DE NOVO FORNECEDOR ------------------------------ #}
 {% extends 'base_simplificada.html' %}
 
-{# ------------------------------ TÍTULO DA PÁGINA ------------------------------ #}
-{% block title %}Lista de Fornecedores{% endblock %}
+{# Define o título da aba do navegador #}
+{% block title %}Cadastrar Fornecedor{% endblock %}
 
 {% block content %}
 <div class="container py-4">
 
-    {# ------------------------------ CABEÇALHO COM BOTÕES ------------------------------ #}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">Início</a>
-        <h4 class="mb-0 text-center">Lista de Fornecedores</h4>
-        <a href="{{ url_for('fornecedor_bp.novo_fornecedor') }}" class="btn btn-success">Novo Fornecedor</a>
-    </div>
+  {# ------------------------------ CABEÇALHO COM BOTÕES ------------------------------ #}
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">Início</a>
+    <h4 class="mb-0 text-center">Cadastrar Novo Fornecedor</h4>
+    <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="btn btn-secondary">Voltar</a>
+  </div>
 
-    {# ------------------------------ TABELA DE FORNECEDORES ------------------------------ #}
-    <div class="table-responsive">
-        <table class="table table-bordered table-hover align-middle">
-            <thead class="table-light">
-                <tr>
-                    <th>Nome</th>
-                    <th>CNPJ</th>
-                    <th>Email</th>
-                    <th>Telefone</th>
-                    <th style="width: 150px;">Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for fornecedor in fornecedores %}
-                <tr>
-                    <td>{{ fornecedor.nome }}</td>
-                    <td>{{ fornecedor.cnpj }}</td>
-                    <td>{{ fornecedor.email or '-' }}</td>
-                    <td>{{ fornecedor.telefone or '-' }}</td>
-                    <td>
-                        <a href="{{ url_for('fornecedor_bp.editar_fornecedor', id=fornecedor.id) }}" class="btn btn-sm btn-primary">Editar</a>
-                        <form method="POST" action="{{ url_for('fornecedor_bp.excluir_fornecedor', id=fornecedor.id) }}" style="display:inline;" onsubmit="return confirm('Deseja realmente excluir este fornecedor?');">
-                            <button type="submit" class="btn btn-sm btn-danger">Excluir</button>
-                        </form>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="5" class="text-center">Nenhum fornecedor cadastrado.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+  {# ------------------------------ FORMULÁRIO ------------------------------ #}
+  <form method="POST">
+    <div class="mb-3">
+      <label for="nome" class="form-label">Nome do Fornecedor *</label>
+      <input type="text" class="form-control" id="nome" name="nome" required>
     </div>
-
-    {# ------------------------------ BOTÃO DE VOLTAR ------------------------------ #}
-    <div class="mt-4">
-        <a href="{{ url_for('main.home') }}" class="btn btn-secondary">Voltar</a>
+    <div class="mb-3">
+      <label for="cnpj" class="form-label">CNPJ *</label>
+      <input type="text" class="form-control" id="cnpj" name="cnpj" required>
     </div>
+    <div class="mb-3">
+      <label for="email" class="form-label">E-mail</label>
+      <input type="email" class="form-control" id="email" name="email">
+    </div>
+    <div class="mb-3">
+      <label for="telefone" class="form-label">Telefone</label>
+      <input type="text" class="form-control" id="telefone" name="telefone">
+    </div>
+    <button type="submit" class="btn btn-success">Salvar</button>
+  </form>
 
 </div>
 {% endblock %}
-

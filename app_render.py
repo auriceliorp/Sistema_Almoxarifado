@@ -173,7 +173,7 @@ def create_app():
     from routes_nd import nd_bp
     from routes_item import item_bp
     from routes_usuario import usuario_bp
-    from routes_estoque import estoque_bp
+    from routes_entrada import entrada_bp
     from routes_fornecedor import fornecedor_bp
     from routes_area_ul import area_ul_bp
     from routes_grupo import grupo_bp
@@ -181,7 +181,7 @@ def create_app():
     app.register_blueprint(nd_bp)
     app.register_blueprint(item_bp)
     app.register_blueprint(usuario_bp)
-    app.register_blueprint(estoque_bp)
+    app.register_blueprint(entrada_bp)
     app.register_blueprint(fornecedor_bp)
     app.register_blueprint(area_ul_bp)
     app.register_blueprint(grupo_bp)

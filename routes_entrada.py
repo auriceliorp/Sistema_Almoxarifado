@@ -1,47 +1,67 @@
-# routes_estoque.py
+# routes_entrada.py
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
 from database import db
-from models import Estoque, Item
+from models import Fornecedor, Item, EntradaMaterial, EntradaItem
+from datetime import datetime
 
-estoque_bp = Blueprint('estoque_bp', __name__, url_prefix='/estoque')
+# Cria o blueprint para entrada de materiais
+entrada_bp = Blueprint('entrada_bp', __name__, template_folder='templates')
 
-@estoque_bp.route('/')
+# Rota para exibir o formulário de nova entrada
+@entrada_bp.route('/entrada/nova', methods=['GET', 'POST'])
 @login_required
-def lista_estoque():
-    estoques = Estoque.query.all()
-    return render_template('lista_estoque.html', estoques=estoques)
-
-@estoque_bp.route('/novo', methods=['GET', 'POST'])
-@login_required
-def novo_estoque():
+def nova_entrada():
+    # Busca fornecedores e itens cadastrados para o formulário
+    fornecedores = Fornecedor.query.all()
     itens = Item.query.all()
+
     if request.method == 'POST':
-        item_id = request.form['item_id']
-        fornecedor = request.form['fornecedor']
-        nota_fiscal = request.form['nota_fiscal']
-        valor_unitario = float(request.form['valor_unitario'])
-        quantidade = int(request.form['quantidade'])
-        local = request.form['local']
+        try:
+            # Coleta dados do formulário principal
+            data_movimento = datetime.strptime(request.form.get('data_movimento'), '%Y-%m-%d')
+            data_nota_fiscal = datetime.strptime(request.form.get('data_nota_fiscal'), '%Y-%m-%d')
+            numero_nota_fiscal = request.form.get('numero_nota_fiscal')
+            fornecedor_id = request.form.get('fornecedor')
 
-        valor_total = valor_unitario * quantidade
+            # Cria o registro de entrada de material
+            nova_entrada = EntradaMaterial(
+                data_movimento=data_movimento,
+                data_nota_fiscal=data_nota_fiscal,
+                numero_nota_fiscal=numero_nota_fiscal,
+                fornecedor_id=fornecedor_id
+            )
+            db.session.add(nova_entrada)
+            db.session.flush()  # Garante que nova_entrada.id esteja disponível
 
-        novo_estoque = Estoque(
-            item_id=item_id,
-            fornecedor=fornecedor,
-            nota_fiscal=nota_fiscal,
-            valor_unitario=valor_unitario,
-            quantidade=quantidade,
-            local=local,
-            valor_total=valor_total
-        )
+            # Coleta os dados dos itens
+            item_ids = request.form.getlist('item_id[]')
+            quantidades = request.form.getlist('quantidade[]')
+            valores_unitarios = request.form.getlist('valor_unitario[]')
 
-        db.session.add(novo_estoque)
-        db.session.commit()
+            for i in range(len(item_ids)):
+                if item_ids[i] and quantidades[i] and valores_unitarios[i]:
+                    entrada_item = EntradaItem(
+                        entrada_material_id=nova_entrada.id,
+                        item_id=item_ids[i],
+                        quantidade=int(quantidades[i]),
+                        valor_unitario=float(valores_unitarios[i])
+                    )
+                    db.session.add(entrada_item)
 
-        flash('Novo material cadastrado no estoque com sucesso!', 'success')
-        return redirect(url_for('estoque.lista_estoque'))
+            db.session.commit()
+            flash('Entrada de material registrada com sucesso.', 'success')
+            return redirect(url_for('entrada_bp.lista_entradas'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao registrar entrada: {str(e)}', 'danger')
 
-    return render_template('novo_estoque.html', itens=itens)
+    return render_template('nova_entrada.html', fornecedores=fornecedores, itens=itens)
 
+# Rota para listar entradas registradas
+@entrada_bp.route('/entrada/lista')
+@login_required
+def lista_entradas():
+    entradas = EntradaMaterial.query.order_by(EntradaMaterial.data_cadastro.desc()).all()
+    return render_template('lista_entrada.html', entradas=entradas)

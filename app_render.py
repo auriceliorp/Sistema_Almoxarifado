@@ -37,14 +37,17 @@ def create_app():
     migrate.init_app(app, db)
 
     # Importa os modelos antes de criar o banco (ordem importa para FK funcionar)
-    from usuario import Usuario
-    from perfil import Perfil
-    from unidade_local import UnidadeLocal
-    from natureza_despesa import NaturezaDespesa
-    from grupo_item import GrupoItem
-    from item import Item
-    from fornecedor import Fornecedor
-    from entrada_material import EntradaMaterial, EntradaItem  # IMPORTANTE: depois de fornecedor e item
+    
+from routes_main import main_bp
+from routes_usuario import usuario_bp
+from routes_area_ul import area_ul_bp
+from routes_nd import nd_bp
+from routes_grupo import grupo_bp
+from routes_item import item_bp
+from routes_fornecedor import fornecedor_bp
+from routes_entrada import entrada_bp  
+# Entrada de Materiais
+ IMPORTANTE: depois de fornecedor e item
 
     # Cria tabelas no banco, se não existirem
     with app.app_context():

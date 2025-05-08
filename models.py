@@ -126,7 +126,8 @@ class EntradaMaterial(db.Model):
     data_movimento = db.Column(db.Date, nullable=False)
     data_nota_fiscal = db.Column(db.Date, nullable=False)
     numero_nota_fiscal = db.Column(db.String(50), nullable=False)
-    fornecedor_id = db.Column(db.Integer, db.ForeignKey('fornecedor.id'), nullable=False)
+
+ fornecedor_id = db.Column(db.Integer, db.ForeignKey('fornecedores.id'), nullable=False)
 
     fornecedor = db.relationship('Fornecedor', backref='entradas')
     itens = db.relationship('EntradaItem', backref='entrada_material', cascade="all, delete-orphan")

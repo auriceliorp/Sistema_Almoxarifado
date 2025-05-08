@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <title>Login - Almoxarifado Embrapa</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Estilo interno responsivo e moderno -->
     <style>
         * {
             box-sizing: border-box;
@@ -71,15 +73,19 @@
 </head>
 <body>
     <div class="login-container">
+
+        <!-- Logo da Embrapa -->
         <img src="{{ url_for('static', filename='embrapa_logo.png') }}" alt="Logo Embrapa">
-        
+
+        <!-- Exibe mensagens de erro ou alerta, se houver -->
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 <div class="error-message">{{ messages[0] }}</div>
             {% endif %}
         {% endwith %}
 
-        <form method="POST" action="{{ url_for('main.login') }}">
+        <!-- Formulário de login (ajustado para main_bp.login) -->
+        <form method="POST" action="{{ url_for('main_bp.login') }}">
             <input type="email" name="email" placeholder="E-mail" required>
             <input type="password" name="senha" placeholder="Senha" required>
             <button type="submit">Entrar</button>

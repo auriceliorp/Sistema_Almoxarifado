@@ -1,25 +1,29 @@
-<!-- templates/home.html -->
+<!-- templates/login.html -->
 {% extends 'base_simplificada.html' %}
 
 {% block content %}
-<div class="container mt-5 text-center">
-
-    <!-- Título de boas-vindas -->
-    <h2 class="mb-4">Bem-vindo, {{ usuario.nome }}!</h2>
-
-    <!-- Botões para módulos do sistema -->
-    <div class="d-grid gap-3 col-6 mx-auto">
-        <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-primary">Itens</a>
-        <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="btn btn-primary">Entradas de Material</a>
-        <a href="{{ url_for('fornecedor_bp.lista_fornecedores') }}" class="btn btn-primary">Fornecedores</a>
-        <a href="{{ url_for('grupo_bp.lista_grupos') }}" class="btn btn-primary">Grupos</a>
-        <a href="{{ url_for('nd_bp.lista_nds') }}" class="btn btn-primary">Naturezas de Despesa</a>
-        <a href="{{ url_for('usuario_bp.lista_usuarios') }}" class="btn btn-primary">Usuários</a>
+<div class="container mt-5" style="max-width: 420px;">
+    <!-- Logo da Embrapa -->
+    <div class="text-center mb-4">
+        <img src="{{ url_for('static', filename='embrapa_logo.png') }}" alt="Logo Embrapa" style="max-width: 180px;">
     </div>
 
-    <!-- Botão de logout -->
-    <div class="mt-4">
-        <a href="{{ url_for('main_bp.logout') }}" class="btn btn-outline-danger">Sair</a>
-    </div>
+    <!-- Exibição de mensagens flash -->
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="alert alert-danger text-center">{{ messages[0] }}</div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Formulário de login -->
+    <form method="POST" action="{{ url_for('main_bp.login') }}">
+        <div class="mb-3">
+            <input type="email" name="email" class="form-control" placeholder="E-mail" required>
+        </div>
+        <div class="mb-3">
+            <input type="password" name="senha" class="form-control" placeholder="Senha" required>
+        </div>
+        <button type="submit" class="btn btn-success w-100">Entrar</button>
+    </form>
 </div>
 {% endblock %}

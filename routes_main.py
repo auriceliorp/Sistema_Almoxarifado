@@ -4,7 +4,7 @@ from werkzeug.security import check_password_hash
 from models import Usuario
 from functools import wraps
 
-main = Blueprint('main', __name__)
+main_bp = Blueprint('main', __name__)
 
 # --- Decorador para restringir perfis ---
 def perfil_required(perfis_autorizados):

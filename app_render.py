@@ -36,25 +36,35 @@ def create_app():
     login_manager.init_app(app)
     migrate.init_app(app, db)
 
-    # Importa os modelos antes de criar o banco (ordem importa para FK funcionar)
-    
-from routes_main import main_bp
-from routes_usuario import usuario_bp
-from routes_area_ul import area_ul_bp
-from routes_nd import nd_bp
-from routes_grupo import grupo_bp
-from routes_item import item_bp
-from routes_fornecedor import fornecedor_bp
-from routes_entrada import entrada_bp  
-# Entrada de Materiais
- # IMPORTANTE: depois de fornecedor e item
+    # Importa os modelos (ordem importante para FK)
+    from unidade_local import UnidadeLocal
+    from perfil import Perfil
+    from usuario import Usuario
+    from natureza_despesa import NaturezaDespesa
+    from grupo_item import GrupoItem
+    from item import Item
+    from fornecedor import Fornecedor
+    from entrada_material import EntradaMaterial, EntradaItem
 
     # Cria tabelas no banco, se não existirem
     with app.app_context():
         db.create_all()
 
-        # Garante existência do perfil Admin e usuário admin
-        
+        # Cria perfil admin e usuário admin padrão se não existirem
+        if not Perfil.query.filter_by(nome='Admin').first():
+            perfil_admin = Perfil(nome='Admin')
+            db.session.add(perfil_admin)
+            db.session.commit()
+
+        if not Usuario.query.filter_by(email='admin@admin.com').first():
+            admin = Usuario(
+                nome='Administrador',
+                email='admin@admin.com',
+                senha='admin',
+                perfil_id=Perfil.query.filter_by(nome='Admin').first().id
+            )
+            db.session.add(admin)
+            db.session.commit()
 
     # Registro de Blueprints
     from routes_main import main_bp

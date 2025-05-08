@@ -19,7 +19,7 @@ login_manager = LoginManager()
 migrate = Migrate()
 
 # Configuração do login
-login_manager.login_view = 'main.login'
+login_manager.login_view = 'main_bp.login'
 login_manager.login_message = 'Por favor, faça login para acessar esta página.'
 
 # Cria a aplicação
@@ -38,6 +38,11 @@ def create_app():
 
     # Importa modelos
     from models import Usuario, Perfil, UnidadeLocal, NaturezaDespesa, Grupo, Item, Fornecedor, EntradaMaterial, EntradaItem
+
+    # Define função de carregamento do usuário para Flask-Login
+    @login_manager.user_loader
+    def load_user(user_id):
+        return Usuario.query.get(int(user_id))
 
     # Cria tabelas e usuário admin se necessário
     with app.app_context():

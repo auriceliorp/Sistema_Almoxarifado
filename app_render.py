@@ -36,10 +36,10 @@ def create_app():
     login_manager.init_app(app)
     migrate.init_app(app, db)
 
-    # Importa os modelos (ordem importante para FK)
-    from unidade_local import UnidadeLocal
-    from perfil import Perfil
+    # Importa os modelos antes de criar o banco (ordem importa para FK funcionar)
     from usuario import Usuario
+    from perfil import Perfil
+    from unidade_local import UnidadeLocal
     from natureza_despesa import NaturezaDespesa
     from grupo_item import GrupoItem
     from item import Item
@@ -50,7 +50,7 @@ def create_app():
     with app.app_context():
         db.create_all()
 
-        # Cria perfil admin e usuário admin padrão se não existirem
+        # Garante existência do perfil Admin e usuário admin
         if not Perfil.query.filter_by(nome='Admin').first():
             perfil_admin = Perfil(nome='Admin')
             db.session.add(perfil_admin)
@@ -60,7 +60,7 @@ def create_app():
             admin = Usuario(
                 nome='Administrador',
                 email='admin@admin.com',
-                senha='admin',
+                senha='admin',  # Alterar depois
                 perfil_id=Perfil.query.filter_by(nome='Admin').first().id
             )
             db.session.add(admin)

@@ -90,3 +90,10 @@ def logout():
 @main.route('/')
 def index():
     return redirect(url_for('main.login'))
+
+# --- Página Almoxarifado (temporária ou principal) ---
+@main.route('/almoxarifado')
+@login_required
+def almoxarifado():
+    return render_template('almoxarifado.html', usuario=current_user)
+

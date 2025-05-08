@@ -83,3 +83,8 @@ def dashboard():
 def logout():
     logout_user()
     return redirect(url_for('main_bp.login'))
+
+# --- Rota inicial '/' redireciona para login ---
+@main_bp.route('/')
+def index():
+    return redirect(url_for('main_bp.login'))

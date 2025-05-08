@@ -13,7 +13,7 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))
 
-# Instancia as extensões
+# Instancia extensões
 db = SQLAlchemy()
 login_manager = LoginManager()
 migrate = Migrate()
@@ -22,11 +22,11 @@ migrate = Migrate()
 login_manager.login_view = 'main.login'
 login_manager.login_message = 'Por favor, faça login para acessar esta página.'
 
-# Função para criar a aplicação Flask
+# Cria a aplicação
 def create_app():
     app = Flask(__name__)
-    
-    # Configurações da aplicação
+
+    # Configurações do app
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'chave-secreta-padrao'
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -36,21 +36,13 @@ def create_app():
     login_manager.init_app(app)
     migrate.init_app(app, db)
 
-    # Importa os modelos antes de criar o banco (ordem importa para FK funcionar)
-    from usuario import Usuario
-    from perfil import Perfil
-    from unidade_local import UnidadeLocal
-    from natureza_despesa import NaturezaDespesa
-    from grupo_item import GrupoItem
-    from item import Item
-    from fornecedor import Fornecedor
-    from entrada_material import EntradaMaterial, EntradaItem
+    # Importa modelos
+    from models import Usuario, Perfil, UnidadeLocal, NaturezaDespesa, Grupo, Item, Fornecedor, EntradaMaterial, EntradaItem
 
-    # Cria tabelas no banco, se não existirem
+    # Cria tabelas e usuário admin se necessário
     with app.app_context():
         db.create_all()
 
-        # Garante existência do perfil Admin e usuário admin
         if not Perfil.query.filter_by(nome='Admin').first():
             perfil_admin = Perfil(nome='Admin')
             db.session.add(perfil_admin)
@@ -60,13 +52,13 @@ def create_app():
             admin = Usuario(
                 nome='Administrador',
                 email='admin@admin.com',
-                senha='admin',  # Alterar depois
+                senha='admin',
                 perfil_id=Perfil.query.filter_by(nome='Admin').first().id
             )
             db.session.add(admin)
             db.session.commit()
 
-    # Registro de Blueprints
+    # Importa e registra os blueprints
     from routes_main import main_bp
     from routes_usuario import usuario_bp
     from routes_area_ul import area_ul_bp

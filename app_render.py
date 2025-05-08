@@ -64,7 +64,7 @@ def create_app():
             db.session.commit()
 
     # Importa e registra os blueprints
-    from routes_main import main_bp
+    from routes_main import main
     from routes_usuario import usuario_bp
     from routes_area_ul import area_ul_bp
     from routes_nd import nd_bp
@@ -73,7 +73,7 @@ def create_app():
     from routes_fornecedor import fornecedor_bp
     from routes_entrada import entrada_bp
 
-    app.register_blueprint(main_bp)
+    app.register_blueprint(main)
     app.register_blueprint(usuario_bp)
     app.register_blueprint(area_ul_bp)
     app.register_blueprint(nd_bp)

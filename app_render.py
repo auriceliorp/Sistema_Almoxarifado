@@ -51,20 +51,7 @@ def create_app():
         db.create_all()
 
         # Garante existência do perfil Admin e usuário admin
-        if not Perfil.query.filter_by(nome='Admin').first():
-            perfil_admin = Perfil(nome='Admin')
-            db.session.add(perfil_admin)
-            db.session.commit()
-
-        if not Usuario.query.filter_by(email='admin@admin.com').first():
-            admin = Usuario(
-                nome='Administrador',
-                email='admin@admin.com',
-                senha='admin',  # Alterar depois
-                perfil_id=Perfil.query.filter_by(nome='Admin').first().id
-            )
-            db.session.add(admin)
-            db.session.commit()
+        
 
     # Registro de Blueprints
     from routes_main import main_bp

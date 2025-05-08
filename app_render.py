@@ -47,7 +47,7 @@ from routes_item import item_bp
 from routes_fornecedor import fornecedor_bp
 from routes_entrada import entrada_bp  
 # Entrada de Materiais
- IMPORTANTE: depois de fornecedor e item
+ # IMPORTANTE: depois de fornecedor e item
 
     # Cria tabelas no banco, se não existirem
     with app.app_context():

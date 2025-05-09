@@ -5,6 +5,8 @@ from flask_login import login_required
 from database import db
 from models import Fornecedor, Item, EntradaMaterial, EntradaItem
 from datetime import datetime
+from app_render import db
+
 
 # Cria o blueprint para entrada de materiais
 entrada_bp = Blueprint('entrada_bp', __name__, template_folder='templates')

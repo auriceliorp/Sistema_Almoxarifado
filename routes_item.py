@@ -18,7 +18,7 @@ item_bp = Blueprint('item_bp', __name__, url_prefix='/item')
 @login_required
 def lista_itens():
     # Permite filtragem por Natureza de Despesa (via Grupo)
-    nd_id = request.args.get('nd')
+    nd_id = request.args.get('nd_id')
     if nd_id:
         # Consulta itens cujo grupo está vinculado à ND filtrada
         itens = Item.query.join(Grupo).filter(Grupo.natureza_despesa_id == nd_id).all()

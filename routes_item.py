@@ -6,6 +6,7 @@ import pandas as pd
 from fpdf import FPDF
 from datetime import datetime
 from models import db, Item, Grupo, NaturezaDespesa
+from flask import make_response
 
 # Criação do blueprint
 item_bp = Blueprint('item_bp', __name__, url_prefix='/item')
@@ -139,26 +140,30 @@ def exportar_excel():
     return send_file(output, download_name="itens.xlsx", as_attachment=True)
 
 # ------------------------------ EXPORTAR PDF ------------------------------
-@item_bp.route('/exportar_pdf')
+from flask import make_response
+from fpdf import FPDF
+
+@item_bp.route('/item/exportar_pdf')
 @login_required
 def exportar_pdf():
-    nd_id = request.args.get('nd')
-    if nd_id:
-        itens = Item.query.join(Grupo).filter(Grupo.natureza_despesa_id == nd_id).all()
-    else:
-        itens = Item.query.all()
+    try:
+        itens = Item.query.order_by(Item.nome.asc()).all()
 
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+        pdf.cell(200, 10, txt="Lista de Itens", ln=True, align='C')
+        pdf.ln(10)
 
-    for item in itens:
-        grupo_nome = item.grupo.nome if item.grupo else ''
-        nd_nome = item.grupo.natureza_despesa.nome if item.grupo and item.grupo.natureza_despesa else ''
-        texto = f"{item.codigo_sap} - {item.nome} ({grupo_nome} / {nd_nome})"
-        pdf.cell(0, 10, txt=texto, ln=True)
+        for item in itens:
+            pdf.cell(200, 10, txt=f"{item.nome} - {item.codigo_sap}", ln=True)
 
-    pdf_bytes = BytesIO(pdf.output(dest='S').encode('latin1'))
-    pdf_bytes.seek(0)
+        response = make_response(pdf.output(dest='S').encode('latin1'))
+        response.headers.set('Content-Type', 'application/pdf')
+        response.headers.set('Content-Disposition', 'attachment', filename='itens.pdf')
+        return response
 
-
+    except Exception as e:
+        print("Erro ao gerar PDF:", str(e))
+        flash("Erro ao gerar PDF", "danger")
+        return redirect(url_for('item_bp.listar_itens'))  # retorno seguro

@@ -40,8 +40,8 @@
     </form>
 
     {# ------------------------------ TABELA DE ITENS ------------------------------ #}
-    <div class="table-responsive">
-        <table id="tabela-itens" class="table table-striped table-hover align-middle">
+    <div class="table-responsive" style="overflow-x: auto; max-width: 100%;">
+        <table id="tabela-itens" class="table table-striped table-hover align-middle w-100">
             <thead class="table-dark">
                 <tr>
                     <th>SAP</th>
@@ -61,7 +61,7 @@
                         <td>{{ item.codigo_sap }}</td>
                         <td>{{ item.codigo_siads }}</td>
                         <td style="white-space: normal;">{{ item.nome }}</td>
-                        <td>{{ item.unidade_medida }}</td>
+                        <td>{{ item.unidade }}</td>
                         <td>{{ item.estoque_atual }}</td>
                         <td>{{ "%.2f"|format(item.valor_unitario or 0) }}</td>
                         <td>{{ "%.2f"|format(item.saldo_financeiro or 0) }}</td>

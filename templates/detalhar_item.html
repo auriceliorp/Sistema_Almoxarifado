@@ -1,4 +1,4 @@
-{# ------------------------------ TELA DE DETALHES DO ITEM ------------------------------ #}
+{# ------------------------------ DETALHES DO ITEM ------------------------------ #}
 {% extends 'base_simplificada.html' %}
 
 {% block title %}Detalhes do Item{% endblock %}
@@ -12,46 +12,67 @@
             <i class="bi bi-arrow-left-circle"></i> Voltar
         </a>
         <h4 class="mb-0 text-center flex-grow-1">Detalhes do Item</h4>
-        <div style="width: 42px;"></div> {# Espaço para alinhar ao centro #}
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('item_bp.editar_item', id=item.id) }}" class="btn btn-outline-primary">
+                <i class="bi bi-pencil-square"></i> Editar
+            </a>
+            <button onclick="window.print()" class="btn btn-outline-secondary">
+                <i class="bi bi-printer"></i> Imprimir
+            </button>
+        </div>
     </div>
 
-    {# ------------------------------ CARTÃO COM DADOS DO ITEM ------------------------------ #}
-    <div class="card">
+    {# ------------------------------ DADOS DO ITEM ------------------------------ #}
+    <div class="card shadow rounded-4">
         <div class="card-body">
-            <h5 class="card-title mb-3"><i class="bi bi-box"></i> {{ item.nome }}</h5>
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Código SAP:</dt>
+                <dd class="col-sm-8">{{ item.codigo_sap }}</dd>
 
-            <div class="row mb-2">
-                <div class="col-md-4"><strong>Código SAP:</strong> {{ item.codigo_sap }}</div>
-                <div class="col-md-4"><strong>Código SIADS:</strong> {{ item.codigo_siads }}</div>
-                <div class="col-md-4"><strong>Unidade de Medida:</strong> {{ item.unidade_medida }}</div>
-            </div>
+                <dt class="col-sm-4">Código SIADS:</dt>
+                <dd class="col-sm-8">{{ item.codigo_siads }}</dd>
 
-            <div class="row mb-2">
-                <div class="col-md-4"><strong>Quantidade em Estoque:</strong> {{ item.estoque_atual }}</div>
-                <div class="col-md-4"><strong>Valor Unitário:</strong> R$ {{ '%.2f' % item.valor_unitario }}</div>
-                <div class="col-md-4"><strong>Saldo Financeiro:</strong> R$ {{ '%.2f' % item.saldo_financeiro }}</div>
-            </div>
+                <dt class="col-sm-4">Nome:</dt>
+                <dd class="col-sm-8">{{ item.nome }}</dd>
 
-            <div class="row mb-2">
-                <div class="col-md-6"><strong>Grupo:</strong> {{ item.grupo.nome if item.grupo }}</div>
-                <div class="col-md-6">
-                    <strong>Natureza de Despesa:</strong> 
+                <dt class="col-sm-4">Unidade de Medida:</dt>
+                <dd class="col-sm-8">{{ item.unidade_medida }}</dd>
+
+                <dt class="col-sm-4">Quantidade em Estoque:</dt>
+                <dd class="col-sm-8">{{ item.estoque_atual }}</dd>
+
+                <dt class="col-sm-4">Estoque Mínimo:</dt>
+                <dd class="col-sm-8">{{ item.estoque_minimo }}</dd>
+
+                <dt class="col-sm-4">Valor Unitário (R$):</dt>
+                <dd class="col-sm-8">{{ "{:,.2f}".format(item.valor_unitario or 0) }}</dd>
+
+                <dt class="col-sm-4">Saldo Financeiro (R$):</dt>
+                <dd class="col-sm-8">{{ "{:,.2f}".format(item.saldo_financeiro or 0) }}</dd>
+
+                <dt class="col-sm-4">Grupo:</dt>
+                <dd class="col-sm-8">{{ item.grupo.nome if item.grupo }}</dd>
+
+                <dt class="col-sm-4">Natureza de Despesa:</dt>
+                <dd class="col-sm-8">
+                    {{ item.grupo.natureza_despesa.codigo if item.grupo and item.grupo.natureza_despesa }}
+                    - 
                     {{ item.grupo.natureza_despesa.nome if item.grupo and item.grupo.natureza_despesa }}
-                </div>
-            </div>
+                </dd>
 
-            <div class="row mb-2">
-                <div class="col-md-6"><strong>Validade:</strong> {{ item.data_validade.strftime('%d/%m/%Y') if item.data_validade }}</div>
-                <div class="col-md-6"><strong>Localização:</strong> {{ item.localizacao }}</div>
-            </div>
+                <dt class="col-sm-4">Localização:</dt>
+                <dd class="col-sm-8">{{ item.localizacao }}</dd>
 
-            <div class="row">
-                <div class="col-12">
-                    <strong>Descrição:</strong>
-                    <p class="mt-2">{{ item.descricao }}</p>
-                </div>
-            </div>
+                <dt class="col-sm-4">Data de Validade:</dt>
+                <dd class="col-sm-8">
+                    {{ item.data_validade.strftime('%d/%m/%Y') if item.data_validade else 'Não informado' }}
+                </dd>
+
+                <dt class="col-sm-4">Descrição:</dt>
+                <dd class="col-sm-8">{{ item.descricao or 'Sem descrição' }}</dd>
+            </dl>
         </div>
     </div>
 </div>
 {% endblock %}
+

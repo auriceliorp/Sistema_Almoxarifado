@@ -45,7 +45,7 @@
                 <dd class="col-sm-8">{{ item.estoque_minimo }}</dd>
 
                 <dt class="col-sm-4">Valor Unitário (R$):</dt>
-                <dd class="col-sm-8">{{ "{:,.2f}".format(item.valor_unitario or 0) }}</dd>
+                <dd class="col-sm-8">{{ "{:,.2f}".format(item.valor or 0) }}</dd>
 
                 <dt class="col-sm-4">Saldo Financeiro (R$):</dt>
                 <dd class="col-sm-8">{{ "{:,.2f}".format(item.saldo_financeiro or 0) }}</dd>

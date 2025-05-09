@@ -79,27 +79,37 @@ def editar_item(id):
     item = Item.query.get_or_404(id)
 
     if request.method == 'POST':
-        grupo = Grupo.query.get(int(request.form['grupo_id']))
-        item.codigo_sap = request.form['codigo']
-        item.codigo_siads = request.form['codigo_siads']
-        item.nome = request.form['nome']
-        item.descricao = request.form['descricao']
-        item.unidade = request.form['unidade']
-        item.grupo_id = grupo.id
-        item.natureza_despesa_id = grupo.natureza_despesa_id
-        item.valor_unitario = request.form.get('valor_unitario', type=float)
-        item.estoque_atual = request.form.get('estoque_atual', type=float)
-        item.estoque_minimo = request.form.get('estoque_minimo', type=float)
-        item.localizacao = request.form['localizacao']
-        data_validade_str = request.form.get('data_validade')
-        item.data_validade = datetime.strptime(data_validade_str, '%Y-%m-%d') if data_validade_str else None
+        try:
+            # Atualiza apenas os campos permitidos
+            grupo = Grupo.query.get(int(request.form['grupo_id']))
+            item.codigo_sap = request.form['codigo']
+            item.codigo_siads = request.form.get('codigo_siads')
+            item.nome = request.form['nome']
+            item.descricao = request.form['descricao']
+            item.unidade = request.form['unidade']  # Unidade ainda pode ser alterada se necessário
+            item.grupo_id = grupo.id
+            item.natureza_despesa_id = grupo.natureza_despesa_id
+            item.estoque_minimo = request.form.get('estoque_minimo', type=float)
+            item.localizacao = request.form.get('localizacao')
 
-        db.session.commit()
-        flash('Item atualizado com sucesso!', 'success')
-        return redirect(url_for('item_bp.lista_itens'))
+            # Data de validade (opcional)
+            data_validade_str = request.form.get('data_validade')
+            if data_validade_str:
+                item.data_validade = datetime.strptime(data_validade_str, '%Y-%m-%d')
+            else:
+                item.data_validade = None
+
+            db.session.commit()
+            flash('Item atualizado com sucesso!', 'success')
+            return redirect(url_for('item_bp.lista_itens'))
+
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao atualizar item: {str(e)}', 'danger')
 
     grupos = Grupo.query.all()
-    return render_template('form_item.html', item=item, grupos=grupos)
+    return render_template('editar_item.html', item=item, grupos=grupos)
+
 
 # ------------------------------ EXCLUIR ITEM ------------------------------
 @item_bp.route('/excluir/<int:id>', methods=['POST'])

@@ -29,6 +29,13 @@ def lista_itens():
         naturezas_despesa=naturezas_despesa,
         nd_selecionado=nd_selecionado
     )
+    
+# ------------------------------ DETALHAR ITEM ------------------------------
+@item_bp.route('/detalhar/<int:id>')
+@login_required
+def detalhar_item(id):
+    item = Item.query.get_or_404(id)
+    return render_template('detalhar_item.html', item=item)
 
 # ------------------------------ NOVO ITEM ------------------------------
 @item_bp.route('/novo', methods=['GET', 'POST'])

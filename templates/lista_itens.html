@@ -56,6 +56,9 @@
                     <th>ID</th>
                     <th>Cód. SAP</th>
                     <th>Cód. SIADS</th>
+                    <th>Estoque</th>
+                    <th>Saldo Financeiro</th>
+                    <th>Valor Unitário</th>
                     <th style="min-width: 200px;">Nome</th>
                     <th style="min-width: 250px;">Descrição</th>
                     <th>Unidade</th>
@@ -72,6 +75,9 @@
                         <td>{{ item.id }}</td>
                         <td>{{ item.codigo_sap }}</td>
                         <td>{{ item.codigo_siads }}</td>
+                        <td>{{ item.estoque_atual }}</td>
+                        <td>{{ "R$ {:,.2f}".format(item.saldo_financeiro or 0) }}</td>
+                        <td>{{ "R$ {:,.2f}".format(item.valor_unitario or 0) }}</td>
                         <td style="white-space: normal;">{{ item.nome }}</td>
                         <td style="white-space: normal;">{{ item.descricao }}</td>
                         <td>{{ item.unidade_medida }}</td>

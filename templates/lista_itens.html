@@ -1,12 +1,10 @@
-{# ------------------------------ TELA DE LISTAGEM DE ITENS ------------------------------ #}
 {% extends 'base_simplificada.html' %}
 
 {% block title %}Itens Cadastrados{% endblock %}
 
 {% block content %}
-<div class="container py-4">
+<div class="container-fluid py-4">
 
-    {# ------------------------------ CABEÇALHO COM AÇÕES ------------------------------ #}
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <a href="{{ url_for('main.almoxarifado') }}" class="btn btn-outline-primary">
             <i class="bi bi-arrow-left-circle"></i> Voltar
@@ -25,7 +23,6 @@
         </div>
     </div>
 
-    {# ------------------------------ FORMULÁRIO DE FILTRO POR ND ------------------------------ #}
     <form method="GET" class="row g-3 mb-3">
         <div class="col-md-4 offset-md-8">
             <select name="nd_id" class="form-select" onchange="this.form.submit()">
@@ -39,58 +36,52 @@
         </div>
     </form>
 
-    {# ------------------------------ TABELA DE ITENS ------------------------------ #}
-    <div class="table-responsive" style="overflow-x: auto; max-width: 100%;">
-    <table id="tabela-itens" class="table table-striped table-hover align-middle w-100">
-        <thead class="table-dark">
-            <tr>
-                <th>SAP</th>
-                <th>SIADS</th>
-                <th style="min-width: 280px;">Descrição</th>
-                <th>Unidade</th>
-                <th>Estoque</th>
-                <th>Unit. (R$)</th>
-                <th>Saldo (R$)</th>
-                <th>Grupo</th>
-                <th class="text-center">Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in itens %}
+    <div class="table-responsive">
+        <table id="tabela-itens" class="table table-striped table-hover align-middle w-100">
+            <thead class="table-dark">
                 <tr>
-                    <td>{{ item.codigo_sap }}</td>
-                    <td>{{ item.codigo_siads }}</td>
-                    <td style="white-space: normal;">{{ item.nome }}</td>
-                    <td>{{ item.unidade }}</td>
-                    <td>{{ item.estoque_atual }}</td>
-                    <td>{{ "%.2f"|format(item.valor_unitario or 0) }}</td>
-                    <td>{{ "%.2f"|format(item.saldo_financeiro or 0) }}</td>
-                    <td>{{ item.grupo.nome if item.grupo }}</td>
-                    <td class="text-center">
-                        <div class="d-flex justify-content-center gap-2">
-                            <a href="{{ url_for('item_bp.detalhes_item', id=item.id) }}"
-                               class="btn btn-sm btn-outline-info" title="Detalhar">
-                                <i class="bi bi-eye"></i>
-                            </a>
-                            <a href="{{ url_for('item_bp.editar_item', id=item.id) }}"
-                               class="btn btn-sm btn-outline-primary" title="Editar">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <form method="POST" action="{{ url_for('item_bp.excluir_item', id=item.id) }}"
-                                  onsubmit="return confirm('Tem certeza que deseja excluir este item?');">
-                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
-                        </div>
-                    </td>
+                    <th>SAP</th>
+                    <th>SIADS</th>
+                    <th style="min-width: 280px;">Descrição</th>
+                    <th>Unidade</th>
+                    <th>Estoque</th>
+                    <th>Unit. (R$)</th>
+                    <th>Saldo (R$)</th>
+                    <th>Grupo</th>
+                    <th class="text-center">Ações</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-
-
+            </thead>
+            <tbody>
+                {% for item in itens %}
+                    <tr>
+                        <td>{{ item.codigo_sap or '---' }}</td>
+                        <td>{{ item.codigo_siads or '---' }}</td>
+                        <td style="white-space: normal;">{{ item.nome }}</td>
+                        <td>{{ item.unidade or '---' }}</td>
+                        <td>{{ item.estoque_atual or 0 }}</td>
+                        <td>{{ "%.2f"|format(item.valor_unitario or 0) }}</td>
+                        <td>{{ "%.2f"|format(item.saldo_financeiro or 0) }}</td>
+                        <td>{{ item.grupo.nome if item.grupo }}</td>
+                        <td class="text-center">
+                            <div class="d-flex justify-content-center gap-2">
+                                <a href="{{ url_for('item_bp.detalhes_item', id=item.id) }}" class="btn btn-sm btn-outline-info" title="Detalhar">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{{ url_for('item_bp.editar_item', id=item.id) }}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form method="POST" action="{{ url_for('item_bp.excluir_item', id=item.id) }}" onsubmit="return confirm('Tem certeza que deseja excluir este item?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}
 
@@ -108,7 +99,8 @@
                 url: "//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json"
             },
             pageLength: 10,
-            lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]]
+            lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+            scrollX: false
         });
     });
 </script>

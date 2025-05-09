@@ -1,11 +1,9 @@
-{# ---------------------- HERDA O LAYOUT BASE ---------------------- #}
 {% extends 'base_simplificada.html' %}
 {% block title %}Editar Material/Serviço{% endblock %}
 
 {% block content %}
 <div class="container py-4">
 
-  {# ---------------------- CABEÇALHO COM NAVEGAÇÃO ---------------------- #}
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
       <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">Início</a>
@@ -17,14 +15,12 @@
     </div>
   </div>
 
-  {# ---------------------- FORMULÁRIO DE EDIÇÃO ---------------------- #}
   <form method="post">
     
-    {# --- Linha 1: Código e Nome do Item --- #}
     <div class="row mb-3">
       <div class="col-md-4">
         <label for="codigo" class="form-label">Código *</label>
-        <input type="text" class="form-control" id="codigo" name="codigo" value="{{ item.codigo }}" required>
+        <input type="text" class="form-control" id="codigo" name="codigo" value="{{ item.codigo_sap }}" required>
       </div>
       <div class="col-md-8">
         <label for="nome" class="form-label">Nome *</label>
@@ -32,43 +28,37 @@
       </div>
     </div>
 
-    {# --- Linha 2: Descrição do Item --- #}
     <div class="mb-3">
       <label for="descricao" class="form-label">Descrição</label>
       <textarea class="form-control" id="descricao" name="descricao" rows="2">{{ item.descricao }}</textarea>
     </div>
 
-    {# --- Linha 3: Unidade de Medida (input manual ou select) --- #}
     <div class="row mb-3">
       <div class="col-md-4">
         <label for="unidade" class="form-label">Unidade de Medida *</label>
         <input type="text" class="form-control" id="unidade" name="unidade" value="{{ item.unidade }}" required>
       </div>
-
-      {# --- Natureza de Despesa (REMOVER este bloco se ela já vier do Grupo) --- #}
-      {# Remova este bloco se a ND for herdada automaticamente do Grupo #}
       <div class="col-md-8">
         <label for="natureza_despesa_id" class="form-label">Natureza de Despesa *</label>
         <select class="form-select" id="natureza_despesa_id" name="natureza_despesa_id" required>
           <option value="">Selecione...</option>
           {% for natureza in naturezas %}
           <option value="{{ natureza.id }}" {% if item.natureza_despesa_id == natureza.id %}selected{% endif %}>
-            {{ natureza.numero }} - {{ natureza.nome }}
+            {{ natureza.codigo }} - {{ natureza.nome }}
           </option>
           {% endfor %}
         </select>
       </div>
     </div>
 
-    {# --- Linha 4: Valores e Estoque --- #}
     <div class="row mb-3">
       <div class="col-md-4">
         <label for="valor_unitario" class="form-label">Valor Unitário</label>
-        <input type="number" step="0.01" class="form-control" id="valor_unitario" name="valor_unitario" value="{{ item.valor_unitario }}">
+        <input type="number" class="form-control" value="{{ item.valor_unitario }}" readonly>
       </div>
       <div class="col-md-4">
         <label for="estoque_atual" class="form-label">Estoque Atual</label>
-        <input type="number" class="form-control" id="estoque_atual" name="estoque_atual" value="{{ item.estoque_atual }}">
+        <input type="number" class="form-control" value="{{ item.estoque_atual }}" readonly>
       </div>
       <div class="col-md-4">
         <label for="estoque_minimo" class="form-label">Estoque Mínimo</label>
@@ -76,7 +66,6 @@
       </div>
     </div>
 
-    {# --- Botões de Ação --- #}
     <div class="d-flex justify-content-end gap-2">
       <button type="submit" class="btn btn-success">Salvar Alterações</button>
       <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-secondary">Cancelar</a>

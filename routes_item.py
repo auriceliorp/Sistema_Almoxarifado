@@ -156,4 +156,14 @@ def exportar_pdf():
     pdf_bytes = BytesIO(pdf.output(dest='S').encode('latin1'))
     pdf_bytes.seek(0)
 
+    # ------------------------------ DETALHAR ITEM ------------------------------
+@item_bp.route('/detalhes/<int:id>')
+@login_required
+def detalhes_item(id):
+    # Busca o item pelo ID
+    item = Item.query.get_or_404(id)
+
+    return render_template('detalhes_item.html', item=item)
+
+
     return send_file(pdf_bytes, download_name="itens.pdf", as_attachment=True)

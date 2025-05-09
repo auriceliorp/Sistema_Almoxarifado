@@ -97,3 +97,8 @@ def index():
 def almoxarifado():
     return render_template('almoxarifado.html', usuario=current_user)
 
+# Rota para a página de instrução de troca de senha
+@main.route('/esqueci_senha')
+def esqueci_senha():
+    return render_template('esqueci_senha.html')
+

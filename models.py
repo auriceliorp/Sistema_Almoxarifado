@@ -1,5 +1,4 @@
 # ------------------------------ IMPORTAÇÕES ------------------------------
-from database import db
 from flask_login import UserMixin
 from app_render import db
 

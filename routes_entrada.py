@@ -1,4 +1,4 @@
-# routes_entrada.py (versão corrigida com validações e prints explicativos)
+# routes_entrada.py (versão corrigida com atualização de valor unitário e saldo do item)
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
@@ -17,7 +17,6 @@ def nova_entrada():
     fornecedores = Fornecedor.query.all()
     itens = Item.query.all()
 
-    # Trata o envio do formulário (POST)
     if request.method == 'POST':
         try:
             # Coleta dados principais do formulário
@@ -26,11 +25,11 @@ def nova_entrada():
             numero_nota_fiscal = request.form.get('numero_nota_fiscal')
             fornecedor_id = request.form.get('fornecedor')
 
-            # Conversão de datas (validação básica)
+            # Conversão de datas
             data_movimento = datetime.strptime(data_movimento_str, '%Y-%m-%d')
             data_nota_fiscal = datetime.strptime(data_nota_str, '%Y-%m-%d')
 
-            # Criação do registro principal da entrada
+            # Criação da entrada principal
             nova_entrada = EntradaMaterial(
                 data_movimento=data_movimento,
                 data_nota_fiscal=data_nota_fiscal,
@@ -38,9 +37,9 @@ def nova_entrada():
                 fornecedor_id=fornecedor_id
             )
             db.session.add(nova_entrada)
-            db.session.flush()  # Permite obter o ID da entrada antes do commit
+            db.session.flush()  # Para obter o ID da nova entrada
 
-            # Coleta e processa os itens inseridos no formulário
+            # Coleta os dados dos itens
             item_ids = request.form.getlist('item_id[]')
             quantidades = request.form.getlist('quantidade[]')
             valores_unitarios = request.form.getlist('valor_unitario[]')
@@ -54,7 +53,7 @@ def nova_entrada():
                     print(f"Item {i+1} incompleto. Pulando.")
                     continue
 
-                # Validação de dados
+                # Validação dos valores numéricos
                 try:
                     quantidade = int(quantidades[i])
                     valor_unitario = float(valores_unitarios[i])
@@ -63,7 +62,7 @@ def nova_entrada():
                     db.session.rollback()
                     return redirect(url_for('entrada_bp.nova_entrada'))
 
-                # Criação do item da entrada (nome correto do campo: entrada_id)
+                # Criação do item da entrada
                 entrada_item = EntradaItem(
                     entrada_id=nova_entrada.id,
                     item_id=item_ids[i],
@@ -71,13 +70,14 @@ def nova_entrada():
                     valor_unitario=valor_unitario
                 )
                 db.session.add(entrada_item)
-                
-                # Atualiza o estoque atual e saldo financeiro do item
-                item = Item.query.get(item_ids[i])
-                item.estoque_atual += quantidade
-                item.saldo_financeiro += quantidade * valor_unitario
 
-            # Commit final da entrada e seus itens
+                # Atualiza os dados do item no banco
+                item = Item.query.get(int(item_ids[i]))
+                item.valor_unitario = valor_unitario  # Atualiza último valor unitário
+                item.estoque_atual = (item.estoque_atual or 0) + quantidade
+                item.saldo_financeiro = (item.saldo_financeiro or 0) + (quantidade * valor_unitario)
+
+            # Commit da entrada
             db.session.commit()
             flash('Entrada de material registrada com sucesso.', 'success')
             return redirect(url_for('entrada_bp.lista_entradas'))
@@ -87,7 +87,6 @@ def nova_entrada():
             flash(f'Erro inesperado ao registrar entrada: {str(e)}', 'danger')
             print("Erro ao salvar entrada:", str(e))
 
-    # Renderiza a página com formulário de entrada
     return render_template('nova_entrada.html', fornecedores=fornecedores, itens=itens)
 
 

@@ -71,6 +71,11 @@ def nova_entrada():
                     valor_unitario=valor_unitario
                 )
                 db.session.add(entrada_item)
+                
+                # Atualiza o estoque atual e saldo financeiro do item
+                item = Item.query.get(item_ids[i])
+                item.estoque_atual += quantidade
+                item.saldo_financeiro += quantidade * valor_unitario
 
             # Commit final da entrada e seus itens
             db.session.commit()

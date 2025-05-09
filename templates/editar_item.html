@@ -39,15 +39,15 @@
         <input type="text" class="form-control" id="unidade" name="unidade" value="{{ item.unidade }}" required>
       </div>
       <div class="col-md-8">
-        <label for="natureza_despesa_id" class="form-label">Natureza de Despesa *</label>
-        <select class="form-select" id="natureza_despesa_id" name="natureza_despesa_id" required>
-          <option value="">Selecione...</option>
-          {% for natureza in naturezas %}
-          <option value="{{ natureza.id }}" {% if item.natureza_despesa_id == natureza.id %}selected{% endif %}>
-            {{ natureza.codigo }} - {{ natureza.nome }}
-          </option>
-          {% endfor %}
-        </select>
+        <label for="grupo_id" class="form-label">Grupo *</label>
+                <select class="form-select" id="grupo_id" name="grupo_id" required>
+                    <option value="">Selecione</option>
+                    {% for grupo in grupos %}
+                        <option value="{{ grupo.id }}" {% if item and item.grupo_id == grupo.id %}selected{% endif %}>
+                            {{ grupo.nome }}
+                        </option>
+                    {% endfor %}
+                </select>
       </div>
     </div>
 

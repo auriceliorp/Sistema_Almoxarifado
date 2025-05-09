@@ -1,0 +1,30 @@
+{% extends 'base_simplificada.html' %}
+
+{% block title %}Detalhes do Item{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h4 class="mb-4 text-center">Detalhes do Item</h4>
+
+    <div class="card p-4">
+        <p><strong>Código SAP:</strong> {{ item.codigo_sap }}</p>
+        <p><strong>Código SIADS:</strong> {{ item.codigo_siads }}</p>
+        <p><strong>Nome:</strong> {{ item.nome }}</p>
+        <p><strong>Unidade de Medida:</strong> {{ item.unidade_medida }}</p>
+        <p><strong>Quantidade em Estoque:</strong> {{ item.estoque_atual }}</p>
+        <p><strong>Valor Unitário:</strong> R$ {{ '%.2f' | format(item.valor_unitario) }}</p>
+        <p><strong>Saldo Financeiro:</strong> R$ {{ '%.2f' | format(item.saldo_financeiro) }}</p>
+        <p><strong>Grupo:</strong> {{ item.grupo.nome if item.grupo }}</p>
+        <p><strong>Natureza de Despesa:</strong> {{ item.grupo.natureza_despesa.nome if item.grupo and item.grupo.natureza_despesa }}</p>
+        <p><strong>Localização:</strong> {{ item.localizacao }}</p>
+        <p><strong>Validade:</strong> {{ item.data_validade.strftime('%d/%m/%Y') if item.data_validade }}</p>
+        <p><strong>Descrição:</strong> {{ item.descricao }}</p>
+    </div>
+
+    <div class="mt-4 text-center">
+        <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left-circle"></i> Voltar à Lista
+        </a>
+    </div>
+</div>
+{% endblock %}

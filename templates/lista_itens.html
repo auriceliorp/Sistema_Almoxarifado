@@ -1,4 +1,3 @@
-{# ------------------------------ TELA DE LISTAGEM DE ITENS COM DATATABLES ------------------------------ #}
 {% extends 'base_simplificada.html' %}
 
 {% block title %}Itens Cadastrados{% endblock %}
@@ -6,12 +5,12 @@
 {% block content %}
 <div class="container py-4">
 
-    {# ------------------------------ CABEÇALHO COM AÇÕES ------------------------------ #}
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <!-- CABEÇALHO COM AÇÕES -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3 no-print">
         <a href="{{ url_for('main.almoxarifado') }}" class="btn btn-outline-primary">
             <i class="bi bi-arrow-left-circle"></i> Voltar
         </a>
-        <h4 class="mb-0 text-center flex-grow-1 text-center">Itens Cadastrados</h4>
+        <h4 class="mb-0 text-center flex-grow-1">Itens Cadastrados</h4>
         <div class="d-flex gap-2">
             <a href="{{ url_for('item_bp.novo_item') }}" class="btn btn-outline-success">
                 <i class="bi bi-plus-circle"></i> Novo Item
@@ -22,12 +21,19 @@
             <a href="{{ url_for('item_bp.exportar_pdf', nd=nd_selecionado) }}" class="btn btn-outline-danger">
                 <i class="bi bi-file-earmark-pdf"></i> PDF
             </a>
+            <button onclick="window.print()" class="btn btn-outline-secondary">
+                <i class="bi bi-printer"></i> Imprimir Lista
+            </button>
         </div>
     </div>
 
-    {# ------------------------------ FORMULÁRIO DE FILTRO POR ND ------------------------------ #}
-    <form method="GET" class="row g-3 mb-3">
-        <div class="col-md-10">
+    <!-- FILTROS DE BUSCA E ND -->
+    <form method="GET" class="row g-3 mb-3 no-print">
+        <div class="col-md-6">
+            <input type="text" id="busca-input" name="busca" value="{{ request.args.get('busca', '') }}" class="form-control"
+                   placeholder="Buscar por nome do item...">
+        </div>
+        <div class="col-md-4">
             <select name="nd_id" class="form-select">
                 <option value="">Filtrar por ND</option>
                 {% for nd in naturezas_despesa %}
@@ -44,70 +50,77 @@
         </div>
     </form>
 
-    {# ------------------------------ TABELA DE ITENS COM DATATABLE ------------------------------ #}
+    <!-- TABELA DE ITENS -->
     <div class="table-responsive">
         <table id="tabela-itens" class="table table-striped table-hover align-middle">
             <thead class="table-dark">
                 <tr>
                     <th>Cód. SAP</th>
                     <th>Cód. SIADS</th>
-                    <th style="min-width: 250px;">Nome</th>
+                    <th style="min-width: 240px;">Nome</th>
                     <th>Unidade</th>
                     <th>Qtd. Estoque</th>
-                    <th>R$ Valor Unit.</th>
-                    <th>R$ Saldo</th>
+                    <th>Valor Unit. (R$)</th>
+                    <th>Saldo (R$)</th>
                     <th>Grupo</th>
-                    <th class="text-center">Ações</th>
+                    <th class="no-print text-center">Ações</th>
                 </tr>
             </thead>
             <tbody>
                 {% for item in itens %}
-                <tr>
-                    <td>{{ item.codigo_sap }}</td>
-                    <td>{{ item.codigo_siads }}</td>
-                    <td style="white-space: normal;">{{ item.nome }}</td>
-                    <td>{{ item.unidade_medida }}</td>
-                    <td>{{ item.estoque_atual }}</td>
-                    <td>{{ '%.2f' % item.valor_unitario }}</td>
-                    <td>{{ '%.2f' % item.saldo_financeiro }}</td>
-                    <td>{{ item.grupo.nome if item.grupo }}</td>
-                    <td class="text-center">
-                        <div class="d-flex justify-content-center gap-1">
-                            <a href="{{ url_for('item_bp.detalhes_item', id=item.id) }}" class="btn btn-sm btn-outline-info" title="Detalhes">
-                                <i class="bi bi-eye"></i>
-                            </a>
-                            <a href="{{ url_for('item_bp.editar_item', id=item.id) }}" class="btn btn-sm btn-outline-primary" title="Editar">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <form method="POST" action="{{ url_for('item_bp.excluir_item', id=item.id) }}" onsubmit="return confirm('Confirma a exclusão?');">
-                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir">
+                    {% set nome_busca = request.args.get('busca', '').lower() %}
+                    {% set nome_item = item.nome or '' %}
+                    {% if not nome_busca or nome_busca in nome_item.lower() %}
+                    <tr>
+                        <td>{{ item.codigo_sap }}</td>
+                        <td>{{ item.codigo_siads }}</td>
+                        <td>{{ item.nome }}</td>
+                        <td>{{ item.unidade_medida }}</td>
+                        <td>{{ item.estoque_atual }}</td>
+                        <td>{{ "{:,.2f}".format(item.valor_unitario or 0) }}</td>
+                        <td>{{ "{:,.2f}".format(item.saldo_financeiro or 0) }}</td>
+                        <td>{{ item.grupo.nome if item.grupo }}</td>
+                        <td class="no-print text-center">
+                            <div class="d-flex justify-content-center gap-2">
+                                <a href="{{ url_for('item_bp.detalhes_item', id=item.id) }}"
+                                   class="btn btn-sm btn-outline-secondary" title="Detalhes">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{{ url_for('item_bp.editar_item', id=item.id) }}"
+                                   class="btn btn-sm btn-outline-primary" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{{ url_for('item_bp.excluir_item', id=item.id) }}"
+                                   class="btn btn-sm btn-outline-danger" title="Excluir"
+                                   onclick="return confirm('Tem certeza que deseja excluir este item?');">
                                     <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
 
-{# ------------------------------ INCLUSÃO DO DATATABLES ------------------------------ #}
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
-<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        new DataTable('#tabela-itens', {
-            language: {
-                url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json'
-            },
-            pageLength: 10,
-            lengthMenu: [10, 25, 50, 100],
-            ordering: true
-        });
-    });
-</script>
+<!-- ESTILO PARA IMPRESSÃO -->
+<style>
+    @media print {
+        .no-print, .no-print * {
+            display: none !important;
+        }
+        table {
+            border-collapse: collapse !important;
+            width: 100% !important;
+        }
+        th, td {
+            border: 1px solid #000 !important;
+            padding: 8px !important;
+            color: #000 !important;
+            background: none !important;
+        }
+    }
+</style>
 {% endblock %}

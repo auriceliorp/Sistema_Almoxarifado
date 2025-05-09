@@ -22,7 +22,7 @@
         </div>
     </div>
 
-    {# ------------------------------ FORMULÁRIO DE FILTRO POR NOME E NATUREZA DE DESPESA ------------------------------ #}
+    {# ------------------------------ FORMULÁRIO DE FILTRO ------------------------------ #}
     <form method="GET" class="row g-3 mb-3">
         <div class="col-md-6">
             <input type="text" name="busca" value="{{ request.args.get('busca', '') }}" class="form-control"
@@ -63,7 +63,8 @@
             <tbody>
                 {% for item in itens %}
                     {% set nome_busca = request.args.get('busca', '').lower() %}
-                    {% if not nome_busca or nome_busca in item.nome.lower() %}
+                    {% set nome_item = item.nome or '' %}
+                    {% if not nome_busca or nome_busca in nome_item.lower() %}
                     <tr>
                         <td>{{ item.id }}</td>
                         <td>{{ item.codigo_sap }}</td>

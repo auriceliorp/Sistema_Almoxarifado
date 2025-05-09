@@ -63,5 +63,6 @@ def nova_entrada():
 @entrada_bp.route('/entrada/lista')
 @login_required
 def lista_entradas():
-    entradas = EntradaMaterial.query.order_by(EntradaMaterial.data_cadastro.desc()).all()
+    entradas = EntradaMaterial.query.order_by(EntradaMaterial.data_movimento.desc()).all()
     return render_template('lista_entrada.html', entradas=entradas)
+

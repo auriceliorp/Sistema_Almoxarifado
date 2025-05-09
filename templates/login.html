@@ -1,29 +1,43 @@
-<!-- templates/login.html -->
+{# ------------------------------ TELA DE LOGIN ------------------------------ #}
 {% extends 'base_simplificada.html' %}
+
+{% block title %}Login{% endblock %}
 
 {% block content %}
 <div class="container mt-5" style="max-width: 420px;">
-    <!-- Logo da Embrapa -->
+
+    {# ------------------------------ LOGO DA EMBRAPA ------------------------------ #}
     <div class="text-center mb-4">
         <img src="{{ url_for('static', filename='embrapa_logo.png') }}" alt="Logo Embrapa" style="max-width: 180px;">
     </div>
 
-    <!-- Exibição de mensagens flash -->
+    {# ------------------------------ MENSAGEM DE ERRO (FLASH) ------------------------------ #}
     {% with messages = get_flashed_messages() %}
         {% if messages %}
             <div class="alert alert-danger text-center">{{ messages[0] }}</div>
         {% endif %}
     {% endwith %}
 
-    <!-- Formulário de login -->
+    {# ------------------------------ FORMULÁRIO DE LOGIN ------------------------------ #}
     <form method="POST" action="{{ url_for('main.login') }}">
-        <div class="mb-3">
+        <div class="mb-3 input-group">
+            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
             <input type="email" name="email" class="form-control" placeholder="E-mail" required>
         </div>
-        <div class="mb-3">
+        <div class="mb-3 input-group">
+            <span class="input-group-text"><i class="bi bi-lock"></i></span>
             <input type="password" name="senha" class="form-control" placeholder="Senha" required>
         </div>
-        <button type="submit" class="btn btn-success w-100">Entrar</button>
+        <button type="submit" class="btn btn-success w-100">
+            <i class="bi bi-box-arrow-in-right"></i> Entrar
+        </button>
     </form>
+
+    {# ------------------------------ LINK PARA ESQUECI A SENHA ------------------------------ #}
+    <div class="text-center mt-3">
+        <a href="{{ url_for('main.esqueci_senha') }}" class="text-decoration-none">
+            <i class="bi bi-key"></i> Esqueceu a senha?
+        </a>
+    </div>
 </div>
 {% endblock %}

@@ -1,4 +1,4 @@
-# routes_entrada.py (versão corrigida com atualização de estoque)
+# routes_entrada.py (versão atualizada para atualizar saldo financeiro e valor unitário)
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
@@ -6,7 +6,6 @@ from app_render import db
 from models import Fornecedor, Item, EntradaMaterial, EntradaItem
 from datetime import datetime
 
-# Criação do blueprint para rotas de entrada de material
 entrada_bp = Blueprint('entrada_bp', __name__, template_folder='templates')
 
 # ------------------------------ ROTA: Nova Entrada ------------------------------
@@ -18,7 +17,6 @@ def nova_entrada():
 
     if request.method == 'POST':
         try:
-            # Coleta dados principais do formulário
             data_movimento_str = request.form.get('data_movimento')
             data_nota_str = request.form.get('data_nota_fiscal')
             numero_nota_fiscal = request.form.get('numero_nota_fiscal')
@@ -34,7 +32,7 @@ def nova_entrada():
                 fornecedor_id=fornecedor_id
             )
             db.session.add(nova_entrada)
-            db.session.flush()  # Garante nova_entrada.id disponível
+            db.session.flush()
 
             item_ids = request.form.getlist('item_id[]')
             quantidades = request.form.getlist('quantidade[]')
@@ -64,11 +62,13 @@ def nova_entrada():
                 )
                 db.session.add(entrada_item)
 
-                # Atualiza os campos do Item (estoque e valor unitário)
+                # Atualiza o item correspondente
                 item = Item.query.get(item_ids[i])
-                item.estoque_atual = (item.estoque_atual or 0) + quantidade
-                item.valor_unitario = valor_unitario  # Último valor cadastrado
-                item.saldo_financeiro = (item.estoque_atual or 0) * (item.valor_unitario or 0)
+                if item:
+                    item.estoque_atual += quantidade
+                    item.saldo_financeiro += quantidade * valor_unitario
+                    if item.estoque_atual > 0:
+                        item.valor_unitario = item.saldo_financeiro / item.estoque_atual
 
             db.session.commit()
             flash('Entrada de material registrada com sucesso.', 'success')

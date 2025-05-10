@@ -1,104 +1,82 @@
+<!-- templates/nova_saida.html -->
 {% extends 'base_simplificada.html' %}
+
+{% block title %}Nova Saída de Material{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
-  <h2 class="mb-4">Registrar Saída de Material</h2>
+    <h2 class="mb-4 text-danger">Registrar Nova Saída</h2>
 
-  <form method="post">
-    <!-- Data da saída -->
-    <div class="mb-3">
-      <label for="data_saida" class="form-label">Data da Saída *</label>
-      <input type="date" class="form-control" id="data_saida" name="data_saida" required>
-    </div>
-
-    <!-- Número do documento ou requisição -->
-    <div class="mb-3">
-      <label for="documento" class="form-label">Número do Documento / Requisição *</label>
-      <input type="text" class="form-control" id="documento" name="documento" required>
-    </div>
-
-    <!-- Responsável pela retirada -->
-    <div class="mb-3">
-      <label for="responsavel" class="form-label">Responsável pela Retirada *</label>
-      <input type="text" class="form-control" id="responsavel" name="responsavel" required>
-    </div>
-
-    <hr>
-
-    <h5>Itens da Saída</h5>
-    <div id="itens-container">
-      <div class="row mb-2" id="item_1">
-        <div class="col-md-5">
-          <select class="form-select" name="item_1" required>
-            <option value="">Selecione o Item</option>
-            {% for item in itens %}
-              <option value="{{ item.id }}">{{ item.nome }} ({{ item.codigo_sap }})</option>
-            {% endfor %}
-          </select>
+    <form method="POST">
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="data_movimento" class="form-label">Data do Movimento *</label>
+                <input type="date" class="form-control" id="data_movimento" name="data_movimento" required>
+            </div>
+            <div class="col-md-4">
+                <label for="numero_documento" class="form-label">Nº Documento</label>
+                <input type="text" class="form-control" id="numero_documento" name="numero_documento">
+            </div>
+            <div class="col-md-4">
+                <label for="observacao" class="form-label">Observações</label>
+                <input type="text" class="form-control" id="observacao" name="observacao">
+            </div>
         </div>
-        <div class="col-md-3">
-          <input type="number" class="form-control" name="quantidade_1" placeholder="Quantidade" min="1" required>
-        </div>
-        <div class="col-md-3">
-          <input type="number" class="form-control" name="valor_unitario_1" placeholder="Valor Unitário" step="0.01" required>
-        </div>
-        <div class="col-md-1">
-          <button type="button" class="btn btn-danger" onclick="removerItem(1)">X</button>
-        </div>
-      </div>
-    </div>
 
-    <!-- Campo oculto para contar os itens -->
-    <input type="hidden" id="contador_itens" name="contador_itens" value="1">
+        <hr>
+        <h5 class="mb-3">Itens a serem retirados:</h5>
 
-    <!-- Botão para adicionar novo item -->
-    <button type="button" class="btn btn-secondary mt-2" onclick="adicionarItem()">+ Adicionar Item</button>
+        <div id="itens-container">
+            <div class="row align-items-end mb-3 item-row">
+                <div class="col-md-5">
+                    <label class="form-label">Item</label>
+                    <select class="form-select item-select" name="item_id[]" required>
+                        {% for item in itens %}
+                            <option value="{{ item.id }}" {% if item.estoque_atual == 0 %}disabled{% endif %}>
+                                {{ item.nome }} - Estoque: {{ item.estoque_atual }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Quantidade</label>
+                    <input type="number" class="form-control" name="quantidade[]" min="1" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Valor Unitário</label>
+                    <input type="text" class="form-control" name="valor_unitario[]" required>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-danger btn-remove">Remover</button>
+                </div>
+            </div>
+        </div>
 
-    <hr>
-    <!-- Botão de submissão -->
-    <button type="submit" class="btn btn-primary mt-3">Registrar Saída</button>
-    <a href="{{ url_for('saida.lista_saidas') }}" class="btn btn-outline-secondary mt-3">Cancelar</a>
-  </form>
+        <button type="button" class="btn btn-outline-primary mb-3" id="add-item">Adicionar Item</button>
+
+        <div class="d-flex justify-content-between">
+            <a href="{{ url_for('saida_bp.lista_saidas') }}" class="btn btn-outline-secondary">Cancelar</a>
+            <button type="submit" class="btn btn-success">Salvar Saída</button>
+        </div>
+    </form>
 </div>
 
 <script>
-let contador = 1;
+// Clonar linha de item
+document.getElementById('add-item').addEventListener('click', function () {
+    let container = document.getElementById('itens-container');
+    let rows = container.getElementsByClassName('item-row');
+    let newRow = rows[0].cloneNode(true);
+    newRow.querySelectorAll('input').forEach(input => input.value = '');
+    newRow.querySelector('.btn-remove').classList.remove('d-none');
+    container.appendChild(newRow);
+});
 
-function adicionarItem() {
-  contador++;
-  document.getElementById("contador_itens").value = contador;
-
-  const container = document.getElementById("itens-container");
-
-  const html = `
-  <div class="row mb-2" id="item_${contador}">
-    <div class="col-md-5">
-      <select class="form-select" name="item_${contador}" required>
-        <option value="">Selecione o Item</option>
-        {% for item in itens %}
-          <option value="{{ item.id }}">{{ item.nome }} ({{ item.codigo_sap }})</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="col-md-3">
-      <input type="number" class="form-control" name="quantidade_${contador}" placeholder="Quantidade" min="1" required>
-    </div>
-    <div class="col-md-3">
-      <input type="number" class="form-control" name="valor_unitario_${contador}" placeholder="Valor Unitário" step="0.01" required>
-    </div>
-    <div class="col-md-1">
-      <button type="button" class="btn btn-danger" onclick="removerItem(${contador})">X</button>
-    </div>
-  </div>
-  `;
-
-  container.insertAdjacentHTML("beforeend", html);
-}
-
-function removerItem(id) {
-  const item = document.getElementById("item_" + id);
-  if (item) {
-    item.remove();
-  }
-}
+// Remover linha de item
+document.addEventListener('click', function (e) {
+    if (e.target.classList.contains('btn-remove')) {
+        e.target.closest('.item-row').remove();
+    }
+});
 </script>
 {% endblock %}

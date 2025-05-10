@@ -36,7 +36,7 @@ def create_app():
     migrate.init_app(app, db)
 
     # -------------------- Importa modelos após init_app --------------------
-    from models import Usuario, Perfil, UnidadeLocal, NaturezaDespesa, Grupo, Item, Fornecedor, EntradaMaterial, EntradaItem
+    from models import Usuario, Perfil, UnidadeLocal, NaturezaDespesa, Grupo, Item, Fornecedor, EntradaMaterial, EntradaItem, SaidaMaterial, SaidaItem
 
     # -------------------- Define função de carregamento do usuário --------------------
     @login_manager.user_loader
@@ -70,9 +70,9 @@ def create_app():
     from routes_grupo import grupo_bp
     from routes_item import item_bp
     from routes_fornecedor import fornecedor_bp
-    from routes_entrada import entrada_bp  # Importante: deve usar o mesmo db
+    from routes_entrada import entrada_bp
     from routes_saida import saida_bp
-app.register_blueprint(saida_bp)
+
     app.register_blueprint(main)
     app.register_blueprint(usuario_bp)
     app.register_blueprint(area_ul_bp)
@@ -81,9 +81,9 @@ app.register_blueprint(saida_bp)
     app.register_blueprint(item_bp)
     app.register_blueprint(fornecedor_bp)
     app.register_blueprint(entrada_bp)
+    app.register_blueprint(saida_bp)
 
     return app
 
 # -------------------- Instancia final do app --------------------
 app = create_app()
-

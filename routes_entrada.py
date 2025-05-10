@@ -1,5 +1,3 @@
-# routes_entrada.py (versão corrigida com usuario_id)
-
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from app_render import db
@@ -25,13 +23,13 @@ def nova_entrada():
             data_movimento = datetime.strptime(data_movimento_str, '%Y-%m-%d')
             data_nota_fiscal = datetime.strptime(data_nota_str, '%Y-%m-%d')
 
-            # Correção: incluir o current_user.id
+            # Agora incluímos o usuario_id (id do usuário logado)
             nova_entrada = EntradaMaterial(
                 data_movimento=data_movimento,
                 data_nota_fiscal=data_nota_fiscal,
                 numero_nota_fiscal=numero_nota_fiscal,
                 fornecedor_id=fornecedor_id,
-                usuario_id=current_user.id  # <--- Linha adicionada para corrigir o erro
+                usuario_id=current_user.id  # Adicionando o usuário logado
             )
             db.session.add(nova_entrada)
             db.session.flush()
@@ -40,8 +38,12 @@ def nova_entrada():
             quantidades = request.form.getlist('quantidade[]')
             valores_unitarios = request.form.getlist('valor_unitario[]')
 
+            print(">>> Itens recebidos:")
             for i in range(len(item_ids)):
+                print(f"Item {i+1}: ID={item_ids[i]}, Quantidade={quantidades[i]}, Valor Unitário={valores_unitarios[i]}")
+
                 if not item_ids[i] or not quantidades[i] or not valores_unitarios[i]:
+                    print(f"Item {i+1} incompleto. Pulando.")
                     continue
 
                 try:
@@ -85,12 +87,3 @@ def nova_entrada():
 def lista_entradas():
     entradas = EntradaMaterial.query.order_by(EntradaMaterial.data_movimento.desc()).all()
     return render_template('lista_entrada.html', entradas=entradas)
-
-
-# ------------------------------ ROTA: Visualizar Entrada ------------------------------
-@entrada_bp.route('/entrada/visualizar/<int:entrada_id>')
-@login_required
-def visualizar_entrada(entrada_id):
-    entrada = EntradaMaterial.query.get_or_404(entrada_id)
-    itens = EntradaItem.query.filter_by(entrada_id=entrada.id).all()
-    return render_template('visualizar_entrada.html', entrada=entrada, itens=itens)

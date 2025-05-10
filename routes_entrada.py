@@ -85,3 +85,12 @@ def nova_entrada():
 def lista_entradas():
     entradas = EntradaMaterial.query.order_by(EntradaMaterial.data_movimento.desc()).all()
     return render_template('lista_entrada.html', entradas=entradas)
+
+
+# ------------------------------ ROTA: Visualizar Entrada ------------------------------
+@entrada_bp.route('/entrada/visualizar/<int:entrada_id>')
+@login_required
+def visualizar_entrada(entrada_id):
+    entrada = EntradaMaterial.query.get_or_404(entrada_id)
+    itens = EntradaItem.query.filter_by(entrada_id=entrada.id).all()
+    return render_template('visualizar_entrada.html', entrada=entrada, itens=itens)

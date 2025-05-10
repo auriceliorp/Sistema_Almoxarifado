@@ -48,6 +48,33 @@
         .btn {
             border-width: 2px;
         }
+
+                /* Estiliza cabeçalho de tabelas para melhor contraste */
+        thead th {
+            background-color: #0d6efd !important; /* Azul padrão Bootstrap */
+            color: white;
+            vertical-align: middle;
+        }
+
+        /* Ícones de ordenação do DataTables */
+        table.dataTable thead .sorting:after {
+            content: " ⬍";
+            font-size: 14px;
+            color: white;
+        }
+
+        table.dataTable thead .sorting_asc:after {
+            content: " ⬆";
+            font-size: 14px;
+            color: white;
+        }
+
+        table.dataTable thead .sorting_desc:after {
+            content: " ⬇";
+            font-size: 14px;
+            color: white;
+        }
+
     </style>
 </head>
 <body>

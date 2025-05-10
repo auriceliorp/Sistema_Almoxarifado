@@ -1,12 +1,12 @@
 # ------------------------------ IMPORTAÇÕES ------------------------------
-from flask import Blueprint, render_template, request, redirect, url_for, flash, send_file
+from flask import Blueprint, render_template, request, redirect, url_for, flash, send_file, make_response
 from flask_login import login_required
 from io import BytesIO
 import pandas as pd
 from fpdf import FPDF
 from datetime import datetime
 from models import db, Item, Grupo, NaturezaDespesa
-from flask import make_response
+import os
 
 # Criação do blueprint
 item_bp = Blueprint('item_bp', __name__, url_prefix='/item')
@@ -30,18 +30,13 @@ def lista_itens():
         naturezas_despesa=naturezas_despesa,
         nd_selecionado=nd_selecionado
     )
-    
-    # ------------------------------ DETALHAR ITEM ------------------------------
+
+# ------------------------------ DETALHAR ITEM ------------------------------
 @item_bp.route('/detalhes/<int:id>')
 @login_required
 def detalhes_item(id):
-    # Busca o item pelo ID
     item = Item.query.get_or_404(id)
-
     return render_template('detalhar_item.html', item=item)
-
-
-    return send_file(pdf_bytes, download_name="itens.pdf", as_attachment=True)
 
 # ------------------------------ NOVO ITEM ------------------------------
 @item_bp.route('/novo', methods=['GET', 'POST'])
@@ -80,19 +75,17 @@ def editar_item(id):
 
     if request.method == 'POST':
         try:
-            # Atualiza apenas os campos permitidos
             grupo = Grupo.query.get(int(request.form['grupo_id']))
             item.codigo_sap = request.form['codigo']
             item.codigo_siads = request.form.get('codigo_siads')
             item.nome = request.form['nome']
             item.descricao = request.form['descricao']
-            item.unidade = request.form['unidade']  # Unidade ainda pode ser alterada se necessário
+            item.unidade = request.form['unidade']
             item.grupo_id = grupo.id
             item.natureza_despesa_id = grupo.natureza_despesa_id
             item.estoque_minimo = request.form.get('estoque_minimo', type=float)
             item.localizacao = request.form.get('localizacao')
 
-            # Data de validade (opcional)
             data_validade_str = request.form.get('data_validade')
             if data_validade_str:
                 item.data_validade = datetime.strptime(data_validade_str, '%Y-%m-%d')
@@ -109,7 +102,6 @@ def editar_item(id):
 
     grupos = Grupo.query.all()
     return render_template('editar_item.html', item=item, grupos=grupos)
-
 
 # ------------------------------ EXCLUIR ITEM ------------------------------
 @item_bp.route('/excluir/<int:id>', methods=['POST'])
@@ -149,31 +141,61 @@ def exportar_excel():
 
     return send_file(output, download_name="itens.xlsx", as_attachment=True)
 
-# ------------------------------ EXPORTAR PDF ------------------------------
-from flask import make_response
-from fpdf import FPDF
+# ------------------------------ EXPORTAR PDF PERSONALIZADO ------------------------------
+class PDFItens(FPDF):
+    def header(self):
+        logo_path = os.path.join('static', 'embrapa_logo.png')
+        self.image(logo_path, 10, 8, 50)
+        self.set_xy(65, 10)
+        self.set_fill_color(13, 110, 253)
+        self.set_text_color(255, 255, 255)
+        self.set_font('Arial', 'B', 14)
+        self.cell(135, 10, 'Relatório de Itens Cadastrados', border=0, ln=True, align='C', fill=True)
+        self.ln(5)
 
-@item_bp.route('/item/exportar_pdf')
+    def footer(self):
+        self.set_y(-15)
+        self.set_font('Arial', 'I', 8)
+        self.set_text_color(128)
+        self.cell(0, 10, f'Gerado em {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}', 0, 0, 'C')
+
+    def tabela_itens(self, dados):
+        self.set_font('Arial', 'B', 9)
+        self.set_fill_color(220, 220, 220)
+        headers = ['SAP', 'SIADS', 'Nome', 'Unidade', 'Estoque', 'Unit. R$', 'Saldo R$']
+        col_widths = [20, 20, 65, 20, 18, 22, 25]
+
+        for i, header in enumerate(headers):
+            self.cell(col_widths[i], 8, header, border=1, align='C', fill=True)
+        self.ln()
+
+        self.set_font('Arial', '', 9)
+        self.set_text_color(0)
+        for item in dados:
+            self.cell(col_widths[0], 8, item.codigo_sap, border=1)
+            self.cell(col_widths[1], 8, item.codigo_siads or '', border=1)
+            self.cell(col_widths[2], 8, item.nome[:38], border=1)
+            self.cell(col_widths[3], 8, item.unidade, border=1, align='C')
+            self.cell(col_widths[4], 8, str(item.estoque_atual), border=1, align='C')
+            self.cell(col_widths[5], 8, f"{item.valor_unitario:.2f}", border=1, align='R')
+            self.cell(col_widths[6], 8, f"{item.saldo_financeiro:.2f}", border=1, align='R')
+            self.ln()
+
+@item_bp.route('/exportar_pdf')
 @login_required
 def exportar_pdf():
     try:
         itens = Item.query.order_by(Item.nome.asc()).all()
 
-        pdf = FPDF()
+        pdf = PDFItens()
         pdf.add_page()
-        pdf.set_font("Arial", size=12)
-        pdf.cell(200, 10, txt="Lista de Itens", ln=True, align='C')
-        pdf.ln(10)
+        pdf.tabela_itens(itens)
 
-        for item in itens:
-            pdf.cell(200, 10, txt=f"{item.nome} - {item.codigo_sap}", ln=True)
-
-        response = make_response(pdf.output(dest='S').encode('latin1'))
-        response.headers.set('Content-Type', 'application/pdf')
-        response.headers.set('Content-Disposition', 'attachment', filename='itens.pdf')
-        return response
+        caminho = "relatorio_itens.pdf"
+        pdf.output(caminho)
+        return send_file(caminho, as_attachment=True)
 
     except Exception as e:
         print("Erro ao gerar PDF:", str(e))
         flash("Erro ao gerar PDF", "danger")
-        return redirect(url_for('item_bp.listar_itens'))  # retorno seguro
+        return redirect(url_for('item_bp.lista_itens'))

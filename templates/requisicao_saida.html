@@ -4,7 +4,7 @@
     <div class="text-center mb-4">
         <img src="{{ url_for('static', filename='embrapa_logo.png') }}" alt="Logo Embrapa" height="80">
         <h3 class="mt-2">REQUISI&Ccedil;&Atilde;O DE SA&Iacute;DA DE MATERIAL</h3>
-        <p><strong>Data:</strong> {{ saida.data_saida.strftime('%d/%m/%Y') }} | <strong>N&ordm; da Sa&iacute;da:</strong> {{ saida.id }}</p>
+        <p><strong>Data:</strong> {{ saida.data_movimento.strftime('%d/%m/%Y') }} | <strong>N&ordm; da Sa&iacute;da:</strong> {{ saida.id }}</p>
     </div><div class="mb-4">
     <p><strong>Solicitante:</strong> {{ saida.usuario.nome }}</p>
     <p><strong>Setor / Unidade Local:</strong> {{ saida.usuario.unidade_local.descricao }}</p>

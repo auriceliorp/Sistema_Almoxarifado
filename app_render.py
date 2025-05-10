@@ -13,7 +13,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))
 
 # -------------------- Instancia extensões globais --------------------
-db = SQLAlchemy()          # Usado por todos os arquivos do projeto
+db = SQLAlchemy()
 login_manager = LoginManager()
 migrate = Migrate()
 
@@ -43,21 +43,25 @@ def create_app():
     def load_user(user_id):
         return Usuario.query.get(int(user_id))
 
-    # -------------------- Cria tabelas e admin default --------------------
+    # -------------------- Cria tabelas e dados iniciais --------------------
     with app.app_context():
         db.create_all()
 
-        if not Perfil.query.filter_by(nome='Admin').first():
-            perfil_admin = Perfil(nome='Admin')
-            db.session.add(perfil_admin)
-            db.session.commit()
+        # Garante que os três perfis padrões existam
+        perfis_padrao = ['Administrador', 'Consultor', 'Solicitante']
+        for nome_perfil in perfis_padrao:
+            if not Perfil.query.filter_by(nome=nome_perfil).first():
+                db.session.add(Perfil(nome=nome_perfil))
+        db.session.commit()
 
+        # Criação do usuário administrador, se não existir
         if not Usuario.query.filter_by(email='admin@admin.com').first():
+            perfil_admin = Perfil.query.filter_by(nome='Administrador').first()
             admin = Usuario(
                 nome='Administrador',
                 email='admin@admin.com',
                 senha='admin',
-                perfil_id=Perfil.query.filter_by(nome='Admin').first().id
+                perfil_id=perfil_admin.id
             )
             db.session.add(admin)
             db.session.commit()

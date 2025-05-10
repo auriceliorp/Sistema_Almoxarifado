@@ -39,6 +39,7 @@ def detalhes_item(id):
     return render_template('detalhar_item.html', item=item)
 
 # ------------------------------ NOVO ITEM ------------------------------
+# ------------------------------ NOVO ITEM ------------------------------
 @item_bp.route('/novo', methods=['GET', 'POST'])
 @login_required
 def novo_item():
@@ -65,7 +66,8 @@ def novo_item():
         return redirect(url_for('item_bp.lista_itens'))
 
     grupos = Grupo.query.all()
-    return render_template('form_item.html', grupos=grupos)
+    return render_template('form_item.html', grupos=grupos, item={})
+
 
 # ------------------------------ EDITAR ITEM ------------------------------
 @item_bp.route('/editar/<int:id>', methods=['GET', 'POST'])

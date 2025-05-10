@@ -1,0 +1,52 @@
+{# nova_saida.html - Tela de registro de saída de materiais #}
+{% extends 'base_simplificada.html' %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4">Registrar Saída de Materiais</h2>
+
+  <form method="POST">
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <label for="data_movimento" class="form-label">Data da Saída</label>
+        <input type="date" class="form-control" name="data_movimento" id="data_movimento" value="{{ current_date }}">
+      </div>
+      <div class="col-md-4">
+        <label for="numero_documento" class="form-label">Nº do Documento</label>
+        <input type="text" class="form-control" name="numero_documento" id="numero_documento">
+      </div>
+      <div class="col-md-4">
+        <label for="observacao" class="form-label">Observação</label>
+        <input type="text" class="form-control" name="observacao" id="observacao">
+      </div>
+    </div>
+
+    <hr>
+    <h5>Itens</h5>
+
+    <div id="itens-container">
+      {% for i in range(1, 4) %}
+      <div class="row mb-2">
+        <div class="col-md-5">
+          <select class="form-select" name="item_{{ i }}">
+            <option value="">Selecione o Item</option>
+            {% for item in itens %}
+              <option value="{{ item.id }}">{{ item.nome }} ({{ item.codigo_sap }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <input type="number" class="form-control" name="quantidade_{{ i }}" placeholder="Quantidade" min="1">
+        </div>
+        <div class="col-md-3">
+          <input type="number" class="form-control" name="valor_unitario_{{ i }}" placeholder="Valor Unitário" step="0.01">
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">Registrar Saída</button>
+    <a href="{{ url_for('saida_bp.lista_saidas') }}" class="btn btn-secondary mt-3">Cancelar</a>
+  </form>
+</div>
+{% endblock %}

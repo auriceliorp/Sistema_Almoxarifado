@@ -1,4 +1,3 @@
-{# ------------------------------ TELA DE LISTAGEM DE ENTRADAS DE MATERIAIS ------------------------------ #}
 {% extends 'base_simplificada.html' %}
 
 {% block title %}Entradas de Materiais{% endblock %}
@@ -17,13 +16,13 @@
         </a>
     </div>
 
-    {# ------------------------------ CAMPO DE BUSCA POR NÚMERO DA NOTA ------------------------------ #}
+    {# ------------------------------ CAMPO DE BUSCA ------------------------------ #}
     <form method="GET" class="mb-3">
         <input type="text" name="busca" value="{{ request.args.get('busca', '') }}" class="form-control"
                placeholder="Buscar por número da nota fiscal...">
     </form>
 
-    {# ------------------------------ TABELA RESPONSIVA ------------------------------ #}
+    {# ------------------------------ TABELA DE ENTRADAS ------------------------------ #}
     <div class="table-responsive">
         <table class="table table-striped table-hover align-middle">
             <thead class="table-dark">
@@ -33,6 +32,7 @@
                     <th>Data Nota Fiscal</th>
                     <th style="min-width: 250px;">Número Nota Fiscal</th>
                     <th style="min-width: 200px;">Fornecedor</th>
+                    <th style="min-width: 100px;">Ações</th>
                 </tr>
             </thead>
             <tbody>
@@ -44,6 +44,12 @@
                         <td>{{ entrada.data_nota_fiscal.strftime('%d/%m/%Y') }}</td>
                         <td style="white-space: normal;">{{ entrada.numero_nota_fiscal }}</td>
                         <td>{{ entrada.fornecedor.nome }}</td>
+                        <td>
+                            <a href="{{ url_for('entrada_bp.visualizar_entrada', entrada_id=entrada.id) }}"
+                               class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-eye"></i> Visualizar
+                            </a>
+                        </td>
                     </tr>
                     {% endif %}
                 {% endfor %}
@@ -52,4 +58,3 @@
     </div>
 </div>
 {% endblock %}
-

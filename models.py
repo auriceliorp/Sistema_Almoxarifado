@@ -174,3 +174,32 @@ class SaidaItem(db.Model):
     # Relacionamento com o item
     item = db.relationship('Item', backref='saidas_item')
   
+
+# models.py
+
+# [...] outros imports
+from datetime import datetime
+
+class SaidaMaterial(db.Model):
+    __tablename__ = 'saida_material'
+
+    id = db.Column(db.Integer, primary_key=True)
+    data_movimento = db.Column(db.Date, nullable=False)
+    numero_documento = db.Column(db.String(50), nullable=True)
+    observacao = db.Column(db.Text, nullable=True)
+
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    usuario = db.relationship('Usuario', backref='saidas')
+
+    itens = db.relationship('SaidaItem', backref='saida', cascade='all, delete-orphan')
+
+class SaidaItem(db.Model):
+    __tablename__ = 'saida_item'
+
+    id = db.Column(db.Integer, primary_key=True)
+    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
+    quantidade = db.Column(db.Integer, nullable=False)
+    valor_unitario = db.Column(db.Float, nullable=False)
+
+    saida_id = db.Column(db.Integer, db.ForeignKey('saida_material.id'), nullable=False)
+    item = db.relationship('Item')

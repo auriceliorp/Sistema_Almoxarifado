@@ -1,8 +1,7 @@
 # ------------------------------ IMPORTAÇÕES ------------------------------
 from flask_login import UserMixin
 from app_render import db
-
-
+from datetime import datetime
 
 # ------------------- USUÁRIO E PERFIL -------------------
 class Perfil(db.Model):
@@ -77,27 +76,14 @@ class Estoque(db.Model):
 
 # ------------------- FORNECEDOR -------------------
 class Fornecedor(db.Model):
-    """Modelo para representar fornecedores cadastrados no sistema."""
-    
-    __tablename__ = 'fornecedores'  # Nome da tabela no banco de dados
-
-    # Campo identificador primário, gerado automaticamente
+    __tablename__ = 'fornecedores'
     id = db.Column(db.Integer, primary_key=True)
-
-    # Nome do fornecedor (campo obrigatório)
     nome = db.Column(db.String(120), nullable=False)
-
-    # CNPJ do fornecedor (campo obrigatório)
     cnpj = db.Column(db.String(20), nullable=False)
-
-    # E-mail do fornecedor (campo opcional)
     email = db.Column(db.String(120), nullable=True)
-
-    # Telefone do fornecedor (campo opcional)
     telefone = db.Column(db.String(20), nullable=True)
 
     def __repr__(self):
-        """Representação da instância do modelo para depuração."""
         return f'<Fornecedor {self.nome}>'
 
 # ------------------- LOCAL E UNIDADE LOCAL -------------------
@@ -116,21 +102,16 @@ class UnidadeLocal(db.Model):
     local = db.relationship('Local', back_populates='uls')
     usuarios = db.relationship('Usuario', back_populates='unidade_local')
 
-
 # ------------------- ENTRADA DE MATERIAL -------------------
-
 class EntradaMaterial(db.Model):
     __tablename__ = 'entrada_material'
     id = db.Column(db.Integer, primary_key=True)
     data_movimento = db.Column(db.Date, nullable=False)
     data_nota_fiscal = db.Column(db.Date, nullable=False)
     numero_nota_fiscal = db.Column(db.String(50), nullable=False)
-
     fornecedor_id = db.Column(db.Integer, db.ForeignKey('fornecedores.id'), nullable=False)
-
     fornecedor = db.relationship('Fornecedor', backref='entradas')
     itens = db.relationship('EntradaItem', backref='entrada_material', cascade="all, delete-orphan")
-
 
 class EntradaItem(db.Model):
     __tablename__ = 'entrada_item'
@@ -139,63 +120,27 @@ class EntradaItem(db.Model):
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
     quantidade = db.Column(db.Integer, nullable=False)
     valor_unitario = db.Column(db.Numeric(10, 2), nullable=False)
-
     item = db.relationship('Item', backref='entradas')
 
     @property
     def valor_total(self):
         return self.quantidade * self.valor_unitario
 
-
-# ------------------------------ MODELO DE SAÍDA DE MATERIAL ------------------------------ #
+# ------------------- SAÍDA DE MATERIAL -------------------
 class SaidaMaterial(db.Model):
     __tablename__ = 'saida_material'
-
-    id = db.Column(db.Integer, primary_key=True)
-    data_saida = db.Column(db.Date, nullable=False)
-    destino = db.Column(db.String(120), nullable=False)
-    responsavel = db.Column(db.String(120), nullable=False)
-
-    # Relacionamento com os itens da saída
-    itens = db.relationship('SaidaItem', backref='saida', lazy=True, cascade="all, delete-orphan")
-
-
-# ------------------------------ MODELO DE ITENS DA SAÍDA ------------------------------ #
-class SaidaItem(db.Model):
-    __tablename__ = 'saida_item'
-
-    id = db.Column(db.Integer, primary_key=True)
-    saida_id = db.Column(db.Integer, db.ForeignKey('saida_material.id'), nullable=False)
-    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
-    quantidade = db.Column(db.Integer, nullable=False)
-    valor_unitario = db.Column(db.Numeric(10, 2), nullable=False)
-    valor_total = db.Column(db.Numeric(10, 2), nullable=False)
-
-    # Relacionamento com o item
-    item = db.relationship('Item', backref='saidas_item')
-  
-
-# models.py
-
-# [...] outros imports
-from datetime import datetime
-
-class SaidaMaterial(db.Model):
-    __tablename__ = 'saida_material'
-
     id = db.Column(db.Integer, primary_key=True)
     data_movimento = db.Column(db.Date, nullable=False)
     numero_documento = db.Column(db.String(50), nullable=True)
     observacao = db.Column(db.Text, nullable=True)
 
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
     usuario = db.relationship('Usuario', backref='saidas')
 
     itens = db.relationship('SaidaItem', backref='saida', cascade='all, delete-orphan')
 
 class SaidaItem(db.Model):
     __tablename__ = 'saida_item'
-
     id = db.Column(db.Integer, primary_key=True)
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
     quantidade = db.Column(db.Integer, nullable=False)

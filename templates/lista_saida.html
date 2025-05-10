@@ -1,31 +1,37 @@
-{# lista_saida.html - Lista de saídas registradas #}
 {% extends 'base_simplificada.html' %}
-
 {% block content %}
 <div class="container mt-4">
-  <h2 class="mb-4">Saídas de Materiais</h2>
+    <h2 class="mb-4">Saídas de Materiais</h2>
 
-  <a href="{{ url_for('saida_bp.nova_saida') }}" class="btn btn-success mb-3">Nova Saída</a>
+    <a href="{{ url_for('saida_bp.nova_saida') }}" class="btn btn-primary mb-3">Registrar Nova Saída</a>
 
-  <table class="table table-bordered table-hover">
-    <thead>
-      <tr>
-        <th>Data</th>
-        <th>Nº Documento</th>
-        <th>Usuário</th>
-        <th>Observação</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for saida in saidas %}
-      <tr>
-        <td>{{ saida.data_movimento.strftime('%d/%m/%Y') }}</td>
-        <td>{{ saida.numero_documento }}</td>
-        <td>{{ saida.usuario.nome }}</td>
-        <td>{{ saida.observacao or '-' }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+    {% if saidas %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Data</th>
+                <th>Responsável</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for saida in saidas %}
+            <tr>
+                <td>{{ saida.id }}</td>
+                <td>{{ saida.data_movimento.strftime('%d/%m/%Y') }}</td>
+                <td>{{ saida.responsavel }}</td>
+                <td>
+                    <a href="{{ url_for('saida_bp.requisicao_saida', saida_id=saida.id) }}" class="btn btn-sm btn-outline-secondary" target="_blank">
+                        Visualizar Requisição
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="alert alert-info">Nenhuma saída registrada até o momento.</div>
+    {% endif %}
 </div>
 {% endblock %}

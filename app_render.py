@@ -71,7 +71,8 @@ def create_app():
     from routes_item import item_bp
     from routes_fornecedor import fornecedor_bp
     from routes_entrada import entrada_bp  # Importante: deve usar o mesmo db
-
+    from routes_saida import saida_bp
+app.register_blueprint(saida_bp)
     app.register_blueprint(main)
     app.register_blueprint(usuario_bp)
     app.register_blueprint(area_ul_bp)

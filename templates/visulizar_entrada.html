@@ -1,0 +1,41 @@
+{% extends 'base_simplificada.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Visualizar Entrada de Materiais</h2>
+
+  <div class="card my-4">
+    <div class="card-body">
+      <p><strong>Data do Movimento:</strong> {{ entrada.data_movimento.strftime('%d/%m/%Y') }}</p>
+      <p><strong>Data da Nota Fiscal:</strong> {{ entrada.data_nota_fiscal.strftime('%d/%m/%Y') }}</p>
+      <p><strong>Número da Nota Fiscal:</strong> {{ entrada.numero_nota_fiscal }}</p>
+      <p><strong>Fornecedor:</strong> {{ entrada.fornecedor.nome }}</p>
+      <p><strong>Registrado por:</strong> {{ entrada.usuario.nome }}</p>
+    </div>
+  </div>
+
+  <h4>Itens da Entrada</h4>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th>Quantidade</th>
+        <th>Valor Unitário (R$)</th>
+        <th>Total (R$)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in itens %}
+      <tr>
+        <td>{{ item.item.nome }}</td>
+        <td>{{ item.quantidade }}</td>
+        <td>{{ '%.2f'|format(item.valor_unitario) }}</td>
+        <td>{{ '%.2f'|format(item.quantidade * item.valor_unitario) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="btn btn-secondary mt-3">Voltar</a>
+  <a href="#" class="btn btn-primary mt-3" onclick="window.print()">Imprimir</a>
+</div>
+{% endblock %}

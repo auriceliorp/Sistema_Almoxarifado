@@ -1,14 +1,16 @@
-# routes_entrada.py (versão atualizada para atualizar saldo financeiro e valor unitário)
+# routes_entrada.py
+# Rotas para entrada de materiais, incluindo atualização de saldo e valor unitário
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_login import login_required
+from flask_login import login_required, current_user
 from app_render import db
 from models import Fornecedor, Item, EntradaMaterial, EntradaItem
 from datetime import datetime
 
+# Criação do blueprint da entrada
 entrada_bp = Blueprint('entrada_bp', __name__, template_folder='templates')
 
-# ------------------------------ ROTA: Nova Entrada ------------------------------
+# ------------------------------ ROTA: Nova Entrada ------------------------------ #
 @entrada_bp.route('/entrada/nova', methods=['GET', 'POST'])
 @login_required
 def nova_entrada():
@@ -17,34 +19,36 @@ def nova_entrada():
 
     if request.method == 'POST':
         try:
+            # Coleta os dados do formulário
             data_movimento_str = request.form.get('data_movimento')
             data_nota_str = request.form.get('data_nota_fiscal')
             numero_nota_fiscal = request.form.get('numero_nota_fiscal')
             fornecedor_id = request.form.get('fornecedor')
 
+            # Converte as datas
             data_movimento = datetime.strptime(data_movimento_str, '%Y-%m-%d')
             data_nota_fiscal = datetime.strptime(data_nota_str, '%Y-%m-%d')
 
+            # Cria a entrada com vínculo ao usuário atual
             nova_entrada = EntradaMaterial(
                 data_movimento=data_movimento,
                 data_nota_fiscal=data_nota_fiscal,
                 numero_nota_fiscal=numero_nota_fiscal,
-                fornecedor_id=fornecedor_id
+                fornecedor_id=fornecedor_id,
+                usuario_id=current_user.id  # Corrigido aqui
             )
             db.session.add(nova_entrada)
-            db.session.flush()
+            db.session.flush()  # Garante que nova_entrada.id esteja disponível
 
+            # Coleta os dados dos itens
             item_ids = request.form.getlist('item_id[]')
             quantidades = request.form.getlist('quantidade[]')
             valores_unitarios = request.form.getlist('valor_unitario[]')
 
-            print(">>> Itens recebidos:")
+            # Processa cada item informado
             for i in range(len(item_ids)):
-                print(f"Item {i+1}: ID={item_ids[i]}, Quantidade={quantidades[i]}, Valor Unitário={valores_unitarios[i]}")
-
                 if not item_ids[i] or not quantidades[i] or not valores_unitarios[i]:
-                    print(f"Item {i+1} incompleto. Pulando.")
-                    continue
+                    continue  # Pula se estiver incompleto
 
                 try:
                     quantidade = int(quantidades[i])
@@ -54,6 +58,7 @@ def nova_entrada():
                     db.session.rollback()
                     return redirect(url_for('entrada_bp.nova_entrada'))
 
+                # Cria o vínculo do item com a entrada
                 entrada_item = EntradaItem(
                     entrada_id=nova_entrada.id,
                     item_id=item_ids[i],
@@ -62,7 +67,7 @@ def nova_entrada():
                 )
                 db.session.add(entrada_item)
 
-                # Atualiza o item correspondente
+                # Atualiza o estoque e o saldo do item
                 item = Item.query.get(item_ids[i])
                 if item:
                     item.estoque_atual += quantidade
@@ -81,7 +86,7 @@ def nova_entrada():
 
     return render_template('nova_entrada.html', fornecedores=fornecedores, itens=itens)
 
-# ------------------------------ ROTA: Lista de Entradas ------------------------------
+# ------------------------------ ROTA: Lista de Entradas ------------------------------ #
 @entrada_bp.route('/entrada/lista')
 @login_required
 def lista_entradas():

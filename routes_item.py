@@ -108,6 +108,11 @@ def editar_item(id):
 @login_required
 def excluir_item(id):
     item = Item.query.get_or_404(id)
+
+    if item.entradas:
+        flash('Não é possível excluir este item pois ele está vinculado a registros de entrada.', 'danger')
+        return redirect(url_for('item_bp.lista_itens'))
+
     db.session.delete(item)
     db.session.commit()
     flash('Item excluído com sucesso!', 'success')

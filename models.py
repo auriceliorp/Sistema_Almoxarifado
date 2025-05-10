@@ -5,9 +5,9 @@ from datetime import datetime
 
 # ------------------- USUÁRIO E PERFIL -------------------
 class Perfil(db.Model):
-    __tablename__ = 'perfis'
+    __tablename__ = 'perfil'  # Tabela agora é singular
     id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(50), nullable=False)
+    nome = db.Column(db.String(50), nullable=False, unique=True)  # Evita duplicados
 
 class Usuario(UserMixin, db.Model):
     __tablename__ = 'usuario'
@@ -19,7 +19,7 @@ class Usuario(UserMixin, db.Model):
     ramal = db.Column(db.String(20))
     unidade_local_id = db.Column(db.Integer, db.ForeignKey('unidade_local.id'))
     unidade_local = db.relationship('UnidadeLocal', back_populates='usuarios')
-    perfil_id = db.Column(db.Integer, db.ForeignKey('perfis.id'))
+    perfil_id = db.Column(db.Integer, db.ForeignKey('perfil.id'))  # Referência ajustada
     perfil = db.relationship('Perfil', backref='usuarios')
     senha_temporaria = db.Column(db.Boolean, default=True)
 

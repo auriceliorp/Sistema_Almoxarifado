@@ -109,8 +109,8 @@ def editar_item(id):
 def excluir_item(id):
     item = Item.query.get_or_404(id)
 
-    if item.entradas:
-        flash('Não é possível excluir este item pois ele está vinculado a registros de entrada.', 'danger')
+    if item.estoque_atual > 0 or item.saldo_financeiro > 0:
+        flash('Não é possível excluir o item enquanto houver saldo em estoque.', 'danger')
         return redirect(url_for('item_bp.lista_itens'))
 
     db.session.delete(item)

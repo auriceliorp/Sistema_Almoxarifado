@@ -1,66 +1,76 @@
 # routes_saida.py
-# Rotas para a funcionalidade de saída de materiais no sistema Flask
+# Rotas para movimentações de saída de materiais
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_required, current_user
-from models import db, SaidaMaterial, SaidaItem, Item
-from datetime import date
+from models import db, Item, SaidaMaterial, SaidaItem
+from datetime import datetime
 
-# -------------------- Cria o Blueprint --------------------
-saida_bp = Blueprint('saida_bp', __name__, url_prefix='/saida')
+# Criação do blueprint
+saida_bp = Blueprint('saida_bp', __name__)
 
-# -------------------- Lista todas as saídas registradas --------------------
-@saida_bp.route('/')
+# -------------------- ROTA: Lista de saídas --------------------
+@saida_bp.route('/saidas')
 @login_required
 def lista_saidas():
+    # Busca todas as saídas cadastradas
     saidas = SaidaMaterial.query.order_by(SaidaMaterial.data_movimento.desc()).all()
     return render_template('lista_saida.html', saidas=saidas)
 
-# -------------------- Exibe o formulário de nova saída --------------------
-@saida_bp.route('/nova', methods=['GET', 'POST'])
+# -------------------- ROTA: Cadastro de nova saída --------------------
+@saida_bp.route('/nova_saida', methods=['GET', 'POST'])
 @login_required
 def nova_saida():
+    # Busca todos os itens disponíveis
     itens = Item.query.all()
 
     if request.method == 'POST':
-        # Coleta os dados do formulário
-        data_movimento = request.form.get('data_movimento') or date.today()
-        numero_documento = request.form.get('numero_documento')
-        observacao = request.form.get('observacao')
+        try:
+            data_movimento = datetime.strptime(request.form['data_movimento'], '%Y-%m-%d')
+            responsavel = request.form['responsavel']
 
-        # Cria o objeto de Saída
-        nova_saida = SaidaMaterial(
-            data_movimento=data_movimento,
-            numero_documento=numero_documento,
-            observacao=observacao,
-            usuario_id=current_user.id
-        )
-        db.session.add(nova_saida)
-        db.session.flush()  # Garante que nova_saida.id esteja disponível
+            nova_saida = SaidaMaterial(
+                data_movimento=data_movimento,
+                responsavel=responsavel
+            )
+            db.session.add(nova_saida)
+            db.session.commit()
 
-        # Coleta os itens e registra cada um
-        for i in range(1, 21):  # Permite até 20 itens por saída
-            item_id = request.form.get(f'item_{i}')
-            quantidade = request.form.get(f'quantidade_{i}')
-            valor_unitario = request.form.get(f'valor_unitario_{i}')
-
-            if item_id and quantidade and valor_unitario:
-                item = Item.query.get(int(item_id))
-
-                # Atualiza o estoque (lógica inversa: subtrai)
-                item.quantidade_estoque -= int(quantidade)
-                db.session.add(item)
+            # Processar os itens da saída
+            for i in range(len(request.form.getlist('item_id'))):
+                item_id = int(request.form.getlist('item_id')[i])
+                quantidade = float(request.form.getlist('quantidade')[i])
+                valor_unitario = float(request.form.getlist('valor_unitario')[i])
+                valor_total = quantidade * valor_unitario
 
                 saida_item = SaidaItem(
-                    item_id=item.id,
-                    quantidade=int(quantidade),
-                    valor_unitario=float(valor_unitario),
-                    saida_id=nova_saida.id
+                    saida_id=nova_saida.id,
+                    item_id=item_id,
+                    quantidade=quantidade,
+                    valor_unitario=valor_unitario,
+                    valor_total=valor_total
                 )
+
                 db.session.add(saida_item)
 
-        db.session.commit()
-        flash('Saída registrada com sucesso!', 'success')
-        return redirect(url_for('saida_bp.lista_saidas'))
+                # Atualizar o saldo do item (diminuindo)
+                item = Item.query.get(item_id)
+                item.quantidade_estoque -= quantidade
+                db.session.commit()
+
+            flash('Saída registrada com sucesso!', 'success')
+            return redirect(url_for('saida_bp.lista_saidas'))
+
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Ocorreu um erro ao registrar a saída: {str(e)}', 'danger')
 
     return render_template('nova_saida.html', itens=itens)
+
+# -------------------- ROTA: Requisição de saída personalizada --------------------
+@saida_bp.route('/requisicao_saida/<int:saida_id>')
+@login_required
+def requisicao_saida(saida_id):
+    saida = SaidaMaterial.query.get_or_404(saida_id)
+    itens_saida = SaidaItem.query.filter_by(saida_id=saida.id).all()
+    return render_template('requisicao_saida.html', saida=saida, itens=itens_saida)

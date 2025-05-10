@@ -1,0 +1,49 @@
+{% extends 'base_simplificada.html' %}
+{% block title %}Entrada de Material{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left-circle"></i> Voltar
+        </a>
+        <h4 class="text-center">Detalhes da Entrada</h4>
+        <button class="btn btn-outline-dark" onclick="window.print()">
+            <i class="bi bi-printer"></i> Imprimir
+        </button>
+    </div>
+
+    <p><strong>Data Movimento:</strong> {{ entrada.data_movimento.strftime('%d/%m/%Y') }}</p>
+    <p><strong>Data Nota Fiscal:</strong> {{ entrada.data_nota_fiscal.strftime('%d/%m/%Y') }}</p>
+    <p><strong>Número Nota Fiscal:</strong> {{ entrada.numero_nota_fiscal }}</p>
+    <p><strong>Fornecedor:</strong> {{ entrada.fornecedor.nome }}</p>
+
+    <hr>
+
+    <h5>Itens da Entrada:</h5>
+    <div class="table-responsive">
+        <table class="table table-sm table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Item</th>
+                    <th>Quantidade</th>
+                    <th>Valor Unitário</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in itens %}
+                <tr>
+                    <td>{{ item.item.nome }}</td>
+                    <td>{{ item.quantidade }}</td>
+                    <td>R$ {{ "%.2f"|format(item.valor_unitario) }}</td>
+                    <td>R$ {{ "%.2f"|format(item.quantidade * item.valor_unitario) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}

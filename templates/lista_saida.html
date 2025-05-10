@@ -1,0 +1,31 @@
+{# lista_saida.html - Lista de saídas registradas #}
+{% extends 'base_simplificada.html' %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4">Saídas de Materiais</h2>
+
+  <a href="{{ url_for('saida_bp.nova_saida') }}" class="btn btn-success mb-3">Nova Saída</a>
+
+  <table class="table table-bordered table-hover">
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Nº Documento</th>
+        <th>Usuário</th>
+        <th>Observação</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for saida in saidas %}
+      <tr>
+        <td>{{ saida.data_movimento.strftime('%d/%m/%Y') }}</td>
+        <td>{{ saida.numero_documento }}</td>
+        <td>{{ saida.usuario.nome }}</td>
+        <td>{{ saida.observacao or '-' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

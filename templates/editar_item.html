@@ -1,45 +1,40 @@
 {% extends 'base_simplificada.html' %}
-{% block title %}Editar Material/Serviço{% endblock %}
+{% block title %}{{ 'Editar Item' if item else 'Cadastrar Novo Item' }}{% endblock %}
 
 {% block content %}
 <div class="container py-4">
+    <h4 class="mb-4">{{ 'Editar Item' if item else 'Cadastrar Novo Item' }}</h4>
 
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-      <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">Início</a>
-      <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-outline-secondary">Voltar</a>
-    </div>
-    <h4 class="mb-0 text-center">Editar Material/Serviço</h4>
-    <div>
-      <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">Sair</a>
-    </div>
-  </div>
-
-  <form method="post">
-    
-    <div class="row mb-3">
-      <div class="col-md-4">
-        <label for="codigo" class="form-label">Código *</label>
-        <input type="text" class="form-control" id="codigo" name="codigo" value="{{ item.codigo_sap }}" required>
-      </div>
-      <div class="col-md-8">
-        <label for="nome" class="form-label">Nome *</label>
-        <input type="text" class="form-control" id="nome" name="nome" value="{{ item.nome }}" required>
-      </div>
-    </div>
-
-    <div class="mb-3">
-      <label for="descricao" class="form-label">Descrição</label>
-      <textarea class="form-control" id="descricao" name="descricao" rows="2">{{ item.descricao }}</textarea>
-    </div>
-
-    <div class="row mb-3">
-      <div class="col-md-4">
-        <label for="unidade" class="form-label">Unidade de Medida *</label>
-        <input type="text" class="form-control" id="unidade" name="unidade" value="{{ item.unidade }}" required>
-      </div>
-      <div class="col-md-8">
-        <label for="grupo_id" class="form-label">Grupo *</label>
+    <form method="POST">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="codigo" class="form-label">Código SAP *</label>
+                <input type="text" class="form-control" id="codigo" name="codigo" required value="{{ item.codigo_sap if item else '' }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="codigo_siads" class="form-label">Código SIADS</label>
+                <input type="text" class="form-control" id="codigo_siads" name="codigo_siads" value="{{ item.codigo_siads if item else '' }}">
+            </div>
+            <div class="col-md-12 mb-3">
+                <label for="nome" class="form-label">Nome *</label>
+                <input type="text" class="form-control" id="nome" name="nome" required value="{{ item.nome if item else '' }}">
+            </div>
+            <div class="col-md-12 mb-3">
+                <label for="descricao" class="form-label">Descrição *</label>
+                <textarea class="form-control" id="descricao" name="descricao" required>{{ item.descricao if item else '' }}</textarea>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="unidade" class="form-label">Unidade de Medida *</label>
+                <select class="form-select" id="unidade" name="unidade" required>
+                    <option value="">Selecione</option>
+                    {% set unidades = ['UN', 'KG', 'L', 'M', 'CX', 'PCT', 'SC', 'PAR', 'M2', 'M3', 'RM'] %}
+                    {% for un in unidades %}
+                        <option value="{{ un }}" {% if item and item.unidade == un %}selected{% endif %}>{{ un }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="grupo_id" class="form-label">Grupo *</label>
                 <select class="form-select" id="grupo_id" name="grupo_id" required>
                     <option value="">Selecione</option>
                     {% for grupo in grupos %}
@@ -48,29 +43,37 @@
                         </option>
                     {% endfor %}
                 </select>
-      </div>
-    </div>
-
-    <div class="row mb-3">
-      <div class="col-md-4">
-        <label for="valor_unitario" class="form-label">Valor Unitário</label>
-        <input type="number" class="form-control" value="{{ item.valor_unitario }}" readonly>
-      </div>
-      <div class="col-md-4">
-        <label for="estoque_atual" class="form-label">Estoque Atual</label>
-        <input type="number" class="form-control" value="{{ item.estoque_atual }}" readonly>
-      </div>
-      <div class="col-md-4">
-        <label for="estoque_minimo" class="form-label">Estoque Mínimo</label>
-        <input type="number" class="form-control" id="estoque_minimo" name="estoque_minimo" value="{{ item.estoque_minimo }}">
-      </div>
-    </div>
-
-    <div class="d-flex justify-content-end gap-2">
-      <button type="submit" class="btn btn-success">Salvar Alterações</button>
-      <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-secondary">Cancelar</a>
-    </div>
-
-  </form>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="valor_unitario" class="form-label">Valor Unitário</label>
+                <input type="number" step="0.01" class="form-control" id="valor_unitario" name="valor_unitario" value="{{ item.valor_unitario if item else '' }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="estoque_atual" class="form-label">Quantidade em Estoque</label>
+                <input type="number" step="0.01" class="form-control" id="estoque_atual" name="estoque_atual" value="{{ item.estoque_atual if item else '' }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="estoque_minimo" class="form-label">Estoque Mínimo</label>
+                <input type="number" step="0.01" class="form-control" id="estoque_minimo" name="estoque_minimo" value="{{ item.estoque_minimo if item else '' }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="localizacao" class="form-label">Localização</label>
+                <input type="text" class="form-control" id="localizacao" name="localizacao" value="{{ item.localizacao if item else '' }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="data_validade" class="form-label">Validade</label>
+                <input type="date" class="form-control" id="data_validade" name="data_validade"
+                       value="{{ item.data_validade.strftime('%Y-%m-%d') if item and item.data_validade else '' }}">
+            </div>
+        </div>
+        <div class="d-flex justify-content-between">
+            <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left-circle"></i> Voltar
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save"></i> Salvar
+            </button>
+        </div>
+    </form>
 </div>
 {% endblock %}

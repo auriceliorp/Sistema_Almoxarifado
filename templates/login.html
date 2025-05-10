@@ -1,18 +1,12 @@
 {# ------------------------------ TELA DE LOGIN ------------------------------ #}
 {% extends 'base_simplificada.html' %}
-{% set ocultar_logo = True %}
 
 {% block title %}Login{% endblock %}
 
 {% block content %}
 <div class="container mt-5" style="max-width: 420px;">
 
-    {# ------------------------------ LOGO DA EMBRAPA ------------------------------ #}
-    <div class="text-center mb-4">
-        <img src="{{ url_for('static', filename='embrapa_logo.png') }}" alt="Logo Embrapa" style="max-width: 180px;">
-    </div>
-
-    {# ------------------------------ MENSAGEM DE ERRO (FLASH) ------------------------------ #}
+      {# ------------------------------ MENSAGEM DE ERRO (FLASH) ------------------------------ #}
     {% with messages = get_flashed_messages() %}
         {% if messages %}
             <div class="alert alert-danger text-center">{{ messages[0] }}</div>

@@ -146,4 +146,31 @@ class EntradaItem(db.Model):
     def valor_total(self):
         return self.quantidade * self.valor_unitario
 
+
+# ------------------------------ MODELO DE SAÍDA DE MATERIAL ------------------------------ #
+class SaidaMaterial(db.Model):
+    __tablename__ = 'saida_material'
+
+    id = db.Column(db.Integer, primary_key=True)
+    data_saida = db.Column(db.Date, nullable=False)
+    destino = db.Column(db.String(120), nullable=False)
+    responsavel = db.Column(db.String(120), nullable=False)
+
+    # Relacionamento com os itens da saída
+    itens = db.relationship('SaidaItem', backref='saida', lazy=True, cascade="all, delete-orphan")
+
+
+# ------------------------------ MODELO DE ITENS DA SAÍDA ------------------------------ #
+class SaidaItem(db.Model):
+    __tablename__ = 'saida_item'
+
+    id = db.Column(db.Integer, primary_key=True)
+    saida_id = db.Column(db.Integer, db.ForeignKey('saida_material.id'), nullable=False)
+    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
+    quantidade = db.Column(db.Integer, nullable=False)
+    valor_unitario = db.Column(db.Numeric(10, 2), nullable=False)
+    valor_total = db.Column(db.Numeric(10, 2), nullable=False)
+
+    # Relacionamento com o item
+    item = db.relationship('Item', backref='saidas_item')
   

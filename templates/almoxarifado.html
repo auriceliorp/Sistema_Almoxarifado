@@ -1,22 +1,22 @@
 {% extends 'base_simplificada.html' %}
 
-{% block title %}Gestão de Almoxarifado{% endblock %}
+{% block title %}Gestão de Materiais - CTAA{% endblock %}
 
 {% block content %}
 <div class="container py-4">
 
     {# ------------------------------ CABEÇALHO COM NAVEGAÇÃO ------------------------------ #}
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <a href="{{ url_for('main.home') }}" class="btn btn-primary">
+        <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">
             <i class="bi bi-house-door"></i> Início
         </a>
-        <h4 class="mb-0 text-center">Gestão de Almoxarifado</h4>
-        <a href="{{ url_for('main.logout') }}" class="btn btn-danger">
+        <h4 class="mb-0 text-success fw-bold">Sistema de Gestão de Almoxarifado</h4>
+        <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">
             <i class="bi bi-box-arrow-right"></i> Sair
         </a>
     </div>
 
-    {# ------------------------------ GRID DE BOTÕES DE ACESSO ------------------------------ #}
+    {# ------------------------------ GRID DE BOTÕES DE ACESSO A FUNCIONALIDADES ------------------------------ #}
     <div class="row row-cols-1 row-cols-md-2 g-4">
 
         <div class="col">
@@ -38,37 +38,37 @@
         </div>
 
         <div class="col">
-            <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="btn btn-outline-success w-100 py-4 fs-5">
+            <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="btn btn-outline-dark w-100 py-4 fs-5">
                 <i class="bi bi-journal-arrow-down"></i> Entrada de Materiais
             </a>
         </div>
 
         <div class="col">
-            <a href="{{ url_for('saida_bp.lista_saidas') }}" class="btn btn-outline-danger w-100 py-4 fs-5">
+            <a href="#" class="btn btn-outline-danger w-100 py-4 fs-5 disabled">
                 <i class="bi bi-journal-arrow-up"></i> Saída de Materiais
             </a>
         </div>
 
         <div class="col">
-            <a href="{{ url_for('area_ul_bp.lista_uls') }}" class="btn btn-outline-secondary w-100 py-4 fs-5">
+            <a href="{{ url_for('area_ul_bp.lista_uls') }}" class="btn btn-outline-primary w-100 py-4 fs-5">
                 <i class="bi bi-geo-alt"></i> Unidades Locais (UL)
             </a>
         </div>
 
         <div class="col">
-            <a href="{{ url_for('area_ul_bp.lista_locais') }}" class="btn btn-outline-secondary w-100 py-4 fs-5">
+            <a href="{{ url_for('area_ul_bp.lista_locais') }}" class="btn btn-outline-primary w-100 py-4 fs-5">
                 <i class="bi bi-building"></i> Locais
             </a>
         </div>
 
         <div class="col">
-            <a href="{{ url_for('grupo_bp.lista_grupos') }}" class="btn btn-outline-dark w-100 py-4 fs-5">
+            <a href="{{ url_for('grupo_bp.lista_grupos') }}" class="btn btn-outline-success w-100 py-4 fs-5">
                 <i class="bi bi-tags"></i> Grupos de Itens
             </a>
         </div>
 
         <div class="col">
-            <a href="{{ url_for('nd_bp.lista_nd') }}" class="btn btn-outline-dark w-100 py-4 fs-5">
+            <a href="{{ url_for('nd_bp.lista_nd') }}" class="btn btn-outline-info w-100 py-4 fs-5">
                 <i class="bi bi-cash-coin"></i> Naturezas de Despesa
             </a>
         </div>

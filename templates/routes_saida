@@ -1,0 +1,65 @@
+# routes_saida.py
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask_login import login_required
+from models import db, Item, SaidaMaterial, SaidaItem, Fornecedor
+from datetime import datetime
+
+# Criação do blueprint de saída
+saida_bp = Blueprint('saida_bp', __name__)
+
+# ------------------------------ LISTAGEM DE SAÍDAS ------------------------------ #
+@saida_bp.route('/saidas')
+@login_required
+def lista_saidas():
+    saidas = SaidaMaterial.query.order_by(SaidaMaterial.data_saida.desc()).all()
+    return render_template('lista_saida.html', saidas=saidas)
+
+# ------------------------------ NOVA SAÍDA ------------------------------ #
+@saida_bp.route('/saidas/nova', methods=['GET', 'POST'])
+@login_required
+def nova_saida():
+    itens = Item.query.all()
+
+    if request.method == 'POST':
+        # Criação do objeto de saída
+        nova_saida = SaidaMaterial(
+            data_saida=datetime.strptime(request.form['data_saida'], '%Y-%m-%d'),
+            destino=request.form['destino'],
+            responsavel=request.form['responsavel']
+        )
+        db.session.add(nova_saida)
+        db.session.flush()  # Garante que nova_saida.id esteja disponível
+
+        # Laço para processar os itens da saída
+        for i in range(len(request.form.getlist('item_id'))):
+            item_id = int(request.form.getlist('item_id')[i])
+            quantidade = int(request.form.getlist('quantidade')[i])
+
+            item = Item.query.get(item_id)
+
+            if item and quantidade > 0 and item.estoque_atual >= quantidade:
+                valor_unitario = item.valor_unitario or 0
+                valor_total = quantidade * valor_unitario
+
+                # Subtrai a quantidade do estoque
+                item.estoque_atual -= quantidade
+                item.saldo_financeiro -= valor_total
+
+                saida_item = SaidaItem(
+                    saida_id=nova_saida.id,
+                    item_id=item_id,
+                    quantidade=quantidade,
+                    valor_unitario=valor_unitario,
+                    valor_total=valor_total
+                )
+                db.session.add(saida_item)
+            else:
+                flash(f"Erro: estoque insuficiente para o item {item.nome}.", 'danger')
+                db.session.rollback()
+                return redirect(url_for('saida_bp.nova_saida'))
+
+        db.session.commit()
+        flash('Saída registrada com sucesso.', 'success')
+        return redirect(url_for('saida_bp.lista_saidas'))
+
+    return render_template('nova_saida.html', itens=itens)

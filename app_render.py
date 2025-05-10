@@ -6,6 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from dotenv import load_dotenv
+from werkzeug.security import generate_password_hash
 import os
 
 # -------------------- Carrega variáveis de ambiente --------------------
@@ -47,11 +48,11 @@ def create_app():
     with app.app_context():
         db.create_all()
 
-        # Garante que os três perfis padrões existam
-        perfis_padrao = ['Administrador', 'Consultor', 'Solicitante']
-        for nome_perfil in perfis_padrao:
-            if not Perfil.query.filter_by(nome=nome_perfil).first():
-                db.session.add(Perfil(nome=nome_perfil))
+        # Criação dos perfis padrão, se não existirem
+        perfis_padrao = ['Administrador', 'Solicitante', 'Consultor']
+        for nome in perfis_padrao:
+            if not Perfil.query.filter_by(nome=nome).first():
+                db.session.add(Perfil(nome=nome))
         db.session.commit()
 
         # Criação do usuário administrador, se não existir
@@ -60,7 +61,7 @@ def create_app():
             admin = Usuario(
                 nome='Administrador',
                 email='admin@admin.com',
-                senha='admin',
+                senha=generate_password_hash('admin'),  # Senha criptografada
                 perfil_id=perfil_admin.id
             )
             db.session.add(admin)

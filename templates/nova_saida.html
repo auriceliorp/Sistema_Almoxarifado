@@ -1,34 +1,34 @@
-{# nova_saida.html - Tela de registro de saída de materiais #}
 {% extends 'base_simplificada.html' %}
-
 {% block content %}
 <div class="container mt-4">
-  <h2 class="mb-4">Registrar Saída de Materiais</h2>
+  <h2 class="mb-4">Registrar Saída de Material</h2>
 
-  <form method="POST">
-    <div class="row mb-3">
-      <div class="col-md-4">
-        <label for="data_movimento" class="form-label">Data da Saída</label>
-        <input type="date" class="form-control" name="data_movimento" id="data_movimento" value="{{ current_date }}">
-      </div>
-      <div class="col-md-4">
-        <label for="numero_documento" class="form-label">Nº do Documento</label>
-        <input type="text" class="form-control" name="numero_documento" id="numero_documento">
-      </div>
-      <div class="col-md-4">
-        <label for="observacao" class="form-label">Observação</label>
-        <input type="text" class="form-control" name="observacao" id="observacao">
-      </div>
+  <form method="post">
+    <!-- Data da saída -->
+    <div class="mb-3">
+      <label for="data_saida" class="form-label">Data da Saída *</label>
+      <input type="date" class="form-control" id="data_saida" name="data_saida" required>
+    </div>
+
+    <!-- Número do documento ou requisição -->
+    <div class="mb-3">
+      <label for="documento" class="form-label">Número do Documento / Requisição *</label>
+      <input type="text" class="form-control" id="documento" name="documento" required>
+    </div>
+
+    <!-- Responsável pela retirada -->
+    <div class="mb-3">
+      <label for="responsavel" class="form-label">Responsável pela Retirada *</label>
+      <input type="text" class="form-control" id="responsavel" name="responsavel" required>
     </div>
 
     <hr>
-    <h5>Itens</h5>
 
+    <h5>Itens da Saída</h5>
     <div id="itens-container">
-      {% for i in range(1, 4) %}
-      <div class="row mb-2">
+      <div class="row mb-2" id="item_1">
         <div class="col-md-5">
-          <select class="form-select" name="item_{{ i }}">
+          <select class="form-select" name="item_1" required>
             <option value="">Selecione o Item</option>
             {% for item in itens %}
               <option value="{{ item.id }}">{{ item.nome }} ({{ item.codigo_sap }})</option>
@@ -36,17 +36,69 @@
           </select>
         </div>
         <div class="col-md-3">
-          <input type="number" class="form-control" name="quantidade_{{ i }}" placeholder="Quantidade" min="1">
+          <input type="number" class="form-control" name="quantidade_1" placeholder="Quantidade" min="1" required>
         </div>
         <div class="col-md-3">
-          <input type="number" class="form-control" name="valor_unitario_{{ i }}" placeholder="Valor Unitário" step="0.01">
+          <input type="number" class="form-control" name="valor_unitario_1" placeholder="Valor Unitário" step="0.01" required>
+        </div>
+        <div class="col-md-1">
+          <button type="button" class="btn btn-danger" onclick="removerItem(1)">X</button>
         </div>
       </div>
-      {% endfor %}
     </div>
 
+    <!-- Campo oculto para contar os itens -->
+    <input type="hidden" id="contador_itens" name="contador_itens" value="1">
+
+    <!-- Botão para adicionar novo item -->
+    <button type="button" class="btn btn-secondary mt-2" onclick="adicionarItem()">+ Adicionar Item</button>
+
+    <hr>
+    <!-- Botão de submissão -->
     <button type="submit" class="btn btn-primary mt-3">Registrar Saída</button>
-    <a href="{{ url_for('saida_bp.lista_saidas') }}" class="btn btn-secondary mt-3">Cancelar</a>
+    <a href="{{ url_for('saida.lista_saidas') }}" class="btn btn-outline-secondary mt-3">Cancelar</a>
   </form>
 </div>
+
+<script>
+let contador = 1;
+
+function adicionarItem() {
+  contador++;
+  document.getElementById("contador_itens").value = contador;
+
+  const container = document.getElementById("itens-container");
+
+  const html = `
+  <div class="row mb-2" id="item_${contador}">
+    <div class="col-md-5">
+      <select class="form-select" name="item_${contador}" required>
+        <option value="">Selecione o Item</option>
+        {% for item in itens %}
+          <option value="{{ item.id }}">{{ item.nome }} ({{ item.codigo_sap }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <input type="number" class="form-control" name="quantidade_${contador}" placeholder="Quantidade" min="1" required>
+    </div>
+    <div class="col-md-3">
+      <input type="number" class="form-control" name="valor_unitario_${contador}" placeholder="Valor Unitário" step="0.01" required>
+    </div>
+    <div class="col-md-1">
+      <button type="button" class="btn btn-danger" onclick="removerItem(${contador})">X</button>
+    </div>
+  </div>
+  `;
+
+  container.insertAdjacentHTML("beforeend", html);
+}
+
+function removerItem(id) {
+  const item = document.getElementById("item_" + id);
+  if (item) {
+    item.remove();
+  }
+}
+</script>
 {% endblock %}

@@ -73,3 +73,13 @@ def nova_saida():
         return redirect(url_for('saida_bp.lista_saidas'))
 
     return render_template('nova_saida.html', itens=itens)
+
+# ------------------------------ REQUISIÇÃO DE SAÍDA (IMPRIMIR) ------------------------------ #
+@saida_bp.route('/requisicao/<int:saida_id>')
+@login_required
+def requisicao_saida(saida_id):
+    """
+    Gera a requisição de saída em HTML para visualização e impressão.
+    """
+    saida = SaidaMaterial.query.get_or_404(saida_id)
+    return render_template('requisicao_saida.html', saida=saida)

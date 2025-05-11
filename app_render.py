@@ -7,6 +7,7 @@ from flask_login import LoginManager
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
+from sqlalchemy import text
 import os
 
 # -------------------- Carrega variáveis de ambiente --------------------
@@ -47,6 +48,14 @@ def create_app():
     # -------------------- Cria tabelas e dados iniciais --------------------
     with app.app_context():
         db.create_all()
+
+        # 🔴 NOVO: exclui tabela 'usuarios' se ainda existir (erro herdado antigo)
+        try:
+            db.session.execute(text("DROP TABLE IF EXISTS usuarios;"))
+            db.session.commit()
+            print("Tabela 'usuarios' removida com sucesso.")
+        except Exception as e:
+            print(f"Erro ao remover tabela 'usuarios': {e}")
 
         # Criação dos perfis padrão, se não existirem
         perfis_padrao = ['Administrador', 'Solicitante', 'Consultor']

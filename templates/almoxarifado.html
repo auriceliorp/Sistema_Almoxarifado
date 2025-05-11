@@ -3,94 +3,94 @@
 {% block title %}Gestão de Materiais - CTAA{% endblock %}
 
 {% block content %}
-<div class="container py-4">
 
-    {# ------------------------------ CABEÇALHO COM NAVEGAÇÃO ------------------------------ #}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">
-            <i class="bi bi-house-door"></i> Início
-        </a>
-        <h4 class="mb-0 text-success fw-bold">Sistema de Gestão de Almoxarifado</h4>
-        <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">
-            <i class="bi bi-box-arrow-right"></i> Sair
+<div class="container py-4">{# ------------------------------ CABEÇALHO COM NAVEGAÇÃO ------------------------------ #}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">
+        <i class="bi bi-house-door"></i> Início
+    </a>
+    <h4 class="mb-0 text-success fw-bold">Sistema de Gestão de Almoxarifado</h4>
+    <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">
+        <i class="bi bi-box-arrow-right"></i> Sair
+    </a>
+</div>
+
+{# ------------------------------ GRID DE BOTÕES DE ACESSO A FUNCIONALIDADES ------------------------------ #}
+<div class="row row-cols-1 row-cols-md-2 g-4">
+
+    <div class="col">
+        <a href="{{ url_for('usuario_bp.lista_usuarios') }}" class="btn btn-outline-primary w-100 py-4 fs-5">
+            <i class="bi bi-people"></i> Usuários
         </a>
     </div>
 
-    {# ------------------------------ GRID DE BOTÕES DE ACESSO A FUNCIONALIDADES ------------------------------ #}
-    <div class="row row-cols-1 row-cols-md-2 g-4">
-
-        <div class="col">
-            <a href="{{ url_for('usuario_bp.lista_usuarios') }}" class="btn btn-outline-primary w-100 py-4 fs-5">
-                <i class="bi bi-people"></i> Usuários
-            </a>
-        </div>
-
-        <div class="col">
-            <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="btn btn-outline-success w-100 py-4 fs-5">
-                <i class="bi bi-truck"></i> Fornecedores
-            </a>
-        </div>
-
-        <div class="col">
-            <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-outline-info w-100 py-4 fs-5">
-                <i class="bi bi-box-seam"></i> Itens
-            </a>
-        </div>
-
-        <div class="col">
-            <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="btn btn-outline-dark w-100 py-4 fs-5">
-                <i class="bi bi-journal-arrow-down"></i> Entrada de Materiais
-            </a>
-        </div>
-
-        <div class="col">
-            <a href="{{ url_for('saida_bp.lista_saidas') }}" class="btn btn-outline-danger w-100 py-4 fs-5">
-                <i class="bi bi-journal-arrow-up"></i> Saída de Materiais
-            </a>
-        </div>
-
-        <div class="col">
-            <a href="{{ url_for('area_ul_bp.lista_uls') }}" class="btn btn-outline-primary w-100 py-4 fs-5">
-                <i class="bi bi-geo-alt"></i> Unidades Locais (UL)
-            </a>
-        </div>
-
-        <div class="col">
-            <a href="{{ url_for('area_ul_bp.lista_locais') }}" class="btn btn-outline-primary w-100 py-4 fs-5">
-                <i class="bi bi-building"></i> Locais
-            </a>
-        </div>
-
-        <div class="col">
-            <a href="{{ url_for('grupo_bp.lista_grupos') }}" class="btn btn-outline-success w-100 py-4 fs-5">
-                <i class="bi bi-tags"></i> Grupos de Itens
-            </a>
-        </div>
-
-        <div class="col">
-            <a href="{{ url_for('nd_bp.lista_nd') }}" class="btn btn-outline-info w-100 py-4 fs-5">
-                <i class="bi bi-cash-coin"></i> Naturezas de Despesa
-            </a>
-        </div>
-
-        <div class="col">
-            <a href="https://linktr.ee/ctaa.sps" target="_blank" rel="noopener noreferrer" class="btn btn-outline-success w-100 py-4 fs-5">
-                <i class="bi bi-link-45deg"></i> Linktree CTAA - SPS
-            </a>
-        </div>
-
-        <div class="col">
-            <button class="btn btn-outline-secondary w-100 py-4 fs-5" disabled>
-                <i class="bi bi-bar-chart-line"></i> Relatórios
-            </button>
-        </div>
-
-        <div class="col">
-            <button class="btn btn-outline-secondary w-100 py-4 fs-5" disabled>
-                <i class="bi bi-gear"></i> Cadastro de Apoio
-            </button>
-        </div>
-
+    <div class="col">
+        <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="btn btn-outline-success w-100 py-4 fs-5">
+            <i class="bi bi-truck"></i> Fornecedores
+        </a>
     </div>
+
+    <div class="col">
+        <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-outline-info w-100 py-4 fs-5">
+            <i class="bi bi-box-seam"></i> Itens
+        </a>
+    </div>
+
+    <div class="col">
+        <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="btn btn-outline-dark w-100 py-4 fs-5">
+            <i class="bi bi-journal-arrow-down"></i> Entrada de Materiais
+        </a>
+    </div>
+
+    <div class="col">
+        <a href="{{ url_for('saida_bp.lista_saidas') }}" class="btn btn-outline-danger w-100 py-4 fs-5">
+            <i class="bi bi-journal-arrow-up"></i> Saída de Materiais
+        </a>
+    </div>
+
+    <div class="col">
+        <a href="{{ url_for('area_ul_bp.lista_uls') }}" class="btn btn-outline-primary w-100 py-4 fs-5">
+            <i class="bi bi-geo-alt"></i> Unidades Locais (UL)
+        </a>
+    </div>
+
+    <div class="col">
+        <a href="{{ url_for('area_ul_bp.lista_locais') }}" class="btn btn-outline-primary w-100 py-4 fs-5">
+            <i class="bi bi-building"></i> Locais
+        </a>
+    </div>
+
+    <div class="col">
+        <a href="{{ url_for('grupo_bp.lista_grupos') }}" class="btn btn-outline-success w-100 py-4 fs-5">
+            <i class="bi bi-tags"></i> Grupos de Itens
+        </a>
+    </div>
+
+    <div class="col">
+        <a href="{{ url_for('nd_bp.lista_nd') }}" class="btn btn-outline-info w-100 py-4 fs-5">
+            <i class="bi bi-cash-coin"></i> Naturezas de Despesa
+        </a>
+    </div>
+
+    <div class="col">
+        <a href="{{ url_for('relatorio_bp.mapa_fechamento') }}" class="btn btn-outline-warning w-100 py-4 fs-5">
+            <i class="bi bi-file-bar-graph"></i> Mapa de Fechamento Mensal
+        </a>
+    </div>
+
+    <div class="col">
+        <button class="btn btn-outline-secondary w-100 py-4 fs-5" disabled>
+            <i class="bi bi-bar-chart-line"></i> Relatórios
+        </button>
+    </div>
+
+    <div class="col">
+        <button class="btn btn-outline-secondary w-100 py-4 fs-5" disabled>
+            <i class="bi bi-gear"></i> Cadastro de Apoio
+        </button>
+    </div>
+
+</div>
+
 </div>
 {% endblock %}

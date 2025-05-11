@@ -1,16 +1,14 @@
 # routes_entrada.py
-# Rotas para entrada de materiais, incluindo atualização de saldo e valor unitário
+# Rotas para entrada de materiais, incluindo atualização de saldo e natureza de despesa
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from app_render import db
-from models import Fornecedor, Item, EntradaMaterial, EntradaItem
+from models import Fornecedor, Item, EntradaMaterial, EntradaItem, NaturezaDespesa
 from datetime import datetime
 
-# Criação do blueprint da entrada
 entrada_bp = Blueprint('entrada_bp', __name__, template_folder='templates')
 
-# ------------------------------ ROTA: Nova Entrada ------------------------------ #
 @entrada_bp.route('/entrada/nova', methods=['GET', 'POST'])
 @login_required
 def nova_entrada():
@@ -19,27 +17,16 @@ def nova_entrada():
 
     if request.method == 'POST':
         try:
-            # Coleta dados gerais do formulário
-            data_movimento_str = request.form.get('data_movimento')
-            data_nota_str = request.form.get('data_nota_fiscal')
+            # Coleta os dados do formulário
+            data_movimento = datetime.strptime(request.form.get('data_movimento'), '%Y-%m-%d')
+            data_nota_fiscal = datetime.strptime(request.form.get('data_nota_fiscal'), '%Y-%m-%d')
             numero_nota_fiscal = request.form.get('numero_nota_fiscal')
             fornecedor_id = request.form.get('fornecedor')
 
-            # Converte datas
-            data_movimento = datetime.strptime(data_movimento_str, '%Y-%m-%d')
-            data_nota_fiscal = datetime.strptime(data_nota_str, '%Y-%m-%d')
-
-            # Coleta listas dos campos dos itens
             item_ids = request.form.getlist('item_id[]')
             quantidades = request.form.getlist('quantidade[]')
             valores_unitarios = request.form.getlist('valor_unitario[]')
 
-            # Verifica se há pelo menos um item preenchido
-            if not item_ids or not quantidades or not valores_unitarios:
-                flash('Informe pelo menos um item válido.', 'warning')
-                return redirect(url_for('entrada_bp.nova_entrada'))
-
-            # Cria a entrada principal
             nova_entrada = EntradaMaterial(
                 data_movimento=data_movimento,
                 data_nota_fiscal=data_nota_fiscal,
@@ -48,58 +35,53 @@ def nova_entrada():
                 usuario_id=current_user.id
             )
             db.session.add(nova_entrada)
-            db.session.flush()  # Garante que nova_entrada.id esteja disponível
+            db.session.flush()
 
-            # Processa todos os itens informados
             for i in range(len(item_ids)):
                 if not item_ids[i] or not quantidades[i] or not valores_unitarios[i]:
-                    continue  # Pula linha se algum campo estiver vazio
+                    continue
 
-                try:
-                    quantidade = int(quantidades[i])
-                    valor_unitario = float(valores_unitarios[i])
-                except ValueError:
-                    flash(f'Erro no item {i+1}: valor inválido.', 'danger')
-                    db.session.rollback()
-                    return redirect(url_for('entrada_bp.nova_entrada'))
-
-                # Cria item vinculado à entrada
-                entrada_item = EntradaItem(
-                    entrada_id=nova_entrada.id,
-                    item_id=item_ids[i],
-                    quantidade=quantidade,
-                    valor_unitario=valor_unitario
-                )
-                db.session.add(entrada_item)
-
-                # Atualiza o estoque e saldo do item
+                quantidade = int(quantidades[i])
+                valor_unitario = float(valores_unitarios[i])
                 item = Item.query.get(item_ids[i])
+
                 if item:
+                    # Cria o item da entrada
+                    entrada_item = EntradaItem(
+                        entrada_id=nova_entrada.id,
+                        item_id=item.id,
+                        quantidade=quantidade,
+                        valor_unitario=valor_unitario
+                    )
+                    db.session.add(entrada_item)
+
+                    # Atualiza o saldo do item
                     item.estoque_atual += quantidade
                     item.saldo_financeiro += quantidade * valor_unitario
                     if item.estoque_atual > 0:
                         item.valor_unitario = item.saldo_financeiro / item.estoque_atual
 
-            # Confirma tudo
+                    # Atualiza o valor da natureza de despesa
+                    if item.grupo and item.grupo.natureza:
+                        item.grupo.natureza.valor += quantidade * valor_unitario
+
             db.session.commit()
-            flash('Entrada de material registrada com sucesso.', 'success')
+            flash('Entrada registrada com sucesso.', 'success')
             return redirect(url_for('entrada_bp.lista_entradas'))
 
         except Exception as e:
             db.session.rollback()
-            flash(f'Erro inesperado ao registrar entrada: {str(e)}', 'danger')
-            print("Erro ao salvar entrada:", str(e))
+            flash(f'Erro: {e}', 'danger')
+            print(e)
 
     return render_template('nova_entrada.html', fornecedores=fornecedores, itens=itens)
 
-# ------------------------------ ROTA: Lista de Entradas ------------------------------ #
 @entrada_bp.route('/entrada/lista')
 @login_required
 def lista_entradas():
     entradas = EntradaMaterial.query.order_by(EntradaMaterial.data_movimento.desc()).all()
     return render_template('lista_entrada.html', entradas=entradas)
 
-# ------------------------------ ROTA: Visualizar Entrada ------------------------------ #
 @entrada_bp.route('/entrada/<int:entrada_id>')
 @login_required
 def visualizar_entrada(entrada_id):

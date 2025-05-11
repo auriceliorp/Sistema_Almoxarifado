@@ -3,7 +3,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
 from werkzeug.security import generate_password_hash
-from database import db
+from app_render import db
 from models import Usuario, Perfil, UnidadeLocal
 
 # Criação do blueprint para rotas de usuários

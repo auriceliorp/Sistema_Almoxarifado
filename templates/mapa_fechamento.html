@@ -1,62 +1,57 @@
 {% extends 'base_simplificada.html' %}
-{% block title %}Mapa de Fechamento Mensal{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  <h4 class="mb-4">Mapa de Fechamento Mensal</h4>
+<div class="container mt-4">
+    <h2 class="mb-4">Mapa de Fechamento Mensal</h2>
 
-  <form method="get" class="row g-3 mb-4">
-    <div class="col-md-3">
-      <label class="form-label">Mês</label>
-      <select name="mes" class="form-select">
-        {% for m in range(1, 13) %}
-          <option value="{{ m }}" {% if m == mes %}selected{% endif %}>{{ m }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="col-md-3">
-      <label class="form-label">Ano</label>
-      <input type="number" name="ano" class="form-control" value="{{ ano }}" min="2000" max="2100">
-    </div>
-    <div class="col-md-3 align-self-end">
-      <button type="submit" class="btn btn-primary">Filtrar</button>
-    </div>
-  </form>
+    <form method="get" class="row g-3 mb-4">
+        <div class="col-md-3">
+            <label for="mes" class="form-label">Mês</label>
+            <select id="mes" name="mes" class="form-select">
+                {% for m in range(1, 13) %}
+                    <option value="{{ m }}" {% if m == mes %}selected{% endif %}>{{ m }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="ano" class="form-label">Ano</label>
+            <input type="number" id="ano" name="ano" class="form-control" value="{{ ano }}">
+        </div>
+        <div class="col-md-3 align-self-end">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+        </div>
+    </form>
 
-  <div class="table-responsive">
-    <table class="table table-bordered align-middle">
-      <thead class="table-light">
-        <tr>
-          <th>Natureza de Despesa</th>
-          <th>Saldo Inicial (R$)</th>
-          <th>Entradas (R$)</th>
-          <th>Saídas (R$)</th>
-          <th>Saldo Final (R$)</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for linha in dados %}
-        <tr>
-          <td>{{ linha.nd.codigo }} - {{ linha.nd.nome }}</td>
-          <td>{{ '%.2f'|format(linha.saldo_inicial) }}</td>
-          <td>{{ '%.2f'|format(linha.entrada) }}</td>
-          <td>{{ '%.2f'|format(linha.saida) }}</td>
-          <td>{{ '%.2f'|format(linha.saldo_final) }}</td>
-        </tr>
-        {% endfor %}
-        <tr class="fw-bold bg-light">
-          <td>Total Geral</td>
-          <td>{{ '%.2f'|format(total_inicial) }}</td>
-          <td>{{ '%.2f'|format(total_entradas) }}</td>
-          <td>{{ '%.2f'|format(total_saidas) }}</td>
-          <td>{{ '%.2f'|format(total_final) }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="text-end mt-3">
-    <button onclick="window.print()" class="btn btn-outline-secondary">Imprimir</button>
-  </div>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Natureza de Despesa</th>
+                    <th>Saldo Inicial</th>
+                    <th>Entradas</th>
+                    <th>Saídas</th>
+                    <th>Saldo Final</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for linha in relatorio %}
+                    <tr>
+                        <td>{{ linha['nd_nome'] }}</td>
+                        <td>{{ '%.2f'|format(linha['saldo_inicial']) }}</td>
+                        <td>{{ '%.2f'|format(linha['entradas']) }}</td>
+                        <td>{{ '%.2f'|format(linha['saidas']) }}</td>
+                        <td>{{ '%.2f'|format(linha['saldo_final']) }}</td>
+                    </tr>
+                {% endfor %}
+                <tr class="fw-bold table-secondary">
+                    <td>Total Geral</td>
+                    <td>{{ '%.2f'|format(total_inicial) }}</td>
+                    <td>{{ '%.2f'|format(total_entrada) }}</td>
+                    <td>{{ '%.2f'|format(total_saida) }}</td>
+                    <td>{{ '%.2f'|format(total_final) }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}

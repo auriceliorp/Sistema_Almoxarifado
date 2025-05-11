@@ -6,7 +6,7 @@ from flask_login import login_required
 from datetime import datetime
 from sqlalchemy import func
 from app_render import db
-from models import NaturezaDespesa, GrupoItem, Item, EntradaItem, EntradaMaterial, SaidaItem, SaidaMaterial
+from models import NaturezaDespesa, Grupo, Item, EntradaItem, EntradaMaterial, SaidaItem, SaidaMaterial
 
 # Criação do blueprint
 relatorio_bp = Blueprint('relatorio_bp', __name__, template_folder='templates')

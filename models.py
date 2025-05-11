@@ -5,12 +5,12 @@ from datetime import datetime
 
 # ------------------- USUÁRIO E PERFIL -------------------
 class Perfil(db.Model):
-    __tablename__ = 'perfil'  # Tabela agora é singular
+    __tablename__ = 'perfil'
     id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(50), nullable=False, unique=True)  # Evita duplicados
+    nome = db.Column(db.String(50), nullable=False, unique=True)
 
 class Usuario(UserMixin, db.Model):
-    __tablename__ = 'usuario'
+    __tablename__ = 'usuarios'  # Tabela definitiva
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -19,7 +19,7 @@ class Usuario(UserMixin, db.Model):
     ramal = db.Column(db.String(20))
     unidade_local_id = db.Column(db.Integer, db.ForeignKey('unidade_local.id'))
     unidade_local = db.relationship('UnidadeLocal', back_populates='usuarios')
-    perfil_id = db.Column(db.Integer, db.ForeignKey('perfil.id'))  # Referência ajustada
+    perfil_id = db.Column(db.Integer, db.ForeignKey('perfil.id'))
     perfil = db.relationship('Perfil', backref='usuarios')
     senha_temporaria = db.Column(db.Boolean, default=True)
 
@@ -113,11 +113,10 @@ class EntradaMaterial(db.Model):
     fornecedor_id = db.Column(db.Integer, db.ForeignKey('fornecedores.id'), nullable=False)
     fornecedor = db.relationship('Fornecedor', backref='entradas')
 
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
     usuario = db.relationship('Usuario', backref='entradas')
 
     itens = db.relationship('EntradaItem', backref='entrada_material', cascade="all, delete-orphan")
-
 
 class EntradaItem(db.Model):
     __tablename__ = 'entrada_item'
@@ -140,7 +139,7 @@ class SaidaMaterial(db.Model):
     numero_documento = db.Column(db.String(50), nullable=True)
     observacao = db.Column(db.Text, nullable=True)
 
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
     usuario = db.relationship('Usuario', backref='saidas')
 
     itens = db.relationship('SaidaItem', backref='saida', cascade='all, delete-orphan')
@@ -154,3 +153,4 @@ class SaidaItem(db.Model):
 
     saida_id = db.Column(db.Integer, db.ForeignKey('saida_material.id'), nullable=False)
     item = db.relationship('Item')
+

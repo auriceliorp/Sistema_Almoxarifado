@@ -35,7 +35,7 @@ def mapa_fechamento():
 
         for nd in nds:
             # Recupera grupos vinculados à ND
-            grupos = GrupoItem.query.filter_by(natureza_despesa_id=nd.id).all()
+            grupos = Grupo.query.filter_by(natureza_despesa_id=nd.id).all()
             grupo_ids = [g.id for g in grupos]
 
             if not grupo_ids:

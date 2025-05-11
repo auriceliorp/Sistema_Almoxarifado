@@ -1,5 +1,4 @@
 {% extends 'base_simplificada.html' %}
-
 {% block title %}Mapa de Fechamento Mensal{% endblock %}
 
 {% block content %}
@@ -8,16 +7,16 @@
 
   <form method="get" class="row g-3 mb-4">
     <div class="col-md-3">
-      <label for="mes" class="form-label">Mês</label>
-      <select id="mes" name="mes" class="form-select" required>
-        {% for num, nome in meses %}
-        <option value="{{ num }}" {% if num == mes %}selected{% endif %}>{{ nome }}</option>
+      <label class="form-label">Mês</label>
+      <select name="mes" class="form-select">
+        {% for m in range(1, 13) %}
+          <option value="{{ m }}" {% if m == mes %}selected{% endif %}>{{ m }}</option>
         {% endfor %}
       </select>
     </div>
     <div class="col-md-3">
-      <label for="ano" class="form-label">Ano</label>
-      <input type="number" id="ano" name="ano" class="form-control" value="{{ ano }}" required>
+      <label class="form-label">Ano</label>
+      <input type="number" name="ano" class="form-control" value="{{ ano }}" min="2000" max="2100">
     </div>
     <div class="col-md-3 align-self-end">
       <button type="submit" class="btn btn-primary">Filtrar</button>
@@ -25,7 +24,7 @@
   </form>
 
   <div class="table-responsive">
-    <table class="table table-bordered align-middle text-center">
+    <table class="table table-bordered align-middle">
       <thead class="table-light">
         <tr>
           <th>Natureza de Despesa</th>
@@ -36,24 +35,28 @@
         </tr>
       </thead>
       <tbody>
-        {% for linha in relatorio %}
+        {% for linha in dados %}
         <tr>
-          <td>{{ linha.nome }}</td>
+          <td>{{ linha.nd.codigo }} - {{ linha.nd.nome }}</td>
           <td>{{ '%.2f'|format(linha.saldo_inicial) }}</td>
-          <td>{{ '%.2f'|format(linha.entradas) }}</td>
-          <td>{{ '%.2f'|format(linha.saidas) }}</td>
+          <td>{{ '%.2f'|format(linha.entrada) }}</td>
+          <td>{{ '%.2f'|format(linha.saida) }}</td>
           <td>{{ '%.2f'|format(linha.saldo_final) }}</td>
         </tr>
         {% endfor %}
-        <tr class="table-light fw-bold">
+        <tr class="fw-bold bg-light">
           <td>Total Geral</td>
-          <td>{{ '%.2f'|format(total_geral.saldo_inicial) }}</td>
-          <td>{{ '%.2f'|format(total_geral.entradas) }}</td>
-          <td>{{ '%.2f'|format(total_geral.saidas) }}</td>
-          <td>{{ '%.2f'|format(total_geral.saldo_final) }}</td>
+          <td>{{ '%.2f'|format(total_inicial) }}</td>
+          <td>{{ '%.2f'|format(total_entradas) }}</td>
+          <td>{{ '%.2f'|format(total_saidas) }}</td>
+          <td>{{ '%.2f'|format(total_final) }}</td>
         </tr>
       </tbody>
     </table>
+  </div>
+
+  <div class="text-end mt-3">
+    <button onclick="window.print()" class="btn btn-outline-secondary">Imprimir</button>
   </div>
 </div>
 {% endblock %}

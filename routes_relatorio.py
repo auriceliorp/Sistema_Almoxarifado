@@ -1,86 +1,77 @@
-# routes_relatorio.py
-# Rotas para geração de relatórios
+routes_relatorio.py
 
-from flask import Blueprint, render_template, request
-from flask_login import login_required
-from app_render import db
-from models import NaturezaDespesa, Grupo, EntradaItem, EntradaMaterial, SaidaItem, SaidaMaterial
-from sqlalchemy import extract, func
-from decimal import Decimal
+Relatório de Mapa de Fechamento Mensal por ND
 
-# Criação do blueprint
-relatorio_bp = Blueprint('relatorio_bp', __name__, template_folder='templates')
+from flask import Blueprint, render_template, request from flask_login import login_required from sqlalchemy import extract, func from app_render import db from models import NaturezaDespesa, EntradaItem, SaidaItem, Item, Grupo from datetime import datetime
 
-# ------------------------------ ROTA: Mapa de Fechamento Mensal ------------------------------ #
-@relatorio_bp.route('/relatorio/mapa_fechamento', methods=['GET'])
-@login_required
-def mapa_fechamento():
-    mes = request.args.get('mes', type=int)
-    ano = request.args.get('ano', type=int)
+relatorio_bp = Blueprint('relatorio_bp', name, template_folder='templates')
 
-    relatorio = []
+@relatorio_bp.route('/relatorio/mapa_fechamento', methods=['GET']) @login_required def mapa_fechamento(): # Obtém mês e ano do filtro ou usa o mês/ano atual mes = request.args.get('mes', default=None, type=int) ano = request.args.get('ano', default=None, type=int)
 
-    if mes and ano:
-        naturezas = NaturezaDespesa.query.all()
+# Lista de anos disponíveis (a partir de dados ou fixo)
+anos_disponiveis = [ano[0] for ano in db.session.query(func.extract('year', EntradaItem.data_movimento)).distinct()]
+anos_disponiveis = sorted(list(set(anos_disponiveis + [datetime.now().year])))
 
-        for nd in naturezas:
-            linha = {}
-            linha['nd_id'] = nd.id
-            linha['nd_nome'] = nd.nome  # CORREÇÃO ESSENCIAL
+# Recupera todas as ND
+nds = NaturezaDespesa.query.order_by(NaturezaDespesa.nome).all()
+relatorio = []
 
-            grupos = Grupo.query.filter_by(natureza_despesa_id=nd.id).all()
-            grupo_ids = [g.id for g in grupos]
+# Inicializa totais gerais
+total_inicial = 0
+total_entradas = 0
+total_saidas = 0
+total_final = 0
 
-            # ENTRADAS
-            entradas = (
-                db.session.query(func.coalesce(func.sum(EntradaItem.quantidade * EntradaItem.valor_unitario), 0))
-                .join(EntradaMaterial)
-                .join(EntradaItem.item)
-                .filter(
-                    EntradaItem.item.has(Grupo.id.in_(grupo_ids)),
-                    extract('month', EntradaMaterial.data_movimento) == mes,
-                    extract('year', EntradaMaterial.data_movimento) == ano
-                )
-                .scalar()
-            )
+for nd in nds:
+    # Somatório de entradas no mês selecionado
+    entradas_query = db.session.query(func.coalesce(func.sum(EntradaItem.quantidade * EntradaItem.valor_unitario), 0))\
+        .join(Item, EntradaItem.item_id == Item.id)\
+        .join(Grupo, Item.grupo_id == Grupo.id)\
+        .filter(Grupo.natureza_despesa_id == nd.id)
 
-            # SAÍDAS
-            saidas = (
-                db.session.query(func.coalesce(func.sum(SaidaItem.quantidade * SaidaItem.valor_unitario), 0))
-                .join(SaidaMaterial)
-                .join(SaidaItem.item)
-                .filter(
-                    SaidaItem.item.has(Grupo.id.in_(grupo_ids)),
-                    extract('month', SaidaMaterial.data_movimento) == mes,
-                    extract('year', SaidaMaterial.data_movimento) == ano
-                )
-                .scalar()
-            )
+    if mes:
+        entradas_query = entradas_query.filter(extract('month', EntradaItem.data_movimento) == mes)
+    if ano:
+        entradas_query = entradas_query.filter(extract('year', EntradaItem.data_movimento) == ano)
 
-            entradas = float(entradas or 0)
-            saidas = float(saidas or 0)
+    entradas = entradas_query.scalar() or 0
 
-            linha['saldo_inicial'] = 0.0
-            linha['entradas'] = entradas
-            linha['saidas'] = saidas
-            linha['saldo_final'] = entradas - saidas
+    # Somatório de saídas no mês selecionado
+    saidas_query = db.session.query(func.coalesce(func.sum(SaidaItem.quantidade * SaidaItem.valor_unitario), 0))\
+        .join(Item, SaidaItem.item_id == Item.id)\
+        .join(Grupo, Item.grupo_id == Grupo.id)\
+        .filter(Grupo.natureza_despesa_id == nd.id)
 
-            relatorio.append(linha)
+    if mes:
+        saidas_query = saidas_query.filter(extract('month', SaidaItem.data_movimento) == mes)
+    if ano:
+        saidas_query = saidas_query.filter(extract('year', SaidaItem.data_movimento) == ano)
 
-        # TOTAIS GERAIS
-        total_entradas = sum(r['entradas'] for r in relatorio)
-        total_saidas = sum(r['saidas'] for r in relatorio)
-        total_saldo_inicial = sum(r['saldo_inicial'] for r in relatorio)
-        total_saldo_final = sum(r['saldo_final'] for r in relatorio)
-    else:
-        relatorio = []
-        total_entradas = total_saidas = total_saldo_inicial = total_saldo_final = 0.0
+    saidas = saidas_query.scalar() or 0
 
-    return render_template('mapa_fechamento.html',
-                           relatorio=relatorio,
-                           mes=mes,
-                           ano=ano,
-                           total_entradas=total_entradas,
-                           total_saidas=total_saidas,
-                           total_saldo_inicial=total_saldo_inicial,
-                           total_saldo_final=total_saldo_final)
+    saldo_inicial = 0  # futura lógica poderá trazer saldos acumulados anteriores
+    saldo_final = saldo_inicial + entradas - saidas
+
+    relatorio.append({
+        'nd': nd.nome,
+        'inicial': saldo_inicial,
+        'entradas': entradas,
+        'saidas': saidas,
+        'final': saldo_final
+    })
+
+    total_inicial += saldo_inicial
+    total_entradas += entradas
+    total_saidas += saidas
+    total_final += saldo_final
+
+return render_template('mapa_fechamento.html',
+                       relatorio=relatorio,
+                       mes=mes,
+                       ano=ano,
+                       anos_disponiveis=anos_disponiveis,
+                       total_inicial=total_inicial,
+                       total_entradas=total_entradas,
+                       total_saidas=total_saidas,
+                       total_final=total_final)
+

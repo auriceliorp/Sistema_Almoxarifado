@@ -103,11 +103,19 @@ function atualizarTotalNota() {
 
 function adicionarLinha() {
   const tbody = document.querySelector('#tabela-itens tbody');
-  const novaLinha = tbody.rows[0].cloneNode(true);
+  const primeiraLinha = tbody.rows[0];
+  const novaLinha = primeiraLinha.cloneNode(true);
 
+  // Limpa os valores dos inputs clonados
   novaLinha.querySelectorAll('input').forEach(input => {
     input.value = '';
+    input.setAttribute('required', true); // garante que mantenha required
   });
+
+  // Restaura o atributo 'name' dos inputs e select, caso o clone remova ou corrompa
+  novaLinha.querySelector('select').setAttribute('name', 'item_id[]');
+  novaLinha.querySelector('input[type="number"][name]').setAttribute('name', 'quantidade[]');
+  novaLinha.querySelectorAll('input[type="number"]')[1].setAttribute('name', 'valor_unitario[]');
 
   novaLinha.querySelector('.valor_total').innerText = '0.00';
   tbody.appendChild(novaLinha);

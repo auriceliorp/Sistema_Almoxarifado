@@ -19,36 +19,41 @@ def nova_entrada():
 
     if request.method == 'POST':
         try:
-            # Coleta os dados do formulário
+            # Coleta dados gerais do formulário
             data_movimento_str = request.form.get('data_movimento')
             data_nota_str = request.form.get('data_nota_fiscal')
             numero_nota_fiscal = request.form.get('numero_nota_fiscal')
             fornecedor_id = request.form.get('fornecedor')
 
-            # Converte as datas
+            # Converte datas
             data_movimento = datetime.strptime(data_movimento_str, '%Y-%m-%d')
             data_nota_fiscal = datetime.strptime(data_nota_str, '%Y-%m-%d')
 
-            # Cria a entrada com vínculo ao usuário atual
+            # Coleta listas dos campos dos itens
+            item_ids = request.form.getlist('item_id[]')
+            quantidades = request.form.getlist('quantidade[]')
+            valores_unitarios = request.form.getlist('valor_unitario[]')
+
+            # Verifica se há pelo menos um item preenchido
+            if not item_ids or not quantidades or not valores_unitarios:
+                flash('Informe pelo menos um item válido.', 'warning')
+                return redirect(url_for('entrada_bp.nova_entrada'))
+
+            # Cria a entrada principal
             nova_entrada = EntradaMaterial(
                 data_movimento=data_movimento,
                 data_nota_fiscal=data_nota_fiscal,
                 numero_nota_fiscal=numero_nota_fiscal,
                 fornecedor_id=fornecedor_id,
-                usuario_id=current_user.id  # Garantia de preenchimento obrigatório
+                usuario_id=current_user.id
             )
             db.session.add(nova_entrada)
             db.session.flush()  # Garante que nova_entrada.id esteja disponível
 
-            # Coleta os dados dos itens
-            item_ids = request.form.getlist('item_id[]')
-            quantidades = request.form.getlist('quantidade[]')
-            valores_unitarios = request.form.getlist('valor_unitario[]')
-
-            # Processa cada item informado
+            # Processa todos os itens informados
             for i in range(len(item_ids)):
                 if not item_ids[i] or not quantidades[i] or not valores_unitarios[i]:
-                    continue  # Pula se estiver incompleto
+                    continue  # Pula linha se algum campo estiver vazio
 
                 try:
                     quantidade = int(quantidades[i])
@@ -58,7 +63,7 @@ def nova_entrada():
                     db.session.rollback()
                     return redirect(url_for('entrada_bp.nova_entrada'))
 
-                # Cria o vínculo do item com a entrada
+                # Cria item vinculado à entrada
                 entrada_item = EntradaItem(
                     entrada_id=nova_entrada.id,
                     item_id=item_ids[i],
@@ -67,7 +72,7 @@ def nova_entrada():
                 )
                 db.session.add(entrada_item)
 
-                # Atualiza o estoque e o saldo do item
+                # Atualiza o estoque e saldo do item
                 item = Item.query.get(item_ids[i])
                 if item:
                     item.estoque_atual += quantidade
@@ -75,6 +80,7 @@ def nova_entrada():
                     if item.estoque_atual > 0:
                         item.valor_unitario = item.saldo_financeiro / item.estoque_atual
 
+            # Confirma tudo
             db.session.commit()
             flash('Entrada de material registrada com sucesso.', 'success')
             return redirect(url_for('entrada_bp.lista_entradas'))

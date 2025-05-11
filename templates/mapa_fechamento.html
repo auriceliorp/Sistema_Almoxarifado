@@ -1,58 +1,64 @@
-{% extends 'base_simplificada.html' %} {% block content %}
+{% extends 'base_simplificada.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4">Mapa de Fechamento Mensal</h2>
 
-<div class="container mt-5">
-  <h2 class="text-success fw-bold mb-4">Mapa de Fechamento Mensal</h2>  <form method="get" class="row g-3 mb-4">
-    <div class="col-md-4">
-      <label for="mes" class="form-label">Mês</label>
-      <select name="mes" id="mes" class="form-select">
-        <option value="">Selecione</option>
+  <form method="get" class="row g-3 mb-4">
+    <div class="col-md-3">
+      <label for="mes" class="form-label">Mês:</label>
+      <select id="mes" name="mes" class="form-select" required>
         {% for m in range(1, 13) %}
-          <option value="{{ m }}" {% if m == mes %}selected{% endif %}>{{ m }}</option>
+        <option value="{{ m }}" {% if m == mes %}selected{% endif %}>{{ '{:02d}'.format(m) }}</option>
         {% endfor %}
       </select>
     </div>
-    <div class="col-md-4">
-      <label for="ano" class="form-label">Ano</label>
-      <input type="number" class="form-control" name="ano" id="ano" value="{{ ano or '' }}">
+    <div class="col-md-3">
+      <label for="ano" class="form-label">Ano:</label>
+      <select id="ano" name="ano" class="form-select" required>
+        {% for a in anos_disponiveis %}
+        <option value="{{ a }}" {% if a == ano %}selected{% endif %}>{{ a }}</option>
+        {% endfor %}
+      </select>
     </div>
-    <div class="col-md-4 d-flex align-items-end">
+    <div class="col-md-3 d-flex align-items-end">
       <button type="submit" class="btn btn-primary">Filtrar</button>
     </div>
-  </form>{% if relatorio %}
+  </form>
 
-  <div class="table-responsive">
-    <table class="table table-bordered text-center align-middle">
-      <thead class="table-primary">
-        <tr>
-          <th>Natureza de Despesa</th>
-          <th>Saldo Inicial</th>
-          <th>Entradas</th>
-          <th>Saídas</th>
-          <th>Saldo Final</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for linha in relatorio %}
-        <tr>
-          <td>{{ linha.nome }}</td>
-          <td>{{ '%.2f'|format(linha.saldo_inicial) }}</td>
-          <td>{{ '%.2f'|format(linha.entradas) }}</td>
-          <td>{{ '%.2f'|format(linha.saidas) }}</td>
-          <td>{{ '%.2f'|format(linha.saldo_final) }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-      <tfoot class="table-secondary fw-bold">
-        <tr>
-          <td>Total Geral</td>
-          <td>{{ '%.2f'|format(total_inicial) }}</td>
-          <td>{{ '%.2f'|format(total_entradas) }}</td>
-          <td>{{ '%.2f'|format(total_saidas) }}</td>
-          <td>{{ '%.2f'|format(total_final) }}</td>
-        </tr>
-      </tfoot>
-    </table>
-  </div>
-  {% endif %}
+  <table class="table table-bordered table-striped">
+    <thead class="table-dark">
+      <tr>
+        <th>Natureza de Despesa</th>
+        <th>Saldo Inicial</th>
+        <th>Entradas</th>
+        <th>Saídas</th>
+        <th>Saldo Final</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for linha in relatorio %}
+      <tr>
+        <td>{{ linha.nd }}</td>
+        <td>{{ '%.2f'|format(linha.inicial) }}</td>
+        <td>{{ '%.2f'|format(linha.entradas) }}</td>
+        <td>{{ '%.2f'|format(linha.saidas) }}</td>
+        <td>{{ '%.2f'|format(linha.final) }}</td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="5" class="text-center">Nenhum dado encontrado para o período selecionado.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot class="table-light fw-bold">
+      <tr>
+        <td>Total</td>
+        <td>{{ '%.2f'|format(total_inicial) }}</td>
+        <td>{{ '%.2f'|format(total_entradas) }}</td>
+        <td>{{ '%.2f'|format(total_saidas) }}</td>
+        <td>{{ '%.2f'|format(total_final) }}</td>
+      </tr>
+    </tfoot>
+  </table>
 </div>
 {% endblock %}

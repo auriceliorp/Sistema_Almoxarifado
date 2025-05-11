@@ -7,89 +7,98 @@ from datetime import datetime, date
 from app_render import db
 from models import NaturezaDespesa, EntradaMaterial, EntradaItem, SaidaMaterial, SaidaItem, Item
 
-relatorio_bp = Blueprint('relatorio_bp', __name__, template_folder='templates')
+relatorio_bp = Blueprint('relatorio_bp', __name__)
 
-
-# ------------------------------ ROTA: Mapa de Fechamento Mensal ------------------------------ #
-@relatorio_bp.route('/relatorio/mapa_fechamento', methods=['GET', 'POST'])
+# ---------------- ROTA: Mapa de Fechamento Mensal ---------------- #
+@relatorio_bp.route('/relatorio/mapa_fechamento', methods=['GET'])
 @login_required
 def mapa_fechamento():
-    # Define mês e ano atuais como padrão
-    hoje = date.today()
-    mes = int(request.form.get('mes', hoje.month))
-    ano = int(request.form.get('ano', hoje.year))
+    # Obtém mês e ano da URL, ou usa mês atual
+    mes = request.args.get('mes', type=int)
+    ano = request.args.get('ano', type=int)
 
-    # Define início e fim do mês selecionado
+    hoje = date.today()
+    if not mes:
+        mes = hoje.month
+    if not ano:
+        ano = hoje.year
+
+    # Calcula intervalo de datas
     data_inicio = date(ano, mes, 1)
     if mes == 12:
         data_fim = date(ano + 1, 1, 1)
     else:
         data_fim = date(ano, mes + 1, 1)
 
-    # Busca todas as naturezas de despesa
-    naturezas = NaturezaDespesa.query.order_by(NaturezaDespesa.nd).all()
-    relatorio = []
+    # Consulta todas as naturezas de despesa ordenadas pelo código
+    naturezas = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
+    resultado = []
 
-    total_entradas = 0
-    total_saidas = 0
-    total_saldo_inicial = 0
-    total_saldo_final = 0
+    saldo_inicial_total = 0
+    entradas_total = 0
+    saidas_total = 0
 
     for nd in naturezas:
-        entradas = 0
-        saidas = 0
+        # Filtra itens relacionados a essa ND via grupo
+        itens_nd = Item.query.join(Item.grupo).filter_by(natureza_despesa_id=nd.id).all()
+        item_ids = [item.id for item in itens_nd]
 
-        # Busca entradas no mês por ND (via grupo > item > entrada_item)
-        entradas_query = (
-            db.session.query(EntradaItem)
-            .join(Item, EntradaItem.item_id == Item.id)
-            .join(EntradaMaterial, EntradaItem.entrada_id == EntradaMaterial.id)
-            .filter(Item.grupo.has(natureza_despesa_id=nd.id))
-            .filter(EntradaMaterial.data_movimento >= data_inicio)
-            .filter(EntradaMaterial.data_movimento < data_fim)
-            .all()
-        )
+        # Valor acumulado até o início do mês (saldo inicial)
+        entradas_anteriores = db.session.query(
+            db.func.sum(EntradaItem.quantidade * EntradaItem.valor_unitario)
+        ).join(EntradaMaterial).filter(
+            EntradaItem.item_id.in_(item_ids),
+            EntradaMaterial.data_movimento < data_inicio
+        ).scalar() or 0
 
-        for ei in entradas_query:
-            entradas += ei.quantidade * ei.valor_unitario
+        saidas_anteriores = db.session.query(
+            db.func.sum(SaidaItem.quantidade * SaidaItem.valor_unitario)
+        ).join(SaidaMaterial).filter(
+            SaidaItem.item_id.in_(item_ids),
+            SaidaMaterial.data_movimento < data_inicio
+        ).scalar() or 0
 
-        # Busca saídas no mês por ND
-        saidas_query = (
-            db.session.query(SaidaItem)
-            .join(Item, SaidaItem.item_id == Item.id)
-            .join(SaidaMaterial, SaidaItem.saida_id == SaidaMaterial.id)
-            .filter(Item.grupo.has(natureza_despesa_id=nd.id))
-            .filter(SaidaMaterial.data_movimento >= data_inicio)
-            .filter(SaidaMaterial.data_movimento < data_fim)
-            .all()
-        )
+        saldo_inicial = entradas_anteriores - saidas_anteriores
 
-        for si in saidas_query:
-            saidas += si.quantidade * si.valor_unitario
+        # Entradas no mês
+        entradas_mes = db.session.query(
+            db.func.sum(EntradaItem.quantidade * EntradaItem.valor_unitario)
+        ).join(EntradaMaterial).filter(
+            EntradaItem.item_id.in_(item_ids),
+            EntradaMaterial.data_movimento >= data_inicio,
+            EntradaMaterial.data_movimento < data_fim
+        ).scalar() or 0
 
-        saldo_inicial = nd.valor - entradas + saidas
-        saldo_final = nd.valor
+        # Saídas no mês
+        saidas_mes = db.session.query(
+            db.func.sum(SaidaItem.quantidade * SaidaItem.valor_unitario)
+        ).join(SaidaMaterial).filter(
+            SaidaItem.item_id.in_(item_ids),
+            SaidaMaterial.data_movimento >= data_inicio,
+            SaidaMaterial.data_movimento < data_fim
+        ).scalar() or 0
 
-        relatorio.append({
-            'nd': nd.nd,
-            'nome': nd.nome,
-            'entradas': entradas,
-            'saidas': saidas,
+        saldo_final = saldo_inicial + entradas_mes - saidas_mes
+
+        resultado.append({
+            'nd': nd,
             'saldo_inicial': saldo_inicial,
+            'entradas': entradas_mes,
+            'saidas': saidas_mes,
             'saldo_final': saldo_final
         })
 
-        # Acumulados
-        total_entradas += entradas
-        total_saidas += saidas
-        total_saldo_inicial += saldo_inicial
-        total_saldo_final += saldo_final
+        saldo_inicial_total += saldo_inicial
+        entradas_total += entradas_mes
+        saidas_total += saidas_mes
+
+    saldo_final_total = saldo_inicial_total + entradas_total - saidas_total
 
     return render_template('mapa_fechamento.html',
-                           relatorio=relatorio,
+                           resultado=resultado,
                            mes=mes,
                            ano=ano,
-                           total_entradas=total_entradas,
-                           total_saidas=total_saidas,
-                           total_saldo_inicial=total_saldo_inicial,
-                           total_saldo_final=total_saldo_final)
+                           saldo_inicial_total=saldo_inicial_total,
+                           entradas_total=entradas_total,
+                           saidas_total=saidas_total,
+                           saldo_final_total=saldo_final_total)

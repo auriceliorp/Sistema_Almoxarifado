@@ -49,15 +49,6 @@ def create_app():
     with app.app_context():
         db.create_all()
 
-        # Tenta remover a tabela 'usuarios' que foi criada indevidamente
-        try:
-            db.session.execute(text("DROP TABLE IF EXISTS usuarios CASCADE;"))
-            db.session.commit()
-            print("Tabela 'usuarios' removida com sucesso.")
-        except Exception as e:
-            db.session.rollback()
-            print(f"Erro ao remover tabela 'usuarios': {e}")
-
         # Criação dos perfis padrão, se não existirem
         perfis_padrao = ['Administrador', 'Solicitante', 'Consultor']
         for nome in perfis_padrao:
@@ -65,17 +56,26 @@ def create_app():
                 db.session.add(Perfil(nome=nome))
         db.session.commit()
 
-        # Criação do usuário administrador, se não existir
-        if not Usuario.query.filter_by(email='admin@admin.com').first():
-            perfil_admin = Perfil.query.filter_by(nome='Administrador').first()
-            admin = Usuario(
-                nome='Administrador',
-                email='admin@admin.com',
-                senha=generate_password_hash('admin'),  # Senha criptografada
-                perfil_id=perfil_admin.id
-            )
-            db.session.add(admin)
-            db.session.commit()
+        # Verifica se a tabela 'usuarios' existe antes de tentar consultar
+        try:
+            resultado = db.session.execute(text("SELECT 1 FROM usuarios LIMIT 1"))
+            tabela_existe = True
+        except Exception:
+            tabela_existe = False
+
+        # Criação do usuário administrador, se a tabela existir e o admin não estiver presente
+        if tabela_existe:
+            if not Usuario.query.filter_by(email='admin@admin.com').first():
+                perfil_admin = Perfil.query.filter_by(nome='Administrador').first()
+                if perfil_admin:
+                    admin = Usuario(
+                        nome='Administrador',
+                        email='admin@admin.com',
+                        senha=generate_password_hash('admin'),
+                        perfil_id=perfil_admin.id
+                    )
+                    db.session.add(admin)
+                    db.session.commit()
 
     # -------------------- Importa e registra blueprints --------------------
     from routes_main import main

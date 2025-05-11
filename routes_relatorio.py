@@ -1,6 +1,6 @@
-# routes_relatorio.py
+routes_relatorio.py
 
-# Rotas para relatórios do sistema, incluindo o Mapa de Fechamento Mensal
+Rotas para relatórios do sistema, incluindo o Mapa de Fechamento Mensal
 
 from flask import Blueprint, render_template, request from flask_login import login_required from sqlalchemy import extract, func from app_render import db from models import NaturezaDespesa, Grupo, Item, EntradaItem, EntradaMaterial, SaidaItem, SaidaMaterial from datetime import datetime
 

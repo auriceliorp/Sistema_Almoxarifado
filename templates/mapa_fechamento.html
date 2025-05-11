@@ -1,0 +1,59 @@
+{% extends 'base_simplificada.html' %}
+
+{% block title %}Mapa de Fechamento Mensal{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h4 class="mb-4">Mapa de Fechamento Mensal</h4>
+
+  <form method="get" class="row g-3 mb-4">
+    <div class="col-md-3">
+      <label for="mes" class="form-label">Mês</label>
+      <select id="mes" name="mes" class="form-select" required>
+        {% for num, nome in meses %}
+        <option value="{{ num }}" {% if num == mes %}selected{% endif %}>{{ nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label for="ano" class="form-label">Ano</label>
+      <input type="number" id="ano" name="ano" class="form-control" value="{{ ano }}" required>
+    </div>
+    <div class="col-md-3 align-self-end">
+      <button type="submit" class="btn btn-primary">Filtrar</button>
+    </div>
+  </form>
+
+  <div class="table-responsive">
+    <table class="table table-bordered align-middle text-center">
+      <thead class="table-light">
+        <tr>
+          <th>Natureza de Despesa</th>
+          <th>Saldo Inicial (R$)</th>
+          <th>Entradas (R$)</th>
+          <th>Saídas (R$)</th>
+          <th>Saldo Final (R$)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for linha in relatorio %}
+        <tr>
+          <td>{{ linha.nome }}</td>
+          <td>{{ '%.2f'|format(linha.saldo_inicial) }}</td>
+          <td>{{ '%.2f'|format(linha.entradas) }}</td>
+          <td>{{ '%.2f'|format(linha.saidas) }}</td>
+          <td>{{ '%.2f'|format(linha.saldo_final) }}</td>
+        </tr>
+        {% endfor %}
+        <tr class="table-light fw-bold">
+          <td>Total Geral</td>
+          <td>{{ '%.2f'|format(total_geral.saldo_inicial) }}</td>
+          <td>{{ '%.2f'|format(total_geral.entradas) }}</td>
+          <td>{{ '%.2f'|format(total_geral.saidas) }}</td>
+          <td>{{ '%.2f'|format(total_geral.saldo_final) }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,6 +1,6 @@
-routes_relatorio.py
+# routes_relatorio.py
 
-Gera o Mapa de Fechamento Mensal por Natureza de Despesa
+# Gera o Mapa de Fechamento Mensal por Natureza de Despesa
 
 from flask import Blueprint, render_template, request from flask_login import login_required from datetime import datetime, date from app_render import db from models import NaturezaDespesa, EntradaMaterial, EntradaItem, SaidaMaterial, SaidaItem, Item
 

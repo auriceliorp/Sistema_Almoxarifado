@@ -49,12 +49,13 @@ def create_app():
     with app.app_context():
         db.create_all()
 
-        # 🔴 NOVO: exclui tabela 'usuarios' se ainda existir (erro herdado antigo)
+        # Tenta remover a tabela 'usuarios' que foi criada indevidamente
         try:
-            db.session.execute(text("DROP TABLE IF EXISTS usuarios;"))
+            db.session.execute(text("DROP TABLE IF EXISTS usuarios CASCADE;"))
             db.session.commit()
             print("Tabela 'usuarios' removida com sucesso.")
         except Exception as e:
+            db.session.rollback()
             print(f"Erro ao remover tabela 'usuarios': {e}")
 
         # Criação dos perfis padrão, se não existirem

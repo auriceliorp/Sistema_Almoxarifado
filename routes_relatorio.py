@@ -1,77 +1,92 @@
 # routes_relatorio.py
-# Rotas para geração de relatórios, como o Mapa de Fechamento Mensal
+# Rotas para geração de relatórios como o Mapa de Fechamento Mensal
 
 from flask import Blueprint, render_template, request
 from flask_login import login_required
-from sqlalchemy import func, select
+from datetime import datetime
+from sqlalchemy import extract, func
 from decimal import Decimal
-
 from app_render import db
 from models import NaturezaDespesa, Grupo, Item, EntradaItem, EntradaMaterial, SaidaItem, SaidaMaterial
 
-# Criação do blueprint do relatório
+# Criação do blueprint
 relatorio_bp = Blueprint('relatorio_bp', __name__, template_folder='templates')
 
-# ------------------------------ ROTA: Mapa de Fechamento Mensal ------------------------------ #
-@relatorio_bp.route('/relatorio/mapa_fechamento')
+# ------------------------------ ROTA: Mapa de Fechamento ------------------------------ #
+@relatorio_bp.route('/relatorio/mapa_fechamento', methods=['GET'])
 @login_required
 def mapa_fechamento():
-    # Obtém mês e ano dos parâmetros da URL ou usa o mês atual
-    from datetime import date
-    hoje = date.today()
-    mes = int(request.args.get('mes', hoje.month))
-    ano = int(request.args.get('ano', hoje.year))
-
-    # Lista de todas as Naturezas de Despesa
-    naturezas = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
+    # Obtém mês e ano via GET ou usa mês atual
+    mes = request.args.get('mes', default=datetime.now().month, type=int)
+    ano = request.args.get('ano', default=datetime.now().year, type=int)
 
     relatorio = []
 
+    naturezas = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
+
     for nd in naturezas:
-        # Seleciona os grupos ligados a esta ND
+        # Obtém os grupos vinculados a esta ND
         grupos = Grupo.query.filter_by(natureza_despesa_id=nd.id).all()
         grupo_ids = [g.id for g in grupos]
 
-        # Seleciona os itens ligados aos grupos da ND
+        # Obtém os itens desses grupos
         itens = Item.query.filter(Item.grupo_id.in_(grupo_ids)).all()
-        item_ids = [i.id for i in itens]
+        item_ids = [item.id for item in itens]
 
-        # Calcula o valor total de entradas no mês (join explícito)
+        # SALDO INICIAL = Entradas - Saídas anteriores ao mês atual
+        entradas_anteriores = db.session.query(func.sum(EntradaItem.quantidade * EntradaItem.valor_unitario))\
+            .select_from(EntradaItem)\
+            .join(EntradaMaterial)\
+            .filter(EntradaItem.item_id.in_(item_ids))\
+            .filter(
+                (extract('year', EntradaMaterial.data_movimento) < ano) |
+                ((extract('year', EntradaMaterial.data_movimento) == ano) &
+                 (extract('month', EntradaMaterial.data_movimento) < mes))
+            ).scalar() or Decimal('0.00')
+
+        saidas_anteriores = db.session.query(func.sum(SaidaItem.quantidade * SaidaItem.valor_unitario))\
+            .select_from(SaidaItem)\
+            .join(SaidaMaterial)\
+            .filter(SaidaItem.item_id.in_(item_ids))\
+            .filter(
+                (extract('year', SaidaMaterial.data_movimento) < ano) |
+                ((extract('year', SaidaMaterial.data_movimento) == ano) &
+                 (extract('month', SaidaMaterial.data_movimento) < mes))
+            ).scalar() or Decimal('0.00')
+
+        saldo_inicial = Decimal(entradas_anteriores) - Decimal(saidas_anteriores)
+
+        # ENTRADAS NO MÊS
         entradas_mes = db.session.query(func.sum(EntradaItem.quantidade * EntradaItem.valor_unitario))\
             .select_from(EntradaItem)\
-            .join(EntradaMaterial, EntradaItem.entrada_id == EntradaMaterial.id)\
-            .filter(
-                EntradaItem.item_id.in_(item_ids),
-                func.extract('month', EntradaMaterial.data_movimento) == mes,
-                func.extract('year', EntradaMaterial.data_movimento) == ano
-            ).scalar() or Decimal('0.00')
+            .join(EntradaMaterial)\
+            .filter(EntradaItem.item_id.in_(item_ids))\
+            .filter(extract('year', EntradaMaterial.data_movimento) == ano)\
+            .filter(extract('month', EntradaMaterial.data_movimento) == mes)\
+            .scalar() or Decimal('0.00')
 
-        # Calcula o valor total de saídas no mês (join explícito)
+        # SAÍDAS NO MÊS
         saidas_mes = db.session.query(func.sum(SaidaItem.quantidade * SaidaItem.valor_unitario))\
             .select_from(SaidaItem)\
-            .join(SaidaMaterial, SaidaItem.saida_id == SaidaMaterial.id)\
-            .filter(
-                SaidaItem.item_id.in_(item_ids),
-                func.extract('month', SaidaMaterial.data_movimento) == mes,
-                func.extract('year', SaidaMaterial.data_movimento) == ano
-            ).scalar() or Decimal('0.00')
+            .join(SaidaMaterial)\
+            .filter(SaidaItem.item_id.in_(item_ids))\
+            .filter(extract('year', SaidaMaterial.data_movimento) == ano)\
+            .filter(extract('month', SaidaMaterial.data_movimento) == mes)\
+            .scalar() or Decimal('0.00')
 
-        # Saldo inicial é o valor atual no início do mês
-        saldo_atual = sum([i.saldo_financeiro or 0 for i in itens])
-        saldo_final = Decimal(saldo_atual)
-        saldo_inicial = saldo_final - Decimal(entradas_mes) + Decimal(saidas_mes)
+        # SALDO FINAL = Saldo inicial + entradas - saídas
+        saldo_final = saldo_inicial + Decimal(entradas_mes) - Decimal(saidas_mes)
 
-        # Monta os dados para exibição
         relatorio.append({
             'nd': nd.codigo,
             'nome': nd.nome,
-            'saldo_inicial': round(saldo_inicial, 2),
-            'entradas': round(entradas_mes, 2),
-            'saidas': round(saidas_mes, 2),
-            'saldo_final': round(saldo_final, 2)
+            'saldo_inicial': Decimal(saldo_inicial).quantize(Decimal('0.01')),
+            'entradas': Decimal(entradas_mes).quantize(Decimal('0.01')),
+            'saidas': Decimal(saidas_mes).quantize(Decimal('0.01')),
+            'saldo_final': Decimal(saldo_final).quantize(Decimal('0.01'))
         })
 
-    # Soma totalizadores
+    # Totais consolidados (também em Decimal)
     total_entrada = sum(r['entradas'] for r in relatorio)
     total_saida = sum(r['saidas'] for r in relatorio)
     total_inicial = sum(r['saldo_inicial'] for r in relatorio)

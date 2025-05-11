@@ -7,7 +7,6 @@ from flask_login import LoginManager
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
-from sqlalchemy import text
 import os
 
 # -------------------- Carrega variáveis de ambiente --------------------
@@ -56,26 +55,17 @@ def create_app():
                 db.session.add(Perfil(nome=nome))
         db.session.commit()
 
-        # Verifica se a tabela 'usuarios' existe antes de tentar consultar
-        try:
-            resultado = db.session.execute(text("SELECT 1 FROM usuarios LIMIT 1"))
-            tabela_existe = True
-        except Exception:
-            tabela_existe = False
-
-        # Criação do usuário administrador, se a tabela existir e o admin não estiver presente
-        if tabela_existe:
-            if not Usuario.query.filter_by(email='admin@admin.com').first():
-                perfil_admin = Perfil.query.filter_by(nome='Administrador').first()
-                if perfil_admin:
-                    admin = Usuario(
-                        nome='Administrador',
-                        email='admin@admin.com',
-                        senha=generate_password_hash('admin'),
-                        perfil_id=perfil_admin.id
-                    )
-                    db.session.add(admin)
-                    db.session.commit()
+        # Criação do usuário administrador, se não existir
+        if not Usuario.query.filter_by(email='admin@admin.com').first():
+            perfil_admin = Perfil.query.filter_by(nome='Administrador').first()
+            admin = Usuario(
+                nome='Administrador',
+                email='admin@admin.com',
+                senha=generate_password_hash('admin'),
+                perfil_id=perfil_admin.id
+            )
+            db.session.add(admin)
+            db.session.commit()
 
     # -------------------- Importa e registra blueprints --------------------
     from routes_main import main
@@ -87,6 +77,7 @@ def create_app():
     from routes_fornecedor import fornecedor_bp
     from routes_entrada import entrada_bp
     from routes_saida import saida_bp
+    from routes_relatorio import relatorio_bp
 
     app.register_blueprint(main)
     app.register_blueprint(usuario_bp)
@@ -97,6 +88,7 @@ def create_app():
     app.register_blueprint(fornecedor_bp)
     app.register_blueprint(entrada_bp)
     app.register_blueprint(saida_bp)
+    app.register_blueprint(relatorio_bp)
 
     return app
 

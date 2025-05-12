@@ -1,8 +1,31 @@
 {% extends 'base_simplificada.html' %}
+
 {% block content %}
 <div class="container mt-4">
   <h2 class="mb-4">Mapa de Fechamento Mensal</h2>
 
+  <!-- CABEÇALHO COM AÇÕES -->
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">
+      <i class="bi bi-house-door"></i> Início
+    </a>
+    <a href="{{ url_for('relatorio_bp.mapa_fechamento') }}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left-circle"></i> Voltar
+    </a>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('relatorio_bp.imprimir_mapa_fechamento', mes=mes, ano=ano) }}" class="btn btn-outline-info">
+        <i class="bi bi-printer"></i> Imprimir
+      </a>
+      <a href="{{ url_for('relatorio_bp.exportar_excel', mes=mes, ano=ano) }}" class="btn btn-outline-success">
+        <i class="bi bi-file-earmark-excel"></i> Excel
+      </a>
+      <a href="{{ url_for('relatorio_bp.exportar_pdf', mes=mes, ano=ano) }}" class="btn btn-outline-danger">
+        <i class="bi bi-file-earmark-pdf"></i> PDF
+      </a>
+    </div>
+  </div>
+
+  <!-- FILTROS -->
   <form method="get" class="row g-3 mb-4">
     <div class="col-md-3">
       <label for="mes" class="form-label">Mês:</label>
@@ -25,6 +48,7 @@
     </div>
   </form>
 
+  <!-- TABELA -->
   <table class="table table-bordered table-striped">
     <thead class="table-dark">
       <tr>

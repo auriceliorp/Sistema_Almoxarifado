@@ -38,7 +38,7 @@
     <tbody>
       {% for linha in relatorio %}
       <tr>
-        <td>{{ linha.nd }}</td>
+        <td>{{ linha.nd.codigo }} - {{ linha.nd.nome }}</td>
         <td>{{ '%.2f'|format(linha.inicial) }}</td>
         <td>{{ '%.2f'|format(linha.entrada) }}</td>
         <td>{{ '%.2f'|format(linha.saida) }}</td>

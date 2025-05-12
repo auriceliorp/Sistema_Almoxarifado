@@ -8,6 +8,9 @@ from app_render import db
 from models import NaturezaDespesa, Grupo, Item, EntradaItem, SaidaItem, EntradaMaterial, SaidaMaterial
 from datetime import datetime
 from decimal import Decimal
+from io import BytesIO
+import pandas as pd
+from fpdf import FPDF
 
 # Criação do blueprint do relatório
 relatorio_bp = Blueprint('relatorio_bp', __name__, template_folder='templates')

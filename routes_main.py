@@ -102,3 +102,23 @@ def almoxarifado():
 def esqueci_senha():
     return render_template('esqueci_senha.html')
 
+
+# Rota para a página de nd_grupos_ul
+
+from flask import Blueprint, render_template, redirect, url_for
+from flask_login import login_required
+
+main = Blueprint('main', __name__)
+
+@main.route('/')
+def index():
+    return redirect(url_for('main.login'))
+
+# ... outras rotas
+
+@main.route('/nd_grupos_ul')
+@login_required
+def nd_grupos_ul():
+    return render_template('nd_grupos_ul.html')
+
+

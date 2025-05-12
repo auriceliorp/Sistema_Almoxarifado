@@ -2,21 +2,16 @@
 # Arquivo principal do sistema Flask para o Almoxarifado
 
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
-from flask_migrate import Migrate
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
 import os
 
+# Importa as extensões globais compartilhadas
+from extensoes import db, login_manager, migrate
+
 # -------------------- Carrega variáveis de ambiente --------------------
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))
-
-# -------------------- Instancia extensões globais --------------------
-db = SQLAlchemy()
-login_manager = LoginManager()
-migrate = Migrate()
 
 # -------------------- Configuração do login --------------------
 login_manager.login_view = 'main.login'

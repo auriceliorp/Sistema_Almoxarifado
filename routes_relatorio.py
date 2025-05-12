@@ -136,7 +136,8 @@ def imprimir_mapa_fechamento():
     # (lógica idêntica à da função mapa_fechamento...)
     # Copie e cole a lógica que calcula "relatorio", "totais", "anos_disponiveis"
     # e retorne um template exclusivo para impressão:
-    return render_template('mapa_fechamento_imprimir.html', ...)
+
+return render_template('mapa_fechamento_imprimir.html', dados=dados)
 
 # ------------------------------ ROTA: Exportar Excel ------------------------------ #
 @relatorio_bp.route('/relatorio/mapa_fechamento/excel')

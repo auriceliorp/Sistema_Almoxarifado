@@ -1,49 +1,54 @@
-{# templates/nd_grupos_ul.html #}
 {% extends 'base_simplificada.html' %}
 
-{% block title %}ND / Grupos / UL - Almoxarifado{% endblock %}
+{% block title %}ND / Grupos / UL{% endblock %}
 
 {% block content %}
 <div class="container py-4">
-
-  <!-- CABEÇALHO COM VOLTAR E SAIR -->
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <a href="{{ url_for('main.almoxarifado') }}" class="btn btn-outline-secondary">
-      <i class="bi bi-arrow-left"></i> Início
-    </a>
-    <h4 class="mb-0 text-success fw-bold">ND / Grupos / UL</h4>
-    <a href="{{ url_for('main.logout') }}" class="btn btn-outline-dark">
-      <i class="bi bi-box-arrow-right"></i> Sair
-    </a>
-  </div>
-
-  <!-- GRID DE ACESSO -->
-  <div class="row row-cols-1 row-cols-md-2 g-4">
-
-    <div class="col">
-      <a href="{{ url_for('nd_bp.lista_nd') }}" class="btn btn-outline-info w-100 py-4 fs-5">
-        <i class="bi bi-cash-coin"></i> Naturezas de Despesa
-      </a>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <a href="{{ url_for('main.almoxarifado') }}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left-circle"></i> Voltar
+        </a>
+        <h4 class="mb-0 text-success fw-bold">Natureza de Despesa, Grupos e UL</h4>
+        <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">
+            <i class="bi bi-box-arrow-right"></i> Sair
+        </a>
     </div>
 
-    <div class="col">
-      <a href="{{ url_for('grupo_bp.lista_grupos') }}" class="btn btn-outline-success w-100 py-4 fs-5">
-        <i class="bi bi-tags"></i> Grupos de Itens
-      </a>
-    </div>
+    <!-- Navegação por Abas -->
+    <ul class="nav nav-tabs mb-4" id="abasCadastro" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="nd-tab" data-bs-toggle="tab" data-bs-target="#nd" type="button" role="tab">Natureza de Despesa</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="grupo-tab" data-bs-toggle="tab" data-bs-target="#grupo" type="button" role="tab">Grupos de Itens</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="ul-tab" data-bs-toggle="tab" data-bs-target="#ul" type="button" role="tab">Unidades Locais</button>
+        </li>
+    </ul>
 
-    <div class="col">
-      <a href="{{ url_for('area_ul_bp.lista_uls') }}" class="btn btn-outline-primary w-100 py-4 fs-5">
-        <i class="bi bi-geo-alt"></i> Unidades Locais (UL)
-      </a>
+    <!-- Conteúdo das Abas -->
+    <div class="tab-content" id="conteudoAbas">
+        <div class="tab-pane fade show active" id="nd" role="tabpanel">
+            <a href="{{ url_for('nd_bp.lista_nd') }}" class="btn btn-outline-info w-100 py-4 fs-5">
+                <i class="bi bi-cash-coin"></i> Acessar Naturezas de Despesa
+            </a>
+        </div>
+        <div class="tab-pane fade" id="grupo" role="tabpanel">
+            <a href="{{ url_for('grupo_bp.lista_grupos') }}" class="btn btn-outline-success w-100 py-4 fs-5">
+                <i class="bi bi-tags"></i> Acessar Grupos de Itens
+            </a>
+        </div>
+        <div class="tab-pane fade" id="ul" role="tabpanel">
+            <div class="d-grid gap-3">
+                <a href="{{ url_for('area_ul_bp.lista_uls') }}" class="btn btn-outline-primary py-4 fs-5">
+                    <i class="bi bi-geo-alt"></i> Acessar Unidades Locais (UL)
+                </a>
+                <a href="{{ url_for('area_ul_bp.lista_locais') }}" class="btn btn-outline-secondary py-4 fs-5">
+                    <i class="bi bi-building"></i> Acessar Locais
+                </a>
+            </div>
+        </div>
     </div>
-
-    <div class="col">
-      <a href="{{ url_for('area_ul_bp.lista_locais') }}" class="btn btn-outline-primary w-100 py-4 fs-5">
-        <i class="bi bi-building"></i> Locais
-      </a>
-    </div>
-
-  </div>
 </div>
 {% endblock %}

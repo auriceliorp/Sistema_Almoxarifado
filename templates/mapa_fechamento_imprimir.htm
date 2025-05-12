@@ -1,0 +1,48 @@
+{% extends 'base_simplificada.html' %}
+{% block title %}Imprimir - Mapa de Fechamento{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h3 class="text-center mb-4">Mapa de Fechamento Mensal</h3>
+  <p class="text-center"><strong>Período:</strong> {{ '%02d'|format(mes) }}/{{ ano }}</p>
+
+  <table class="table table-bordered table-striped">
+    <thead class="table-dark">
+      <tr>
+        <th>Natureza de Despesa</th>
+        <th>Saldo Inicial (R$)</th>
+        <th>Entradas (R$)</th>
+        <th>Saídas (R$)</th>
+        <th>Saldo Final (R$)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for linha in relatorio %}
+      <tr>
+        <td>{{ linha.nd.codigo }} - {{ linha.nd.nome }}</td>
+        <td>{{ '%.2f'|format(linha.inicial) }}</td>
+        <td>{{ '%.2f'|format(linha.entrada) }}</td>
+        <td>{{ '%.2f'|format(linha.saida) }}</td>
+        <td>{{ '%.2f'|format(linha.final) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot class="fw-bold table-light">
+      <tr>
+        <td>Total</td>
+        <td>{{ '%.2f'|format(totais.inicial) }}</td>
+        <td>{{ '%.2f'|format(totais.entrada) }}</td>
+        <td>{{ '%.2f'|format(totais.saida) }}</td>
+        <td>{{ '%.2f'|format(totais.final) }}</td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+
+<script>
+  // Dispara a impressão automática ao carregar a página
+  window.onload = function () {
+    window.print();
+  }
+</script>
+{% endblock %}

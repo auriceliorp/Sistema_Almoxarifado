@@ -97,23 +97,13 @@ def index():
 def almoxarifado():
     return render_template('almoxarifado.html', usuario=current_user)
 
-# Rota para a página de instrução de troca de senha
+# --- Página de instrução de troca de senha ---
 @main.route('/esqueci_senha')
 def esqueci_senha():
     return render_template('esqueci_senha.html')
 
-
-# Rota para a página de nd_grupos_ul
-
-@main.route('/')
-def index():
-    return redirect(url_for('main.login'))
-
-# ... outras rotas
-
+# --- Página ND / Grupos / UL ---
 @main.route('/nd_grupos_ul')
 @login_required
 def nd_grupos_ul():
     return render_template('nd_grupos_ul.html')
-
-

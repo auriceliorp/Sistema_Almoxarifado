@@ -4,17 +4,6 @@
 
 {% block content %}
 
-<script>
-function carregarConteudo(url) {
-    fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-        .then(response => response.text())
-        .then(html => {
-            document.getElementById('conteudo-abas').innerHTML = html;
-        })
-        .catch(error => console.error('Erro ao carregar conteúdo:', error));
-}
-</script>
-
 <div class="container py-4">
     <!-- Título e Ações -->
     <div class="d-flex justify-content-between align-items-center mb-3">

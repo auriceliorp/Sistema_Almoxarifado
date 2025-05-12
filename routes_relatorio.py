@@ -129,15 +129,18 @@ def mapa_fechamento():
 def imprimir_mapa_fechamento():
     mes = int(request.args.get('mes', datetime.now().month))
     ano = int(request.args.get('ano', datetime.now().year))
-    # (Reutiliza mesma lógica da função mapa_fechamento)
-    # Você pode criar uma função auxiliar para evitar duplicação de código
-    # Aqui vamos apenas copiar a lógica por enquanto para simplificar
 
-    # (lógica idêntica à da função mapa_fechamento...)
-    # Copie e cole a lógica que calcula "relatorio", "totais", "anos_disponiveis"
-    # e retorne um template exclusivo para impressão:
+    # Lógica para montar os dados (exemplo genérico, substitua conforme sua lógica real)
+    relatorio = gerar_relatorio_mensal(mes, ano)
+    totais = calcular_totais(relatorio)
+    dados = {
+        'relatorio': relatorio,
+        'totais': totais,
+        'mes': mes,
+        'ano': ano
+    }
 
-return render_template('mapa_fechamento_imprimir.html', dados=dados)
+    return render_template('mapa_fechamento_imprimir.html', **dados)
 
 # ------------------------------ ROTA: Exportar Excel ------------------------------ #
 @relatorio_bp.route('/relatorio/mapa_fechamento/excel')

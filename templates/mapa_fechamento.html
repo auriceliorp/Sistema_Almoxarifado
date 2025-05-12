@@ -40,8 +40,8 @@
       <tr>
         <td>{{ linha.nd }}</td>
         <td>{{ '%.2f'|format(linha.inicial) }}</td>
-        <td>{{ '%.2f'|format(linha.entradas) }}</td>
-        <td>{{ '%.2f'|format(linha.saidas) }}</td>
+        <td>{{ '%.2f'|format(linha.entrada) }}</td>
+        <td>{{ '%.2f'|format(linha.saida) }}</td>
         <td>{{ '%.2f'|format(linha.final) }}</td>
       </tr>
       {% else %}
@@ -53,10 +53,10 @@
     <tfoot class="table-light fw-bold">
       <tr>
         <td>Total</td>
-        <td>{{ '%.2f'|format(total_inicial) }}</td>
+        <td>{{ '%.2f'|format(total_saldo_inicial) }}</td>
         <td>{{ '%.2f'|format(total_entradas) }}</td>
         <td>{{ '%.2f'|format(total_saidas) }}</td>
-        <td>{{ '%.2f'|format(total_final) }}</td>
+        <td>{{ '%.2f'|format(total_saldo_final) }}</td>
       </tr>
     </tfoot>
   </table>

@@ -10,7 +10,9 @@ nd_bp = Blueprint('nd_bp', __name__, url_prefix='/nd')
 @login_required
 def lista_nd():
     nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
-    return render_template('lista_nd.html', nds=nds)
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render_template('lista_nd.html', nds=nds)
+    return redirect(url_for('main.nd_grupos_ul'))
 
 # ------------------------------ NOVA ND ------------------------------ #
 @nd_bp.route('/novo', methods=['GET', 'POST'])
@@ -28,11 +30,12 @@ def nova_nd():
         db.session.add(nova)
         db.session.commit()
         flash('Natureza de Despesa cadastrada com sucesso!')
-        # Recarrega o conteúdo da aba após salvar
         nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
         return render_template('lista_nd.html', nds=nds)
 
-    return render_template('form_nd.html', nd=None)
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render_template('form_nd.html', nd=None)
+    return redirect(url_for('main.nd_grupos_ul'))
 
 # ------------------------------ EDITAR ND ------------------------------ #
 @nd_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
@@ -52,7 +55,9 @@ def editar_nd(id):
         nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
         return render_template('lista_nd.html', nds=nds)
 
-    return render_template('form_nd.html', nd=nd)
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render_template('form_nd.html', nd=nd)
+    return redirect(url_for('main.nd_grupos_ul'))
 
 # ------------------------------ EXCLUIR ND ------------------------------ #
 @nd_bp.route('/excluir/<int:id>', methods=['POST'])

@@ -1,6 +1,6 @@
 # ------------------------------ IMPORTAÇÕES ------------------------------
 from flask_login import UserMixin
-from app_render import db
+from extensoes import db
 from datetime import datetime
 
 # ------------------- USUÁRIO E PERFIL -------------------

@@ -1,81 +1,78 @@
 {# templates/almoxarifado.html #}
 {% extends 'base_simplificada.html' %}
-{% block title %}Sistema de Gestão de Almoxarifado{% endblock %}
+
+{% block title %}Almoxarifado - Sistema Integrado SPS{% endblock %}
 
 {% block content %}
 <div class="container py-4">
-
-  {# Cabeçalho com botão de início e logout #}
+  <!-- Cabeçalho -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <a href="{{ url_for('main.home') }}" class="btn btn-outline-secondary">
       <i class="bi bi-arrow-left"></i> Início
     </a>
-    <img src="{{ url_for('static', filename='embrapa_logo.png') }}" alt="Logo Embrapa" style="height: 50px;">
+    <img src="{{ url_for('static', filename='embrapa_logo.png') }}" alt="Logo Embrapa" class="logo-emb">
     <a href="{{ url_for('main.logout') }}" class="btn btn-outline-dark">
       <i class="bi bi-box-arrow-right"></i> Sair
     </a>
   </div>
 
-  {# Título principal #}
-  <div class="text-center mb-4">
-    <h3 class="fw-bold">Sistema de Gestão de Almoxarifado</h3>
-    <p class="text-muted">Gerencie entradas, saídas e controle de materiais de forma eficiente.</p>
-  </div>
+  <!-- Título -->
+  <h3 class="text-center fw-bold mb-2">Sistema de Gestão de Almoxarifado</h3>
+  <p class="text-center text-muted mb-4">Gerencie entradas, saídas e controle de materiais de forma eficiente.</p>
 
-  {# Seção: Gerenciamento #}
-  <h5 class="fw-semibold">Gerenciamento</h5>
+  <!-- Sessão: Gerenciamento -->
+  <h5 class="fw-semibold mb-3">Gerenciamento</h5>
   <div class="row row-cols-1 row-cols-md-4 g-3 mb-4">
     <div class="col">
-      <a href="{{ url_for('usuario_bp.lista_usuarios') }}" class="btn btn-outline-dark w-100 py-3 fs-6">
+      <a href="{{ url_for('usuario_bp.lista_usuarios') }}" class="btn btn-outline-dark w-100 py-3">
         <i class="bi bi-person"></i> Usuários
       </a>
     </div>
     <div class="col">
-      <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-outline-dark w-100 py-3 fs-6">
+      <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-outline-dark w-100 py-3">
         <i class="bi bi-box"></i> Itens
       </a>
     </div>
     <div class="col">
-      <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="btn btn-outline-dark w-100 py-3 fs-6">
+      <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="btn btn-outline-dark w-100 py-3">
         <i class="bi bi-person-check"></i> Fornecedores
       </a>
     </div>
     <div class="col">
-      <a href="{{ url_for('area_ul_bp.lista_uls') }}" class="btn btn-outline-dark w-100 py-3 fs-6">
+      <a href="{{ url_for('main.nd_grupos_ul') }}" class="btn btn-outline-dark w-100 py-3">
         <i class="bi bi-people-fill"></i> ND / Grupos / UL
       </a>
     </div>
   </div>
 
-  {# Seção: Movimentações #}
-  <h5 class="fw-semibold">Movimentações</h5>
+  <!-- Sessão: Movimentações -->
+  <h5 class="fw-semibold mb-3">Movimentações</h5>
   <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
     <div class="col">
-      <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="btn btn-outline-dark w-100 py-3 fs-6">
+      <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="btn btn-outline-dark w-100 py-3">
         <i class="bi bi-box-arrow-in-down"></i> Entrada de Materiais
       </a>
     </div>
     <div class="col">
-      <a href="{{ url_for('saida_bp.lista_saidas') }}" class="btn btn-outline-danger w-100 py-3 fs-6">
+      <a href="{{ url_for('saida_bp.lista_saidas') }}" class="btn btn-outline-danger w-100 py-3">
         <i class="bi bi-box-arrow-up"></i> Saída de Materiais
       </a>
     </div>
   </div>
 
-  {# Seção: Relatórios e Apoio #}
-  <h5 class="fw-semibold">Relatórios e Apoio</h5>
+  <!-- Sessão: Relatórios e Apoio -->
+  <h5 class="fw-semibold mb-3">Relatórios e Apoio</h5>
   <div class="row row-cols-1 row-cols-md-2 g-3">
     <div class="col">
-      <a href="{{ url_for('relatorio_bp.mapa_fechamento') }}" class="btn btn-outline-dark w-100 py-3 fs-6">
-        <i class="bi bi-graph-up"></i> Mapa de Fechamento Mensal
+      <a href="{{ url_for('relatorio_bp.mapa_fechamento') }}" class="btn btn-outline-dark w-100 py-3">
+        <i class="bi bi-bar-chart-line"></i> Mapa de Fechamento Mensal
       </a>
     </div>
     <div class="col">
-      <button class="btn btn-outline-secondary w-100 py-3 fs-6" disabled>
-        <i class="bi bi-tools"></i> Cadastro de Apoio
+      <button class="btn btn-outline-warning w-100 py-3" disabled>
+        <i class="bi bi-gear"></i> Cadastro de Apoio
       </button>
     </div>
   </div>
-
 </div>
 {% endblock %}

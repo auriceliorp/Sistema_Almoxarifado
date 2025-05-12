@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
-from database import db
+from extensoes import db
 from models import NaturezaDespesa
 
 nd_bp = Blueprint('nd_bp', __name__, url_prefix='/nd')

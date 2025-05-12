@@ -5,12 +5,14 @@ from models import NaturezaDespesa
 
 nd_bp = Blueprint('nd_bp', __name__, url_prefix='/nd')
 
+# ------------------------------ LISTAGEM ------------------------------ #
 @nd_bp.route('/')
 @login_required
 def lista_nd():
     nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
     return render_template('lista_nd.html', nds=nds)
 
+# ------------------------------ NOVA ND ------------------------------ #
 @nd_bp.route('/novo', methods=['GET', 'POST'])
 @login_required
 def nova_nd():
@@ -20,16 +22,19 @@ def nova_nd():
 
         if not codigo or not nome:
             flash('Preencha todos os campos obrigatórios.')
-            return redirect(url_for('nd_bp.nova_nd'))
+            return render_template('form_nd.html', nd=None)
 
         nova = NaturezaDespesa(codigo=codigo, nome=nome)
         db.session.add(nova)
         db.session.commit()
         flash('Natureza de Despesa cadastrada com sucesso!')
-        return redirect(url_for('nd_bp.lista_nd'))
+        # Recarrega o conteúdo da aba após salvar
+        nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
+        return render_template('lista_nd.html', nds=nds)
 
     return render_template('form_nd.html', nd=None)
 
+# ------------------------------ EDITAR ND ------------------------------ #
 @nd_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
 def editar_nd(id):
@@ -40,14 +45,16 @@ def editar_nd(id):
 
         if not nd.codigo or not nd.nome:
             flash('Preencha todos os campos obrigatórios.')
-            return redirect(url_for('nd_bp.editar_nd', id=id))
+            return render_template('form_nd.html', nd=nd)
 
         db.session.commit()
         flash('Natureza de Despesa atualizada com sucesso!')
-        return redirect(url_for('nd_bp.lista_nd'))
+        nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
+        return render_template('lista_nd.html', nds=nds)
 
     return render_template('form_nd.html', nd=nd)
 
+# ------------------------------ EXCLUIR ND ------------------------------ #
 @nd_bp.route('/excluir/<int:id>', methods=['POST'])
 @login_required
 def excluir_nd(id):
@@ -55,4 +62,5 @@ def excluir_nd(id):
     db.session.delete(nd)
     db.session.commit()
     flash('Natureza de Despesa excluída com sucesso!')
-    return redirect(url_for('nd_bp.lista_nd'))
+    nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
+    return render_template('lista_nd.html', nds=nds)

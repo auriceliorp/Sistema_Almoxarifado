@@ -5,7 +5,7 @@ from flask import Blueprint, render_template, request
 from flask_login import login_required
 from sqlalchemy import extract, func
 from app_render import db
-from models import NaturezaDespesa, Grupo, Item, EntradaItem, SaidaItem
+from models import NaturezaDespesa, Grupo, Item, EntradaItem, SaidaItem, EntradaMaterial, SaidaMaterial
 from datetime import datetime
 from decimal import Decimal
 

@@ -107,10 +107,14 @@ def mapa_fechamento():
             'final': float(saldo_inicial + entrada_valor - saida_valor)
         })
 
+    # Lista de anos para o filtro
+    anos_disponiveis = list(range(2020, datetime.now().year + 1))
+
     return render_template('mapa_fechamento.html',
                            relatorio=relatorio,
                            mes=mes,
                            ano=ano,
+                           anos_disponiveis=anos_disponiveis,
                            total_entradas=total_entradas,
                            total_saidas=total_saidas,
                            total_saldo_inicial=total_saldo_inicial,

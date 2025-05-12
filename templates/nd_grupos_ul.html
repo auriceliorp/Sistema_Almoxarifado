@@ -1,75 +1,56 @@
+{# templates/nd_grupos_ul.html #}
 {% extends 'base_simplificada.html' %}
-
-{% block title %}ND / Grupos / UL - Sistema Almoxarifado{% endblock %}
+{% block title %}ND / Grupos / UL{% endblock %}
 
 {% block content %}
 <div class="container py-4">
-  <!-- Cabeçalho -->
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <a href="{{ url_for('main.almoxarifado') }}" class="btn btn-outline-primary">
-      <i class="bi bi-arrow-left-circle"></i> Voltar
-    </a>
-    <h4 class="mb-0 fw-bold text-success">ND / Grupos / UL</h4>
-    <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">
-      <i class="bi bi-box-arrow-right"></i> Sair
-    </a>
-  </div>
+    <!-- Título e Ações -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0 fw-bold text-success">Naturezas de Despesa / Grupos / UL</h4>
+        <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">
+            <i class="bi bi-house"></i> Início
+        </a>
+    </div>
 
-  <!-- Abas -->
-  <ul class="nav nav-tabs" id="tabMenu" role="tablist">
-    <li class="nav-item" role="presentation">
-      <button class="nav-link active" id="tab-nd" data-url="{{ url_for('nd_bp.lista_nd') }}" data-bs-toggle="tab" type="button" role="tab">
-        <i class="bi bi-cash-coin"></i> Natureza de Despesa
-      </button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" id="tab-grupos" data-url="{{ url_for('grupo_bp.lista_grupos') }}" data-bs-toggle="tab" type="button" role="tab">
-        <i class="bi bi-tags"></i> Grupos de Itens
-      </button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" id="tab-uls" data-url="{{ url_for('area_ul_bp.lista_uls') }}" data-bs-toggle="tab" type="button" role="tab">
-        <i class="bi bi-geo-alt"></i> Unidades Locais
-      </button>
-    </li>
-  </ul>
+    <!-- Abas -->
+    <ul class="nav nav-tabs mb-4" id="abas" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-nd" data-url="{{ url_for('nd_bp.lista_nd') }}" type="button">Naturezas de Despesa</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-grupo" data-url="{{ url_for('grupo_bp.lista_grupos') }}" type="button">Grupos de Itens</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-ul" data-url="{{ url_for('area_ul_bp.lista_uls') }}" type="button">Unidades Locais</button>
+        </li>
+    </ul>
 
-  <!-- Conteúdo das abas -->
-  <div class="tab-content border p-4 bg-white shadow-sm rounded-bottom" id="tab-content">
-    <div id="tab-pane-content">Carregando...</div>
-  </div>
+    <!-- Conteúdo dinâmico -->
+    <div id="conteudo-dinamico">
+        {# Conteúdo inicial da aba ativa será carregado via JS #}
+    </div>
 </div>
 
-<!-- Script para carregar abas dinamicamente -->
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const tabButtons = document.querySelectorAll('[data-url]');
-    const contentDiv = document.getElementById('tab-pane-content');
+    document.addEventListener("DOMContentLoaded", function() {
+        function carregarConteudo(url, botao) {
+            fetch(url)
+                .then(res => res.text())
+                .then(html => {
+                    document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
+                    botao.classList.add('active');
+                    document.getElementById("conteudo-dinamico").innerHTML = html;
+                })
+                .catch(err => console.error('Erro ao carregar conteúdo:', err));
+        }
 
-    function loadTabContent(url) {
-      fetch(url)
-        .then(response => response.text())
-        .then(html => {
-          contentDiv.innerHTML = html;
-        })
-        .catch(() => {
-          contentDiv.innerHTML = '<div class="alert alert-danger">Erro ao carregar o conteúdo.</div>';
+        document.querySelectorAll(".nav-link").forEach(btn => {
+            btn.addEventListener("click", () => carregarConteudo(btn.dataset.url, btn));
         });
-    }
 
-    // Carrega a aba ativa ao iniciar
-    const activeTab = document.querySelector('.nav-link.active');
-    if (activeTab) {
-      loadTabContent(activeTab.dataset.url);
-    }
-
-    tabButtons.forEach(button => {
-      button.addEventListener('click', function () {
-        tabButtons.forEach(btn => btn.classList.remove('active'));
-        this.classList.add('active');
-        loadTabContent(this.dataset.url);
-      });
+        // Carregar conteúdo inicial (ND)
+        const inicial = document.querySelector(".nav-link.active");
+        if (inicial) carregarConteudo(inicial.dataset.url, inicial);
     });
-  });
 </script>
 {% endblock %}

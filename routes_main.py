@@ -105,11 +105,6 @@ def esqueci_senha():
 
 # Rota para a página de nd_grupos_ul
 
-from flask import Blueprint, render_template, redirect, url_for
-from flask_login import login_required
-
-main = Blueprint('main', __name__)
-
 @main.route('/')
 def index():
     return redirect(url_for('main.login'))

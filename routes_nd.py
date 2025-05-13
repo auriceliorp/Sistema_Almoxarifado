@@ -6,6 +6,9 @@ from models import NaturezaDespesa
 
 nd_bp = Blueprint('nd_bp', __name__, url_prefix='/nd')
 
+def is_ajax():
+    return request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
 # ------------------------ LISTA ------------------------ #
 @nd_bp.route('/')
 @login_required

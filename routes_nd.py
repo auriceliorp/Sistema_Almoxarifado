@@ -5,7 +5,6 @@ from models import NaturezaDespesa
 
 nd_bp = Blueprint('nd_bp', __name__, url_prefix='/nd')
 
-
 def is_ajax():
     return request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
@@ -35,10 +34,12 @@ def nova_nd():
         db.session.commit()
         flash('Natureza de Despesa cadastrada com sucesso!')
 
+        # Retorna lista após salvar
         nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
         return render_template('partials/nd/lista_nd.html', nds=nds)
 
-    return render_template('partials/nd/form_nd.html', nd=None) if is_ajax() else render_template('nd_grupos_ul.html')
+    # GET → retorna formulário
+    return render_template('partials/nd/form_nd.html', nd=None)
 
 
 # ------------------------------ EDITAR ND ------------------------------ #
@@ -57,10 +58,12 @@ def editar_nd(id):
 
         db.session.commit()
         flash('Natureza de Despesa atualizada com sucesso!')
+
         nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
         return render_template('partials/nd/lista_nd.html', nds=nds)
 
-    return render_template('partials/nd/form_nd.html', nd=nd) if is_ajax() else render_template('nd_grupos_ul.html')
+    # GET → retorna formulário de edição
+    return render_template('partials/nd/form_nd.html', nd=nd)
 
 
 # ------------------------------ EXCLUIR ND ------------------------------ #
@@ -71,5 +74,6 @@ def excluir_nd(id):
     db.session.delete(nd)
     db.session.commit()
     flash('Natureza de Despesa excluída com sucesso!')
+
     nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
     return render_template('partials/nd/lista_nd.html', nds=nds)

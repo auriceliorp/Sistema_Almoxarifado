@@ -1,28 +1,38 @@
-<div class="container mt-4">
-    <h2>Grupos de Itens</h2>
-    <a href="{{ url_for('grupo_bp.novo_grupo') }}" class="btn btn-success mb-3">Novo Grupo</a>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Nome</th>
-                <th>Natureza de Despesa</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for grupo in grupos %}
-            <tr>
-                <td>{{ grupo.nome }}</td>
-                <td>{{ grupo.natureza_despesa.codigo }} - {{ grupo.natureza_despesa.nome }}</td>
-                <td>
-                    <a href="{{ url_for('grupo_bp.editar_grupo', id=grupo.id) }}" class="btn btn-sm btn-warning">Editar</a>
-                    <form action="{{ url_for('grupo_bp.excluir_grupo', id=grupo.id) }}" method="post" style="display:inline;">
-                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Confirma exclusão?')">Excluir</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <a href="{{ url_for('main.home') }}" class="btn btn-secondary mt-3">Voltar</a>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0 text-primary">Grupos de Itens</h5>
+    <a href="{{ url_for('grupo_bp.novo_grupo') }}" class="btn btn-outline-success btn-sm" onclick="carregarConteudo(this.href); return false;">
+        <i class="bi bi-plus-circle"></i> Novo Grupo
+    </a>
 </div>
+
+<table class="table table-bordered table-striped table-sm">
+    <thead class="table-dark">
+        <tr>
+            <th style="width: 60%;">Nome</th>
+            <th style="width: 30%;">Natureza de Despesa</th>
+            <th style="width: 10%;" class="text-center">Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for grupo in grupos %}
+        <tr>
+            <td>{{ grupo.nome }}</td>
+            <td>{{ grupo.natureza.nome }}</td>
+            <td class="text-center">
+                <a href="{{ url_for('grupo_bp.editar_grupo', id=grupo.id) }}" class="btn btn-sm btn-outline-primary" onclick="carregarConteudo(this.href); return false;">
+                    <i class="bi bi-pencil"></i>
+                </a>
+                <form action="{{ url_for('grupo_bp.excluir_grupo', id=grupo.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Deseja realmente excluir este grupo?');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="3" class="text-center text-muted">Nenhum grupo cadastrado.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

@@ -1,100 +1,101 @@
-# routes_area_ul.py
-
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
-from database import db
-from models import Local, UnidadeLocal
+from extensoes import db
+from models import UnidadeLocal, Local
 
-area_ul_bp = Blueprint('area_ul_bp', __name__, url_prefix='/organizacao')
+area_ul_bp = Blueprint('area_ul_bp', __name__, url_prefix='/ul')
 
-# ROTAS DE LOCAL
-@area_ul_bp.route('/locais')
+# Função auxiliar para identificar requisições AJAX
+def is_ajax():
+    return request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+
+# ------------------------------ LISTAGEM ------------------------------ #
+@area_ul_bp.route('/')
 @login_required
-def lista_locais():
-    locais = Local.query.all()
-    return render_template('lista_locais.html', locais=locais)
+def lista_ul():
+    uls = UnidadeLocal.query.order_by(UnidadeLocal.codigo).all()
+    if is_ajax():
+        return render_template('partials/ul/lista_ul.html', uls=uls)
+    return redirect(url_for('main.nd_grupos_ul'))
 
-@area_ul_bp.route('/locais/novo', methods=['GET', 'POST'])
-@login_required
-def novo_local():
-    if request.method == 'POST':
-        descricao = request.form.get('descricao')
-        if not descricao:
-            flash('Descrição é obrigatória.')
-            return redirect(url_for('area_ul_bp.novo_local'))
-        db.session.add(Local(descricao=descricao))
-        db.session.commit()
-        flash('Local cadastrado com sucesso!')
-        return redirect(url_for('area_ul_bp.lista_locais'))
-    return render_template('novo_local.html')
 
-@area_ul_bp.route('/locais/editar/<int:id>', methods=['GET', 'POST'])
+# ------------------------------ NOVA UL ------------------------------ #
+@area_ul_bp.route('/novo', methods=['GET', 'POST'])
 @login_required
-def editar_local(id):
-    local = Local.query.get_or_404(id)
-    if request.method == 'POST':
-        local.descricao = request.form.get('descricao')
-        db.session.commit()
-        flash('Local atualizado com sucesso!')
-        return redirect(url_for('area_ul_bp.lista_locais'))
-    return render_template('novo_local.html', local=local)
+def nova_ul():
+    locais = Local.query.order_by(Local.descricao).all()
 
-@area_ul_bp.route('/locais/excluir/<int:id>', methods=['GET'])
-@login_required
-def excluir_local(id):
-    local = Local.query.get_or_404(id)
-    db.session.delete(local)
-    db.session.commit()
-    flash('Local excluído com sucesso!')
-    return redirect(url_for('area_ul_bp.lista_locais'))
-
-# ROTAS DE UL
-@area_ul_bp.route('/uls')
-@login_required
-def lista_uls():
-    uls = UnidadeLocal.query.all()
-    return render_template('lista_uls.html', uls=uls)
-
-@area_ul_bp.route('/uls/novo', methods=['GET', 'POST'])
-@login_required
-def novo_ul():
-    locais = Local.query.all()
     if request.method == 'POST':
         codigo = request.form.get('codigo')
         descricao = request.form.get('descricao')
         local_id = request.form.get('local_id')
 
-        if not (codigo and descricao and local_id):
-            flash('Todos os campos são obrigatórios.')
-            return redirect(url_for('area_ul_bp.novo_ul'))
+        if not codigo or not descricao or not local_id:
+            flash('Preencha todos os campos obrigatórios.')
+            if is_ajax():
+                return render_template('partials/ul/form_ul.html', ul=None, locais=locais)
+            return redirect(url_for('area_ul_bp.nova_ul'))
 
-        ul = UnidadeLocal(codigo=codigo, descricao=descricao, local_id=local_id)
-        db.session.add(ul)
+        nova = UnidadeLocal(codigo=codigo, descricao=descricao, local_id=local_id)
+        db.session.add(nova)
         db.session.commit()
-        flash('UL cadastrada com sucesso!')
-        return redirect(url_for('area_ul_bp.lista_uls'))
+        flash('Unidade Local cadastrada com sucesso!')
 
-    return render_template('novo_ul.html', locais=locais)
+        if is_ajax():
+            uls = UnidadeLocal.query.order_by(UnidadeLocal.codigo).all()
+            return render_template('partials/ul/lista_ul.html', uls=uls)
+        return redirect(url_for('area_ul_bp.lista_ul'))
 
-@area_ul_bp.route('/uls/editar/<int:id>', methods=['GET', 'POST'])
+    if is_ajax():
+        return render_template('partials/ul/form_ul.html', ul=None, locais=locais)
+    return redirect(url_for('area_ul_bp.lista_ul'))
+
+
+# ------------------------------ EDITAR UL ------------------------------ #
+@area_ul_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
 def editar_ul(id):
     ul = UnidadeLocal.query.get_or_404(id)
-    locais = Local.query.all()
-    if request.method == 'POST':
-        ul.codigo = request.form.get('codigo')
-        ul.descricao = request.form.get('descricao')
-        ul.local_id = request.form.get('local_id')
-        db.session.commit()
-        flash('UL atualizada com sucesso!')
-        return redirect(url_for('area_ul_bp.lista_uls'))
-    return render_template('novo_ul.html', ul=ul, locais=locais)
+    locais = Local.query.order_by(Local.descricao).all()
 
-@area_ul_bp.route('/uls/excluir/<int:id>', methods=['GET'])
+    if request.method == 'POST':
+        codigo = request.form.get('codigo')
+        descricao = request.form.get('descricao')
+        local_id = request.form.get('local_id')
+
+        if not codigo or not descricao or not local_id:
+            flash('Preencha todos os campos obrigatórios.')
+            if is_ajax():
+                return render_template('partials/ul/form_ul.html', ul=ul, locais=locais)
+            return redirect(url_for('area_ul_bp.editar_ul', id=id))
+
+        ul.codigo = codigo
+        ul.descricao = descricao
+        ul.local_id = local_id
+        db.session.commit()
+        flash('Unidade Local atualizada com sucesso!')
+
+        if is_ajax():
+            uls = UnidadeLocal.query.order_by(UnidadeLocal.codigo).all()
+            return render_template('partials/ul/lista_ul.html', uls=uls)
+        return redirect(url_for('area_ul_bp.lista_ul'))
+
+    if is_ajax():
+        return render_template('partials/ul/form_ul.html', ul=ul, locais=locais)
+    return redirect(url_for('area_ul_bp.lista_ul'))
+
+
+# ------------------------------ EXCLUIR UL ------------------------------ #
+@area_ul_bp.route('/excluir/<int:id>', methods=['POST'])
 @login_required
 def excluir_ul(id):
     ul = UnidadeLocal.query.get_or_404(id)
     db.session.delete(ul)
     db.session.commit()
-    flash('UL excluída com sucesso!')
-    return redirect(url_for('area_ul_bp.lista_uls'))
+    flash('Unidade Local excluída com sucesso!')
+
+    if is_ajax():
+        uls = UnidadeLocal.query.order_by(UnidadeLocal.codigo).all()
+        return render_template('partials/ul/lista_ul.html', uls=uls)
+    return redirect(url_for('area_ul_bp.lista_ul'))

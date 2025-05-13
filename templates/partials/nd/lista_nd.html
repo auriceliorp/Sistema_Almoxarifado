@@ -1,6 +1,8 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h5 class="mb-0 text-primary">Naturezas de Despesa</h5>
-    <a href="{{ url_for('nd_bp.nova_nd') }}" class="btn btn-outline-success btn-sm" onclick="carregarConteudo(this.href); return false;">
+    <a href="{{ url_for('nd_bp.nova_nd') }}"
+       class="btn btn-outline-success btn-sm"
+       onclick="carregarConteudo(this.href); return false;">
         <i class="bi bi-plus-circle"></i> Nova ND
     </a>
 </div>
@@ -19,10 +21,25 @@
             <td>{{ nd.codigo }}</td>
             <td>{{ nd.nome }}</td>
             <td class="text-center">
-                <a href="{{ url_for('nd_bp.editar_nd', id=nd.id) }}" class="btn btn-sm btn-outline-primary" onclick="carregarConteudo(this.href); return false;">
+                <a href="{{ url_for('nd_bp.editar_nd', id=nd.id) }}"
+                   class="btn btn-sm btn-outline-primary"
+                   onclick="carregarConteudo(this.href); return false;">
                     <i class="bi bi-pencil"></i>
                 </a>
-                <form action="{{ url_for('nd_bp.excluir_nd', id=nd.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Deseja realmente excluir esta ND?');">
+
+                <form action="{{ url_for('nd_bp.excluir_nd', id=nd.id) }}"
+                      method="POST"
+                      class="d-inline"
+                      onsubmit="event.preventDefault(); if(confirm('Deseja realmente excluir esta ND?')) {
+                          fetch(this.action, {
+                              method: 'POST',
+                              headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                          })
+                          .then(res => res.text())
+                          .then(html => {
+                              document.getElementById('conteudo-dinamico').innerHTML = html;
+                          });
+                      }">
                     <button type="submit" class="btn btn-sm btn-outline-danger">
                         <i class="bi bi-trash"></i>
                     </button>

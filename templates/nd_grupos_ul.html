@@ -10,6 +10,7 @@
         </a>
     </div>
 
+    <!-- Abas de navegação -->
     <ul class="nav nav-tabs mb-4" id="abas" role="tablist">
         <li class="nav-item">
             <button class="nav-link active" data-url="{{ url_for('nd_bp.lista_nd') }}" type="button">Naturezas de Despesa</button>
@@ -18,29 +19,48 @@
             <button class="nav-link" data-url="{{ url_for('grupo_bp.lista_grupos') }}" type="button">Grupos de Itens</button>
         </li>
         <li class="nav-item">
-            <button class="nav-link" data-url="{{ url_for('area_ul_bp.lista_uls') }}" type="button">Unidades Locais</button>
+            <button class="nav-link" data-url="{{ url_for('area_ul_bp.lista_ul') }}" type="button">Unidades Locais</button>
         </li>
     </ul>
 
-    <div id="conteudo-dinamico"></div>
+    <!-- Conteúdo dinâmico das abas -->
+    <div id="conteudo-dinamico">
+        <div class="text-center text-muted">Carregando conteúdo...</div>
+    </div>
 </div>
 
+<!-- Script de navegação dinâmica -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        function carregarConteudo(url, botao) {
+        const conteudo = document.getElementById("conteudo-dinamico");
+
+        function carregarConteudo(url, botao = null) {
+            // Impede recarregamento da aba ativa
+            if (botao && botao.classList.contains("active")) return;
+
+            conteudo.innerHTML = '<div class="text-center text-muted">Carregando...</div>';
+
             fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                .then(res => res.text())
+                .then(res => {
+                    if (!res.ok) throw new Error("Erro ao carregar conteúdo.");
+                    return res.text();
+                })
                 .then(html => {
                     document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
                     if (botao) botao.classList.add('active');
-                    document.getElementById("conteudo-dinamico").innerHTML = html;
+                    conteudo.innerHTML = html;
+                })
+                .catch(error => {
+                    conteudo.innerHTML = `<div class="alert alert-danger">Erro ao carregar o conteúdo: ${error.message}</div>`;
                 });
         }
 
+        // Evento de clique nas abas
         document.querySelectorAll(".nav-link").forEach(btn => {
             btn.addEventListener("click", () => carregarConteudo(btn.dataset.url, btn));
         });
 
+        // Eventos de links e formulários dentro do conteúdo dinâmico
         document.addEventListener("click", function (e) {
             const link = e.target.closest("a");
             if (link && link.hasAttribute("data-ajax")) {
@@ -60,14 +80,14 @@
                 })
                 .then(res => res.text())
                 .then(html => {
-                    document.getElementById("conteudo-dinamico").innerHTML = html;
+                    conteudo.innerHTML = html;
                 });
             }
         });
 
+        // Carrega a primeira aba ao iniciar
         const inicial = document.querySelector(".nav-link.active");
         if (inicial) carregarConteudo(inicial.dataset.url, inicial);
     });
 </script>
 {% endblock %}
-

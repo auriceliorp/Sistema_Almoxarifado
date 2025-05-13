@@ -10,7 +10,7 @@
         </a>
     </div>
 
-    <!-- Navegação por abas -->
+    <!-- Abas -->
     <ul class="nav nav-tabs mb-4" id="abas" role="tablist">
         <li class="nav-item">
             <button class="nav-link active" data-url="{{ url_for('nd_bp.lista_nd') }}" type="button">Naturezas de Despesa</button>
@@ -23,7 +23,7 @@
         </li>
     </ul>
 
-    <!-- Conteúdo dinâmico das abas -->
+    <!-- Conteúdo dinâmico -->
     <div id="conteudo-dinamico">
         <div class="text-center text-muted">Carregando conteúdo...</div>
     </div>
@@ -31,91 +31,90 @@
 
 <!-- Script de carregamento dinâmico -->
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const conteudo = document.getElementById("conteudo-dinamico");
+    const conteudo = document.getElementById("conteudo-dinamico");
 
-        function carregarConteudo(url, botao = null) {
-            if (botao && botao.classList.contains("active")) return;
+    function carregarConteudo(url, botao = null) {
+        if (botao && botao.classList.contains("active")) return;
 
-            // Spinner animado durante o carregamento
-            conteudo.innerHTML = `
-                <div class="text-center py-5 text-secondary">
-                    <div class="spinner-border" role="status" style="width: 3rem; height: 3rem;">
-                        <span class="visually-hidden">Carregando...</span>
-                    </div>
-                    <p class="mt-3">Carregando conteúdo...</p>
-                </div>`;
+        conteudo.innerHTML = `
+            <div class="text-center py-5 text-secondary">
+                <div class="spinner-border" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Carregando...</span>
+                </div>
+                <p class="mt-3">Carregando conteúdo...</p>
+            </div>`;
 
-            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                .then(res => {
-                    if (res.redirected) {
-                        window.location.href = res.url;
-                        return;
-                    }
-                    if (!res.ok) throw new Error("Erro ao carregar conteúdo.");
-                    return res.text();
-                })
-                .then(html => {
-                    document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
-                    if (botao) botao.classList.add('active');
-                    conteudo.innerHTML = html;
-                })
-                .catch(error => {
-                    conteudo.innerHTML = `
-                        <div class="alert alert-danger text-center my-4">
-                            Erro ao carregar o conteúdo: ${error.message}
-                        </div>`;
-                });
-        }
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(res => {
+                if (res.redirected) {
+                    window.location.href = res.url;
+                    return;
+                }
+                if (!res.ok) throw new Error("Erro ao carregar conteúdo.");
+                return res.text();
+            })
+            .then(html => {
+                document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
+                if (botao) botao.classList.add('active');
+                conteudo.innerHTML = html;
+            })
+            .catch(error => {
+                conteudo.innerHTML = `
+                    <div class="alert alert-danger text-center my-4">
+                        Erro ao carregar o conteúdo: ${error.message}
+                    </div>`;
+            });
+    }
 
-        // Carregamento inicial
+    // Carregamento automático após renderização total
+    window.addEventListener('load', () => {
         const inicial = document.querySelector(".nav-link.active");
         if (inicial) carregarConteudo(inicial.dataset.url, inicial);
+    });
 
-        // Ação ao clicar nas abas
-        document.querySelectorAll(".nav-link").forEach(btn => {
-            btn.addEventListener("click", () => carregarConteudo(btn.dataset.url, btn));
-        });
+    // Clique nas abas
+    document.addEventListener("click", function (e) {
+        const tab = e.target.closest(".nav-link");
+        if (tab && tab.dataset.url) {
+            e.preventDefault();
+            carregarConteudo(tab.dataset.url, tab);
+        }
 
-        // Ação em links internos com data-ajax (opcional)
-        document.addEventListener("click", function (e) {
-            const link = e.target.closest("a");
-            if (link && link.hasAttribute("data-ajax")) {
-                e.preventDefault();
-                carregarConteudo(link.href);
-            }
-        });
+        // Clique em links com atributo data-ajax
+        const ajaxLink = e.target.closest("a[data-ajax]");
+        if (ajaxLink) {
+            e.preventDefault();
+            carregarConteudo(ajaxLink.href);
+        }
+    });
 
-        // Submissão de formulários dentro do conteúdo dinâmico
-        document.addEventListener("submit", function (e) {
-            const form = e.target;
-            if (form.closest("#conteudo-dinamico")) {
-                e.preventDefault();
-                fetch(form.action, {
-                    method: "POST",
-                    body: new FormData(form),
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                })
-                .then(res => {
-                    if (res.redirected) {
-                        window.location.href = res.url;
-                        return;
-                    }
-                    return res.text();
-                })
-                .then(html => {
-                    conteudo.innerHTML = html;
-                })
-                .catch(error => {
-                    conteudo.innerHTML = `
-                        <div class="alert alert-danger text-center my-4">
-                            Erro ao enviar o formulário: ${error.message}
-                        </div>`;
-                });
-            }
-        });
+    // Submissão de formulários via AJAX
+    document.addEventListener("submit", function (e) {
+        const form = e.target;
+        if (form.closest("#conteudo-dinamico")) {
+            e.preventDefault();
+            fetch(form.action, {
+                method: "POST",
+                body: new FormData(form),
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(res => {
+                if (res.redirected) {
+                    window.location.href = res.url;
+                    return;
+                }
+                return res.text();
+            })
+            .then(html => {
+                conteudo.innerHTML = html;
+            })
+            .catch(error => {
+                conteudo.innerHTML = `
+                    <div class="alert alert-danger text-center my-4">
+                        Erro ao enviar o formulário: ${error.message}
+                    </div>`;
+            });
+        }
     });
 </script>
-
 {% endblock %}
-

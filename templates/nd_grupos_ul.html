@@ -28,7 +28,7 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         function carregarConteudo(url, botao) {
-            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            fetch(url)
                 .then(res => res.text())
                 .then(html => {
                     document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
@@ -41,26 +41,18 @@
             btn.addEventListener("click", () => carregarConteudo(btn.dataset.url, btn));
         });
 
-        document.addEventListener("click", function (e) {
-            const link = e.target.closest("a");
-            if (link && link.hasAttribute("data-ajax")) {
-                e.preventDefault();
-                carregarConteudo(link.href);
-            }
-        });
-
         document.addEventListener("submit", function (e) {
             const form = e.target;
             if (form.closest("#conteudo-dinamico")) {
                 e.preventDefault();
                 fetch(form.action, {
                     method: "POST",
-                    body: new FormData(form),
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    body: new FormData(form)
                 })
                 .then(res => res.text())
                 .then(html => {
-                    document.getElementById("conteudo-dinamico").innerHTML = html;
+                    const tabNd = document.querySelector(".nav-link.active[data-url*='/nd']")
+                    if (tabNd) carregarConteudo(tabNd.dataset.url, tabNd);
                 });
             }
         });

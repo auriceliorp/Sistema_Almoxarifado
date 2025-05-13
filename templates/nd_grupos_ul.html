@@ -29,9 +29,19 @@
     </div>
 </div>
 
+<!-- Estilo adicional para aba ativa -->
+<style>
+    .nav-tabs .nav-link.active {
+        background-color: #d4edda !important;
+        font-weight: bold;
+        border-bottom: 2px solid #28a745;
+    }
+</style>
+
 <!-- Script de carregamento dinâmico -->
 <script>
     const conteudo = document.getElementById("conteudo-dinamico");
+    let abaAtiva = null;
 
     function carregarConteudo(url, botao = null) {
         if (botao && botao.classList.contains("active")) return;
@@ -55,7 +65,12 @@
             })
             .then(html => {
                 document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
-                if (botao) botao.classList.add('active');
+                if (botao) {
+                    botao.classList.add('active');
+                    abaAtiva = botao;
+                } else if (abaAtiva) {
+                    abaAtiva.classList.add('active');
+                }
                 conteudo.innerHTML = html;
             })
             .catch(error => {
@@ -66,13 +81,18 @@
             });
     }
 
-    // Carregamento automático após renderização total
-    window.addEventListener('load', () => {
-        const inicial = document.querySelector(".nav-link.active");
-        if (inicial) carregarConteudo(inicial.dataset.url, inicial);
+    // Força o carregamento da aba inicial
+    document.addEventListener("DOMContentLoaded", () => {
+        setTimeout(() => {
+            const inicial = document.querySelector(".nav-link.active");
+            if (inicial) {
+                abaAtiva = inicial;
+                carregarConteudo(inicial.dataset.url, inicial);
+            }
+        }, 10);
     });
 
-    // Clique nas abas
+    // Clique nas abas e links AJAX
     document.addEventListener("click", function (e) {
         const tab = e.target.closest(".nav-link");
         if (tab && tab.dataset.url) {
@@ -80,7 +100,6 @@
             carregarConteudo(tab.dataset.url, tab);
         }
 
-        // Clique em links com atributo data-ajax
         const ajaxLink = e.target.closest("a[data-ajax]");
         if (ajaxLink) {
             e.preventDefault();
@@ -107,6 +126,7 @@
             })
             .then(html => {
                 conteudo.innerHTML = html;
+                if (abaAtiva) abaAtiva.classList.add("active");
             })
             .catch(error => {
                 conteudo.innerHTML = `

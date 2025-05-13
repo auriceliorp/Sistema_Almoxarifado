@@ -62,9 +62,9 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .then(res => {
                 if (!res.ok) throw new Error("Erro ao salvar");
-                return res.json();
+                return res.text();
             })
-            .then(data => {
+            .then(() => {
                 const tabNd = document.getElementById("tab-nd");
                 if (tabNd) carregarConteudo(tabNd.dataset.url, tabNd);
             })
@@ -77,5 +77,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (inicial) carregarConteudo(inicial.dataset.url, inicial);
 });
 </script>
+
 {% endblock %}
 

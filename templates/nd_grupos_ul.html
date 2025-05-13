@@ -10,7 +10,7 @@
         </a>
     </div>
 
-    <!-- Abas de navegação -->
+    <!-- Navegação por abas -->
     <ul class="nav nav-tabs mb-4" id="abas" role="tablist">
         <li class="nav-item">
             <button class="nav-link active" data-url="{{ url_for('nd_bp.lista_nd') }}" type="button">Naturezas de Despesa</button>
@@ -29,13 +29,13 @@
     </div>
 </div>
 
-<!-- Script de navegação dinâmica -->
+<!-- Script de carregamento dinâmico -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const conteudo = document.getElementById("conteudo-dinamico");
 
         function carregarConteudo(url, botao = null) {
-            // Impede recarregamento da aba ativa
+            // Evita recarregar a aba ativa
             if (botao && botao.classList.contains("active")) return;
 
             conteudo.innerHTML = '<div class="text-center text-muted">Carregando...</div>';
@@ -55,12 +55,12 @@
                 });
         }
 
-        // Evento de clique nas abas
+        // Clique nas abas
         document.querySelectorAll(".nav-link").forEach(btn => {
             btn.addEventListener("click", () => carregarConteudo(btn.dataset.url, btn));
         });
 
-        // Eventos de links e formulários dentro do conteúdo dinâmico
+        // Links internos com data-ajax (caso queira usar)
         document.addEventListener("click", function (e) {
             const link = e.target.closest("a");
             if (link && link.hasAttribute("data-ajax")) {
@@ -69,6 +69,7 @@
             }
         });
 
+        // Submissão de formulários dentro do conteúdo dinâmico
         document.addEventListener("submit", function (e) {
             const form = e.target;
             if (form.closest("#conteudo-dinamico")) {
@@ -85,9 +86,10 @@
             }
         });
 
-        // Carrega a primeira aba ao iniciar
+        // Carregar a primeira aba automaticamente
         const inicial = document.querySelector(".nav-link.active");
         if (inicial) carregarConteudo(inicial.dataset.url, inicial);
     });
 </script>
 {% endblock %}
+

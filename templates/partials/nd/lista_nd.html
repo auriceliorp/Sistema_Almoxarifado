@@ -1,1 +1,45 @@
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0 text-primary">Naturezas de Despesa</h5>
+        <a href="{{ url_for('nd_bp.nova_nd') }}"
+           class="btn btn-outline-success btn-sm"
+           onclick="carregarConteudo(this.href); return false;">
+            <i class="bi bi-plus-circle"></i> Nova ND
+        </a>
+    </div>
 
+    <table class="table table-bordered table-striped table-sm">
+        <thead class="table-dark">
+            <tr>
+                <th style="width: 20%;">Código</th>
+                <th style="width: 60%;">Nome</th>
+                <th style="width: 20%;" class="text-center">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for nd in nds %}
+            <tr>
+                <td>{{ nd.codigo }}</td>
+                <td>{{ nd.nome }}</td>
+                <td class="text-center">
+                    <a href="{{ url_for('nd_bp.editar_nd', id=nd.id) }}"
+                       class="btn btn-sm btn-outline-primary"
+                       onclick="carregarConteudo(this.href); return false;">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <form action="{{ url_for('nd_bp.excluir_nd', id=nd.id) }}" method="POST" class="d-inline"
+                          onsubmit="return confirm('Deseja realmente excluir esta ND?');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="3" class="text-center text-muted">Nenhuma ND cadastrada.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

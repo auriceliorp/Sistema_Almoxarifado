@@ -5,6 +5,7 @@ from models import NaturezaDespesa
 
 nd_bp = Blueprint('nd_bp', __name__, url_prefix='/nd')
 
+# Função para identificar requisição via AJAX (JS Fetch)
 def is_ajax_request():
     return request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
@@ -13,7 +14,9 @@ def is_ajax_request():
 @login_required
 def lista_nd():
     nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
-    return render_template('partials/nd/lista_nd.html', nds=nds)
+    if is_ajax_request():
+        return render_template('partials/nd/lista_nd.html', nds=nds)
+    return render_template('nd_grupos_ul.html')  # Carrega abas se for acesso direto
 
 # ------------------------------ NOVA ND ------------------------------ #
 @nd_bp.route('/novo', methods=['GET', 'POST'])
@@ -31,16 +34,20 @@ def nova_nd():
         db.session.add(nova)
         db.session.commit()
         flash('Natureza de Despesa cadastrada com sucesso!')
+
         nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
         return render_template('partials/nd/lista_nd.html', nds=nds)
 
-    return render_template('partials/nd/form_nd.html', nd=None)
+    if is_ajax_request():
+        return render_template('partials/nd/form_nd.html', nd=None)
+    return render_template('nd_grupos_ul.html')
 
 # ------------------------------ EDITAR ND ------------------------------ #
 @nd_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
 def editar_nd(id):
     nd = NaturezaDespesa.query.get_or_404(id)
+
     if request.method == 'POST':
         nd.codigo = request.form.get('codigo')
         nd.nome = request.form.get('nome')
@@ -51,10 +58,13 @@ def editar_nd(id):
 
         db.session.commit()
         flash('Natureza de Despesa atualizada com sucesso!')
+
         nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
         return render_template('partials/nd/lista_nd.html', nds=nds)
 
-    return render_template('partials/nd/form_nd.html', nd=nd)
+    if is_ajax_request():
+        return render_template('partials/nd/form_nd.html', nd=nd)
+    return render_template('nd_grupos_ul.html')
 
 # ------------------------------ EXCLUIR ND ------------------------------ #
 @nd_bp.route('/excluir/<int:id>', methods=['POST'])
@@ -64,5 +74,6 @@ def excluir_nd(id):
     db.session.delete(nd)
     db.session.commit()
     flash('Natureza de Despesa excluída com sucesso!')
+
     nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
     return render_template('partials/nd/lista_nd.html', nds=nds)

@@ -1,8 +1,6 @@
-{% extends 'base.html' %}
-
-{% block content %}
-<div class="container mt-5">
-    <h2 class="mb-4">Editar Natureza de Despesa</h2>
+<div class="container">
+    <div class="mb-4">
+        <h5 class="text-primary">{{ 'Editar ND' if nd else 'Nova ND' }}</h5>
 
     <form method="POST">
         <div class="mb-3">
@@ -30,5 +28,5 @@
             <button type="submit" class="btn btn-primary">Salvar Alterações</button>
         </div>
     </form>
+  </div>
 </div>
-{% endblock %}

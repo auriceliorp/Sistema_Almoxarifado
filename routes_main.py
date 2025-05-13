@@ -106,4 +106,7 @@ def esqueci_senha():
 @main.route('/nd_grupos_ul')
 @login_required
 def nd_grupos_ul():
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        # Evita duplicação: NÃO carregar a estrutura inteira novamente
+        return '', 204  # Ou retorne algo mínimo
     return render_template('nd_grupos_ul.html')

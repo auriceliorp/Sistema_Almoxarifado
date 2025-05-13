@@ -1,10 +1,12 @@
-from flask import Blueprint, render_template, request, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
 from extensoes import db
 from models import NaturezaDespesa
 
+# Criação do blueprint
 nd_bp = Blueprint('nd_bp', __name__, url_prefix='/nd')
 
+# Função auxiliar para detectar requisições AJAX
 def is_ajax():
     return request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
@@ -14,7 +16,9 @@ def is_ajax():
 @login_required
 def lista_nd():
     nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
-    return render_template('partials/nd/lista_nd.html', nds=nds)
+    if is_ajax():
+        return render_template('partials/nd/lista_nd.html', nds=nds)
+    return redirect(url_for('main.nd_grupos_ul'))  # fallback para página com abas
 
 
 # ------------------------------ NOVA ND ------------------------------ #
@@ -27,19 +31,24 @@ def nova_nd():
 
         if not codigo or not nome:
             flash('Preencha todos os campos obrigatórios.')
-            return render_template('partials/nd/form_nd.html', nd=None)
+            if is_ajax():
+                return render_template('partials/nd/form_nd.html', nd=None)
+            return redirect(url_for('nd_bp.nova_nd'))
 
         nova = NaturezaDespesa(codigo=codigo, nome=nome)
         db.session.add(nova)
         db.session.commit()
         flash('Natureza de Despesa cadastrada com sucesso!')
 
-        # Retorna lista após salvar
-        nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
-        return render_template('partials/nd/lista_nd.html', nds=nds)
+        if is_ajax():
+            nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
+            return render_template('partials/nd/lista_nd.html', nds=nds)
+        return redirect(url_for('nd_bp.lista_nd'))
 
-    # GET → retorna formulário
-    return render_template('partials/nd/form_nd.html', nd=None)
+    # GET → formulário de criação
+    if is_ajax():
+        return render_template('partials/nd/form_nd.html', nd=None)
+    return redirect(url_for('nd_bp.lista_nd'))
 
 
 # ------------------------------ EDITAR ND ------------------------------ #
@@ -49,21 +58,29 @@ def editar_nd(id):
     nd = NaturezaDespesa.query.get_or_404(id)
 
     if request.method == 'POST':
-        nd.codigo = request.form.get('codigo')
-        nd.nome = request.form.get('nome')
+        codigo = request.form.get('codigo')
+        nome = request.form.get('nome')
 
-        if not nd.codigo or not nd.nome:
+        if not codigo or not nome:
             flash('Preencha todos os campos obrigatórios.')
-            return render_template('partials/nd/form_nd.html', nd=nd)
+            if is_ajax():
+                return render_template('partials/nd/form_nd.html', nd=nd)
+            return redirect(url_for('nd_bp.editar_nd', id=id))
 
+        nd.codigo = codigo
+        nd.nome = nome
         db.session.commit()
         flash('Natureza de Despesa atualizada com sucesso!')
 
-        nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
-        return render_template('partials/nd/lista_nd.html', nds=nds)
+        if is_ajax():
+            nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
+            return render_template('partials/nd/lista_nd.html', nds=nds)
+        return redirect(url_for('nd_bp.lista_nd'))
 
-    # GET → retorna formulário de edição
-    return render_template('partials/nd/form_nd.html', nd=nd)
+    # GET → formulário de edição
+    if is_ajax():
+        return render_template('partials/nd/form_nd.html', nd=nd)
+    return redirect(url_for('nd_bp.lista_nd'))
 
 
 # ------------------------------ EXCLUIR ND ------------------------------ #
@@ -75,5 +92,7 @@ def excluir_nd(id):
     db.session.commit()
     flash('Natureza de Despesa excluída com sucesso!')
 
-    nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
-    return render_template('partials/nd/lista_nd.html', nds=nds)
+    if is_ajax():
+        nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
+        return render_template('partials/nd/lista_nd.html', nds=nds)
+    return redirect(url_for('nd_bp.lista_nd'))

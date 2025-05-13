@@ -1,130 +1,73 @@
 {% extends 'base_simplificada.html' %}
-
 {% block title %}ND / Grupos / UL{% endblock %}
 
-
-
 {% block content %}
-
 <div class="container py-4">
-
     <div class="d-flex justify-content-between align-items-center mb-3">
-
         <h4 class="mb-0 fw-bold text-success">Naturezas de Despesa / Grupos / UL</h4>
-
         <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">
-
             <i class="bi bi-house"></i> Início
-
         </a>
-
     </div>
 
-
-
     <ul class="nav nav-tabs mb-4" id="abas" role="tablist">
-
         <li class="nav-item">
-
             <button class="nav-link active" data-url="{{ url_for('nd_bp.lista_nd') }}" type="button">Naturezas de Despesa</button>
-
         </li>
-
         <li class="nav-item">
-
             <button class="nav-link" data-url="{{ url_for('grupo_bp.lista_grupos') }}" type="button">Grupos de Itens</button>
-
         </li>
-
         <li class="nav-item">
-
             <button class="nav-link" data-url="{{ url_for('area_ul_bp.lista_uls') }}" type="button">Unidades Locais</button>
-
         </li>
-
     </ul>
 
-
-
     <div id="conteudo-dinamico"></div>
-
 </div>
 
-
-
 <script>
-
     document.addEventListener("DOMContentLoaded", function () {
-
         function carregarConteudo(url, botao) {
- fetch(url)
-
-
-
+            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
                 .then(res => res.text())
-
-
                 .then(html => {
-
-
                     document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
-
-
                     if (botao) botao.classList.add('active');
-
-
                     document.getElementById("conteudo-dinamico").innerHTML = html;
-
-
                 });
-}
-
-
-
+        }
 
         document.querySelectorAll(".nav-link").forEach(btn => {
-
             btn.addEventListener("click", () => carregarConteudo(btn.dataset.url, btn));
-
         });
-    document.addEventListener("submit", function (e) {
 
-            const form = e.target;
-
-            if (form.closest("#conteudo-dinamico")) {
-
+        document.addEventListener("click", function (e) {
+            const link = e.target.closest("a");
+            if (link && link.hasAttribute("data-ajax")) {
                 e.preventDefault();
-
-                fetch(form.action, {
-
-                    method: "POST",
-
-                    body: new FormData(form)
-
-                })
-
-                .then(res => res.text())
-
-                .then(html => {
-
-                    const tabNd = document.querySelector(".nav-link.active[data-url*='/nd']")
-
-                    if (tabNd) carregarConteudo(tabNd.dataset.url, tabNd);
-
-                });
-
+                carregarConteudo(link.href);
             }
-
         });
 
-
+        document.addEventListener("submit", function (e) {
+            const form = e.target;
+            if (form.closest("#conteudo-dinamico")) {
+                e.preventDefault();
+                fetch(form.action, {
+                    method: "POST",
+                    body: new FormData(form),
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(res => res.text())
+                .then(html => {
+                    document.getElementById("conteudo-dinamico").innerHTML = html;
+                });
+            }
+        });
 
         const inicial = document.querySelector(".nav-link.active");
-
         if (inicial) carregarConteudo(inicial.dataset.url, inicial);
-
     });
-
 </script>
-
 {% endblock %}
+

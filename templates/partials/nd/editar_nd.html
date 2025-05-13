@@ -1,0 +1,28 @@
+<div class="container">
+    <div class="mb-4">
+        <h5 class="text-primary">Editar ND</h5>
+
+        <form method="post">
+            <div class="mb-3">
+                <label for="codigo" class="form-label">Código *</label>
+                <input type="text" class="form-control" id="codigo" name="codigo" value="{{ nd.codigo }}" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="nome" class="form-label">Nome *</label>
+                <input type="text" class="form-control" id="nome" name="nome" value="{{ nd.nome }}" required>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+                <a href="{{ url_for('nd_bp.lista_nd') }}"
+                   class="btn btn-outline-secondary"
+                   onclick="carregarConteudo(this.href); return false;">
+                    <i class="bi bi-x-circle"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle"></i> Salvar Alterações
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

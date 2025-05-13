@@ -13,7 +13,6 @@ def is_ajax_request():
 @login_required
 def lista_nd():
     nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
-    template = 'partials/nd/lista_nd.html' if is_ajax_request() else 'nd_grupos_ul.html'
     return render_template(template, nds=nds)
 
 # ------------------------------ NOVA ND ------------------------------ #

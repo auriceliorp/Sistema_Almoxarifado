@@ -19,7 +19,7 @@
         {% for grupo in grupos %}
         <tr>
             <td>{{ grupo.nome }}</td>
-            <td>{{ grupo.natureza_despeza.nome }}</td>
+            <td>{{ grupo.natureza_despesa.nome }}</td>
             <td class="text-center">
                 <a href="{{ url_for('grupo_bp.editar_grupo', id=grupo.id) }}"
                    class="btn btn-sm btn-outline-primary"

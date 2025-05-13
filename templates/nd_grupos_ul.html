@@ -28,17 +28,29 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         function carregarConteudo(url, botao) {
-            fetch(url)
-                .then(res => res.text())
-                .then(html => {
-                    document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
-                    if (botao) botao.classList.add('active');
-                    document.getElementById("conteudo-dinamico").innerHTML = html;
-                });
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(res => res.text())
+            .then(html => {
+                document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
+                if (botao) botao.classList.add('active');
+                document.getElementById("conteudo-dinamico").innerHTML = html;
+            });
         }
 
         document.querySelectorAll(".nav-link").forEach(btn => {
             btn.addEventListener("click", () => carregarConteudo(btn.dataset.url, btn));
+        });
+
+        document.addEventListener("click", function(e) {
+            if (e.target.closest('a') && e.target.closest('a').hasAttribute('onclick')) {
+                e.preventDefault();
+                const url = e.target.closest('a').getAttribute('href');
+                carregarConteudo(url);
+            }
         });
 
         document.addEventListener("submit", function (e) {

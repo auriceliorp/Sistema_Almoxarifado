@@ -1,9 +1,7 @@
-{# templates/nd_grupos_ul.html #}
 {% extends 'base_simplificada.html' %}
 {% block title %}ND / Grupos / UL{% endblock %}
 
 {% block content %}
-
 <div class="container py-4">
     <!-- Título e Ações -->
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -26,32 +24,58 @@
         </li>
     </ul>
 
-    <!-- Conteúdo dinâmico -->
+    <!-- Conteúdo dinâmico das abas -->
     <div id="conteudo-dinamico">
-        {# Conteúdo inicial da aba ativa será carregado via JS #}
+        {# O conteúdo será carregado via JavaScript #}
     </div>
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        function carregarConteudo(url, botao) {
-            fetch(url)
-                .then(res => res.text())
-                .then(html => {
-                    document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
-                    botao.classList.add('active');
-                    document.getElementById("conteudo-dinamico").innerHTML = html;
-                })
-                .catch(err => console.error('Erro ao carregar conteúdo:', err));
-        }
+document.addEventListener("DOMContentLoaded", function () {
+    // Carregar conteúdo da aba clicada
+    function carregarConteudo(url, botao) {
+        fetch(url)
+            .then(res => res.text())
+            .then(html => {
+                document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
+                if (botao) botao.classList.add('active');
+                document.getElementById("conteudo-dinamico").innerHTML = html;
+            })
+            .catch(err => console.error('Erro ao carregar conteúdo:', err));
+    }
 
-        document.querySelectorAll(".nav-link").forEach(btn => {
-            btn.addEventListener("click", () => carregarConteudo(btn.dataset.url, btn));
-        });
-
-        // Carregar conteúdo inicial (ND)
-        const inicial = document.querySelector(".nav-link.active");
-        if (inicial) carregarConteudo(inicial.dataset.url, inicial);
+    // Atribui evento às abas
+    document.querySelectorAll(".nav-link").forEach(btn => {
+        btn.addEventListener("click", () => carregarConteudo(btn.dataset.url, btn));
     });
+
+    // Intercepta todos os formulários carregados dinamicamente
+    document.addEventListener("submit", function (e) {
+        const form = e.target;
+        if (form.closest("#conteudo-dinamico")) {
+            e.preventDefault();
+            const url = form.action || window.location.href;
+
+            fetch(url, {
+                method: "POST",
+                body: new FormData(form)
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("Erro ao salvar");
+                return res.json();
+            })
+            .then(data => {
+                const tabNd = document.getElementById("tab-nd");
+                if (tabNd) carregarConteudo(tabNd.dataset.url, tabNd);
+            })
+            .catch(err => alert(err.message));
+        }
+    });
+
+    // Carrega a aba inicial (ND)
+    const inicial = document.querySelector(".nav-link.active");
+    if (inicial) carregarConteudo(inicial.dataset.url, inicial);
+});
 </script>
 {% endblock %}
+

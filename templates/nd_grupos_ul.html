@@ -29,7 +29,7 @@
     </div>
 </div>
 
-<!-- Estilo adicional para aba ativa -->
+<!-- Estilo para destacar a aba ativa -->
 <style>
     .nav-tabs .nav-link.active {
         background-color: #d4edda !important;
@@ -38,7 +38,7 @@
     }
 </style>
 
-<!-- Script de carregamento dinâmico -->
+<!-- Script AJAX com tratamento de primeira aba -->
 <script>
     const conteudo = document.getElementById("conteudo-dinamico");
     let abaAtiva = null;
@@ -81,15 +81,16 @@
             });
     }
 
-    // Força o carregamento da aba inicial
+    // Força carregamento da aba ativa após renderização garantida
     document.addEventListener("DOMContentLoaded", () => {
-        setTimeout(() => {
+        const tentativaCarregamento = setInterval(() => {
             const inicial = document.querySelector(".nav-link.active");
-            if (inicial) {
+            if (inicial && inicial.dataset.url) {
+                clearInterval(tentativaCarregamento);
                 abaAtiva = inicial;
                 carregarConteudo(inicial.dataset.url, inicial);
             }
-        }, 10);
+        }, 50);
     });
 
     // Clique nas abas e links AJAX

@@ -1,69 +1,77 @@
-<!-- templates/partials/sidebar.html -->
-<nav class="sidebar bg-light border-end">
-  <div class="sidebar-header p-3 border-bottom">
-    <div class="d-flex align-items-center">
-      <i class="bi bi-person-circle fs-3 me-2 text-secondary"></i>
-      <div>
-        <strong>Usuário:</strong><br>
-        Fulano
-      </div>
-    </div>
+{# templates/partials/sidebar.html #}
+
+<!-- Botão hamburguer para dispositivos móveis -->
+<button id="toggleSidebar" class="btn btn-outline-secondary d-md-none mb-3 ms-3 mt-2">
+  <i class="bi bi-list"></i>
+</button>
+
+<!-- Sidebar -->
+<nav class="sidebar d-none d-md-block bg-light p-3" style="min-height: 100vh; width: 250px; position: fixed; top: 0; left: 0; z-index: 1000;">
+
+  <!-- Usuário logado -->
+  <div class="d-flex align-items-center mb-4">
+    <i class="bi bi-person-circle fs-4 me-2"></i>
+    <strong>{{ usuario.nome }}</strong>
   </div>
-  <ul class="nav flex-column mt-3">
+
+  <!-- Menu principal -->
+  <ul class="nav flex-column">
+
     <li class="nav-item">
-      <a class="nav-link" href="#"><i class="bi bi-archive me-2"></i> Almoxarifado</a>
+      <span class="nav-link disabled text-primary fw-bold">Almoxarifado</span>
       <ul class="nav flex-column ms-3">
-        <li class="nav-item"><a class="nav-link" href="#">Itens</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Fornecedores</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Entrada de Materiais</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Saída de Materiais</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Relatórios</a></li>
+        <li class="nav-item"><a href="{{ url_for('item_bp.lista_itens') }}" class="nav-link">Itens</a></li>
+        <li class="nav-item"><a href="{{ url_for('fornecedor_bp.lista_fornecedores') }}" class="nav-link">Fornecedores</a></li>
+        <li class="nav-item"><a href="{{ url_for('entrada_bp.lista_entradas') }}" class="nav-link">Entrada de Materiais</a></li>
+        <li class="nav-item"><a href="{{ url_for('saida_bp.lista_saidas') }}" class="nav-link">Saída de Materiais</a></li>
+        <li class="nav-item"><a href="{{ url_for('relatorio_bp.mapa_fechamento') }}" class="nav-link">Relatórios</a></li>
       </ul>
     </li>
 
-    <li class="nav-item mt-2">
-      <a class="nav-link" href="#"><i class="bi bi-building me-2"></i> Patrimônio</a>
+    <li class="nav-item mt-3">
+      <span class="nav-link disabled text-primary fw-bold">Patrimônio</span>
       <ul class="nav flex-column ms-3">
-        <li class="nav-item"><a class="nav-link" href="#">Inventário</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Transferência</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Relatórios</a></li>
+        <li class="nav-item"><a href="#" class="nav-link disabled">Inventário</a></li>
+        <li class="nav-item"><a href="#" class="nav-link disabled">Transferência</a></li>
+        <li class="nav-item"><a href="#" class="nav-link disabled">Relatórios</a></li>
       </ul>
     </li>
 
-    <li class="nav-item mt-2">
-      <a class="nav-link" href="#"><i class="bi bi-cart-check me-2"></i> Compras</a>
+    <li class="nav-item mt-3">
+      <span class="nav-link disabled text-primary fw-bold">Compras</span>
       <ul class="nav flex-column ms-3">
-        <li class="nav-item"><a class="nav-link" href="#">Requisições</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Fornecedores</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Cotações</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Processos SEI</a></li>
+        <li class="nav-item"><a href="#" class="nav-link disabled">Requisições</a></li>
+        <li class="nav-item"><a href="#" class="nav-link disabled">Fornecedores</a></li>
+        <li class="nav-item"><a href="#" class="nav-link disabled">Cotações</a></li>
+        <li class="nav-item"><a href="#" class="nav-link disabled">Processos SEI</a></li>
       </ul>
     </li>
 
-    <li class="nav-item mt-2">
-      <a class="nav-link" href="#"><i class="bi bi-megaphone me-2"></i> Publicações</a>
+    <li class="nav-item mt-3">
+      <a href="#" class="nav-link disabled text-primary fw-bold">Publicações</a>
+    </li>
+
+    <li class="nav-item mt-3">
+      <span class="nav-link disabled text-primary fw-bold">Dashboard</span>
       <ul class="nav flex-column ms-3">
-        <li class="nav-item"><a class="nav-link" href="#">Requisições</a></li>
+        <li class="nav-item"><a href="#" class="nav-link disabled">Almoxarifado</a></li>
+        <li class="nav-item"><a href="#" class="nav-link disabled">Patrimônio</a></li>
+        <li class="nav-item"><a href="#" class="nav-link disabled">Compras</a></li>
+        <li class="nav-item"><a href="#" class="nav-link disabled">Publicações</a></li>
+        <li class="nav-item"><a href="#" class="nav-link disabled">SEI</a></li>
       </ul>
     </li>
 
-    <li class="nav-item mt-2">
-      <a class="nav-link" href="#"><i class="bi bi-bar-chart me-2"></i> Dashboard</a>
+    <li class="nav-item mt-3">
+      <span class="nav-link text-primary fw-bold">Configurações</span>
       <ul class="nav flex-column ms-3">
-        <li class="nav-item"><a class="nav-link" href="#">Almoxarifado</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Patrimônio</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Compras</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Publicações</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">SEI</a></li>
+        <li class="nav-item"><a href="{{ url_for('usuario_bp.lista_usuarios') }}" class="nav-link">Perfis e Usuários</a></li>
+        <li class="nav-item"><a href="{{ url_for('main.nd_grupos_ul') }}" class="nav-link">ND / Grupos / UL</a></li>
       </ul>
     </li>
 
-    <li class="nav-item mt-2">
-      <a class="nav-link" href="#"><i class="bi bi-gear me-2"></i> Configurações</a>
-      <ul class="nav flex-column ms-3">
-        <li class="nav-item"><a class="nav-link" href="#">Perfis e Usuários</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">ND / Grupos / UL</a></li>
-      </ul>
+    <li class="nav-item mt-4">
+      <a href="{{ url_for('main.logout') }}" class="nav-link text-danger"><i class="bi bi-box-arrow-right"></i> Sair</a>
     </li>
   </ul>
 </nav>

@@ -14,30 +14,45 @@
     </a>
   </div>
 
-  {# Grade de botões com ícones #}
+  {# Grade de cards com ícones grandes e cores distintas #}
   <div class="row row-cols-1 row-cols-md-2 g-4">
 
     <div class="col">
-      <a href="{{ url_for('main.almoxarifado') }}" class="btn btn-outline-primary w-100 py-4 fs-5">
-        <i class="bi bi-archive"></i> Almoxarifado
+      <a href="{{ url_for('main.almoxarifado') }}" class="text-decoration-none">
+        <div class="card bg-primary text-white text-center py-4 rounded-4 shadow-sm h-100">
+          <i class="bi bi-archive fs-1 mb-2"></i>
+          <h5 class="mb-0">Almoxarifado</h5>
+        </div>
       </a>
     </div>
 
     <div class="col">
-      <a href="#" class="btn btn-outline-secondary w-100 py-4 fs-5 disabled">
-        <i class="bi bi-cart-check"></i> Compras (em desenvolvimento)
-      </a>
+      <div class="card bg-secondary text-white text-center py-4 rounded-4 shadow-sm h-100 opacity-75">
+        <i class="bi bi-cart-check fs-1 mb-2"></i>
+        <h5 class="mb-0">Compras<br>(em desenvolvimento)</h5>
+      </div>
     </div>
 
     <div class="col">
-      <a href="#" class="btn btn-outline-secondary w-100 py-4 fs-5 disabled">
-        <i class="bi bi-building"></i> Patrimônio (em desenvolvimento)
-      </a>
+      <div class="card bg-indigo text-white text-center py-4 rounded-4 shadow-sm h-100 opacity-75">
+        <i class="bi bi-building fs-1 mb-2"></i>
+        <h5 class="mb-0">Patrimônio<br>(em desenvolvimento)</h5>
+      </div>
     </div>
 
     <div class="col">
-      <a href="https://linktr.ee/ctaa.sps" target="_blank" class="btn btn-outline-success w-100 py-4 fs-5">
-        <i class="bi bi-link-45deg"></i> Links Úteis
+      <div class="card bg-teal text-white text-center py-4 rounded-4 shadow-sm h-100 opacity-75">
+        <i class="bi bi-journal-text fs-1 mb-2"></i>
+        <h5 class="mb-0">Publicações<br>(em desenvolvimento)</h5>
+      </div>
+    </div>
+
+    <div class="col">
+      <a href="https://linktr.ee/ctaa.sps" target="_blank" class="text-decoration-none">
+        <div class="card bg-success text-white text-center py-4 rounded-4 shadow-sm h-100">
+          <i class="bi bi-link-45deg fs-1 mb-2"></i>
+          <h5 class="mb-0">Links Úteis</h5>
+        </div>
       </a>
     </div>
 

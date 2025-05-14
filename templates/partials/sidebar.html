@@ -6,7 +6,7 @@
 </button>
 
 <!-- Sidebar -->
-<nav class="sidebar d-none d-md-block bg-light p-3" style="min-height: 100vh; width: 250px; position: fixed; top: 0; left: 0; z-index: 1000;">
+<nav id="sidebarMenu" class="sidebar d-none d-md-block bg-light p-3" style="min-height: 100vh; width: 250px; position: fixed; top: 0; left: 0; z-index: 1000;">
 
   <!-- Usuário logado -->
   <div class="d-flex align-items-center mb-4">
@@ -21,7 +21,7 @@
       <span class="nav-link disabled text-primary fw-bold">Almoxarifado</span>
       <ul class="nav flex-column ms-3">
         <li class="nav-item"><a href="{{ url_for('item_bp.lista_itens') }}" class="nav-link">Itens</a></li>
-        <li class="nav-item"><a href="{{ url_for('fornecedor_bp.lista_fornecedores') }}" class="nav-link">Fornecedores</a></li>
+        <li class="nav-item"><a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="nav-link">Fornecedores</a></li>
         <li class="nav-item"><a href="{{ url_for('entrada_bp.lista_entradas') }}" class="nav-link">Entrada de Materiais</a></li>
         <li class="nav-item"><a href="{{ url_for('saida_bp.lista_saidas') }}" class="nav-link">Saída de Materiais</a></li>
         <li class="nav-item"><a href="{{ url_for('relatorio_bp.mapa_fechamento') }}" class="nav-link">Relatórios</a></li>
@@ -75,3 +75,14 @@
     </li>
   </ul>
 </nav>
+
+<script>
+  // Script para alternar exibição do sidebar no mobile
+  document.addEventListener('DOMContentLoaded', function () {
+    const toggleBtn = document.getElementById('toggleSidebar');
+    const sidebar = document.getElementById('sidebarMenu');
+    toggleBtn?.addEventListener('click', () => {
+      sidebar.classList.toggle('d-none');
+    });
+  });
+</script>

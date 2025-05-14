@@ -6,7 +6,7 @@
 </button>
 
 <!-- Sidebar -->
-<nav id="sidebarMenu" class="sidebar bg-light p-3 d-none d-md-block" style="min-height: 100vh; width: 250px; position: fixed; top: 0; left: 0; z-index: 1000;">
+<nav id="sidebarMenu" class="sidebar bg-light p-3 d-md-block d-none" style="min-height: 100vh; width: 250px; position: fixed; top: 0; left: 0; z-index: 1040; overflow-y: auto;">
 
   <!-- Usuário logado -->
   {% if usuario %}
@@ -20,7 +20,7 @@
   <ul class="nav flex-column">
 
     <li class="nav-item">
-      <span class="nav-link disabled text-primary fw-bold"><i class="bi bi-archive me-1"></i> Almoxarifado</span>
+      <span class="nav-link text-primary fw-bold"><i class="bi bi-archive me-1"></i> Almoxarifado</span>
       <ul class="nav flex-column ms-3">
         <li class="nav-item"><a href="{{ url_for('item_bp.lista_itens') }}" class="nav-link"><i class="bi bi-box-seam me-1"></i> Itens</a></li>
         <li class="nav-item"><a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="nav-link"><i class="bi bi-truck me-1"></i> Fornecedores</a></li>
@@ -67,8 +67,8 @@
     <li class="nav-item mt-3">
       <span class="nav-link text-primary fw-bold"><i class="bi bi-gear me-1"></i> Configurações</span>
       <ul class="nav flex-column ms-3">
-        <li class="nav-item"><a href="{{ url_for('usuario_bp.lista_usuarios') }}" class="nav-link">Perfis e Usuários</a></li>
-        <li class="nav-item"><a href="{{ url_for('main.nd_grupos_ul') }}" class="nav-link">ND / Grupos / UL</a></li>
+        <li class="nav-item"><a href="{{ url_for('usuario_bp.lista_usuarios') }}" class="nav-link"><i class="bi bi-people me-1"></i> Perfis e Usuários</a></li>
+        <li class="nav-item"><a href="{{ url_for('main.nd_grupos_ul') }}" class="nav-link"><i class="bi bi-diagram-3 me-1"></i> ND / Grupos / UL</a></li>
       </ul>
     </li>
 
@@ -80,8 +80,14 @@
 
 <!-- Script para funcionalidade do botão hamburguer -->
 <script>
-  document.getElementById('toggleSidebar').addEventListener('click', function () {
+  document.addEventListener('DOMContentLoaded', function () {
+    const toggleButton = document.getElementById('toggleSidebar');
     const sidebar = document.getElementById('sidebarMenu');
-    sidebar.classList.toggle('d-none');
+
+    if (toggleButton && sidebar) {
+      toggleButton.addEventListener('click', function () {
+        sidebar.classList.toggle('d-none');
+      });
+    }
   });
 </script>

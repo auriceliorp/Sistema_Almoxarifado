@@ -6,7 +6,7 @@
 </button>
 
 <!-- Sidebar -->
-<nav id="sidebarMenu" class="sidebar bg-light p-3 d-none d-md-block" style="min-height: 100vh; width: 250px; position: fixed; top: 0; left: 0; z-index: 1000;">
+<nav id="sidebarMenu" class="sidebar bg-light p-3 d-md-block" style="min-height: 100vh; width: 250px; position: fixed; top: 0; left: 0; z-index: 1000; transform: translateX(0); transition: transform 0.3s ease-in-out;">
 
   <!-- Usuário logado -->
   <div class="d-flex align-items-center mb-4">
@@ -78,8 +78,11 @@
 
 <!-- Script para funcionalidade do botão hamburguer -->
 <script>
-  document.getElementById('toggleSidebar').addEventListener('click', function () {
-    const sidebar = document.getElementById('sidebarMenu');
+  const toggleBtn = document.getElementById('toggleSidebar');
+  const sidebar = document.getElementById('sidebarMenu');
+
+  toggleBtn.addEventListener('click', function () {
     sidebar.classList.toggle('d-none');
+    sidebar.classList.toggle('d-block');
   });
 </script>

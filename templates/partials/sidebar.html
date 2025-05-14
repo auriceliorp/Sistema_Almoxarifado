@@ -6,7 +6,7 @@
 </button>
 
 <!-- Sidebar -->
-<nav id="sidebarMenu" class="sidebar d-none d-md-block bg-light p-3" style="min-height: 100vh; width: 250px; position: fixed; top: 0; left: 0; z-index: 1000;">
+<nav id="sidebarMenu" class="sidebar bg-light p-3 d-none d-md-block" style="min-height: 100vh; width: 250px; position: fixed; top: 0; left: 0; z-index: 1000;">
 
   <!-- Usuário logado -->
   <div class="d-flex align-items-center mb-4">
@@ -76,13 +76,10 @@
   </ul>
 </nav>
 
+<!-- Script para funcionalidade do botão hamburguer -->
 <script>
-  // Script para alternar exibição do sidebar no mobile
-  document.addEventListener('DOMContentLoaded', function () {
-    const toggleBtn = document.getElementById('toggleSidebar');
+  document.getElementById('toggleSidebar').addEventListener('click', function () {
     const sidebar = document.getElementById('sidebarMenu');
-    toggleBtn?.addEventListener('click', () => {
-      sidebar.classList.toggle('d-none');
-    });
+    sidebar.classList.toggle('d-none');
   });
 </script>

@@ -82,18 +82,30 @@
 <script>
   const toggleButton = document.getElementById('toggleSidebar');
   const sidebar = document.getElementById('sidebarMenu');
+  const icon = toggleButton.querySelector('i');
 
   toggleButton.addEventListener('click', function () {
     sidebar.classList.toggle('d-none');
+
+    // Alternar ícone entre menu (list) e fechar (x)
+    if (sidebar.classList.contains('d-none')) {
+      icon.classList.remove('bi-x');
+      icon.classList.add('bi-list');
+    } else {
+      icon.classList.remove('bi-list');
+      icon.classList.add('bi-x');
+    }
   });
 
-  // Fechar sidebar ao clicar fora (apenas em telas menores)
+  // Fecha sidebar ao clicar fora (em telas pequenas)
   document.addEventListener('click', function (event) {
     const isClickInsideSidebar = sidebar.contains(event.target);
     const isClickOnButton = toggleButton.contains(event.target);
 
-    if (!isClickInsideSidebar && !isClickOnButton && window.innerWidth < 768) {
+    if (!isClickInsideSidebar && !isClickOnButton && window.innerWidth < 768 && !sidebar.classList.contains('d-none')) {
       sidebar.classList.add('d-none');
+      icon.classList.remove('bi-x');
+      icon.classList.add('bi-list');
     }
   });
 </script>

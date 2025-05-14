@@ -6,7 +6,7 @@
 </button>
 
 <!-- Sidebar -->
-<nav id="sidebarMenu" class="sidebar bg-light p-3 d-md-block d-none" style="min-height: 100vh; width: 250px; position: fixed; top: 0; left: 0; z-index: 1040; overflow-y: auto;">
+<nav id="sidebarMenu" class="sidebar bg-light p-3 d-none d-md-block" style="min-height: 100vh; width: 250px; position: fixed; top: 0; left: 0; z-index: 1000;">
 
   <!-- Usuário logado -->
   {% if usuario %}
@@ -80,14 +80,20 @@
 
 <!-- Script para funcionalidade do botão hamburguer -->
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const toggleButton = document.getElementById('toggleSidebar');
-    const sidebar = document.getElementById('sidebarMenu');
+  const toggleButton = document.getElementById('toggleSidebar');
+  const sidebar = document.getElementById('sidebarMenu');
 
-    if (toggleButton && sidebar) {
-      toggleButton.addEventListener('click', function () {
-        sidebar.classList.toggle('d-none');
-      });
+  toggleButton.addEventListener('click', function () {
+    sidebar.classList.toggle('d-none');
+  });
+
+  // Fechar sidebar ao clicar fora (apenas em telas menores)
+  document.addEventListener('click', function (event) {
+    const isClickInsideSidebar = sidebar.contains(event.target);
+    const isClickOnButton = toggleButton.contains(event.target);
+
+    if (!isClickInsideSidebar && !isClickOnButton && window.innerWidth < 768) {
+      sidebar.classList.add('d-none');
     }
   });
 </script>

@@ -1,138 +1,137 @@
-{# templates/base_simplificada.html #}
-
-<!DOCTYPE html><html lang="pt-BR">
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>{% block title %}GestorSPS{% endblock %}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Bootstrap e Ícones -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <meta charset="UTF-8">
+  <title>{% block title %}GestorSPS{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- DataTables -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+  <!-- Bootstrap & Ícones -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
-<!-- CSS customizado -->
-<style>
+  <!-- CSS personalizado -->
+  <style>
     body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background-color: #f8f9fa;
+      margin: 0;
+      padding-top: 56px;
+      background-color: #f8f9fa;
     }
 
-    #topbar {
-        background-color: #004b5a;
-        color: white;
-        padding: 10px 20px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+    /* Topbar */
+    .topbar {
+      background-color: #004b5b;
+      color: white;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      height: 56px;
+      z-index: 1050;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1rem;
     }
 
-    #topbar .brand {
-        font-weight: bold;
-        font-size: 1.2rem;
+    .topbar .navbar-brand {
+      color: white;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
     }
 
-    #toggleSidebar {
-        background: none;
-        border: none;
-        color: white;
-        font-size: 1.5rem;
+    .topbar .navbar-toggler {
+      border: none;
+      color: white;
     }
 
-    .sidebar {
-        background-color: #004b5a;
-        color: white;
-        min-height: 100vh;
+    /* Sidebar */
+    #sidebarMenu {
+      background-color: #004b5b;
+      color: white;
+      position: fixed;
+      top: 56px;
+      left: 0;
+      width: 250px;
+      height: 100%;
+      padding-top: 1rem;
+      overflow-y: auto;
+      transition: transform 0.3s ease;
+      z-index: 1040;
     }
 
-    .sidebar .nav-link {
-        color: white;
+    #sidebarMenu a {
+      color: white;
+      text-decoration: none;
+      display: block;
+      padding: 8px 1rem;
     }
 
-    .sidebar .nav-link:hover {
-        background-color: #025d70;
-        color: #fff;
+    #sidebarMenu a:hover {
+      background-color: #035f74;
     }
 
-    .sidebar .submenu {
-        display: none;
-        padding-left: 15px;
+    #sidebarMenu .submenu {
+      display: none;
+      padding-left: 1rem;
     }
 
-    .sidebar .submenu.show {
-        display: block;
+    #sidebarMenu .toggle-submenu {
+      cursor: pointer;
     }
 
-    .content {
-        margin-left: 250px;
-        padding: 20px;
+    #sidebarMenu.collapsed {
+      transform: translateX(-100%);
+    }
+
+    main {
+      margin-left: 250px;
+      padding: 1rem;
     }
 
     @media (max-width: 768px) {
-        .content {
-            margin-left: 0;
-        }
+      #sidebarMenu {
+        transform: translateX(-100%);
+      }
 
-        .sidebar {
-            position: fixed;
-            z-index: 1050;
-            top: 0;
-            left: 0;
-            width: 250px;
-            transform: translateX(-100%);
-            transition: transform 0.3s ease-in-out;
-        }
+      #sidebarMenu.show {
+        transform: translateX(0);
+      }
 
-        .sidebar.show {
-            transform: translateX(0);
-        }
+      main {
+        margin-left: 0;
+      }
     }
-</style>
-
+  </style>
 </head>
 <body>
-    <header id="topbar">
-        <button id="toggleSidebar" class="d-md-none"><i class="bi bi-list"></i></button>
-        <div class="brand">GestorSPS</div>
-        <a href="{{ url_for('main.logout') }}" class="text-white"><i class="bi bi-box-arrow-right"></i></a>
-    </header>{% include 'partials/sidebar.html' %}
 
-<main class="content">
+  <!-- Topbar com botão hambúrguer -->
+  <div class="topbar">
+    <button id="toggleSidebar" class="navbar-toggler d-md-none">
+      <i class="bi bi-list fs-3"></i>
+    </button>
+    <span class="navbar-brand">GestorSPS</span>
+    <a href="{{ url_for('main.logout') }}" class="text-white"><i class="bi bi-box-arrow-right"></i></a>
+  </div>
+
+  <!-- Sidebar -->
+  {% include 'partials/sidebar.html' %}
+
+  <!-- Conteúdo principal -->
+  <main>
     {% block content %}{% endblock %}
-</main>
+  </main>
 
-<!-- Scripts -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-<script>
-    // Ativar DataTable
-    $(document).ready(function () {
-        $('#tabela-itens').DataTable({
-            pageLength: 10,
-            lengthMenu: [10, 25, 50, 100],
-            language: {
-                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json'
-            }
-        });
-    });
-
-    // Menu lateral responsivo
+  <script>
     document.getElementById('toggleSidebar').addEventListener('click', function () {
-        document.getElementById('sidebarMenu').classList.toggle('show');
+      const sidebar = document.getElementById('sidebarMenu');
+      sidebar.classList.toggle('show');
     });
-
-    // Submenus com seta
-    document.querySelectorAll('.nav-link[data-bs-toggle="submenu"]').forEach(function (link) {
-        link.addEventListener('click', function (e) {
-            e.preventDefault();
-            const submenu = this.nextElementSibling;
-            submenu.classList.toggle('show');
-        });
-    });
-</script>
+  </script>
 
 </body>
 </html>

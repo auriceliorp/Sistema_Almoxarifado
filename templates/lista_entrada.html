@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container-fluid py-4">
 
-  <!-- Cabeçalho com botão destacado -->
+  <!-- Cabeçalho -->
   <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
     <h4 class="mb-0 flex-grow-1 text-center">Entradas de Materiais</h4>
     <a href="{{ url_for('entrada_bp.nova_entrada') }}" class="btn btn-success btn-lg">
@@ -15,17 +15,17 @@
 
   <!-- Campo de busca com seletor -->
   <div class="row mb-3">
-    <div class="col-md-6 offset-md-6">
-      <div class="input-group">
+    <div class="col-md-6 offset-md-3">
+      <form id="formFiltro" class="input-group">
         <select class="form-select" id="filtroTipo">
-          <option value="0">ID</option>
-          <option value="1">Data Movimento</option>
+          <option value="3">Número Nota Fiscal</option>
           <option value="2">Data NF</option>
-          <option value="3">Nota Fiscal</option>
+          <option value="1">Data Movimento</option>
           <option value="4">Fornecedor</option>
         </select>
         <input type="text" id="filtroBusca" class="form-control" placeholder="Buscar...">
-      </div>
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
+      </form>
     </div>
   </div>
 
@@ -37,9 +37,9 @@
           <th>ID</th>
           <th>Data Movimento</th>
           <th>Data Nota Fiscal</th>
-          <th style="min-width: 250px;">Número Nota Fiscal</th>
-          <th style="min-width: 200px;">Fornecedor</th>
-          <th style="min-width: 100px;">Ações</th>
+          <th>Número Nota Fiscal</th>
+          <th>Fornecedor</th>
+          <th>Ações</th>
         </tr>
       </thead>
       <tbody>
@@ -65,23 +65,44 @@
 {% endblock %}
 
 {% block scripts %}
-<!-- DataTables -->
+<!-- DataTables e Plugins -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
 
 <script>
   $(document).ready(function () {
+    // Ativação da tabela
     const tabela = $('#tabela-entradas').DataTable({
-      language: { url: "//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json" },
+      language: {
+        url: "//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json"
+      },
       pageLength: 10,
       lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
       order: [[0, 'desc']]
     });
 
-    $('#filtroBusca').on('keyup', function () {
+    // Máscaras
+    $('#filtroBusca').on('input', function () {
+      const tipo = $('#filtroTipo').val();
+      if (tipo === '3') {
+        $(this).mask('000.000.000');
+      } else if (tipo === '1' || tipo === '2') {
+        $(this).mask('00/00/0000');
+      } else {
+        $(this).unmask();
+      }
+    });
+
+    // Filtro
+    $('#formFiltro').on('submit', function (e) {
+      e.preventDefault();
       const coluna = $('#filtroTipo').val();
-      tabela.column(coluna).search(this.value).draw();
+      const valor = $('#filtroBusca').val();
+      tabela.columns().search('');
+      tabela.column(coluna).search(valor).draw();
     });
   });
 </script>

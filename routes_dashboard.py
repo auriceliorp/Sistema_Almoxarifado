@@ -3,7 +3,7 @@
 from flask import Blueprint, render_template
 from flask_login import login_required, current_user
 from sqlalchemy import extract, func
-from modelos import EntradaItem, SaidaItem, EntradaMaterial, SaidaMaterial, NaturezaDespesa
+from models import EntradaItem, SaidaItem, EntradaMaterial, SaidaMaterial, NaturezaDespesa
 from extensoes import db
 
 # Criação do blueprint do dashboard

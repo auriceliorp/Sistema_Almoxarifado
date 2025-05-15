@@ -1,136 +1,22 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <title>{% block title %}GestorSPS{% endblock %}</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- Bootstrap & Ícones -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-
-  <!-- CSS personalizado -->
-  <style>
-    body {
-      margin: 0;
-      background-color: #f8f9fa;
-    }
-
-    /* Topbar */
-    .topbar {
-      background-color: #004b5b;
-      color: white;
-      position: fixed;
-      top: 0;
-      width: 100%;
-      height: 56px;
-      z-index: 1050;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 1rem;
-    }
-
-    .topbar .navbar-brand {
-      color: white;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-    }
-
-    .topbar .navbar-toggler {
-      border: none;
-      color: white;
-    }
-
-    /* Sidebar */
-    #sidebarMenu {
-      background-color: #004b5b;
-      color: white;
-      position: fixed;
-      top: 56px;
-      left: 0;
-      width: 250px;
-      height: 100%;
-      padding-top: 1rem;
-      overflow-y: auto;
-      transition: transform 0.3s ease;
-      z-index: 1040;
-    }
-
-    #sidebarMenu a {
-      color: white;
-      text-decoration: none;
-      display: block;
-      padding: 8px 1rem;
-    }
-
-    #sidebarMenu a:hover {
-      background-color: #035f74;
-    }
-
-    #sidebarMenu .submenu {
-      display: none;
-      padding-left: 1rem;
-    }
-
-    #sidebarMenu .toggle-submenu {
-      cursor: pointer;
-    }
-
-    #sidebarMenu.collapsed {
-      transform: translateX(-100%);
-    }
-
-    main {
-      margin-left: 250px;
-      padding: 1rem;
-    }
-
-    @media (max-width: 768px) {
-      #sidebarMenu {
-        transform: translateX(-100%);
-      }
-
-      #sidebarMenu.show {
-        transform: translateX(0);
-      }
-
-      main {
-        margin-left: 0;
-      }
-    }
-  </style>
-</head>
-<body>
-
-  <!-- Topbar com botão hambúrguer -->
-  <div class="topbar">
-    <button id="toggleSidebar" class="navbar-toggler d-md-none">
+<!-- Topbar com botão hambúrguer -->
+<div class="topbar">
+  <div class="d-flex align-items-center gap-2">
+    <!-- Botão hamburguer -->
+    <button id="toggleSidebar" class="navbar-toggler text-white border-0">
       <i class="bi bi-list fs-3"></i>
     </button>
-    <span class="navbar-brand">GestorSPS</span>
-    <a href="{{ url_for('main.logout') }}" class="text-white"><i class="bi bi-box-arrow-right"></i></a>
+
+    <!-- Botão Início -->
+    <a href="{{ url_for('main.home') }}" class="btn btn-outline-light btn-sm">
+      <i class="bi bi-house-door-fill me-1"></i> Início
+    </a>
   </div>
 
-  <!-- Sidebar -->
-  {% include 'partials/sidebar.html' %}
+  <!-- Nome do sistema -->
+  <span class="navbar-brand">GestorSPS</span>
 
-  <!-- Conteúdo principal -->
-  <main>
-    {% block content %}{% endblock %}
-  </main>
-
-  <!-- Scripts -->
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-  <script>
-    document.getElementById('toggleSidebar').addEventListener('click', function () {
-      const sidebar = document.getElementById('sidebarMenu');
-      sidebar.classList.toggle('show');
-    });
-  </script>
-
-</body>
-</html>
+  <!-- Botão logout -->
+  <a href="{{ url_for('main.logout') }}" class="text-white">
+    <i class="bi bi-box-arrow-right fs-5"></i>
+  </a>
+</div>

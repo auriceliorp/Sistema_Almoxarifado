@@ -3,7 +3,7 @@
 <div class="container mt-4">
   <h2 class="mb-4">Nova Entrada de Material</h2>
   <form method="post">
-    <!-- Campos principais da entrada -->
+    <!-- Dados principais da entrada -->
     <div class="row mb-3">
       <div class="col-md-4">
         <label for="data_movimento" class="form-label">Data do Movimento *</label>
@@ -19,8 +19,8 @@
       </div>
     </div>
 
-    <!-- Seleção do fornecedor -->
-    <div class="mb-3">
+    <!-- Fornecedor -->
+    <div class="mb-4">
       <label for="fornecedor_id" class="form-label">Fornecedor *</label>
       <select class="form-select" id="fornecedor_id" name="fornecedor_id" required>
         <option value="">Selecione um fornecedor</option>
@@ -34,9 +34,9 @@
     <hr>
     <h5>Itens da Entrada</h5>
     <div id="itens-container">
-      <!-- Primeiro item (modelo base) -->
-      <div class="row mb-3 item-linha">
-        <div class="col-md-4">
+      {% for i in range(5) %}
+      <div class="row g-2 align-items-end item-linha mb-2">
+        <div class="col-md-5">
           <label class="form-label">Item *</label>
           <select class="form-select" name="item_id[]" required>
             <option value="">Selecione</option>
@@ -53,36 +53,38 @@
           <label class="form-label">Valor Unitário *</label>
           <input type="number" class="form-control" name="valor_unitario[]" step="0.01" min="0" required>
         </div>
-        <div class="col-md-3 d-flex align-items-end">
-          <button type="button" class="btn btn-danger btn-remover">Remover</button>
+        <div class="col-md-2 text-end">
+          <button type="button" class="btn btn-sm btn-outline-danger btn-remover">Remover</button>
         </div>
       </div>
+      {% endfor %}
     </div>
 
-    <!-- Botão para adicionar mais itens -->
     <div class="mb-3">
-      <button type="button" class="btn btn-secondary" id="adicionar-item">Adicionar Item</button>
+      <button type="button" id="adicionar-item" class="btn btn-sm btn-outline-primary">+ Adicionar Item</button>
     </div>
 
-    <!-- Botão de envio -->
-    <button type="submit" class="btn btn-primary">Salvar Entrada</button>
-    <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="btn btn-outline-secondary">Cancelar</a>
+    <!-- Botões finais -->
+    <div class="mt-4">
+      <button type="submit" class="btn btn-success">Salvar Entrada</button>
+      <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="btn btn-outline-secondary">Cancelar</a>
+    </div>
   </form>
 </div>
 
-<!-- Script JavaScript para clonar itens -->
+<!-- JavaScript para adicionar/remover linhas -->
 <script>
-document.getElementById('adicionar-item').addEventListener('click', function() {
+document.getElementById('adicionar-item').addEventListener('click', function () {
   const container = document.getElementById('itens-container');
-  const novaLinha = container.querySelector('.item-linha').cloneNode(true);
-  
-  // Limpa os valores dos campos da nova linha
+  const primeiraLinha = container.querySelector('.item-linha');
+  const novaLinha = primeiraLinha.cloneNode(true);
+
+  // Limpa os campos da nova linha
   novaLinha.querySelectorAll('input, select').forEach(el => el.value = '');
   container.appendChild(novaLinha);
 });
 
-// Remover linha de item
-document.addEventListener('click', function(e) {
+document.addEventListener('click', function (e) {
   if (e.target.classList.contains('btn-remover')) {
     const linha = e.target.closest('.item-linha');
     const container = document.getElementById('itens-container');

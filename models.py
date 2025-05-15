@@ -29,7 +29,7 @@ class NaturezaDespesa(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     codigo = db.Column(db.String(10), nullable=False)
     nome = db.Column(db.String(100), nullable=False)
-    valor = db.Column(db.Float, default=0.0)  # <- campo necessário para os relatórios
+    valor = db.Column(db.Float, default=0.0)
     grupos = db.relationship('Grupo', back_populates='natureza_despesa')
     itens = db.relationship('Item', back_populates='natureza_despesa')
 
@@ -142,12 +142,19 @@ class SaidaMaterial(db.Model):
     numero_documento = db.Column(db.String(50), nullable=True)
     observacao = db.Column(db.Text, nullable=True)
 
-    # Operador que registrou a saída
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
     usuario = db.relationship('Usuario', foreign_keys=[usuario_id], backref='saidas')
 
-    # Solicitante da saída (novo campo)
     solicitante_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
     solicitante = db.relationship('Usuario', foreign_keys=[solicitante_id], backref='solicitacoes_saida')
 
     itens = db.relationship('SaidaItem', backref='saida', cascade='all, delete-orphan')
+
+class SaidaItem(db.Model):
+    __tablename__ = 'saida_item'
+    id = db.Column(db.Integer, primary_key=True)
+    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
+    quantidade = db.Column(db.Integer, nullable=False)
+    valor_unitario = db.Column(db.Float, nullable=False)
+    saida_id = db.Column(db.Integer, db.ForeignKey('saida_material.id'), nullable=False)
+    item = db.relationship('Item')

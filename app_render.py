@@ -74,9 +74,7 @@ def create_app():
     from routes_saida import saida_bp
     from routes_relatorio import relatorio_bp
     from routes_dashboard import dashboard_bp
-
-app.register_blueprint(dashboard_bp)
-    app.register_blueprint(main)
+app.register_blueprint(main)
     app.register_blueprint(usuario_bp)
     app.register_blueprint(area_ul_bp)
     app.register_blueprint(nd_bp)
@@ -86,6 +84,7 @@ app.register_blueprint(dashboard_bp)
     app.register_blueprint(entrada_bp)
     app.register_blueprint(saida_bp)
     app.register_blueprint(relatorio_bp)
+app.register_blueprint(dashboard_bp)
 
     return app
 

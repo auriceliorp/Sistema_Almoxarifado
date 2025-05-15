@@ -62,8 +62,8 @@ def nova_entrada():
                         item.valor_unitario = item.saldo_financeiro / item.estoque_atual
 
                     # Atualiza o valor da natureza de despesa
-                    if item.grupo and item.grupo.natureza:
-                        item.grupo.natureza.valor += quantidade * valor_unitario
+                    if item.grupo and item.grupo.natureza_despesa:
+                        item.grupo.natureza_despesa.valor += quantidade * valor_unitario
 
             db.session.commit()
             flash('Entrada registrada com sucesso.', 'success')

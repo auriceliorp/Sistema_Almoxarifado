@@ -1,37 +1,95 @@
-{% extends 'base_simplificada.html' %}
-{% block content %}
-<div class="container mt-4">
-    <h2 class="mb-4">Saídas de Materiais</h2>
+# routes_dashboard.py
+# Rota do dashboard com alimentação de dados reais do banco de dados
 
-    <a href="{{ url_for('saida_bp.nova_saida') }}" class="btn btn-primary mb-3">Registrar Nova Saída</a>
+from flask import Blueprint, render_template
+from flask_login import login_required, current_user
+from models import EntradaItem, SaidaItem, EntradaMaterial, SaidaMaterial, NaturezaDespesa, Item
+from sqlalchemy import extract, func
+from datetime import datetime
+from extensoes import db
 
-    {% if saidas %}
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Data</th>
-                <th>Responsável</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for saida in saidas %}
-            <tr>
-                <td>{{ saida.id }}</td>
-                <td>{{ saida.data_movimento.strftime('%d/%m/%Y') }}</td>
-                <td>{{ saida.responsavel }}</td>
-                <td>
-                    <a href="{{ url_for('saida_bp.requisicao_saida', saida_id=saida.id) }}" class="btn btn-sm btn-outline-secondary" target="_blank">
-                        Visualizar Requisição
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <div class="alert alert-info">Nenhuma saída registrada até o momento.</div>
-    {% endif %}
-</div>
-{% endblock %}
+# Cria o blueprint
+dashboard_bp = Blueprint('dashboard_bp', __name__, url_prefix='/dashboard')
+
+# ------------------------------ ROTA: Dashboard ------------------------------ #
+@dashboard_bp.route('/')
+@login_required
+def dashboard():
+    # Mês e ano atuais
+    ano_atual = datetime.now().year
+    mes_atual = datetime.now().month
+
+    # Lista de meses para exibir no dashboard
+    meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+
+    # Valores totais por mês (entradas e saídas)
+    totais = {
+        'entrada': [0]*12,
+        'saida': [0]*12
+    }
+
+    # Consulta entradas por mês
+    entradas = (
+        db.session.query(
+            extract('month', EntradaMaterial.data_movimento).label('mes'),
+            func.sum(EntradaItem.quantidade * EntradaItem.valor_unitario).label('total')
+        )
+        .join(EntradaItem, EntradaMaterial.id == EntradaItem.entrada_id)
+        .group_by('mes')
+        .all()
+    )
+
+    for entrada in entradas:
+        totais['entrada'][int(entrada.mes)-1] = float(entrada.total or 0)
+
+    # Consulta saídas por mês
+    saidas = (
+        db.session.query(
+            extract('month', SaidaMaterial.data_movimento).label('mes'),
+            func.sum(SaidaItem.quantidade * SaidaItem.valor_unitario).label('total')
+        )
+        .join(SaidaItem, SaidaMaterial.id == SaidaItem.saida_id)
+        .group_by('mes')
+        .all()
+    )
+
+    for saida in saidas:
+        totais['saida'][int(saida.mes)-1] = float(saida.total or 0)
+
+    # Dados por ND (Mapa de Fechamento)
+    dados_entrada = (
+        db.session.query(
+            NaturezaDespesa.nome,
+            func.sum(EntradaItem.quantidade * EntradaItem.valor_unitario).label('total')
+        )
+        .join(Item, Item.id == EntradaItem.item_id)
+        .join(NaturezaDespesa, NaturezaDespesa.id == Item.natureza_despesa_id)
+        .join(EntradaMaterial, EntradaMaterial.id == EntradaItem.entrada_id)
+        .filter(extract('month', EntradaMaterial.data_movimento) == mes_atual)
+        .filter(extract('year', EntradaMaterial.data_movimento) == ano_atual)
+        .group_by(NaturezaDespesa.nome)
+        .all()
+    )
+
+    dados_saida = (
+        db.session.query(
+            NaturezaDespesa.nome,
+            func.sum(SaidaItem.quantidade * SaidaItem.valor_unitario).label('total')
+        )
+        .join(Item, Item.id == SaidaItem.item_id)
+        .join(NaturezaDespesa, NaturezaDespesa.id == Item.natureza_despesa_id)
+        .join(SaidaMaterial, SaidaMaterial.id == SaidaItem.saida_id)
+        .filter(extract('month', SaidaMaterial.data_movimento) == mes_atual)
+        .filter(extract('year', SaidaMaterial.data_movimento) == ano_atual)
+        .group_by(NaturezaDespesa.nome)
+        .all()
+    )
+
+    return render_template(
+        'dashboard.html',
+        usuario=current_user,
+        meses=meses,
+        totais=totais,
+        dados_entrada=dados_entrada,
+        dados_saida=dados_saida
+    )

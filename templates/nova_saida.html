@@ -2,110 +2,123 @@
 {% block title %}Nova Saída de Materiais{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2 class="mb-4">Nova Saída de Materiais</h2>
-    <form method="post">
-        <div class="row mb-3">
-            <div class="col">
-                <label for="data_movimento" class="form-label">Data do Movimento</label>
-                <input type="date" class="form-control" name="data_movimento" required>
-            </div>
-            <div class="col">
-                <label for="numero_documento" class="form-label">Nº Documento</label>
-                <input type="text" class="form-control" name="numero_documento">
-            </div>
-        </div>
-        <div class="mb-3">
-            <label for="observacao" class="form-label">Observação</label>
-            <textarea class="form-control" name="observacao"></textarea>
-        </div>
+<div class="container py-4">
+  <h4 class="mb-4">Registrar Nova Saída de Materiais</h4>
 
-        <h5>Itens a dar saída</h5>
-        <div id="itens-container">
-            <div class="item-row row">
-                <div class="col-md-4 mb-2">
-                    <label>Item</label>
-                    <select name="item_id[]" class="form-control item-select" required onchange="atualizarValor(this)">
-                        <option value="">Selecione...</option>
-                        {% for item in itens %}
-                        <option value="{{ item.id }}" data-valor="{{ item.valor_unitario }}" data-estoque="{{ item.estoque_atual }}">
-                            {{ item.nome }} (Estoque: {{ item.estoque_atual }})
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-2 mb-2">
-                    <label>Quantidade</label>
-                    <input type="number" name="quantidade[]" class="form-control" min="1" required onchange="calcularTotal(this)">
-                </div>
-                <div class="col-md-2 mb-2">
-                    <label>Valor Unitário</label>
-                    <input type="number" step="0.01" name="valor_unitario[]" class="form-control valor-unitario" readonly>
-                </div>
-                <div class="col-md-2 mb-2">
-                    <label>Total</label>
-                    <input type="number" step="0.01" class="form-control valor-total" readonly>
-                </div>
-                <div class="col-md-2 d-flex align-items-end mb-2">
-                    <button type="button" class="btn btn-danger" onclick="removerItem(this)">Remover</button>
-                </div>
-            </div>
-        </div>
+  <form method="POST">
+    <!-- Dados da Saída -->
+    <div class="row mb-3">
+      <div class="col-md-3">
+        <label class="form-label">Data do Movimento *</label>
+        <input type="date" class="form-control" name="data_movimento" value="{{ data_hoje }}" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Nº Documento *</label>
+        <input type="text" class="form-control" name="numero_documento" value="{{ numero_documento }}" readonly>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Solicitante *</label>
+        <input type="text" class="form-control" value="{{ current_user.nome }}" disabled>
+      </div>
+    </div>
 
-        <button type="button" class="btn btn-secondary mt-3" onclick="adicionarItem()">Adicionar Item</button>
-        <button type="submit" class="btn btn-success mt-3">Salvar Saída</button>
-        <a href="{{ url_for('saida_bp.lista_saidas') }}" class="btn btn-outline-secondary mt-3">Cancelar</a>
-    </form>
+    <div class="mb-3">
+      <label class="form-label">Observação</label>
+      <textarea class="form-control" name="observacao"></textarea>
+    </div>
+
+    <!-- Tabela de Itens -->
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle" id="tabela-itens">
+        <thead class="table-light">
+          <tr>
+            <th>Item</th>
+            <th>Qtd.</th>
+            <th>Valor Unitário</th>
+            <th>Total</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <select name="item_id[]" class="form-select item-select" required onchange="atualizarValor(this)">
+                <option value="">Selecione...</option>
+                {% for item in itens %}
+                  <option value="{{ item.id }}" data-valor="{{ item.valor_unitario }}" data-estoque="{{ item.estoque_atual }}">
+                    {{ item.nome }} (Estoque: {{ item.estoque_atual }})
+                  </option>
+                {% endfor %}
+              </select>
+            </td>
+            <td><input type="number" name="quantidade[]" class="form-control" min="1" required onchange="calcularTotal(this)"></td>
+            <td><input type="number" name="valor_unitario[]" class="form-control valor-unitario" readonly></td>
+            <td><input type="number" class="form-control valor-total" readonly></td>
+            <td><button type="button" class="btn btn-danger btn-sm" onclick="removerLinha(this)">Remover</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mb-3">
+      <button type="button" class="btn btn-secondary" onclick="adicionarLinha()">+ Adicionar Item</button>
+    </div>
+
+    <!-- Botões -->
+    <div class="d-flex justify-content-end gap-2">
+      <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Salvar Saída</button>
+      <a href="{{ url_for('saida_bp.lista_saidas') }}" class="btn btn-outline-secondary"><i class="bi bi-x-circle"></i> Cancelar</a>
+    </div>
+  </form>
 </div>
 
+<!-- Scripts -->
 <script>
-function adicionarItem() {
-    const container = document.getElementById('itens-container');
-    const novaLinha = container.firstElementChild.cloneNode(true);
-
-    novaLinha.querySelectorAll('input, select').forEach(el => {
-        el.value = '';
-    });
-
-    container.appendChild(novaLinha);
-}
-
-function removerItem(botao) {
-    const linha = botao.closest('.item-row');
-    const container = document.getElementById('itens-container');
-
-    if (container.childElementCount > 1) {
-        linha.remove();
-    }
-}
-
 function atualizarValor(select) {
-    const option = select.options[select.selectedIndex];
-    const valor = option.getAttribute('data-valor');
-    const estoque = parseFloat(option.getAttribute('data-estoque'));
-    const linha = select.closest('.item-row');
-    const inputValor = linha.querySelector('.valor-unitario');
-    const quantidade = linha.querySelector('[name="quantidade[]"]');
+  const option = select.options[select.selectedIndex];
+  const valor = parseFloat(option.getAttribute('data-valor')) || 0;
+  const estoque = parseFloat(option.getAttribute('data-estoque')) || 0;
+  const linha = select.closest('tr');
 
-    inputValor.value = valor || 0;
+  const inputValor = linha.querySelector('.valor-unitario');
+  inputValor.value = valor.toFixed(2);
 
-    if (estoque <= 0) {
-        alert("Atenção: Estoque indisponível para esse item!");
-        select.classList.add('is-invalid');
-    } else {
-        select.classList.remove('is-invalid');
-    }
+  if (estoque <= 0) {
+    alert("Estoque insuficiente para esse item.");
+    select.classList.add('is-invalid');
+  } else {
+    select.classList.remove('is-invalid');
+  }
 
-    calcularTotal(quantidade);
+  calcularTotal(linha.querySelector('[name="quantidade[]"]'));
 }
 
-function calcularTotal(inputQuantidade) {
-    const linha = inputQuantidade.closest('.item-row');
-    const valorUnitario = parseFloat(linha.querySelector('.valor-unitario').value) || 0;
-    const quantidade = parseFloat(inputQuantidade.value) || 0;
-    const total = linha.querySelector('.valor-total');
+function calcularTotal(input) {
+  const linha = input.closest('tr');
+  const qtd = parseFloat(linha.querySelector('[name="quantidade[]"]').value) || 0;
+  const valor = parseFloat(linha.querySelector('.valor-unitario').value) || 0;
+  linha.querySelector('.valor-total').value = (qtd * valor).toFixed(2);
+}
 
-    total.value = (valorUnitario * quantidade).toFixed(2);
+function adicionarLinha() {
+  const tbody = document.querySelector('#tabela-itens tbody');
+  const novaLinha = tbody.rows[0].cloneNode(true);
+
+  novaLinha.querySelectorAll('input').forEach(i => i.value = '');
+  novaLinha.querySelector('select').selectedIndex = 0;
+  novaLinha.querySelector('.valor-total').value = '';
+
+  tbody.appendChild(novaLinha);
+}
+
+function removerLinha(btn) {
+  const linha = btn.closest('tr');
+  const tbody = linha.parentElement;
+  if (tbody.rows.length > 1) {
+    linha.remove();
+  } else {
+    alert("A saída deve conter pelo menos um item.");
+  }
 }
 </script>
 {% endblock %}

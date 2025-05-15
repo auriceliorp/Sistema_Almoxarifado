@@ -3,11 +3,10 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
+
 <div class="container-fluid px-4">
   <h1 class="mt-4 text-white">Dashboard</h1>
-  <p class="text-white-50 mb-4">Visão geral do sistema GestorSPS</p>
-
-  <div class="row mb-4">
+  <p class="text-white-50 mb-4">Visão geral do sistema GestorSPS</p>  <div class="row mb-4">
     <!-- Cartões de resumo -->
     <div class="col-md-3">
       <div class="card bg-primary text-white h-100">
@@ -16,38 +15,34 @@
           <p class="fs-4">{{ total_itens }}</p>
         </div>
       </div>
-    </div>
-
-    <div class="col-md-3">
-      <div class="card bg-success text-white h-100">
-        <div class="card-body">
-          <h5>Entradas no Mês</h5>
-          <p class="fs-4">{{ entradas_mes }}</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-3">
-      <div class="card bg-danger text-white h-100">
-        <div class="card-body">
-          <h5>Saídas no Mês</h5>
-          <p class="fs-4">{{ saidas_mes }}</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-3">
-      <div class="card bg-info text-white h-100">
-        <div class="card-body">
-          <h5>Requisições Pendentes</h5>
-          <p class="fs-4">{{ requisicoes_pendentes }}</p>
-        </div>
-      </div>
+    </div><div class="col-md-3">
+  <div class="card bg-success text-white h-100">
+    <div class="card-body">
+      <h5>Entradas no Mês</h5>
+      <p class="fs-4">{{ entradas_mes }}</p>
     </div>
   </div>
+</div>
 
-  <!-- Área de gráficos -->
-  <div class="row">
+<div class="col-md-3">
+  <div class="card bg-danger text-white h-100">
+    <div class="card-body">
+      <h5>Saídas no Mês</h5>
+      <p class="fs-4">{{ saidas_mes }}</p>
+    </div>
+  </div>
+</div>
+
+<div class="col-md-3">
+  <div class="card bg-info text-white h-100">
+    <div class="card-body">
+      <h5>Requisições Pendentes</h5>
+      <p class="fs-4">{{ requisicoes_pendentes }}</p>
+    </div>
+  </div>
+</div>
+
+  </div>  <!-- Área de gráficos -->  <div class="row">
     <div class="col-md-6 mb-4">
       <div class="card">
         <div class="card-header bg-petroleo text-white">
@@ -57,24 +52,19 @@
           <canvas id="graficoMovimentacao"></canvas>
         </div>
       </div>
+    </div><div class="col-md-6 mb-4">
+  <div class="card">
+    <div class="card-header bg-petroleo text-white">
+      Itens com Baixo Estoque
     </div>
-
-    <div class="col-md-6 mb-4">
-      <div class="card">
-        <div class="card-header bg-petroleo text-white">
-          Itens com Baixo Estoque
-        </div>
-        <div class="card-body">
-          <canvas id="graficoEstoque"></canvas>
-        </div>
-      </div>
+    <div class="card-body">
+      <canvas id="graficoEstoque"></canvas>
     </div>
   </div>
 </div>
 
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
+  </div>
+</div><!-- Chart.js --><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script>
   const ctxMov = document.getElementById('graficoMovimentacao').getContext('2d');
   const graficoMovimentacao = new Chart(ctxMov, {
     type: 'bar',
@@ -112,5 +102,5 @@
       }]
     }
   });
-</script>
-{% endblock %}
+</script>{% endblock %}
+

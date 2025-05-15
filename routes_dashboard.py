@@ -1,82 +1,87 @@
 # routes_dashboard.py
-# Rotas para o dashboard do sistema com gráficos alimentados por dados reais
 
 from flask import Blueprint, render_template
 from flask_login import login_required, current_user
 from sqlalchemy import extract, func
-from datetime import datetime
-from models import EntradaItem, SaidaItem, EntradaMaterial, SaidaMaterial, NaturezaDespesa
+from modelos import EntradaItem, SaidaItem, EntradaMaterial, SaidaMaterial, NaturezaDespesa
+from extensoes import db
 
+# Criação do blueprint do dashboard
 dashboard_bp = Blueprint('dashboard_bp', __name__, url_prefix='/dashboard')
 
-# -------------------------- ROTA DO DASHBOARD -------------------------- #
-@dashboard_bp.route('/')
+
+# ------------------------------ ROTA: Dashboard ------------------------------ #
+@dashboard_bp.route('/', methods=['GET'])
 @login_required
 def dashboard():
-    mes_atual = datetime.now().month
-    ano_atual = datetime.now().year
-
-    # Consulta valores totais de entrada por mês
+    # Gráfico 1: Total de entradas por mês
     entradas_por_mes = (
-        EntradaItem.query
-        .join(EntradaMaterial)
-        .with_entities(
+        db.session.query(
             extract('month', EntradaMaterial.data_movimento).label('mes'),
-            func.sum(EntradaItem.valor_unitario * EntradaItem.quantidade).label('total')
+            func.sum(EntradaItem.quantidade * EntradaItem.valor_unitario).label('total')
         )
-        .filter(
-            extract('year', EntradaMaterial.data_movimento) == ano_atual
-        )
+        .join(EntradaItem, EntradaItem.entrada_id == EntradaMaterial.id)
         .group_by('mes')
         .order_by('mes')
         .all()
     )
 
-    # Consulta valores totais de saída por mês
+    # Gráfico 2: Total de saídas por mês
     saidas_por_mes = (
-        SaidaItem.query
-        .join(SaidaMaterial)
-        .with_entities(
+        db.session.query(
             extract('month', SaidaMaterial.data_movimento).label('mes'),
-            func.sum(SaidaItem.valor_unitario * SaidaItem.quantidade).label('total')
+            func.sum(SaidaItem.quantidade * SaidaItem.valor_unitario).label('total')
         )
-        .filter(
-            extract('year', SaidaMaterial.data_movimento) == ano_atual
-        )
+        .join(SaidaItem, SaidaItem.saida_id == SaidaMaterial.id)
         .group_by('mes')
         .order_by('mes')
         .all()
     )
 
-    # Prepara listas para os gráficos
-    meses = []
-    totais_entrada = []
-    totais_saida = []
-
-    for entrada in entradas_por_mes:
-        meses.append(f'{int(entrada.mes):02d}')
-        totais_entrada.append(float(entrada.total))
-
-    for saida in saidas_por_mes:
-        totais_saida.append(float(saida.total))
-
-    # Dados por natureza de despesa
-    nds = (
-        NaturezaDespesa.query
-        .with_entities(
+    # Gráfico 3: Totais por natureza de despesa
+    totais_por_nd = (
+        db.session.query(
             NaturezaDespesa.codigo,
             NaturezaDespesa.nome,
-            NaturezaDespesa.valor
+            func.sum(EntradaItem.quantidade * EntradaItem.valor_unitario).label('entradas'),
+            func.coalesce((
+                db.session.query(func.sum(SaidaItem.quantidade * SaidaItem.valor_unitario))
+                .join(Item := SaidaItem.item)
+                .filter(Item.natureza_despesa_id == NaturezaDespesa.id)
+                .correlate(NaturezaDespesa)
+                .scalar_subquery()
+            ), 0).label('saidas')
         )
-        .order_by(NaturezaDespesa.codigo)
+        .join(NaturezaDespesa.itens)
+        .join(Item := EntradaItem.item)
+        .group_by(NaturezaDespesa.codigo, NaturezaDespesa.nome)
         .all()
     )
+
+    # Conversão dos dados para listas para uso no template
+    meses = list(range(1, 13))
+    entradas = {int(mes): float(total or 0) for mes, total in entradas_por_mes}
+    saidas = {int(mes): float(total or 0) for mes, total in saidas_por_mes}
+
+    dados_entrada = [entradas.get(mes, 0) for mes in meses]
+    dados_saida = [saidas.get(mes, 0) for mes in meses]
+
+    totais = [
+        {
+            'codigo': nd.codigo,
+            'nome': nd.nome,
+            'entradas': float(nd.entradas or 0),
+            'saidas': float(nd.saidas or 0),
+            'saldo': float((nd.entradas or 0) - (nd.saidas or 0))
+        }
+        for nd in totais_por_nd
+    ]
 
     return render_template(
         'dashboard.html',
         usuario=current_user,
         meses=meses,
-        totais_entrada=totais_entrada,
-        totais_saida=totais_saida,
-        dados_nd=nds
+        dados_entrada=dados_entrada,
+        dados_saida=dados_saida,
+        totais=totais
     )

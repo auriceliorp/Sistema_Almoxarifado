@@ -1,95 +1,97 @@
-# routes_dashboard.py
-# Rota do dashboard com alimentação de dados reais do banco de dados
+{% extends 'base_simplificada.html' %}
 
-from flask import Blueprint, render_template
-from flask_login import login_required, current_user
-from models import EntradaItem, SaidaItem, EntradaMaterial, SaidaMaterial, NaturezaDespesa, Item
-from sqlalchemy import extract, func
-from datetime import datetime
-from extensoes import db
+{% block title %}Saídas de Materiais{% endblock %}
 
-# Cria o blueprint
-dashboard_bp = Blueprint('dashboard_bp', __name__, url_prefix='/dashboard')
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">Saídas de Materiais</h4>
+    <a href="{{ url_for('saida_bp.nova_saida') }}" class="btn btn-outline-success">
+      <i class="bi bi-plus-circle"></i> Nova Saída
+    </a>
+  </div>
 
-# ------------------------------ ROTA: Dashboard ------------------------------ #
-@dashboard_bp.route('/')
-@login_required
-def dashboard():
-    # Mês e ano atuais
-    ano_atual = datetime.now().year
-    mes_atual = datetime.now().month
+  <div class="mb-4 row g-2 align-items-end">
+    <div class="col-md-4">
+      <label for="filtro" class="form-label">Buscar por:</label>
+      <select id="filtro" class="form-select">
+        <option value="data">Data</option>
+        <option value="responsavel">Responsável</option>
+        <option value="id">ID</option>
+      </select>
+    </div>
+    <div class="col-md-6">
+      <label for="busca" class="form-label">Valor:</label>
+      <input type="text" id="busca" class="form-control" placeholder="Digite sua busca">
+    </div>
+    <div class="col-md-2">
+      <button id="btnBuscar" class="btn btn-primary w-100"><i class="bi bi-search"></i> Buscar</button>
+    </div>
+  </div>
 
-    # Lista de meses para exibir no dashboard
-    meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+  {% if saidas %}
+  <div class="table-responsive">
+    <table id="tabela-saidas" class="table table-striped table-hover align-middle w-100">
+      <thead class="table-dark">
+        <tr>
+          <th>ID</th>
+          <th>Data</th>
+          <th>Responsável</th>
+          <th class="text-center">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for saida in saidas %}
+        <tr>
+          <td>{{ saida.id }}</td>
+          <td>{{ saida.data_movimento.strftime('%d/%m/%Y') }}</td>
+          <td>{{ saida.usuario.nome }}</td>
+          <td class="text-center">
+            <a href="{{ url_for('saida_bp.requisicao_saida', saida_id=saida.id) }}" class="btn btn-outline-secondary btn-sm" target="_blank">
+              <i class="bi bi-eye"></i> Requisição
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="alert alert-info">Nenhuma saída registrada até o momento.</div>
+  {% endif %}
+</div>
+{% endblock %}
 
-    # Valores totais por mês (entradas e saídas)
-    totais = {
-        'entrada': [0]*12,
-        'saida': [0]*12
-    }
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
 
-    # Consulta entradas por mês
-    entradas = (
-        db.session.query(
-            extract('month', EntradaMaterial.data_movimento).label('mes'),
-            func.sum(EntradaItem.quantidade * EntradaItem.valor_unitario).label('total')
-        )
-        .join(EntradaItem, EntradaMaterial.id == EntradaItem.entrada_id)
-        .group_by('mes')
-        .all()
-    )
+<script>
+  $(document).ready(function () {
+    const table = $('#tabela-saidas').DataTable({
+      language: {
+        url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json'
+      },
+      pageLength: 10,
+      lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+      ordering: true
+    });
 
-    for entrada in entradas:
-        totais['entrada'][int(entrada.mes)-1] = float(entrada.total or 0)
-
-    # Consulta saídas por mês
-    saidas = (
-        db.session.query(
-            extract('month', SaidaMaterial.data_movimento).label('mes'),
-            func.sum(SaidaItem.quantidade * SaidaItem.valor_unitario).label('total')
-        )
-        .join(SaidaItem, SaidaMaterial.id == SaidaItem.saida_id)
-        .group_by('mes')
-        .all()
-    )
-
-    for saida in saidas:
-        totais['saida'][int(saida.mes)-1] = float(saida.total or 0)
-
-    # Dados por ND (Mapa de Fechamento)
-    dados_entrada = (
-        db.session.query(
-            NaturezaDespesa.nome,
-            func.sum(EntradaItem.quantidade * EntradaItem.valor_unitario).label('total')
-        )
-        .join(Item, Item.id == EntradaItem.item_id)
-        .join(NaturezaDespesa, NaturezaDespesa.id == Item.natureza_despesa_id)
-        .join(EntradaMaterial, EntradaMaterial.id == EntradaItem.entrada_id)
-        .filter(extract('month', EntradaMaterial.data_movimento) == mes_atual)
-        .filter(extract('year', EntradaMaterial.data_movimento) == ano_atual)
-        .group_by(NaturezaDespesa.nome)
-        .all()
-    )
-
-    dados_saida = (
-        db.session.query(
-            NaturezaDespesa.nome,
-            func.sum(SaidaItem.quantidade * SaidaItem.valor_unitario).label('total')
-        )
-        .join(Item, Item.id == SaidaItem.item_id)
-        .join(NaturezaDespesa, NaturezaDespesa.id == Item.natureza_despesa_id)
-        .join(SaidaMaterial, SaidaMaterial.id == SaidaItem.saida_id)
-        .filter(extract('month', SaidaMaterial.data_movimento) == mes_atual)
-        .filter(extract('year', SaidaMaterial.data_movimento) == ano_atual)
-        .group_by(NaturezaDespesa.nome)
-        .all()
-    )
-
-    return render_template(
-        'dashboard.html',
-        usuario=current_user,
-        meses=meses,
-        totais=totais,
-        dados_entrada=dados_entrada,
-        dados_saida=dados_saida
-    )
+    $('#btnBuscar').on('click', function () {
+      const filtro = $('#filtro').val();
+      const termo = $('#busca').val();
+      table.search('').columns().search('');
+      if (filtro === 'responsavel') {
+        table.column(2).search(termo).draw();
+      } else if (filtro === 'data') {
+        table.column(1).search(termo).draw();
+      } else if (filtro === 'id') {
+        table.column(0).search(termo).draw();
+      }
+    });
+  });
+</script>
+{% endblock %}

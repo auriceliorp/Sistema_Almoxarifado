@@ -3,18 +3,15 @@
 from flask import Blueprint, render_template
 from flask_login import login_required, current_user
 from sqlalchemy import extract, func
-from models import EntradaItem, SaidaItem, EntradaMaterial, SaidaMaterial, NaturezaDespesa
+from modelos import EntradaItem, SaidaItem, EntradaMaterial, SaidaMaterial, NaturezaDespesa, Item
 from extensoes import db
 
-# Criação do blueprint do dashboard
 dashboard_bp = Blueprint('dashboard_bp', __name__, url_prefix='/dashboard')
 
-
-# ------------------------------ ROTA: Dashboard ------------------------------ #
 @dashboard_bp.route('/', methods=['GET'])
 @login_required
 def dashboard():
-    # Gráfico 1: Total de entradas por mês
+    # Gráfico de entradas por mês
     entradas_por_mes = (
         db.session.query(
             extract('month', EntradaMaterial.data_movimento).label('mes'),
@@ -26,7 +23,7 @@ def dashboard():
         .all()
     )
 
-    # Gráfico 2: Total de saídas por mês
+    # Gráfico de saídas por mês
     saidas_por_mes = (
         db.session.query(
             extract('month', SaidaMaterial.data_movimento).label('mes'),
@@ -38,27 +35,33 @@ def dashboard():
         .all()
     )
 
-    # Gráfico 3: Totais por natureza de despesa
+    # Subconsulta de saídas agrupadas por natureza de despesa
+    subq_saidas = (
+        db.session.query(
+            Item.natureza_despesa_id.label('nd_id'),
+            func.sum(SaidaItem.quantidade * SaidaItem.valor_unitario).label('total_saida')
+        )
+        .join(SaidaItem, SaidaItem.item_id == Item.id)
+        .group_by(Item.natureza_despesa_id)
+        .subquery()
+    )
+
+    # Consulta final com junção de NaturezaDespesa, entradas e subquery de saídas
     totais_por_nd = (
         db.session.query(
             NaturezaDespesa.codigo,
             NaturezaDespesa.nome,
             func.sum(EntradaItem.quantidade * EntradaItem.valor_unitario).label('entradas'),
-            func.coalesce((
-                db.session.query(func.sum(SaidaItem.quantidade * SaidaItem.valor_unitario))
-                .join(Item := SaidaItem.item)
-                .filter(Item.natureza_despesa_id == NaturezaDespesa.id)
-                .correlate(NaturezaDespesa)
-                .scalar_subquery()
-            ), 0).label('saidas')
+            func.coalesce(subq_saidas.c.total_saida, 0).label('saidas')
         )
-        .join(NaturezaDespesa.itens)
-        .join(Item := EntradaItem.item)
-        .group_by(NaturezaDespesa.codigo, NaturezaDespesa.nome)
+        .join(EntradaItem.item)
+        .filter(Item.natureza_despesa_id == NaturezaDespesa.id)
+        .outerjoin(subq_saidas, subq_saidas.c.nd_id == NaturezaDespesa.id)
+        .group_by(NaturezaDespesa.codigo, NaturezaDespesa.nome, subq_saidas.c.total_saida)
         .all()
     )
 
-    # Conversão dos dados para listas para uso no template
+    # Conversão dos dados para o template
     meses = list(range(1, 13))
     entradas = {int(mes): float(total or 0) for mes, total in entradas_por_mes}
     saidas = {int(mes): float(total or 0) for mes, total in saidas_por_mes}
@@ -68,13 +71,13 @@ def dashboard():
 
     totais = [
         {
-            'codigo': nd.codigo,
-            'nome': nd.nome,
-            'entradas': float(nd.entradas or 0),
-            'saidas': float(nd.saidas or 0),
-            'saldo': float((nd.entradas or 0) - (nd.saidas or 0))
+            'codigo': codigo,
+            'nome': nome,
+            'entradas': float(entrada or 0),
+            'saidas': float(saida or 0),
+            'saldo': float((entrada or 0) - (saida or 0))
         }
-        for nd in totais_por_nd
+        for codigo, nome, entrada, saida in totais_por_nd
     ]
 
     return render_template(

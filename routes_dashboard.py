@@ -3,7 +3,7 @@
 from flask import Blueprint, render_template
 from flask_login import login_required, current_user
 from sqlalchemy import extract, func
-from modelos import EntradaItem, SaidaItem, EntradaMaterial, SaidaMaterial, NaturezaDespesa, Item
+from models import EntradaItem, SaidaItem, EntradaMaterial, SaidaMaterial, NaturezaDespesa, Item
 from extensoes import db
 
 dashboard_bp = Blueprint('dashboard_bp', __name__, url_prefix='/dashboard')

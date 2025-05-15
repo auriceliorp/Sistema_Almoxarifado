@@ -1,135 +1,95 @@
-{# nova_entrada.html #}
 {% extends 'base_simplificada.html' %}
-
-{% block title %}Nova Entrada de Material{% endblock %}
-
 {% block content %}
-<div class="container py-4">
-  <h4 class="mb-4">Registrar Nova Entrada de Material</h4>
-
-  <form method="POST">
-    {# Dados da Nota Fiscal #}
+<div class="container mt-4">
+  <h2 class="mb-4">Nova Entrada de Material</h2>
+  <form method="post">
+    <!-- Campos principais da entrada -->
     <div class="row mb-3">
-      <div class="col-md-3">
+      <div class="col-md-4">
         <label for="data_movimento" class="form-label">Data do Movimento *</label>
-        <input type="date" class="form-control" name="data_movimento" required>
+        <input type="date" class="form-control" id="data_movimento" name="data_movimento" required>
       </div>
-      <div class="col-md-3">
+      <div class="col-md-4">
         <label for="data_nota_fiscal" class="form-label">Data da Nota Fiscal *</label>
-        <input type="date" class="form-control" name="data_nota_fiscal" required>
+        <input type="date" class="form-control" id="data_nota_fiscal" name="data_nota_fiscal" required>
       </div>
-      <div class="col-md-3">
+      <div class="col-md-4">
         <label for="numero_nota_fiscal" class="form-label">Número da Nota Fiscal *</label>
-        <input type="text" class="form-control" name="numero_nota_fiscal" required>
-      </div>
-      <div class="col-md-3">
-        <label for="fornecedor" class="form-label">Fornecedor *</label>
-        <select name="fornecedor" class="form-select" required>
-          <option value="" selected disabled>Selecione...</option>
-          {% for fornecedor in fornecedores %}
-          <option value="{{ fornecedor.id }}">{{ fornecedor.nome }}</option>
-          {% endfor %}
-        </select>
+        <input type="text" class="form-control" id="numero_nota_fiscal" name="numero_nota_fiscal" required>
       </div>
     </div>
 
-    {# Tabela de Itens da Entrada #}
-    <div class="table-responsive">
-      <table class="table table-bordered align-middle" id="tabela-itens">
-        <thead class="table-light">
-          <tr>
-            <th>Item</th>
-            <th>Quantidade</th>
-            <th>Valor Unitário (R$)</th>
-            <th>Valor Total (R$)</th>
-            <th>Ação</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              <select name="item_id[]" class="form-select" required>
-                <option value="" disabled selected>Selecione...</option>
-                {% for item in itens %}
-                <option value="{{ item.id }}">{{ item.nome }}</option>
-                {% endfor %}
-              </select>
-            </td>
-            <td><input type="number" name="quantidade[]" class="form-control" min="1" required oninput="atualizarTotais(this)"></td>
-            <td><input type="number" name="valor_unitario[]" class="form-control" min="0" step="0.01" required oninput="atualizarTotais(this)"></td>
-            <td class="valor_total">0.00</td>
-            <td><button type="button" class="btn btn-danger btn-sm" onclick="removerLinha(this)">Remover</button></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
+    <!-- Seleção do fornecedor -->
     <div class="mb-3">
-      <button type="button" class="btn btn-secondary" onclick="adicionarLinha()">+ Adicionar Item</button>
+      <label for="fornecedor_id" class="form-label">Fornecedor *</label>
+      <select class="form-select" id="fornecedor_id" name="fornecedor_id" required>
+        <option value="">Selecione um fornecedor</option>
+        {% for fornecedor in fornecedores %}
+          <option value="{{ fornecedor.id }}">{{ fornecedor.nome }}</option>
+        {% endfor %}
+      </select>
     </div>
 
-    {# Total da Nota Fiscal #}
-    <div class="mb-4 text-end">
-      <strong>Total da Nota Fiscal (R$):</strong>
-      <span id="totalNota">0.00</span>
+    <!-- Itens da entrada -->
+    <hr>
+    <h5>Itens da Entrada</h5>
+    <div id="itens-container">
+      <!-- Primeiro item (modelo base) -->
+      <div class="row mb-3 item-linha">
+        <div class="col-md-4">
+          <label class="form-label">Item *</label>
+          <select class="form-select" name="item_id[]" required>
+            <option value="">Selecione</option>
+            {% for item in itens %}
+              <option value="{{ item.id }}">{{ item.nome }} ({{ item.codigo_sap }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Quantidade *</label>
+          <input type="number" class="form-control" name="quantidade[]" min="1" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Valor Unitário *</label>
+          <input type="number" class="form-control" name="valor_unitario[]" step="0.01" min="0" required>
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+          <button type="button" class="btn btn-danger btn-remover">Remover</button>
+        </div>
+      </div>
     </div>
 
-    {# Botões de ação #}
-    <div class="d-flex justify-content-end gap-2">
-      <button type="submit" class="btn btn-success">Salvar Entrada</button>
-      <a href="{{ url_for('main.home') }}" class="btn btn-secondary">Cancelar</a>
+    <!-- Botão para adicionar mais itens -->
+    <div class="mb-3">
+      <button type="button" class="btn btn-secondary" id="adicionar-item">Adicionar Item</button>
     </div>
+
+    <!-- Botão de envio -->
+    <button type="submit" class="btn btn-primary">Salvar Entrada</button>
+    <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="btn btn-outline-secondary">Cancelar</a>
   </form>
 </div>
 
-{# JavaScript para cálculo automático e manipulação de linhas #}
+<!-- Script JavaScript para clonar itens -->
 <script>
-function atualizarTotais(input) {
-  const linha = input.closest('tr');
-  const qtd = parseFloat(linha.querySelector('input[name="quantidade[]"]').value) || 0;
-  const valor = parseFloat(linha.querySelector('input[name="valor_unitario[]"]').value) || 0;
-  const total = qtd * valor;
-  linha.querySelector('.valor_total').innerText = total.toFixed(2);
-  atualizarTotalNota();
-}
+document.getElementById('adicionar-item').addEventListener('click', function() {
+  const container = document.getElementById('itens-container');
+  const novaLinha = container.querySelector('.item-linha').cloneNode(true);
+  
+  // Limpa os valores dos campos da nova linha
+  novaLinha.querySelectorAll('input, select').forEach(el => el.value = '');
+  container.appendChild(novaLinha);
+});
 
-function atualizarTotalNota() {
-  let totalNota = 0;
-  document.querySelectorAll('.valor_total').forEach(td => {
-    totalNota += parseFloat(td.innerText) || 0;
-  });
-  document.getElementById('totalNota').innerText = totalNota.toFixed(2);
-}
-
-function adicionarLinha() {
-  const tbody = document.querySelector('#tabela-itens tbody');
-  const primeiraLinha = tbody.rows[0];
-  const novaLinha = primeiraLinha.cloneNode(true);
-
-  // Limpa os valores dos inputs clonados
-  novaLinha.querySelectorAll('input').forEach(input => {
-    input.value = '';
-    input.setAttribute('required', true); // garante que mantenha required
-  });
-
-  // Restaura o atributo 'name' dos inputs e select, caso o clone remova ou corrompa
-  novaLinha.querySelector('select').setAttribute('name', 'item_id[]');
-  novaLinha.querySelector('input[type="number"][name]').setAttribute('name', 'quantidade[]');
-  novaLinha.querySelectorAll('input[type="number"]')[1].setAttribute('name', 'valor_unitario[]');
-
-  novaLinha.querySelector('.valor_total').innerText = '0.00';
-  tbody.appendChild(novaLinha);
-}
-
-function removerLinha(botao) {
-  const linha = botao.closest('tr');
-  const tbody = linha.parentElement;
-  if (tbody.rows.length > 1) {
-    linha.remove();
-    atualizarTotalNota();
-  } else {
-    alert('A entrada deve conter pelo menos um item.');
+// Remover linha de item
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('btn-remover')) {
+    const linha = e.target.closest('.item-linha');
+    const container = document.getElementById('itens-container');
+    if (container.querySelectorAll('.item-linha').length > 1) {
+      linha.remove();
+    }
   }
-}
+});
 </script>
 {% endblock %}

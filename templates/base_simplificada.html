@@ -1,114 +1,138 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+{# templates/base_simplificada.html #}
+
+<!DOCTYPE html><html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}Bem-vindo{% endblock %}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}GestorSPS{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Bootstrap e Ícones -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<!-- DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 
-    <!-- Bootstrap e ícones -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<!-- CSS customizado -->
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: #f8f9fa;
+    }
 
-    <!-- CSS personalizado -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+    #topbar {
+        background-color: #004b5a;
+        color: white;
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
 
-    <style>
-        body {
-            background-color: #f8f9fa;
-            background-size: cover;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
+    #topbar .brand {
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+
+    #toggleSidebar {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .sidebar {
+        background-color: #004b5a;
+        color: white;
+        min-height: 100vh;
+    }
+
+    .sidebar .nav-link {
+        color: white;
+    }
+
+    .sidebar .nav-link:hover {
+        background-color: #025d70;
+        color: #fff;
+    }
+
+    .sidebar .submenu {
+        display: none;
+        padding-left: 15px;
+    }
+
+    .sidebar .submenu.show {
+        display: block;
+    }
+
+    .content {
+        margin-left: 250px;
+        padding: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .content {
+            margin-left: 0;
         }
 
-        /* Layout com sidebar fixa */
-        .main-content {
-            margin-left: 250px; /* Largura da sidebar */
-            padding: 30px 15px;
+        .sidebar {
+            position: fixed;
+            z-index: 1050;
+            top: 0;
+            left: 0;
+            width: 250px;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
         }
 
-        @media (max-width: 768px) {
-            .main-content {
-                margin-left: 0;
-                padding: 15px;
-            }
+        .sidebar.show {
+            transform: translateX(0);
         }
+    }
+</style>
 
-        .logo-emb {
-            max-width: 200px;
-            height: auto;
-            display: block;
-            margin: 0 auto 20px auto;
-        }
-
-        h2 {
-            font-weight: 600;
-        }
-
-        .btn {
-            border-width: 2px;
-        }
-
-        thead th {
-            background-color: #0d6efd !important;
-            color: white;
-            vertical-align: middle;
-        }
-
-        table.dataTable thead .sorting:after {
-            content: " ⬍";
-            font-size: 14px;
-            color: white;
-        }
-
-        table.dataTable thead .sorting_asc:after {
-            content: " ⬆";
-            font-size: 14px;
-            color: white;
-        }
-
-        table.dataTable thead .sorting_desc:after {
-            content: " ⬇";
-            font-size: 14px;
-            color: white;
-        }
-
-        .bg-indigo {
-            background-color: #6610f2 !important;
-        }
-
-        .bg-teal {
-            background-color: #20c997 !important;
-        }
-    </style>
 </head>
 <body>
+    <header id="topbar">
+        <button id="toggleSidebar" class="d-md-none"><i class="bi bi-list"></i></button>
+        <div class="brand">GestorSPS</div>
+        <a href="{{ url_for('main.logout') }}" class="text-white"><i class="bi bi-box-arrow-right"></i></a>
+    </header>{% include 'partials/sidebar.html' %}
 
-    {% if current_user.is_authenticated %}
-        {% include 'partials/sidebar.html' %}
-    {% endif %}
+<main class="content">
+    {% block content %}{% endblock %}
+</main>
 
-    <div class="main-content">
-        <img src="{{ url_for('static', filename='embrapa_logo.png') }}" alt="Logo Embrapa" class="logo-emb">
-        {% block content %}{% endblock %}
-    </div>
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- jQuery e DataTables -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-
-    <script>
-      $(document).ready(function () {
+<script>
+    // Ativar DataTable
+    $(document).ready(function () {
         $('#tabela-itens').DataTable({
-          pageLength: 10,
-          lengthMenu: [10, 25, 50, 100],
-          language: {
-            url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json'
-          }
+            pageLength: 10,
+            lengthMenu: [10, 25, 50, 100],
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json'
+            }
         });
-      });
-    </script>
+    });
+
+    // Menu lateral responsivo
+    document.getElementById('toggleSidebar').addEventListener('click', function () {
+        document.getElementById('sidebarMenu').classList.toggle('show');
+    });
+
+    // Submenus com seta
+    document.querySelectorAll('.nav-link[data-bs-toggle="submenu"]').forEach(function (link) {
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+            const submenu = this.nextElementSibling;
+            submenu.classList.toggle('show');
+        });
+    });
+</script>
+
 </body>
 </html>

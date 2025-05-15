@@ -10,7 +10,7 @@ class Perfil(db.Model):
     nome = db.Column(db.String(50), nullable=False, unique=True)
 
 class Usuario(UserMixin, db.Model):
-    __tablename__ = 'usuarios'  # Tabela definitiva
+    __tablename__ = 'usuarios'
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -125,7 +125,10 @@ class EntradaItem(db.Model):
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
     quantidade = db.Column(db.Integer, nullable=False)
     valor_unitario = db.Column(db.Numeric(10, 2), nullable=False)
+
     item = db.relationship('Item', backref='entradas')
+
+    entrada = db.relationship('EntradaMaterial', backref='itens_relacionados')
 
     @property
     def valor_total(self):
@@ -153,4 +156,3 @@ class SaidaItem(db.Model):
 
     saida_id = db.Column(db.Integer, db.ForeignKey('saida_material.id'), nullable=False)
     item = db.relationship('Item')
-

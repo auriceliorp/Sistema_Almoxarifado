@@ -1,83 +1,74 @@
 # routes_dashboard.py
+# Rota do dashboard com gráficos de movimentação de materiais
 
 from flask import Blueprint, render_template
 from flask_login import login_required, current_user
-from app_render import db
-from models import Item, EntradaItem, SaidaItem
 from sqlalchemy import extract, func
 from datetime import datetime
-from dateutil.relativedelta import relativedelta
+from extensoes import db
+from models import EntradaItem, SaidaItem, Item
 
-# Criação do blueprint
+# Criação do blueprint do dashboard
 dashboard_bp = Blueprint('dashboard_bp', __name__)
 
 @dashboard_bp.route('/dashboard')
 @login_required
 def dashboard():
-    # Total de itens cadastrados
-    total_itens = Item.query.count()
+    # Data atual para filtro por mês
+    data_atual = datetime.now()
+    mes_atual = data_atual.month
+    ano_atual = data_atual.year
 
-    # Mês e ano atuais
-    mes_atual = datetime.now().month
-    ano_atual = datetime.now().year
+    # Entradas por mês
+    entradas_por_mes = (
+        db.session.query(
+            extract('month', EntradaItem.entrada_material.data_movimento).label('mes'),
+            func.sum(EntradaItem.quantidade * EntradaItem.valor_unitario).label('total')
+        )
+        .group_by('mes')
+        .order_by('mes')
+        .all()
+    )
 
-    # Entradas no mês
-    entradas_mes = db.session.query(func.sum(EntradaItem.quantidade))\
-        .join(EntradaItem.entrada)\
-        .filter(extract('month', EntradaItem.entrada.data_movimento) == mes_atual,
-                extract('year', EntradaItem.entrada.data_movimento) == ano_atual)\
-        .scalar() or 0
+    # Saídas por mês
+    saidas_por_mes = (
+        db.session.query(
+            extract('month', SaidaItem.saida.data_movimento).label('mes'),
+            func.sum(SaidaItem.quantidade * SaidaItem.valor_unitario).label('total')
+        )
+        .group_by('mes')
+        .order_by('mes')
+        .all()
+    )
 
-    # Saídas no mês
-    saidas_mes = db.session.query(func.sum(SaidaItem.quantidade))\
-        .join(SaidaItem.saida)\
-        .filter(extract('month', SaidaItem.saida.data_movimento) == mes_atual,
-                extract('year', SaidaItem.saida.data_movimento) == ano_atual)\
-        .scalar() or 0
+    # Estoque atual por item
+    estoque_por_item = (
+        db.session.query(
+            Item.nome,
+            Item.estoque_atual
+        )
+        .order_by(Item.estoque_atual.desc())
+        .limit(10)
+        .all()
+    )
 
-    # Requisições pendentes (futuro)
-    requisicoes_pendentes = 0
+    # Formatação para gráficos
+    meses_entradas = [f'{int(m):02d}' for m, _ in entradas_por_mes]
+    valores_entradas = [float(v) for _, v in entradas_por_mes]
 
-    # Dados para gráfico de movimentações dos últimos 6 meses
-    meses = []
-    dados_entrada = []
-    dados_saida = []
+    meses_saidas = [f'{int(m):02d}' for m, _ in saidas_por_mes]
+    valores_saidas = [float(v) for _, v in saidas_por_mes]
 
-    for i in range(5, -1, -1):
-        data_ref = datetime.now().replace(day=1) - relativedelta(months=i)
-        label_mes = data_ref.strftime('%b/%y')
-        meses.append(label_mes)
-
-        entrada_mes = db.session.query(func.sum(EntradaItem.quantidade))\
-            .join(EntradaItem.entrada)\
-            .filter(extract('month', EntradaItem.entrada.data_movimento) == data_ref.month,
-                    extract('year', EntradaItem.entrada.data_movimento) == data_ref.year)\
-            .scalar() or 0
-
-        saida_mes = db.session.query(func.sum(SaidaItem.quantidade))\
-            .join(SaidaItem.saida)\
-            .filter(extract('month', SaidaItem.saida.data_movimento) == data_ref.month,
-                    extract('year', SaidaItem.saida.data_movimento) == data_ref.year)\
-            .scalar() or 0
-
-        dados_entrada.append(entrada_mes)
-        dados_saida.append(saida_mes)
-
-    # Itens com estoque abaixo do mínimo
-    itens_baixo = Item.query.filter(Item.quantidade_estoque < Item.estoque_minimo).all()
-    itens_baixo_estoque_labels = [item.nome for item in itens_baixo]
-    itens_baixo_estoque_dados = [item.quantidade_estoque for item in itens_baixo]
+    nomes_itens = [nome for nome, _ in estoque_por_item]
+    estoques = [float(qtd) for _, qtd in estoque_por_item]
 
     return render_template(
         'dashboard.html',
         usuario=current_user,
-        total_itens=total_itens,
-        entradas_mes=entradas_mes,
-        saidas_mes=saidas_mes,
-        requisicoes_pendentes=requisicoes_pendentes,
-        meses=meses,
-        dados_entrada=dados_entrada,
-        dados_saida=dados_saida,
-        itens_baixo_estoque_labels=itens_baixo_estoque_labels,
-        itens_baixo_estoque_dados=itens_baixo_estoque_dados
+        meses_entradas=meses_entradas,
+        valores_entradas=valores_entradas,
+        meses_saidas=meses_saidas,
+        valores_saidas=valores_saidas,
+        nomes_itens=nomes_itens,
+        estoques=estoques
     )

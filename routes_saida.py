@@ -1,45 +1,57 @@
 # routes_saida.py
-# Rotas para saída de materiais com débito na natureza de despesa
+# Rotas para saída de materiais com débito na natureza de despesa e registro de solicitante
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from app_render import db
-from models import Item, SaidaMaterial, SaidaItem
-from datetime import date, datetime
+from models import Item, SaidaMaterial, SaidaItem, Usuario
+from datetime import date
 
 saida_bp = Blueprint('saida_bp', __name__)
 
-# ------------------------------ LISTAGEM DE SAÍDAS ------------------------------ #
+# ------------------------------ LISTAGEM DAS SAÍDAS ------------------------------ #
 @saida_bp.route('/saidas')
 @login_required
 def lista_saidas():
     saidas = SaidaMaterial.query.order_by(SaidaMaterial.data_movimento.desc()).all()
     return render_template('lista_saida.html', saidas=saidas)
 
-# ------------------------------ NOVA SAÍDA ------------------------------ #
+# ------------------------------ NOVA SAÍDA DE MATERIAL ------------------------------ #
 @saida_bp.route('/nova_saida', methods=['GET', 'POST'])
 @login_required
 def nova_saida():
     itens = Item.query.all()
+    usuarios = Usuario.query.order_by(Usuario.nome).all()
 
-    # ---------------------- PROCESSAMENTO DO FORMULÁRIO ---------------------- #
     if request.method == 'POST':
         try:
+            # Coleta os dados do formulário
             data_movimento = date.fromisoformat(request.form.get('data_movimento'))
-            numero_documento = request.form.get('numero_documento')
             observacao = request.form.get('observacao')
+            solicitante_id = request.form.get('solicitante_id')
 
-            # Cria a nova saída
+            # Geração automática do número do documento
+            ano_atual = date.today().year
+            ultima_saida = (
+                SaidaMaterial.query
+                .filter(db.extract('year', SaidaMaterial.data_movimento) == ano_atual)
+                .order_by(SaidaMaterial.id.desc())
+                .first()
+            )
+            proximo_numero = 1 if not ultima_saida else ultima_saida.id + 1
+            numero_documento = f'{proximo_numero:03d}/{ano_atual}'
+
             nova_saida = SaidaMaterial(
                 data_movimento=data_movimento,
                 numero_documento=numero_documento,
                 observacao=observacao,
-                usuario_id=current_user.id
+                usuario_id=current_user.id,       # quem operou
+                solicitante_id=solicitante_id     # quem solicitou
             )
             db.session.add(nova_saida)
-            db.session.flush()
+            db.session.flush()  # gera nova_saida.id
 
-            # Captura os itens enviados
+            # Processa os itens
             item_ids = request.form.getlist('item_id[]')
             quantidades = request.form.getlist('quantidade[]')
             valores_unitarios = request.form.getlist('valor_unitario[]')
@@ -52,17 +64,17 @@ def nova_saida():
                 quantidade = int(quantidades[i])
                 valor_unitario = float(valores_unitarios[i].replace(',', '.'))
 
-                # Verifica estoque disponível
+                # Verifica se há estoque suficiente
                 if item.estoque_atual < quantidade:
                     flash(f"Estoque insuficiente para '{item.nome}'", 'danger')
                     db.session.rollback()
                     return redirect(url_for('saida_bp.nova_saida'))
 
-                # Atualiza os dados do item
+                # Atualiza estoque e saldo
                 item.estoque_atual -= quantidade
                 item.saldo_financeiro -= quantidade * valor_unitario
 
-                # Atualiza a Natureza de Despesa (débito)
+                # Atualiza valor na natureza de despesa
                 if item.grupo and item.grupo.natureza_despesa:
                     item.grupo.natureza_despesa.valor -= quantidade * valor_unitario
 
@@ -81,25 +93,12 @@ def nova_saida():
 
         except Exception as e:
             db.session.rollback()
-            flash(f'Erro ao registrar saída: {e}', 'danger')
+            flash(f'Erro: {e}', 'danger')
             print(e)
 
-    # ---------------------- GERAR NÚMERO AUTOMÁTICO ---------------------- #
-    ano_atual = datetime.now().year
-    total_ano = SaidaMaterial.query.filter(
-        db.extract('year', SaidaMaterial.data_movimento) == ano_atual
-    ).count()
-    numero_gerado = f"{total_ano + 1:03d}/{ano_atual}"
+    return render_template('nova_saida.html', itens=itens, usuarios=usuarios)
 
-    return render_template(
-        'nova_saida.html',
-        itens=itens,
-        current_user=current_user,
-        numero_documento=numero_gerado,
-        data_hoje=date.today().isoformat()
-    )
-
-# ------------------------------ VISUALIZAR REQUISIÇÃO ------------------------------ #
+# ------------------------------ REQUISIÇÃO DE SAÍDA (VISUALIZAÇÃO) ------------------------------ #
 @saida_bp.route('/requisicao/<int:saida_id>')
 @login_required
 def requisicao_saida(saida_id):

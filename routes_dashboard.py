@@ -1,4 +1,5 @@
 # routes_dashboard.py
+
 from flask import Blueprint, render_template
 from flask_login import login_required, current_user
 
@@ -7,16 +8,18 @@ dashboard_bp = Blueprint('dashboard_bp', __name__)
 @dashboard_bp.route('/dashboard')
 @login_required
 def dashboard():
-    # Dados fictícios para teste
-    total_itens = 120
-    entradas_mes = 35
-    saidas_mes = 22
-    requisicoes_pendentes = 8
+    # Dados simulados para exibição no dashboard
+    total_itens = 100
+    entradas_mes = 25
+    saidas_mes = 18
+    requisicoes_pendentes = 7
+
     meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai']
     dados_entrada = [10, 15, 5, 20, 8]
     dados_saida = [5, 8, 3, 10, 7]
-    itens_baixo_estoque_labels = ['Álcool', 'Luvas', 'Papel A4']
-    itens_baixo_estoque_dados = [5, 2, 3]
+
+    itens_baixo_estoque_labels = ['Papel A4', 'Álcool', 'Luvas', 'Caneta']
+    itens_baixo_estoque_dados = [2, 1, 3, 1]
 
     return render_template(
         'dashboard.html',

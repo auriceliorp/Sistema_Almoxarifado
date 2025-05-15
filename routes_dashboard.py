@@ -2,41 +2,18 @@
 
 from flask import Blueprint, render_template
 from flask_login import login_required, current_user
-from sqlalchemy import extract, func
-from models import EntradaItem, SaidaItem, EntradaMaterial, SaidaMaterial, NaturezaDespesa, Item
+from sqlalchemy import func, select
 from extensoes import db
+from models import EntradaItem, SaidaItem, EntradaMaterial, SaidaMaterial, NaturezaDespesa, Item
 
+# Criação do blueprint
 dashboard_bp = Blueprint('dashboard_bp', __name__, url_prefix='/dashboard')
 
 @dashboard_bp.route('/', methods=['GET'])
 @login_required
 def dashboard():
-    # Gráfico de entradas por mês
-    entradas_por_mes = (
-        db.session.query(
-            extract('month', EntradaMaterial.data_movimento).label('mes'),
-            func.sum(EntradaItem.quantidade * EntradaItem.valor_unitario).label('total')
-        )
-        .join(EntradaItem, EntradaItem.entrada_id == EntradaMaterial.id)
-        .group_by('mes')
-        .order_by('mes')
-        .all()
-    )
-
-    # Gráfico de saídas por mês
-    saidas_por_mes = (
-        db.session.query(
-            extract('month', SaidaMaterial.data_movimento).label('mes'),
-            func.sum(SaidaItem.quantidade * SaidaItem.valor_unitario).label('total')
-        )
-        .join(SaidaItem, SaidaItem.saida_id == SaidaMaterial.id)
-        .group_by('mes')
-        .order_by('mes')
-        .all()
-    )
-
-    # Subconsulta de saídas agrupadas por natureza de despesa
-    subq_saidas = (
+    # Subconsulta: total de saídas por ND
+    subquery_saidas = (
         db.session.query(
             Item.natureza_despesa_id.label('nd_id'),
             func.sum(SaidaItem.quantidade * SaidaItem.valor_unitario).label('total_saida')
@@ -46,45 +23,30 @@ def dashboard():
         .subquery()
     )
 
-    # Consulta final com junção de NaturezaDespesa, entradas e subquery de saídas
-    totais_por_nd = (
+    # Consulta principal: entradas e saídas por ND (mesmo que não tenha movimentação)
+    resultados = (
         db.session.query(
             NaturezaDespesa.codigo,
             NaturezaDespesa.nome,
-            func.sum(EntradaItem.quantidade * EntradaItem.valor_unitario).label('entradas'),
-            func.coalesce(subq_saidas.c.total_saida, 0).label('saidas')
+            func.coalesce(func.sum(EntradaItem.quantidade * EntradaItem.valor_unitario), 0).label('entradas'),
+            func.coalesce(subquery_saidas.c.total_saida, 0).label('saidas')
         )
-        .join(EntradaItem.item)
-        .filter(Item.natureza_despesa_id == NaturezaDespesa.id)
-        .outerjoin(subq_saidas, subq_saidas.c.nd_id == NaturezaDespesa.id)
-        .group_by(NaturezaDespesa.codigo, NaturezaDespesa.nome, subq_saidas.c.total_saida)
+        .outerjoin(Item, Item.natureza_despesa_id == NaturezaDespesa.id)
+        .outerjoin(EntradaItem, EntradaItem.item_id == Item.id)
+        .outerjoin(subquery_saidas, subquery_saidas.c.nd_id == NaturezaDespesa.id)
+        .group_by(NaturezaDespesa.codigo, NaturezaDespesa.nome, subquery_saidas.c.total_saida)
         .all()
     )
 
-    # Conversão dos dados para o template
-    meses = list(range(1, 13))
-    entradas = {int(mes): float(total or 0) for mes, total in entradas_por_mes}
-    saidas = {int(mes): float(total or 0) for mes, total in saidas_por_mes}
-
-    dados_entrada = [entradas.get(mes, 0) for mes in meses]
-    dados_saida = [saidas.get(mes, 0) for mes in meses]
-
-    totais = [
+    # Conversão para lista de dicionários (para o gráfico)
+    dados_entrada = [
         {
-            'codigo': codigo,
-            'nome': nome,
-            'entradas': float(entrada or 0),
-            'saidas': float(saida or 0),
-            'saldo': float((entrada or 0) - (saida or 0))
+            'codigo': row.codigo,
+            'nome': row.nome,
+            'entradas': float(row.entradas),
+            'saidas': float(row.saidas)
         }
-        for codigo, nome, entrada, saida in totais_por_nd
+        for row in resultados
     ]
 
-    return render_template(
-        'dashboard.html',
-        usuario=current_user,
-        meses=meses,
-        dados_entrada=dados_entrada,
-        dados_saida=dados_saida,
-        totais=totais
-    )
+    return render_template('dashboard.html', dados_entrada=dados_entrada, usuario=current_user)

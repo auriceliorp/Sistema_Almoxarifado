@@ -1,41 +1,69 @@
 {% extends 'base_simplificada.html' %}
+
 {% block content %}
 <div class="container mt-4">
-  <h2>Visualizar Entrada de Materiais</h2>
 
-  <div class="card my-4">
-    <div class="card-body">
-      <p><strong>Data do Movimento:</strong> {{ entrada.data_movimento.strftime('%d/%m/%Y') }}</p>
-      <p><strong>Data da Nota Fiscal:</strong> {{ entrada.data_nota_fiscal.strftime('%d/%m/%Y') }}</p>
-      <p><strong>Número da Nota Fiscal:</strong> {{ entrada.numero_nota_fiscal }}</p>
-      <p><strong>Fornecedor:</strong> {{ entrada.fornecedor.nome }}</p>
-      <p><strong>Registrado por:</strong> {{ entrada.usuario.nome }}</p>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Visualização da Entrada</h2>
+    <div>
+      <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="btn btn-outline-secondary me-2">
+        <i class="bi bi-arrow-left"></i> Voltar
+      </a>
+      <button class="btn btn-outline-primary" onclick="window.print()">
+        <i class="bi bi-printer"></i> Imprimir
+      </button>
     </div>
   </div>
 
-  <h4>Itens da Entrada</h4>
-  <table class="table table-bordered">
-    <thead>
-      <tr>
-        <th>Item</th>
-        <th>Quantidade</th>
-        <th>Valor Unitário (R$)</th>
-        <th>Total (R$)</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for item in itens %}
-      <tr>
-        <td>{{ item.item.nome }}</td>
-        <td>{{ item.quantidade }}</td>
-        <td>{{ '%.2f'|format(item.valor_unitario) }}</td>
-        <td>{{ '%.2f'|format(item.quantidade * item.valor_unitario) }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="card shadow-sm rounded-4 mb-4">
+    <div class="card-body">
+      <div class="row mb-2">
+        <div class="col-md-6">
+          <strong>Data do Movimento:</strong> {{ entrada.data_movimento.strftime('%d/%m/%Y') }}
+        </div>
+        <div class="col-md-6">
+          <strong>Data da Nota Fiscal:</strong> {{ entrada.data_nota_fiscal.strftime('%d/%m/%Y') }}
+        </div>
+      </div>
+      <div class="row mb-2">
+        <div class="col-md-6">
+          <strong>Número da Nota Fiscal:</strong> {{ entrada.numero_nota_fiscal }}
+        </div>
+        <div class="col-md-6">
+          <strong>Fornecedor:</strong> {{ entrada.fornecedor.nome }}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <strong>Registrado por:</strong> {{ entrada.usuario.nome }}
+        </div>
+      </div>
+    </div>
+  </div>
 
-  <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="btn btn-secondary mt-3">Voltar</a>
-  <a href="#" class="btn btn-primary mt-3" onclick="window.print()">Imprimir</a>
+  <h5 class="mb-3">Itens da Entrada</h5>
+  <div class="table-responsive">
+    <table class="table table-striped table-bordered align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Item</th>
+          <th class="text-end">Quantidade</th>
+          <th class="text-end">Valor Unitário (R$)</th>
+          <th class="text-end">Total (R$)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in itens %}
+        <tr>
+          <td>{{ item.item.nome }}</td>
+          <td class="text-end">{{ item.quantidade }}</td>
+          <td class="text-end">{{ '%.2f'|format(item.valor_unitario) }}</td>
+          <td class="text-end">{{ '%.2f'|format(item.quantidade * item.valor_unitario) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
 </div>
 {% endblock %}

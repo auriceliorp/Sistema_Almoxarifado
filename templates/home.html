@@ -3,40 +3,44 @@
 {% block title %}GestorSPS - Início{% endblock %}
 
 {% block content %}
+<div class="container py-2 mt-2">
+  <div class="row row-cols-1 row-cols-md-2 g-3">
 
-<div class="container py-4">  <div class="row row-cols-1 row-cols-md-2 g-4"><div class="col">
-  <a href="{{ url_for('main.almoxarifado') }}" class="btn btn-outline-primary w-100 py-4 fs-5">
-    <i class="bi bi-archive"></i> Almoxarifado
-  </a>
-</div>
+    <div class="col">
+      <a href="{{ url_for('main.almoxarifado') }}" class="btn btn-primary w-100 py-4 fs-5 d-flex align-items-center justify-content-center gap-2">
+        <i class="bi bi-archive fs-3"></i> Almoxarifado
+      </a>
+    </div>
 
-<div class="col">
-  <a href="#" class="btn btn-outline-secondary w-100 py-4 fs-5 disabled">
-    <i class="bi bi-cart-check"></i> Compras (em desenvolvimento)
-  </a>
-</div>
+    <div class="col">
+      <a href="#" class="btn btn-secondary w-100 py-4 fs-5 d-flex align-items-center justify-content-center gap-2 disabled">
+        <i class="bi bi-cart-check fs-3"></i> Compras
+      </a>
+    </div>
 
-<div class="col">
-  <a href="#" class="btn btn-outline-secondary w-100 py-4 fs-5 disabled">
-    <i class="bi bi-building"></i> Patrimônio (em desenvolvimento)
-  </a>
-</div>
+    <div class="col">
+      <a href="#" class="btn btn-secondary w-100 py-4 fs-5 d-flex align-items-center justify-content-center gap-2 disabled">
+        <i class="bi bi-building fs-3"></i> Patrimônio
+      </a>
+    </div>
 
-<div class="col">
-  <a href="#" class="btn btn-outline-secondary w-100 py-4 fs-5 disabled">
-    <i class="bi bi-journal-text"></i> Publicações (em desenvolvimento)
-  </a>
-</div>
+    <div class="col">
+      <a href="#" class="btn btn-secondary w-100 py-4 fs-5 d-flex align-items-center justify-content-center gap-2 disabled">
+        <i class="bi bi-journal-text fs-3"></i> Publicações
+      </a>
+    </div>
 
-<div class="col">
-<a href="{{ url_for('dashboard_bp.dashboard') }}" class="btn btn-outline-info w-100 py-4 fs-5">
-</div>
+    <div class="col">
+      <a href="{{ url_for('dashboard_bp.dashboard') }}" class="btn btn-info w-100 py-4 fs-5 d-flex align-items-center justify-content-center gap-2">
+        <i class="bi bi-graph-up fs-3"></i> Dashboard
+      </a>
+    </div>
 
-<div class="col">
-  <a href="https://linktr.ee/ctaa.sps" target="_blank" class="btn btn-outline-success w-100 py-4 fs-5">
-    <i class="bi bi-link-45deg"></i> Links Úteis
-  </a>
-</div>
+    <div class="col">
+      <a href="https://linktr.ee/ctaa.sps" target="_blank" class="btn btn-success w-100 py-4 fs-5 d-flex align-items-center justify-content-center gap-2">
+        <i class="bi bi-link-45deg fs-3"></i> Links Úteis
+      </a>
+    </div>
 
   </div>
 </div>

@@ -57,14 +57,20 @@
             <td><input type="number" name="quantidade[]" class="form-control" min="1" required oninput="atualizarTotais(this)"></td>
             <td><input type="number" name="valor_unitario[]" class="form-control" min="0" step="0.01" required oninput="atualizarTotais(this)"></td>
             <td class="valor_total">0.00</td>
-            <td><button type="button" class="btn btn-danger btn-sm" onclick="removerLinha(this)">Remover</button></td>
+            <td>
+              <button type="button" class="btn btn-outline-danger btn-sm" onclick="removerLinha(this)">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
 
     <div class="mb-3">
-      <button type="button" class="btn btn-secondary" onclick="adicionarLinha()">+ Adicionar Item</button>
+      <button type="button" class="btn btn-outline-secondary" onclick="adicionarLinha()">
+        <i class="bi bi-plus-circle"></i> Adicionar Item
+      </button>
     </div>
 
     <!-- Total da Nota -->
@@ -75,8 +81,12 @@
 
     <!-- Botões -->
     <div class="d-flex justify-content-end gap-2">
-      <button type="submit" class="btn btn-success">Salvar Entrada</button>
-      <a href="{{ url_for('main.home') }}" class="btn btn-secondary">Cancelar</a>
+      <button type="submit" class="btn btn-success">
+        <i class="bi bi-check-circle"></i> Salvar Entrada
+      </button>
+      <a href="{{ url_for('main.home') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-x-circle"></i> Cancelar
+      </a>
     </div>
   </form>
 </div>

@@ -73,12 +73,6 @@ def home_solicitante():
 def home_consultor():
     return render_template('home_consultor.html', usuario=current_user)
 
-# --- Dashboard genérico (opcional) ---
-@main.route('/dashboard')
-@login_required
-def dashboard():
-    return render_template('dashboard.html', usuario=current_user)
-
 # --- Logout do sistema ---
 @main.route('/logout')
 @login_required

@@ -1,32 +1,33 @@
 # routes_entrada.py
-# Rotas para entrada de materiais, incluindo atualização de saldo e natureza de despesa
+# Rotas para entrada de materiais, incluindo múltiplos itens por entrada
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
-from app_render import db
-from models import Fornecedor, Item, EntradaMaterial, EntradaItem, NaturezaDespesa
 from datetime import datetime
+from modelos import db, Fornecedor, Item, EntradaMaterial, EntradaItem
 
-entrada_bp = Blueprint('entrada_bp', __name__, template_folder='templates')
+entrada_bp = Blueprint('entrada_bp', __name__, url_prefix='/entrada')
 
-@entrada_bp.route('/entrada/nova', methods=['GET', 'POST'])
+# ---------------- ROTA: Listar Entradas ---------------- #
+@entrada_bp.route('/lista')
+@login_required
+def lista_entradas():
+    entradas = EntradaMaterial.query.order_by(EntradaMaterial.data_movimento.desc()).all()
+    return render_template('lista_entrada.html', entradas=entradas, usuario=current_user)
+
+# ---------------- ROTA: Nova Entrada ---------------- #
+@entrada_bp.route('/nova', methods=['GET', 'POST'])
 @login_required
 def nova_entrada():
-    fornecedores = Fornecedor.query.all()
-    itens = Item.query.all()
-
     if request.method == 'POST':
         try:
             # Coleta os dados do formulário
-            data_movimento = datetime.strptime(request.form.get('data_movimento'), '%Y-%m-%d')
-            data_nota_fiscal = datetime.strptime(request.form.get('data_nota_fiscal'), '%Y-%m-%d')
-            numero_nota_fiscal = request.form.get('numero_nota_fiscal')
-            fornecedor_id = request.form.get('fornecedor')
+            data_movimento = datetime.strptime(request.form['data_movimento'], '%Y-%m-%d')
+            data_nota_fiscal = datetime.strptime(request.form['data_nota_fiscal'], '%Y-%m-%d')
+            numero_nota_fiscal = request.form['numero_nota_fiscal']
+            fornecedor_id = request.form['fornecedor_id']
 
-            item_ids = request.form.getlist('item_id[]')
-            quantidades = request.form.getlist('quantidade[]')
-            valores_unitarios = request.form.getlist('valor_unitario[]')
-
+            # Cria o registro da entrada principal
             nova_entrada = EntradaMaterial(
                 data_movimento=data_movimento,
                 data_nota_fiscal=data_nota_fiscal,
@@ -35,56 +36,52 @@ def nova_entrada():
                 usuario_id=current_user.id
             )
             db.session.add(nova_entrada)
-            db.session.flush()
+            db.session.commit()
 
-            for i in range(len(item_ids)):
-                if not item_ids[i] or not quantidades[i] or not valores_unitarios[i]:
-                    continue
+            # Coleta os dados dos itens como listas
+            itens_ids = request.form.getlist('item_id[]')
+            quantidades = request.form.getlist('quantidade[]')
+            valores_unitarios = request.form.getlist('valor_unitario[]')
 
+            # Processa cada item inserido
+            for i in range(len(itens_ids)):
+                if not itens_ids[i] or not quantidades[i] or not valores_unitarios[i]:
+                    continue  # pula se algum campo estiver em branco
+
+                item_id = int(itens_ids[i])
                 quantidade = int(quantidades[i])
                 valor_unitario = float(valores_unitarios[i])
-                item = Item.query.get(item_ids[i])
+                valor_total = quantidade * valor_unitario
 
-                if item:
-                    # Cria o item da entrada
-                    entrada_item = EntradaItem(
-                        entrada_id=nova_entrada.id,
-                        item_id=item.id,
-                        quantidade=quantidade,
-                        valor_unitario=valor_unitario
-                    )
-                    db.session.add(entrada_item)
+                # Cria o registro de item da entrada
+                entrada_item = EntradaItem(
+                    entrada_material_id=nova_entrada.id,
+                    item_id=item_id,
+                    quantidade=quantidade,
+                    valor_unitario=valor_unitario,
+                    valor_total=valor_total
+                )
+                db.session.add(entrada_item)
 
-                    # Atualiza o saldo do item
-                    item.estoque_atual += quantidade
-                    item.saldo_financeiro += quantidade * valor_unitario
-                    if item.estoque_atual > 0:
-                        item.valor_unitario = item.saldo_financeiro / item.estoque_atual
+                # Atualiza o estoque e valor do item
+                item = Item.query.get(item_id)
+                item.quantidade_estoque += quantidade
+                item.valor_unitario = valor_unitario
 
-                    # Atualiza o valor da natureza de despesa
-                    if item.grupo and item.grupo.natureza_despesa:
-                        item.grupo.natureza_despesa.valor += quantidade * valor_unitario
+                # Atualiza o valor da natureza de despesa vinculada ao grupo do item
+                if item.grupo and item.grupo.natureza_despesa:
+                    item.grupo.natureza_despesa.valor += valor_total
 
             db.session.commit()
-            flash('Entrada registrada com sucesso.', 'success')
+            flash('Entrada de material registrada com sucesso!', 'success')
             return redirect(url_for('entrada_bp.lista_entradas'))
 
         except Exception as e:
             db.session.rollback()
-            flash(f'Erro: {e}', 'danger')
-            print(e)
+            flash(f'Erro ao salvar entrada: {str(e)}', 'danger')
+            return redirect(url_for('entrada_bp.nova_entrada'))
 
-    return render_template('nova_entrada.html', fornecedores=fornecedores, itens=itens)
-
-@entrada_bp.route('/entrada/lista')
-@login_required
-def lista_entradas():
-    entradas = EntradaMaterial.query.order_by(EntradaMaterial.data_movimento.desc()).all()
-    return render_template('lista_entrada.html', entradas=entradas)
-
-@entrada_bp.route('/entrada/<int:entrada_id>')
-@login_required
-def visualizar_entrada(entrada_id):
-    entrada = EntradaMaterial.query.get_or_404(entrada_id)
-    itens = EntradaItem.query.filter_by(entrada_id=entrada_id).all()
-    return render_template('visualizar_entrada.html', entrada=entrada, itens=itens)
+    # GET: renderiza o formulário
+    fornecedores = Fornecedor.query.order_by(Fornecedor.nome).all()
+    itens = Item.query.order_by(Item.nome).all()
+    return render_template('nova_entrada.html', fornecedores=fornecedores, itens=itens, usuario=current_user)

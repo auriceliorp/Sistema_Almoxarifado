@@ -4,7 +4,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from datetime import datetime
-from modelos import db, Fornecedor, Item, EntradaMaterial, EntradaItem
+from models import db, Fornecedor, Item, EntradaMaterial, EntradaItem
 
 entrada_bp = Blueprint('entrada_bp', __name__, url_prefix='/entrada')
 

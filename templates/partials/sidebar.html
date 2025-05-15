@@ -1,111 +1,115 @@
 {# templates/partials/sidebar.html #}
 
-<!-- Botão hamburguer para dispositivos móveis -->
-<button id="toggleSidebar" class="btn btn-outline-secondary d-md-none mb-3 ms-3 mt-2">
+<!-- Botão hamburguer para dispositivos móveis --><button id="toggleSidebar" class="btn btn-outline-secondary d-md-none mb-3 ms-3 mt-2">
   <i class="bi bi-list"></i>
-</button>
+</button><!-- Sidebar --><nav id="sidebarMenu" class="sidebar bg-dark text-white p-3 d-none d-md-block" style="min-height: 100vh; width: 250px; position: fixed; top: 0; left: 0; z-index: 1000; overflow-y: auto;">  <!-- Usuário logado -->{% if usuario %}
 
-<!-- Sidebar -->
-<nav id="sidebarMenu" class="sidebar bg-light p-3 d-none d-md-block" style="min-height: 100vh; width: 250px; position: fixed; top: 0; left: 0; z-index: 1000;">
-
-  <!-- Usuário logado -->
-  {% if usuario %}
   <div class="d-flex align-items-center mb-4">
     <i class="bi bi-person-circle fs-4 me-2"></i>
     <strong>{{ usuario.nome }}</strong>
   </div>
-  {% endif %}
+  {% endif %}  <!-- Menu principal -->  <ul class="nav flex-column"><li class="nav-item">
+  <a class="nav-link text-white fw-bold d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#submenuAlmoxarifado" role="button" aria-expanded="false" aria-controls="submenuAlmoxarifado">
+    <span><i class="bi bi-archive me-1"></i> Almoxarifado</span>
+    <i class="bi bi-chevron-down"></i>
+  </a>
+  <div class="collapse" id="submenuAlmoxarifado">
+    <ul class="nav flex-column ms-3">
+      <li class="nav-item"><a href="{{ url_for('item_bp.lista_itens') }}" class="nav-link text-white"> <i class="bi bi-box-seam me-1"></i> Itens</a></li>
+      <li class="nav-item"><a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="nav-link text-white"> <i class="bi bi-truck me-1"></i> Fornecedores</a></li>
+      <li class="nav-item"><a href="{{ url_for('entrada_bp.lista_entradas') }}" class="nav-link text-white"> <i class="bi bi-box-arrow-in-down me-1"></i> Entrada de Materiais</a></li>
+      <li class="nav-item"><a href="{{ url_for('saida_bp.lista_saidas') }}" class="nav-link text-white"> <i class="bi bi-box-arrow-up me-1"></i> Saída de Materiais</a></li>
+      <li class="nav-item"><a href="{{ url_for('relatorio_bp.mapa_fechamento') }}" class="nav-link text-white"> <i class="bi bi-clipboard-data me-1"></i> Relatórios</a></li>
+    </ul>
+  </div>
+</li>
 
-  <!-- Menu principal -->
-  <ul class="nav flex-column">
-
-    <li class="nav-item">
-      <span class="nav-link text-primary fw-bold"><i class="bi bi-archive me-1"></i> Almoxarifado</span>
-      <ul class="nav flex-column ms-3">
-        <li class="nav-item"><a href="{{ url_for('item_bp.lista_itens') }}" class="nav-link"><i class="bi bi-box-seam me-1"></i> Itens</a></li>
-        <li class="nav-item"><a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="nav-link"><i class="bi bi-truck me-1"></i> Fornecedores</a></li>
-        <li class="nav-item"><a href="{{ url_for('entrada_bp.lista_entradas') }}" class="nav-link"><i class="bi bi-box-arrow-in-down me-1"></i> Entrada de Materiais</a></li>
-        <li class="nav-item"><a href="{{ url_for('saida_bp.lista_saidas') }}" class="nav-link"><i class="bi bi-box-arrow-up me-1"></i> Saída de Materiais</a></li>
-        <li class="nav-item"><a href="{{ url_for('relatorio_bp.mapa_fechamento') }}" class="nav-link"><i class="bi bi-clipboard-data me-1"></i> Relatórios</a></li>
-      </ul>
-    </li>
-
-    <li class="nav-item mt-3">
-      <span class="nav-link disabled text-primary fw-bold"><i class="bi bi-building me-1"></i> Patrimônio</span>
-      <ul class="nav flex-column ms-3">
-        <li class="nav-item"><a href="#" class="nav-link disabled">Inventário</a></li>
-        <li class="nav-item"><a href="#" class="nav-link disabled">Transferência</a></li>
-        <li class="nav-item"><a href="#" class="nav-link disabled">Relatórios</a></li>
-      </ul>
-    </li>
-
-    <li class="nav-item mt-3">
-      <span class="nav-link disabled text-primary fw-bold"><i class="bi bi-cart-check me-1"></i> Compras</span>
-      <ul class="nav flex-column ms-3">
-        <li class="nav-item"><a href="#" class="nav-link disabled">Requisições</a></li>
-        <li class="nav-item"><a href="#" class="nav-link disabled">Fornecedores</a></li>
-        <li class="nav-item"><a href="#" class="nav-link disabled">Cotações</a></li>
-        <li class="nav-item"><a href="#" class="nav-link disabled">Processos SEI</a></li>
-      </ul>
-    </li>
-
-    <li class="nav-item mt-3">
-      <a href="#" class="nav-link disabled text-primary fw-bold"><i class="bi bi-journal-text me-1"></i> Publicações</a>
-    </li>
-
-    <li class="nav-item mt-3">
-      <span class="nav-link disabled text-primary fw-bold"><i class="bi bi-graph-up-arrow me-1"></i> Dashboard</span>
-      <ul class="nav flex-column ms-3">
-        <li class="nav-item"><a href="#" class="nav-link disabled">Almoxarifado</a></li>
-        <li class="nav-item"><a href="#" class="nav-link disabled">Patrimônio</a></li>
-        <li class="nav-item"><a href="#" class="nav-link disabled">Compras</a></li>
-        <li class="nav-item"><a href="#" class="nav-link disabled">Publicações</a></li>
-        <li class="nav-item"><a href="#" class="nav-link disabled">SEI</a></li>
-      </ul>
-    </li>
-
-    <li class="nav-item mt-3">
-      <span class="nav-link text-primary fw-bold"><i class="bi bi-gear me-1"></i> Configurações</span>
-      <ul class="nav flex-column ms-3">
-        <li class="nav-item"><a href="{{ url_for('usuario_bp.lista_usuarios') }}" class="nav-link"><i class="bi bi-people me-1"></i> Perfis e Usuários</a></li>
-        <li class="nav-item"><a href="{{ url_for('main.nd_grupos_ul') }}" class="nav-link"><i class="bi bi-diagram-3 me-1"></i> ND / Grupos / UL</a></li>
-      </ul>
-    </li>
-
-    <li class="nav-item mt-4">
-      <a href="{{ url_for('main.logout') }}" class="nav-link text-danger"><i class="bi bi-box-arrow-right"></i> Sair</a>
-    </li>
+<li class="nav-item mt-3">
+  <a class="nav-link text-white fw-bold d-flex justify-content-between align-items-center disabled">
+    <span><i class="bi bi-building me-1"></i> Patrimônio</span>
+    <i class="bi bi-chevron-down"></i>
+  </a>
+  <ul class="nav flex-column ms-3">
+    <li class="nav-item"><a href="#" class="nav-link text-white disabled">Inventário</a></li>
+    <li class="nav-item"><a href="#" class="nav-link text-white disabled">Transferência</a></li>
+    <li class="nav-item"><a href="#" class="nav-link text-white disabled">Relatórios</a></li>
   </ul>
-</nav>
+</li>
 
-<!-- Script para funcionalidade do botão hamburguer -->
-<script>
-  const toggleButton = document.getElementById('toggleSidebar');
-  const sidebar = document.getElementById('sidebarMenu');
-  const icon = toggleButton.querySelector('i');
+<li class="nav-item mt-3">
+  <a class="nav-link text-white fw-bold d-flex justify-content-between align-items-center disabled">
+    <span><i class="bi bi-cart-check me-1"></i> Compras</span>
+    <i class="bi bi-chevron-down"></i>
+  </a>
+  <ul class="nav flex-column ms-3">
+    <li class="nav-item"><a href="#" class="nav-link text-white disabled">Requisições</a></li>
+    <li class="nav-item"><a href="#" class="nav-link text-white disabled">Fornecedores</a></li>
+    <li class="nav-item"><a href="#" class="nav-link text-white disabled">Cotações</a></li>
+    <li class="nav-item"><a href="#" class="nav-link text-white disabled">Processos SEI</a></li>
+  </ul>
+</li>
 
-  toggleButton.addEventListener('click', function () {
-    sidebar.classList.toggle('d-none');
+<li class="nav-item mt-3">
+  <a href="#" class="nav-link text-white fw-bold disabled"><i class="bi bi-journal-text me-1"></i> Publicações</a>
+</li>
 
-    // Alternar ícone entre menu (list) e fechar (x)
-    if (sidebar.classList.contains('d-none')) {
-      icon.classList.remove('bi-x');
-      icon.classList.add('bi-list');
-    } else {
-      icon.classList.remove('bi-list');
-      icon.classList.add('bi-x');
+<li class="nav-item mt-3">
+  <a class="nav-link text-white fw-bold d-flex justify-content-between align-items-center disabled">
+    <span><i class="bi bi-graph-up-arrow me-1"></i> Dashboard</span>
+    <i class="bi bi-chevron-down"></i>
+  </a>
+  <ul class="nav flex-column ms-3">
+    <li class="nav-item"><a href="#" class="nav-link text-white disabled">Almoxarifado</a></li>
+    <li class="nav-item"><a href="#" class="nav-link text-white disabled">Patrimônio</a></li>
+    <li class="nav-item"><a href="#" class="nav-link text-white disabled">Compras</a></li>
+    <li class="nav-item"><a href="#" class="nav-link text-white disabled">Publicações</a></li>
+    <li class="nav-item"><a href="#" class="nav-link text-white disabled">SEI</a></li>
+  </ul>
+</li>
+
+<li class="nav-item mt-3">
+  <a class="nav-link text-white fw-bold d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#submenuConfig" role="button" aria-expanded="false" aria-controls="submenuConfig">
+    <span><i class="bi bi-gear me-1"></i> Configurações</span>
+    <i class="bi bi-chevron-down"></i>
+  </a>
+  <div class="collapse" id="submenuConfig">
+    <ul class="nav flex-column ms-3">
+      <li class="nav-item"><a href="{{ url_for('usuario_bp.lista_usuarios') }}" class="nav-link text-white"><i class="bi bi-people me-1"></i> Perfis e Usuários</a></li>
+      <li class="nav-item"><a href="{{ url_for('main.nd_grupos_ul') }}" class="nav-link text-white"><i class="bi bi-diagram-3 me-1"></i> ND / Grupos / UL</a></li>
+    </ul>
+  </div>
+</li>
+
+<li class="nav-item mt-4">
+  <a href="{{ url_for('main.logout') }}" class="nav-link text-danger"><i class="bi bi-box-arrow-right"></i> Sair</a>
+</li>
+
+  </ul>
+</nav><!-- Script para funcionalidade do botão hamburguer e recolhimento ao clicar fora --><script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const sidebar = document.getElementById('sidebarMenu');
+    const toggleBtn = document.getElementById('toggleSidebar');
+
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', function () {
+        sidebar.classList.toggle('d-none');
+      });
     }
-  });
 
-  // Fecha sidebar ao clicar fora (em telas pequenas)
-  document.addEventListener('click', function (event) {
-    const isClickInsideSidebar = sidebar.contains(event.target);
-    const isClickOnButton = toggleButton.contains(event.target);
-
-    if (!isClickInsideSidebar && !isClickOnButton && window.innerWidth < 768 && !sidebar.classList.contains('d-none')) {
-      sidebar.classList.add('d-none');
-      icon.classList.remove('bi-x');
-      icon.classList.add('bi-list');
-    }
+    document.addEventListener('click', function (e) {
+      if (!sidebar.contains(e.target) && !toggleBtn.contains(e.target) && window.innerWidth < 768) {
+        sidebar.classList.add('d-none');
+      }
+    });
   });
-</script>
+</script><style>
+  .sidebar .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #f8f9fa !important;
+  }
+
+  .sidebar .nav-link.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+</style>

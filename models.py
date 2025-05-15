@@ -29,7 +29,7 @@ class NaturezaDespesa(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     codigo = db.Column(db.String(10), nullable=False)
     nome = db.Column(db.String(100), nullable=False)
-    valor = db.Column(db.Float, default=0.0)  # Adicionado para uso no dashboard
+    valor = db.Column(db.Float, default=0.0)  # <- campo necessário para os relatórios
     grupos = db.relationship('Grupo', back_populates='natureza_despesa')
     itens = db.relationship('Item', back_populates='natureza_despesa')
 

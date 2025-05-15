@@ -11,16 +11,17 @@
     font-weight: 500;
   }
   .home-btn i {
-    font-size: 1.7rem;
-    margin-right: 0.7rem;
+    font-size: 1.8rem;
+    margin-right: 0.8rem;
+    vertical-align: middle;
   }
-  .mt-fix {
-    margin-top: 1rem !important;
+  .home-container {
+    margin-top: 1rem;
   }
 </style>
 
-<div class="container mt-fix">
-  <div class="row row-cols-1 g-4">
+<div class="container home-container">
+  <div class="row row-cols-1 row-cols-md-2 g-4">
 
     <div class="col">
       <a href="{{ url_for('main.almoxarifado') }}" class="btn btn-primary w-100 home-btn">

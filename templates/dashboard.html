@@ -1,40 +1,116 @@
 {% extends 'base_simplificada.html' %}
+
 {% block title %}Dashboard{% endblock %}
+
 {% block content %}
-<div class="container py-4">
-    <div class="d-flex justify-content-between mb-4">
-        <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">Início</a>
-        <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">Sair</a>
+<div class="container-fluid px-4">
+  <h1 class="mt-4 text-white">Dashboard</h1>
+  <p class="text-white-50 mb-4">Visão geral do sistema GestorSPS</p>
+
+  <div class="row mb-4">
+    <!-- Cartões de resumo -->
+    <div class="col-md-3">
+      <div class="card bg-primary text-white h-100">
+        <div class="card-body">
+          <h5>Total de Itens</h5>
+          <p class="fs-4">{{ total_itens }}</p>
+        </div>
+      </div>
     </div>
 
-    <div class="row row-cols-1 row-cols-md-2 g-4">
-        <div class="col">
-            <a href="{{ url_for('usuario_bp.lista_usuario') }}" class="btn btn-outline-dark w-100 py-4 fs-5">Usuários</a>
+    <div class="col-md-3">
+      <div class="card bg-success text-white h-100">
+        <div class="card-body">
+          <h5>Entradas no Mês</h5>
+          <p class="fs-4">{{ entradas_mes }}</p>
         </div>
-        <div class="col">
-            <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="btn btn-outline-dark w-100 py-4 fs-5">Fornecedores</a>
-        </div>
-        <div class="col">
-            <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-outline-dark w-100 py-4 fs-5">Itens</a>
-        </div>
-        <div class="col">
-            <a href="{{ url_for('estoque_bp.lista_estoque') }}" class="btn btn-outline-dark w-100 py-4 fs-5">Estoque</a>
-        </div>
-        <div class="col">
-            <a href="{{ url_for('area_ul_bp.lista_uls') }}" class="btn btn-outline-dark w-100 py-4 fs-5">Unidades Locais (UL)</a>
-        </div>
-        <div class="col">
-            <a href="{{ url_for('area_ul_bp.lista_locais') }}" class="btn btn-outline-dark w-100 py-4 fs-5">Locais</a>
-        </div>
-        <div class="col">
-            <a href="https://linktr.ee/ctaa.sps" target="_blank" class="btn btn-outline-dark w-100 py-4 fs-5">Linktree CTAA - SPS</a>
-        </div>
-        <div class="col">
-            <button class="btn btn-outline-secondary w-100 py-4 fs-5" disabled>Relatórios</button>
-        </div>
-        <div class="col">
-            <button class="btn btn-outline-secondary w-100 py-4 fs-5" disabled>Cadastro de Apoio</button>
-        </div>
+      </div>
     </div>
+
+    <div class="col-md-3">
+      <div class="card bg-danger text-white h-100">
+        <div class="card-body">
+          <h5>Saídas no Mês</h5>
+          <p class="fs-4">{{ saidas_mes }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card bg-info text-white h-100">
+        <div class="card-body">
+          <h5>Requisições Pendentes</h5>
+          <p class="fs-4">{{ requisicoes_pendentes }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Área de gráficos -->
+  <div class="row">
+    <div class="col-md-6 mb-4">
+      <div class="card">
+        <div class="card-header bg-petroleo text-white">
+          Movimentações por Mês
+        </div>
+        <div class="card-body">
+          <canvas id="graficoMovimentacao"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+      <div class="card">
+        <div class="card-header bg-petroleo text-white">
+          Itens com Baixo Estoque
+        </div>
+        <div class="card-body">
+          <canvas id="graficoEstoque"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const ctxMov = document.getElementById('graficoMovimentacao').getContext('2d');
+  const graficoMovimentacao = new Chart(ctxMov, {
+    type: 'bar',
+    data: {
+      labels: {{ meses|tojson }},
+      datasets: [
+        {
+          label: 'Entradas',
+          data: {{ dados_entrada|tojson }},
+          backgroundColor: 'rgba(13, 202, 240, 0.7)'
+        },
+        {
+          label: 'Saídas',
+          data: {{ dados_saida|tojson }},
+          backgroundColor: 'rgba(220, 53, 69, 0.7)'
+        }
+      ]
+    }
+  });
+
+  const ctxEstoque = document.getElementById('graficoEstoque').getContext('2d');
+  const graficoEstoque = new Chart(ctxEstoque, {
+    type: 'doughnut',
+    data: {
+      labels: {{ itens_baixo_estoque_labels|tojson }},
+      datasets: [{
+        label: 'Qtd',
+        data: {{ itens_baixo_estoque_dados|tojson }},
+        backgroundColor: [
+          'rgba(255, 193, 7, 0.7)',
+          'rgba(255, 99, 132, 0.7)',
+          'rgba(54, 162, 235, 0.7)',
+          'rgba(75, 192, 192, 0.7)'
+        ]
+      }]
+    }
+  });
+</script>
 {% endblock %}

@@ -158,3 +158,19 @@ class SaidaItem(db.Model):
     valor_unitario = db.Column(db.Float, nullable=False)
     saida_id = db.Column(db.Integer, db.ForeignKey('saida_material.id'), nullable=False)
     item = db.relationship('Item')
+
+# -------------------LOG AUDITAVEL -------------------
+# models.py
+
+class AuditLog(db.Model):
+    __tablename__ = 'audit_log'
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
+    usuario = db.relationship('Usuario')
+    acao = db.Column(db.String(20), nullable=False)  # Ex: 'inserção', 'edição', 'exclusão'
+    tabela = db.Column(db.String(50), nullable=False)
+    registro_id = db.Column(db.Integer, nullable=True)  # ID do registro afetado
+    dados_anteriores = db.Column(db.Text)
+    dados_novos = db.Column(db.Text)
+    data_hora = db.Column(db.DateTime, default=datetime.utcnow)
+

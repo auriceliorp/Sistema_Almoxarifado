@@ -15,18 +15,19 @@
 
   <!-- BUSCA COM FILTRO -->
   <form method="GET" class="row g-2 mb-4 align-items-end" id="formBusca">
-    <div class="col-md-4">
+    <div class="col-md-3">
       <label for="tipo_busca" class="form-label">Buscar por:</label>
       <select name="filtro" id="tipo_busca" class="form-select">
         <option value="nota" {% if request.args.get('filtro') == 'nota' %}selected{% endif %}>Nota Fiscal</option>
         <option value="fornecedor" {% if request.args.get('filtro') == 'fornecedor' %}selected{% endif %}>Fornecedor</option>
+        <option value="data" {% if request.args.get('filtro') == 'data' %}selected{% endif %}>Data de Movimento</option>
       </select>
     </div>
     <div class="col-md-6">
       <label for="valor_busca" class="form-label">Valor:</label>
       <input type="text" name="busca" value="{{ request.args.get('busca', '') }}" class="form-control" id="valor_busca" placeholder="Digite a busca...">
     </div>
-    <div class="col-md-2">
+    <div class="col-md-3">
       <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> Buscar</button>
     </div>
   </form>
@@ -46,25 +47,18 @@
       </thead>
       <tbody>
         {% for entrada in entradas %}
-          {% set termo = request.args.get('busca', '').lower() %}
-          {% set filtro = request.args.get('filtro', '') %}
-          {% if not termo or
-                (filtro == 'nota' and termo in entrada.numero_nota_fiscal.lower()) or
-                (filtro == 'fornecedor' and termo in entrada.fornecedor.nome.lower()) %}
-          <tr>
-            <td>{{ entrada.id }}</td>
-            <td>{{ entrada.data_movimento.strftime('%d/%m/%Y') }}</td>
-            <td>{{ entrada.data_nota_fiscal.strftime('%d/%m/%Y') }}</td>
-            <td>{{ entrada.numero_nota_fiscal }}</td>
-            <td>{{ entrada.fornecedor.nome }}</td>
-            <td class="text-center">
-              <a href="{{ url_for('entrada_bp.visualizar_entrada', entrada_id=entrada.id) }}"
-                 class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-eye"></i> Visualizar
-              </a>
-            </td>
-          </tr>
-          {% endif %}
+        <tr>
+          <td>{{ entrada.id }}</td>
+          <td>{{ entrada.data_movimento.strftime('%d/%m/%Y') }}</td>
+          <td>{{ entrada.data_nota_fiscal.strftime('%d/%m/%Y') }}</td>
+          <td>{{ entrada.numero_nota_fiscal }}</td>
+          <td>{{ entrada.fornecedor.nome }}</td>
+          <td class="text-center">
+            <a href="{{ url_for('entrada_bp.visualizar_entrada', entrada_id=entrada.id) }}" class="btn btn-outline-secondary btn-sm">
+              <i class="bi bi-eye"></i> Visualizar
+            </a>
+          </td>
+        </tr>
         {% endfor %}
       </tbody>
     </table>
@@ -84,7 +78,6 @@
 
 <script>
   $(document).ready(function () {
-    // DataTables com paginação de 10 a 100
     $('#tabela-entradas').DataTable({
       language: {
         url: "//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json"
@@ -94,19 +87,21 @@
       ordering: true
     });
 
-    // Máscara para Nota Fiscal
-    function aplicarMascaraNota() {
+    function aplicarMascaraCampo() {
       $('#valor_busca').unmask();
-      if ($('#tipo_busca').val() === 'nota') {
+      const tipo = $('#tipo_busca').val();
+      if (tipo === 'nota') {
         $('#valor_busca').mask('000.000.000');
+      } else if (tipo === 'data') {
+        $('#valor_busca').mask('00/00/0000');
       }
     }
 
-    aplicarMascaraNota();
+    aplicarMascaraCampo();
 
     $('#tipo_busca').on('change', function () {
       $('#valor_busca').val('');
-      aplicarMascaraNota();
+      aplicarMascaraCampo();
     });
   });
 </script>

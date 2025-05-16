@@ -6,6 +6,7 @@ from flask_login import login_required, current_user
 from app_render import db
 from models import Fornecedor, Item, EntradaMaterial, EntradaItem, NaturezaDespesa
 from datetime import datetime
+from sqlalchemy import func
 
 # Criação do blueprint da entrada
 entrada_bp = Blueprint('entrada_bp', __name__, template_folder='templates')
@@ -20,18 +21,17 @@ def nova_entrada():
 
     if request.method == 'POST':
         try:
-            # Coleta os dados principais do formulário
+            # Coleta os dados do formulário
             data_movimento = datetime.strptime(request.form.get('data_movimento'), '%Y-%m-%d')
             data_nota_fiscal = datetime.strptime(request.form.get('data_nota_fiscal'), '%Y-%m-%d')
             numero_nota_fiscal = request.form.get('numero_nota_fiscal')
             fornecedor_id = request.form.get('fornecedor')
 
-            # Coleta os dados dos itens (listas)
             item_ids = request.form.getlist('item_id[]')
             quantidades = request.form.getlist('quantidade[]')
             valores_unitarios = request.form.getlist('valor_unitario[]')
 
-            # Cria o registro da entrada principal
+            # Cria o registro da entrada
             nova_entrada = EntradaMaterial(
                 data_movimento=data_movimento,
                 data_nota_fiscal=data_nota_fiscal,
@@ -40,24 +40,19 @@ def nova_entrada():
                 usuario_id=current_user.id
             )
             db.session.add(nova_entrada)
-            db.session.flush()  # Garante que nova_entrada.id seja gerado
+            db.session.flush()  # Garante que nova_entrada.id esteja disponível
 
-            # Laço para tratar cada item incluído na entrada
+            # Laço para adicionar itens da entrada
             for i in range(len(item_ids)):
                 if not item_ids[i] or not quantidades[i] or not valores_unitarios[i]:
-                    continue  # Ignora campos vazios
+                    continue
 
                 quantidade = int(quantidades[i])
                 valor_unitario = float(valores_unitarios[i])
                 item = Item.query.get(item_ids[i])
 
                 if item:
-                    # Garante que os campos críticos não estejam None (evita erro de operação)
-                    item.estoque_atual = item.estoque_atual or 0
-                    item.saldo_financeiro = item.saldo_financeiro or 0.0
-                    item.valor_unitario = item.valor_unitario or 0.0
-
-                    # Cria o item da entrada
+                    # Cria o item vinculado à entrada
                     entrada_item = EntradaItem(
                         entrada_id=nova_entrada.id,
                         item_id=item.id,
@@ -66,20 +61,16 @@ def nova_entrada():
                     )
                     db.session.add(entrada_item)
 
-                    # Atualiza o saldo e valor do item
+                    # Atualiza o saldo do item
                     item.estoque_atual += quantidade
                     item.saldo_financeiro += quantidade * valor_unitario
-
-                    # Atualiza o valor unitário médio
                     if item.estoque_atual > 0:
                         item.valor_unitario = item.saldo_financeiro / item.estoque_atual
 
-                    # Atualiza o valor total da Natureza de Despesa vinculada ao grupo do item
+                    # Atualiza o valor da natureza de despesa vinculada ao grupo do item
                     if item.grupo and item.grupo.natureza_despesa:
-                        item.grupo.natureza_despesa.valor = item.grupo.natureza_despesa.valor or 0
                         item.grupo.natureza_despesa.valor += quantidade * valor_unitario
 
-            # Finaliza transação
             db.session.commit()
             flash('Entrada registrada com sucesso.', 'success')
             return redirect(url_for('entrada_bp.lista_entradas'))
@@ -89,7 +80,6 @@ def nova_entrada():
             flash(f'Erro ao salvar entrada: {e}', 'danger')
             print(e)
 
-    # Se método GET, exibe o formulário
     return render_template('nova_entrada.html', fornecedores=fornecedores, itens=itens)
 
 
@@ -97,7 +87,24 @@ def nova_entrada():
 @entrada_bp.route('/entrada/lista')
 @login_required
 def lista_entradas():
-    entradas = EntradaMaterial.query.order_by(EntradaMaterial.data_movimento.desc()).all()
+    filtro = request.args.get('filtro')
+    busca = request.args.get('busca', '').lower()
+
+    entradas_query = EntradaMaterial.query.join(Fornecedor)
+
+    if busca:
+        if filtro == 'nota':
+            entradas_query = entradas_query.filter(func.lower(EntradaMaterial.numero_nota_fiscal).like(f"%{busca}%"))
+        elif filtro == 'fornecedor':
+            entradas_query = entradas_query.filter(func.lower(Fornecedor.nome).like(f"%{busca}%"))
+        elif filtro == 'data':
+            try:
+                data_formatada = datetime.strptime(busca, '%d/%m/%Y').date()
+                entradas_query = entradas_query.filter(EntradaMaterial.data_movimento == data_formatada)
+            except ValueError:
+                flash('Formato de data inválido. Use dd/mm/aaaa.', 'warning')
+
+    entradas = entradas_query.order_by(EntradaMaterial.data_movimento.desc()).all()
     return render_template('lista_entrada.html', entradas=entradas)
 
 

@@ -1,10 +1,9 @@
 {% extends 'base_simplificada.html' %}
-
 {% block title %}Cadastrar Novo Item{% endblock %}
 
 {% block content %}
 <div class="container py-4">
-  <h4 class="mb-4">Cadastrar Novo Item</h4>
+  <h4 class="mb-4">Cadastrar/Editar Item</h4>
 
   <form method="POST">
     <div class="row g-3 mb-3">
@@ -34,7 +33,16 @@
     <div class="row g-3 mb-3">
       <div class="col-md-4">
         <label for="unidade" class="form-label">Unidade de Medida *</label>
-        <input type="text" class="form-control" name="unidade" id="unidade" required>
+        <select class="form-select" name="unidade" id="unidade" required>
+          <option value="">Selecione...</option>
+          <option value="UN">UN</option>
+          <option value="KG">KG</option>
+          <option value="L">L</option>
+          <option value="M">M</option>
+          <option value="CX">CX</option>
+          <option value="PC">PC</option>
+          <!-- Adicione mais opções conforme necessário -->
+        </select>
       </div>
 
       <div class="col-md-4">
@@ -54,24 +62,9 @@
     </div>
 
     <div class="row g-3 mb-3">
-      <div class="col-md-3">
-        <label for="valor_unitario" class="form-label">Valor Unitário</label>
-        <input type="number" class="form-control" step="0.01" name="valor_unitario" id="valor_unitario">
-      </div>
-
-      <div class="col-md-3">
-        <label for="estoque_atual" class="form-label">Estoque Atual</label>
-        <input type="number" class="form-control" step="0.01" name="estoque_atual" id="estoque_atual">
-      </div>
-
-      <div class="col-md-3">
+      <div class="col-md-4">
         <label for="estoque_minimo" class="form-label">Estoque Mínimo</label>
         <input type="number" class="form-control" step="0.01" name="estoque_minimo" id="estoque_minimo">
-      </div>
-
-      <div class="col-md-3">
-        <label for="localizacao" class="form-label">Localização</label>
-        <input type="text" class="form-control" name="localizacao" id="localizacao">
       </div>
     </div>
 

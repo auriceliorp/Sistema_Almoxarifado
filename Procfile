@@ -1,1 +1,1 @@
-web: gunicorn app_render:app
+web: gunicorn "<arquivo_python>:<função_factory>()"

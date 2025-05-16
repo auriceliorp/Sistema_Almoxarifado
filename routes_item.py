@@ -11,16 +11,33 @@ import os
 # Criação do blueprint
 item_bp = Blueprint('item_bp', __name__, url_prefix='/item')
 
-# ------------------------------ LISTAR ITENS ------------------------------
+# ------------------------------ LISTAR ITENS (COM FILTRO BACKEND) ------------------------------
 @item_bp.route('/itens')
 @login_required
 def lista_itens():
+    filtro = request.args.get('filtro')
+    busca = request.args.get('busca')
     nd_id = request.args.get('nd_id')
-    if nd_id:
-        itens = Item.query.join(Grupo).filter(Grupo.natureza_despesa_id == nd_id).all()
-    else:
-        itens = Item.query.all()
 
+    query = Item.query
+
+    # Filtro por ND (Natureza de Despesa)
+    if nd_id:
+        query = query.join(Grupo).filter(Grupo.natureza_despesa_id == nd_id)
+
+    # Filtros dinâmicos por campo
+    if filtro and busca:
+        busca = busca.lower()
+        if filtro == 'sap':
+            query = query.filter(Item.codigo_sap.ilike(f'%{busca}%'))
+        elif filtro == 'descricao':
+            query = query.filter(Item.nome.ilike(f'%{busca}%'))
+        elif filtro == 'grupo':
+            query = query.join(Grupo).filter(Grupo.nome.ilike(f'%{busca}%'))
+        elif filtro == 'nd':
+            query = query.join(NaturezaDespesa).filter(NaturezaDespesa.codigo.ilike(f'%{busca}%'))
+
+    itens = query.all()
     naturezas_despesa = NaturezaDespesa.query.all()
     nd_selecionado = int(nd_id) if nd_id else None
 
@@ -30,6 +47,7 @@ def lista_itens():
         naturezas_despesa=naturezas_despesa,
         nd_selecionado=nd_selecionado
     )
+
 
 # ------------------------------ DETALHAR ITEM ------------------------------
 @item_bp.route('/detalhes/<int:id>')

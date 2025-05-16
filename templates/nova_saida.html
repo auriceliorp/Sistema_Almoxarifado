@@ -2,123 +2,161 @@
 {% block title %}Nova Saída de Materiais{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2 class="mb-4">Nova Saída de Materiais</h2>
+<div class="container py-4">
+  <h4 class="mb-4">Registrar Nova Saída de Material</h4>
 
-    <!-- Formulário de registro de saída -->
-    <form method="post">
-        <div class="row mb-3">
-            <!-- Data do movimento -->
-            <div class="col-md-3">
-                <label for="data_movimento" class="form-label">Data do Movimento</label>
-                <input type="date" class="form-control" name="data_movimento" required>
-            </div>
+  <form method="POST">
+    <!-- Dados do Documento -->
+    <div class="row mb-3">
+      <div class="col-md-3">
+        <label for="data_movimento" class="form-label">Data do Movimento *</label>
+        <input type="date" class="form-control" name="data_movimento" required>
+      </div>
+      <div class="col-md-3">
+        <label for="numero_documento" class="form-label">Nº Documento</label>
+        <input type="text" class="form-control" name="numero_documento" value="{{ numero_documento }}" readonly>
+      </div>
+      <div class="col-md-6">
+        <label for="solicitante" class="form-label">Solicitante *</label>
+        <select name="solicitante" class="form-select" required>
+          <option value="" disabled selected>Selecione o solicitante...</option>
+          {% for usuario in usuarios %}
+            <option value="{{ usuario.id }}">{{ usuario.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
 
-            <!-- Número do documento (gerado automaticamente e não editável) -->
-            <div class="col-md-3">
-                <label for="numero_documento" class="form-label">Nº Documento</label>
-                <input type="text" class="form-control" name="numero_documento" value="{{ numero_documento }}" readonly>
-            </div>
+    <!-- Observação -->
+    <div class="mb-3">
+      <label for="observacao" class="form-label">Observação</label>
+      <textarea class="form-control" name="observacao"></textarea>
+    </div>
 
-            <!-- Solicitante (usuário selecionável) -->
-            <div class="col-md-6">
-                <label for="solicitante" class="form-label">Solicitante *</label>
-                <select name="solicitante" class="form-select" required>
-                    <option value="" disabled selected>Selecione o solicitante...</option>
-                    {% for usuario in usuarios %}
-                        <option value="{{ usuario.id }}">{{ usuario.nome }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-        </div>
+    <!-- Tabela de Itens -->
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle" id="tabela-itens">
+        <thead class="table-light">
+          <tr>
+            <th>Item</th>
+            <th>Quantidade</th>
+            <th>Valor Unitário (R$)</th>
+            <th>Valor Total (R$)</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <select name="item_id[]" class="form-select" required onchange="atualizarValor(this)">
+                <option value="" disabled selected>Selecione...</option>
+                {% for item in itens %}
+                <option value="{{ item.id }}" data-valor="{{ item.valor_unitario }}" data-estoque="{{ item.estoque_atual }}">
+                  {{ item.nome }} (Estoque: {{ item.estoque_atual }})
+                </option>
+                {% endfor %}
+              </select>
+            </td>
+            <td><input type="number" name="quantidade[]" class="form-control" min="1" required oninput="atualizarTotais(this)"></td>
+            <td><input type="number" name="valor_unitario[]" class="form-control" step="0.01" readonly></td>
+            <td class="valor_total">0.00</td>
+            <td>
+              <button type="button" class="btn btn-outline-danger btn-sm" onclick="removerLinha(this)">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-        <!-- Campo para observações -->
-        <div class="mb-3">
-            <label for="observacao" class="form-label">Observação</label>
-            <textarea class="form-control" name="observacao"></textarea>
-        </div>
+    <div class="mb-3">
+      <button type="button" class="btn btn-outline-secondary" onclick="adicionarLinha()">
+        <i class="bi bi-plus-circle"></i> Adicionar Item
+      </button>
+    </div>
 
-        <!-- Tabela com os itens -->
-        <h5>Itens a dar saída</h5>
-        <div id="itens-container">
-            <div class="item-row row">
-                <div class="col-md-4 mb-2">
-                    <label>Item</label>
-                    <select name="item_id[]" class="form-control item-select" required onchange="atualizarValor(this)">
-                        <option value="">Selecione...</option>
-                        {% for item in itens %}
-                            <option value="{{ item.id }}" data-valor="{{ item.valor_unitario }}" data-estoque="{{ item.estoque_atual }}">
-                                {{ item.nome }} (Estoque: {{ item.estoque_atual }})
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-2 mb-2">
-                    <label>Quantidade</label>
-                    <input type="number" name="quantidade[]" class="form-control" min="1" required onchange="calcularTotal(this)">
-                </div>
-                <div class="col-md-2 mb-2">
-                    <label>Valor Unitário</label>
-                    <input type="number" step="0.01" name="valor_unitario[]" class="form-control valor-unitario" readonly>
-                </div>
-                <div class="col-md-2 mb-2">
-                    <label>Total</label>
-                    <input type="number" step="0.01" class="form-control valor-total" readonly>
-                </div>
-                <div class="col-md-2 d-flex align-items-end mb-2">
-                    <button type="button" class="btn btn-danger" onclick="removerItem(this)">Remover</button>
-                </div>
-            </div>
-        </div>
+    <!-- Total da Nota -->
+    <div class="mb-4 text-end">
+      <strong>Total da Saída (R$):</strong>
+      <span id="totalNota">0.00</span>
+    </div>
 
-        <!-- Botões para adicionar novo item e salvar -->
-        <button type="button" class="btn btn-secondary mt-3" onclick="adicionarItem()">Adicionar Item</button>
-        <button type="submit" class="btn btn-success mt-3">Salvar Saída</button>
-        <a href="{{ url_for('saida_bp.lista_saidas') }}" class="btn btn-outline-secondary mt-3">Cancelar</a>
-    </form>
+    <!-- Botões -->
+    <div class="d-flex justify-content-end gap-2">
+      <button type="submit" class="btn btn-success">
+        <i class="bi bi-check-circle"></i> Salvar Saída
+      </button>
+      <a href="{{ url_for('saida_bp.lista_saidas') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-x-circle"></i> Cancelar
+      </a>
+    </div>
+  </form>
 </div>
 
-<!-- JavaScript para adicionar/remover linhas e calcular totais -->
+<!-- Scripts -->
 <script>
-function adicionarItem() {
-    const container = document.getElementById('itens-container');
-    const novaLinha = container.firstElementChild.cloneNode(true);
-    novaLinha.querySelectorAll('input, select').forEach(el => el.value = '');
-    container.appendChild(novaLinha);
-}
-
-function removerItem(botao) {
-    const linha = botao.closest('.item-row');
-    const container = document.getElementById('itens-container');
-    if (container.childElementCount > 1) linha.remove();
-}
-
-function atualizarValor(select) {
+  function atualizarValor(select) {
     const option = select.options[select.selectedIndex];
     const valor = option.getAttribute('data-valor');
     const estoque = parseFloat(option.getAttribute('data-estoque'));
-    const linha = select.closest('.item-row');
-    const inputValor = linha.querySelector('.valor-unitario');
-    const quantidade = linha.querySelector('[name="quantidade[]"]');
+    const linha = select.closest('tr');
+    const inputValor = linha.querySelector('input[name="valor_unitario[]"]');
+    const quantidade = linha.querySelector('input[name="quantidade[]"]');
 
     inputValor.value = valor || 0;
 
     if (estoque <= 0) {
-        alert("Atenção: Estoque indisponível para esse item!");
-        select.classList.add('is-invalid');
+      alert("Atenção: Estoque indisponível para esse item!");
+      select.classList.add('is-invalid');
     } else {
-        select.classList.remove('is-invalid');
+      select.classList.remove('is-invalid');
     }
 
-    calcularTotal(quantidade);
-}
+    atualizarTotais(quantidade);
+  }
 
-function calcularTotal(inputQuantidade) {
-    const linha = inputQuantidade.closest('.item-row');
-    const valorUnitario = parseFloat(linha.querySelector('.valor-unitario').value) || 0;
-    const quantidade = parseFloat(inputQuantidade.value) || 0;
-    const total = linha.querySelector('.valor-total');
-    total.value = (valorUnitario * quantidade).toFixed(2);
-}
+  function atualizarTotais(input) {
+    const linha = input.closest('tr');
+    const qtd = parseFloat(linha.querySelector('input[name="quantidade[]"]').value) || 0;
+    const valor = parseFloat(linha.querySelector('input[name="valor_unitario[]"]').value) || 0;
+    const total = qtd * valor;
+    linha.querySelector('.valor_total').innerText = total.toFixed(2);
+    atualizarTotalNota();
+  }
+
+  function atualizarTotalNota() {
+    let totalNota = 0;
+    document.querySelectorAll('.valor_total').forEach(td => {
+      totalNota += parseFloat(td.innerText) || 0;
+    });
+    document.getElementById('totalNota').innerText = totalNota.toFixed(2);
+  }
+
+  function adicionarLinha() {
+    const tbody = document.querySelector('#tabela-itens tbody');
+    const novaLinha = tbody.rows[0].cloneNode(true);
+
+    novaLinha.querySelectorAll('input').forEach(input => {
+      input.value = '';
+      input.setAttribute('required', true);
+    });
+
+    novaLinha.querySelector('select').selectedIndex = 0;
+    novaLinha.querySelector('.valor_total').innerText = '0.00';
+
+    tbody.appendChild(novaLinha);
+  }
+
+  function removerLinha(botao) {
+    const linha = botao.closest('tr');
+    const tbody = linha.parentElement;
+    if (tbody.rows.length > 1) {
+      linha.remove();
+      atualizarTotalNota();
+    } else {
+      alert('A saída deve conter pelo menos um item.');
+    }
+  }
 </script>
 {% endblock %}

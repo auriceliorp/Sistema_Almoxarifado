@@ -1,27 +1,29 @@
+{# ------------------------------ LISTA DE ITENS ------------------------------ #}
 {% extends 'base_simplificada.html' %}
 
 {% block title %}Itens Cadastrados{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    {% for category, message in messages %}
-      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
-      </div>
-    {% endfor %}
-  {% endif %}
-{% endwith %}
+  {# MENSAGENS DE ALERTA #}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
 
-  <!-- Cabeçalho e Ações -->
+  {# CABEÇALHO E BOTÕES DE AÇÃO #}
   <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <a href="{{ url_for('item_bp.novo_item') }}" class="btn btn-success btn-lg">
+      <i class="bi bi-plus-circle fs-4 me-1"></i> Novo Item
+    </a>
     <h4 class="mb-0 text-center flex-grow-1">Itens Cadastrados</h4>
     <div class="d-flex gap-2">
-      <a href="{{ url_for('item_bp.novo_item') }}" class="btn btn-success btn-lg">
-        <i class="bi bi-plus-circle fs-4 me-1"></i> Novo Item
-      </a>
       <a href="{{ url_for('item_bp.exportar_excel', nd=nd_selecionado) }}" class="btn btn-outline-success">
         <i class="bi bi-file-earmark-excel"></i> Excel
       </a>
@@ -31,37 +33,32 @@
     </div>
   </div>
 
-  <!-- Filtros -->
-  <div class="row g-3 mb-3">
-    <div class="col-md-4">
-      <form method="GET">
-        <select name="nd_id" class="form-select" onchange="this.form.submit()">
-          <option value="">Filtrar por ND</option>
-          {% for nd in naturezas_despesa %}
-            <option value="{{ nd.id }}" {% if nd.id|string == request.args.get('nd_id') %}selected{% endif %}>
-              {{ nd.codigo }} - {{ nd.nome }}
-            </option>
-          {% endfor %}
-        </select>
-      </form>
+  {# FORMULÁRIO DE FILTRO POR BACKEND #}
+  <form method="GET" class="row g-3 mb-4">
+    <div class="col-md-3">
+      <label class="form-label">Tipo de Filtro</label>
+      <select name="filtro" class="form-select">
+        <option value="sap" {% if request.args.get('filtro') == 'sap' %}selected{% endif %}>Código SAP</option>
+        <option value="descricao" {% if request.args.get('filtro') == 'descricao' %}selected{% endif %}>Descrição</option>
+        <option value="grupo" {% if request.args.get('filtro') == 'grupo' %}selected{% endif %}>Grupo</option>
+        <option value="nd" {% if request.args.get('filtro') == 'nd' %}selected{% endif %}>ND</option>
+      </select>
     </div>
-
-    <div class="col-md-4 offset-md-4">
-      <div class="input-group">
-        <select class="form-select" id="filtroTipo">
-          <option value="0">Código SAP</option>
-          <option value="2">Descrição</option>
-          <option value="7">Grupo</option>
-          <option value="8">ND</option>
-        </select>
-        <input type="text" id="filtroBusca" class="form-control" placeholder="Buscar...">
-      </div>
+    <div class="col-md-6">
+      <label class="form-label">Busca</label>
+      <input type="text" name="busca" value="{{ request.args.get('busca', '') }}" class="form-control" placeholder="Digite para buscar...">
     </div>
-  </div>
+    <div class="col-md-3">
+      <label class="form-label d-block">&nbsp;</label>
+      <button type="submit" class="btn btn-primary w-100">
+        <i class="bi bi-search"></i> Buscar
+      </button>
+    </div>
+  </form>
 
-  <!-- Tabela -->
+  {# TABELA DE ITENS #}
   <div class="table-responsive">
-    <table id="tabela-itens" class="table table-striped table-hover align-middle">
+    <table class="table table-striped table-hover align-middle">
       <thead class="table-dark">
         <tr>
           <th>SAP</th>
@@ -73,6 +70,7 @@
           <th>Saldo (R$)</th>
           <th>Grupo</th>
           <th>ND</th>
+          <th>Validade</th>
           <th class="text-center">Ações</th>
         </tr>
       </thead>
@@ -88,12 +86,19 @@
           <td>{{ "%.2f"|format(item.saldo_financeiro or 0) }}</td>
           <td>{{ item.grupo.nome if item.grupo }}</td>
           <td>{{ item.natureza_despesa.codigo if item.natureza_despesa }}</td>
+          <td>{{ item.data_validade.strftime('%d/%m/%Y') if item.data_validade else '' }}</td>
           <td class="text-center">
             <div class="d-flex justify-content-center gap-2">
-              <a href="{{ url_for('item_bp.detalhes_item', id=item.id) }}" class="btn btn-sm btn-outline-info" title="Detalhar"><i class="bi bi-eye"></i></a>
-              <a href="{{ url_for('item_bp.editar_item', id=item.id) }}" class="btn btn-sm btn-outline-primary" title="Editar"><i class="bi bi-pencil"></i></a>
+              <a href="{{ url_for('item_bp.detalhes_item', id=item.id) }}" class="btn btn-sm btn-outline-info" title="Detalhar">
+                <i class="bi bi-eye"></i>
+              </a>
+              <a href="{{ url_for('item_bp.editar_item', id=item.id) }}" class="btn btn-sm btn-outline-primary" title="Editar">
+                <i class="bi bi-pencil"></i>
+              </a>
               <form method="POST" action="{{ url_for('item_bp.excluir_item', id=item.id) }}" onsubmit="return confirm('Tem certeza que deseja excluir este item?');">
-                <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir"><i class="bi bi-trash"></i></button>
+                <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir">
+                  <i class="bi bi-trash"></i>
+                </button>
               </form>
             </div>
           </td>
@@ -103,29 +108,4 @@
     </table>
   </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
-<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
-
-<script>
-  $(document).ready(function () {
-    const tabela = $('#tabela-itens').DataTable({
-      language: { url: "//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json" },
-      pageLength: 10,
-      lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-      scrollX: true,
-      columnDefs: [
-        { targets: [8], visible: true } // ND visível
-      ]
-    });
-
-    $('#filtroBusca').on('keyup', function () {
-      const coluna = $('#filtroTipo').val();
-      tabela.column(coluna).search(this.value).draw();
-    });
-  });
-</script>
 {% endblock %}

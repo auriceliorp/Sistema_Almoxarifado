@@ -1,57 +1,53 @@
 # routes_saida.py
-# Rotas para saída de materiais com geração automática de número de documento e filtros com paginação
+# Rotas para saída de materiais com paginação, filtro e geração de documento
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from app_render import db
-from models import Item, SaidaMaterial, SaidaItem, Usuario, UnidadeLocal
+from models import Item, SaidaMaterial, SaidaItem, Usuario
 from datetime import date
 from sqlalchemy.orm import aliased
 
+# Define o blueprint para as rotas de saída
 saida_bp = Blueprint('saida_bp', __name__)
 
-# ---------------------- ROTA: LISTA SAÍDAS COM PAGINAÇÃO E FILTROS ---------------------- #
+# -------------------- LISTAR SAÍDAS COM FILTRO E PAGINAÇÃO -------------------- #
 @saida_bp.route('/saidas')
 @login_required
 def lista_saidas():
-    # Parâmetros do filtro
     page = request.args.get('page', 1, type=int)
     filtro = request.args.get('filtro')
     busca = request.args.get('busca', '').strip().lower()
 
-    # Criação de aliases para as duas relações com a mesma tabela `usuarios`
-    responsavel_alias = aliased(Usuario)
-    solicitante_alias = aliased(Usuario)
+    # Aliases para evitar conflito entre usuario_id e solicitante_id
+    responsavel = aliased(Usuario)
+    solicitante = aliased(Usuario)
 
-    # Consulta base usando os aliases
-    query = SaidaMaterial.query \
-        .join(responsavel_alias, SaidaMaterial.usuario) \
-        .join(solicitante_alias, SaidaMaterial.solicitante)
+    # Inicia query com joins explícitos e sem conflito
+    query = db.session.query(SaidaMaterial).join(responsavel, SaidaMaterial.usuario).join(solicitante, SaidaMaterial.solicitante)
 
-    # Aplica os filtros
     if filtro and busca:
-        if filtro == 'id' and busca.isdigit():
-            query = query.filter(SaidaMaterial.id == int(busca))
+        if filtro == 'id':
+            query = query.filter(SaidaMaterial.id == busca)
         elif filtro == 'data':
             try:
                 dia, mes, ano = map(int, busca.split('/'))
                 query = query.filter(SaidaMaterial.data_movimento == date(ano, mes, dia))
             except:
-                flash('Data inválida. Use o formato DD/MM/AAAA.', 'warning')
+                flash('Formato de data inválido. Use DD/MM/AAAA.', 'warning')
         elif filtro == 'responsavel':
-            query = query.filter(responsavel_alias.nome.ilike(f'%{busca}%'))
+            query = query.filter(responsavel.nome.ilike(f'%{busca}%'))
         elif filtro == 'solicitante':
-            query = query.filter(solicitante_alias.nome.ilike(f'%{busca}%'))
+            query = query.filter(solicitante.nome.ilike(f'%{busca}%'))
         elif filtro == 'setor':
-            query = query.join(solicitante_alias.unidade_local).filter(UnidadeLocal.descricao.ilike(f'%{busca}%'))
+            query = query.join(solicitante.unidade_local).filter(solicitante.unidade_local.has(descricao_ilike=busca))
 
-    # Paginação com ordenação
     saidas = query.order_by(SaidaMaterial.data_movimento.desc()).paginate(page=page, per_page=10)
 
     return render_template('lista_saida.html', saidas=saidas, filtro=filtro, busca=busca)
 
 
-# ---------------------- ROTA: NOVA SAÍDA ---------------------- #
+# -------------------- NOVA SAÍDA -------------------- #
 @saida_bp.route('/nova_saida', methods=['GET', 'POST'])
 @login_required
 def nova_saida():
@@ -115,7 +111,6 @@ def nova_saida():
             flash(f'Erro ao registrar saída: {e}', 'danger')
             print(e)
 
-    # Geração automática do número do documento
     ano_atual = date.today().year
     ultima_saida = SaidaMaterial.query.order_by(SaidaMaterial.id.desc()).first()
     if ultima_saida and ultima_saida.numero_documento and '/' in ultima_saida.numero_documento:
@@ -129,7 +124,8 @@ def nova_saida():
 
     return render_template('nova_saida.html', itens=itens, usuarios=usuarios, numero_documento=numero_documento)
 
-# ---------------------- ROTA: REQUISIÇÃO ---------------------- #
+
+# -------------------- REQUISIÇÃO (IMPRESSÃO) -------------------- #
 @saida_bp.route('/requisicao/<int:saida_id>')
 @login_required
 def requisicao_saida(saida_id):

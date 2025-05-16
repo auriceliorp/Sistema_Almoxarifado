@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container py-4">
 
-  <!-- Cabeçalho e botão -->
+  <!-- Cabeçalho com botão de nova saída alinhado à esquerda -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <a href="{{ url_for('saida_bp.nova_saida') }}" class="btn btn-success btn-lg">
       <i class="bi bi-plus-circle fs-4 me-1"></i> Nova Saída
@@ -13,33 +13,33 @@
     <h4 class="mb-0 text-center flex-grow-1 text-uppercase">Saídas de Estoque</h4>
   </div>
 
-  <!-- Formulário de busca -->
-  <div class="mb-4 row g-2 align-items-end">
+  <!-- Formulário de busca com GET para funcionar com backend -->
+  <form method="GET" class="row g-2 mb-4 align-items-end">
     <div class="col-md-4">
       <label for="filtro" class="form-label">Buscar por:</label>
-      <select id="filtro" class="form-select">
-        <option value="data">Data</option>
-        <option value="responsavel">Responsável</option>
-        <option value="solicitante">Solicitante</option>
-        <option value="setor">Setor</option>
-        <option value="id">ID</option>
+      <select id="filtro" name="filtro" class="form-select">
+        <option value="data" {% if filtro == 'data' %}selected{% endif %}>Data</option>
+        <option value="responsavel" {% if filtro == 'responsavel' %}selected{% endif %}>Responsável</option>
+        <option value="solicitante" {% if filtro == 'solicitante' %}selected{% endif %}>Solicitante</option>
+        <option value="setor" {% if filtro == 'setor' %}selected{% endif %}>Setor</option>
+        <option value="id" {% if filtro == 'id' %}selected{% endif %}>ID</option>
       </select>
     </div>
     <div class="col-md-6">
       <label for="busca" class="form-label">Valor:</label>
-      <input type="text" id="busca" class="form-control" placeholder="Digite sua busca">
+      <input type="text" id="busca" name="busca" class="form-control" placeholder="Digite sua busca" value="{{ busca or '' }}">
     </div>
     <div class="col-md-2">
-      <button id="btnBuscar" class="btn btn-primary w-100">
+      <button type="submit" class="btn btn-primary w-100">
         <i class="bi bi-search"></i> Buscar
       </button>
     </div>
-  </div>
+  </form>
 
-  {% if saidas %}
-  <!-- Tabela com novas colunas -->
+  {% if saidas.items|length > 0 %}
+  <!-- Tabela com colunas adicionais -->
   <div class="table-responsive">
-    <table id="tabela-saidas" class="table table-striped table-hover align-middle w-100">
+    <table class="table table-striped table-hover align-middle w-100">
       <thead class="table-dark">
         <tr>
           <th>ID</th>
@@ -51,7 +51,7 @@
         </tr>
       </thead>
       <tbody>
-        {% for saida in saidas %}
+        {% for saida in saidas.items %}
         <tr>
           <td>{{ saida.id }}</td>
           <td>{{ saida.data_movimento.strftime('%d/%m/%Y') }}</td>
@@ -68,49 +68,45 @@
       </tbody>
     </table>
   </div>
+
+  <!-- Paginação -->
+  <nav aria-label="Paginar saídas" class="mt-4">
+    <ul class="pagination justify-content-center">
+      {% if saidas.has_prev %}
+      <li class="page-item">
+        <a class="page-link" href="{{ url_for('saida_bp.lista_saidas', page=saidas.prev_num, filtro=filtro, busca=busca) }}">Anterior</a>
+      </li>
+      {% else %}
+      <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+      {% endif %}
+
+      {% for page_num in saidas.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+      {% if page_num %}
+        {% if saidas.page == page_num %}
+        <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+        {% else %}
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('saida_bp.lista_saidas', page=page_num, filtro=filtro, busca=busca) }}">{{ page_num }}</a>
+        </li>
+        {% endif %}
+      {% else %}
+      <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+      {% endif %}
+      {% endfor %}
+
+      {% if saidas.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="{{ url_for('saida_bp.lista_saidas', page=saidas.next_num, filtro=filtro, busca=busca) }}">Próxima</a>
+      </li>
+      {% else %}
+      <li class="page-item disabled"><span class="page-link">Próxima</span></li>
+      {% endif %}
+    </ul>
+  </nav>
+
   {% else %}
-  <div class="alert alert-info">Nenhuma saída registrada até o momento.</div>
+  <div class="alert alert-info">Nenhuma saída encontrada.</div>
   {% endif %}
 
 </div>
-{% endblock %}
-
-{% block scripts %}
-<!-- Scripts necessários -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
-<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
-
-<script>
-  $(document).ready(function () {
-    const table = $('#tabela-saidas').DataTable({
-      language: {
-        url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json'
-      },
-      pageLength: 10,
-      lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-      ordering: true
-    });
-
-    $('#btnBuscar').on('click', function () {
-      const filtro = $('#filtro').val();
-      const termo = $('#busca').val();
-      table.search('').columns().search(''); // limpa buscas anteriores
-
-      if (filtro === 'id') {
-        table.column(0).search(termo).draw();
-      } else if (filtro === 'data') {
-        table.column(1).search(termo).draw();
-      } else if (filtro === 'responsavel') {
-        table.column(2).search(termo).draw();
-      } else if (filtro === 'solicitante') {
-        table.column(3).search(termo).draw();
-      } else if (filtro === 'setor') {
-        table.column(4).search(termo).draw();
-      }
-    });
-  });
-</script>
 {% endblock %}

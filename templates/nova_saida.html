@@ -4,32 +4,41 @@
 {% block content %}
 <div class="container mt-4">
     <h2 class="mb-4">Nova Saída de Materiais</h2>
+
+    <!-- Formulário de registro de saída -->
     <form method="post">
         <div class="row mb-3">
-            <div class="col-md-4">
+            <!-- Data do movimento -->
+            <div class="col-md-3">
                 <label for="data_movimento" class="form-label">Data do Movimento</label>
                 <input type="date" class="form-control" name="data_movimento" required>
             </div>
-            <div class="col-md-4">
+
+            <!-- Número do documento (gerado automaticamente e não editável) -->
+            <div class="col-md-3">
                 <label for="numero_documento" class="form-label">Nº Documento</label>
                 <input type="text" class="form-control" name="numero_documento" value="{{ numero_documento }}" readonly>
             </div>
-            <div class="col-md-4">
+
+            <!-- Solicitante (usuário selecionável) -->
+            <div class="col-md-6">
                 <label for="solicitante" class="form-label">Solicitante *</label>
-                <select name="solicitante_id" class="form-select" required>
-                    <option value="" disabled selected>Selecione...</option>
-                    {% for u in usuarios %}
-                        <option value="{{ u.id }}">{{ u.nome }}</option>
+                <select name="solicitante" class="form-select" required>
+                    <option value="" disabled selected>Selecione o solicitante...</option>
+                    {% for usuario in usuarios %}
+                        <option value="{{ usuario.id }}">{{ usuario.nome }}</option>
                     {% endfor %}
                 </select>
             </div>
         </div>
 
+        <!-- Campo para observações -->
         <div class="mb-3">
             <label for="observacao" class="form-label">Observação</label>
             <textarea class="form-control" name="observacao"></textarea>
         </div>
 
+        <!-- Tabela com os itens -->
         <h5>Itens a dar saída</h5>
         <div id="itens-container">
             <div class="item-row row">
@@ -38,9 +47,9 @@
                     <select name="item_id[]" class="form-control item-select" required onchange="atualizarValor(this)">
                         <option value="">Selecione...</option>
                         {% for item in itens %}
-                        <option value="{{ item.id }}" data-valor="{{ item.valor_unitario }}" data-estoque="{{ item.estoque_atual }}">
-                            {{ item.nome }} (Estoque: {{ item.estoque_atual }})
-                        </option>
+                            <option value="{{ item.id }}" data-valor="{{ item.valor_unitario }}" data-estoque="{{ item.estoque_atual }}">
+                                {{ item.nome }} (Estoque: {{ item.estoque_atual }})
+                            </option>
                         {% endfor %}
                     </select>
                 </div>
@@ -62,12 +71,14 @@
             </div>
         </div>
 
+        <!-- Botões para adicionar novo item e salvar -->
         <button type="button" class="btn btn-secondary mt-3" onclick="adicionarItem()">Adicionar Item</button>
         <button type="submit" class="btn btn-success mt-3">Salvar Saída</button>
         <a href="{{ url_for('saida_bp.lista_saidas') }}" class="btn btn-outline-secondary mt-3">Cancelar</a>
     </form>
 </div>
 
+<!-- JavaScript para adicionar/remover linhas e calcular totais -->
 <script>
 function adicionarItem() {
     const container = document.getElementById('itens-container');
@@ -87,14 +98,18 @@ function atualizarValor(select) {
     const valor = option.getAttribute('data-valor');
     const estoque = parseFloat(option.getAttribute('data-estoque'));
     const linha = select.closest('.item-row');
-    linha.querySelector('.valor-unitario').value = valor || 0;
+    const inputValor = linha.querySelector('.valor-unitario');
     const quantidade = linha.querySelector('[name="quantidade[]"]');
+
+    inputValor.value = valor || 0;
+
     if (estoque <= 0) {
-        alert("Estoque indisponível para esse item!");
+        alert("Atenção: Estoque indisponível para esse item!");
         select.classList.add('is-invalid');
     } else {
         select.classList.remove('is-invalid');
     }
+
     calcularTotal(quantidade);
 }
 
@@ -107,4 +122,3 @@ function calcularTotal(inputQuantidade) {
 }
 </script>
 {% endblock %}
-

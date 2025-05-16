@@ -1,12 +1,11 @@
-{# ------------------------------ LISTA DE ITENS ------------------------------ #}
 {% extends 'base_simplificada.html' %}
 
 {% block title %}Itens Cadastrados{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container py-4">
 
-  {# CABEÇALHO E BOTÕES DE AÇÃO #}
+    {# CABEÇALHO E AÇÕES #}
   <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
     <a href="{{ url_for('item_bp.novo_item') }}" class="btn btn-success btn-lg">
       <i class="bi bi-plus-circle fs-4 me-1"></i> Novo Item
@@ -22,20 +21,20 @@
     </div>
   </div>
 
-  {# FORMULÁRIO DE FILTRO POR BACKEND #}
+  {# FORMULÁRIO DE FILTRO COM ENVIO GET #}
   <form method="GET" class="row g-3 mb-4">
     <div class="col-md-3">
       <label class="form-label">Tipo de Filtro</label>
       <select name="filtro" class="form-select">
-        <option value="sap" {% if request.args.get('filtro') == 'sap' %}selected{% endif %}>Código SAP</option>
-        <option value="descricao" {% if request.args.get('filtro') == 'descricao' %}selected{% endif %}>Descrição</option>
-        <option value="grupo" {% if request.args.get('filtro') == 'grupo' %}selected{% endif %}>Grupo</option>
-        <option value="nd" {% if request.args.get('filtro') == 'nd' %}selected{% endif %}>ND</option>
+        <option value="sap" {% if filtro == 'sap' %}selected{% endif %}>Código SAP</option>
+        <option value="descricao" {% if filtro == 'descricao' %}selected{% endif %}>Descrição</option>
+        <option value="grupo" {% if filtro == 'grupo' %}selected{% endif %}>Grupo</option>
+        <option value="nd" {% if filtro == 'nd' %}selected{% endif %}>ND</option>
       </select>
     </div>
     <div class="col-md-6">
       <label class="form-label">Busca</label>
-      <input type="text" name="busca" value="{{ request.args.get('busca', '') }}" class="form-control" placeholder="Digite para buscar...">
+      <input type="text" name="busca" value="{{ busca or '' }}" class="form-control" placeholder="Digite para buscar...">
     </div>
     <div class="col-md-3">
       <label class="form-label d-block">&nbsp;</label>
@@ -64,7 +63,7 @@
         </tr>
       </thead>
       <tbody>
-        {% for item in itens %}
+        {% for item in itens.items %}
         <tr>
           <td>{{ item.codigo_sap }}</td>
           <td>{{ item.codigo_siads }}</td>
@@ -75,7 +74,7 @@
           <td>{{ "%.2f"|format(item.saldo_financeiro or 0) }}</td>
           <td>{{ item.grupo.nome if item.grupo }}</td>
           <td>{{ item.natureza_despesa.codigo if item.natureza_despesa }}</td>
-          <td>{{ item.data_validade.strftime('%d/%m/%Y') if item.data_validade else '' }}</td>
+          <td>{{ item.data_validade.strftime('%d/%m/%Y') if item.data_validade }}</td>
           <td class="text-center">
             <div class="d-flex justify-content-center gap-2">
               <a href="{{ url_for('item_bp.detalhes_item', id=item.id) }}" class="btn btn-sm btn-outline-info" title="Detalhar">
@@ -92,9 +91,46 @@
             </div>
           </td>
         </tr>
+        {% else %}
+        <tr><td colspan="11" class="text-center text-muted">Nenhum item encontrado.</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
+
+  {# PAGINAÇÃO #}
+  {% if itens.pages > 1 %}
+  <nav aria-label="Paginação" class="mt-4">
+    <ul class="pagination justify-content-center">
+      {% if itens.has_prev %}
+      <li class="page-item">
+        <a class="page-link" href="{{ url_for('item_bp.lista_itens', page=itens.prev_num, filtro=filtro, busca=busca, nd_id=nd_selecionado) }}">Anterior</a>
+      </li>
+      {% else %}
+      <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+      {% endif %}
+
+      {% for page_num in itens.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+        {% if page_num %}
+          {% if itens.page == page_num %}
+            <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+          {% else %}
+            <li class="page-item"><a class="page-link" href="{{ url_for('item_bp.lista_itens', page=page_num, filtro=filtro, busca=busca, nd_id=nd_selecionado) }}">{{ page_num }}</a></li>
+          {% endif %}
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">…</span></li>
+        {% endif %}
+      {% endfor %}
+
+      {% if itens.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="{{ url_for('item_bp.lista_itens', page=itens.next_num, filtro=filtro, busca=busca, nd_id=nd_selecionado) }}">Próxima</a>
+      </li>
+      {% else %}
+      <li class="page-item disabled"><span class="page-link">Próxima</span></li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
 </div>
 {% endblock %}

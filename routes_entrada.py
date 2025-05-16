@@ -1,18 +1,16 @@
 # routes_entrada.py
-# Rotas para entrada de materiais, incluindo atualização de saldo de itens e valor da natureza de despesa
+# Rotas para entrada de materiais, com filtro e paginação no backend
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from app_render import db
-from models import Fornecedor, Item, EntradaMaterial, EntradaItem, NaturezaDespesa
+from models import Fornecedor, Item, EntradaMaterial, EntradaItem
 from datetime import datetime
-from sqlalchemy import func
 
-# Criação do blueprint da entrada
+# Criação do blueprint
 entrada_bp = Blueprint('entrada_bp', __name__, template_folder='templates')
 
-
-# ------------------------------ ROTA: Nova Entrada ------------------------------ #
+# ------------------------- ROTA: NOVA ENTRADA ------------------------- #
 @entrada_bp.route('/entrada/nova', methods=['GET', 'POST'])
 @login_required
 def nova_entrada():
@@ -21,7 +19,6 @@ def nova_entrada():
 
     if request.method == 'POST':
         try:
-            # Coleta os dados do formulário
             data_movimento = datetime.strptime(request.form.get('data_movimento'), '%Y-%m-%d')
             data_nota_fiscal = datetime.strptime(request.form.get('data_nota_fiscal'), '%Y-%m-%d')
             numero_nota_fiscal = request.form.get('numero_nota_fiscal')
@@ -31,7 +28,6 @@ def nova_entrada():
             quantidades = request.form.getlist('quantidade[]')
             valores_unitarios = request.form.getlist('valor_unitario[]')
 
-            # Cria o registro da entrada
             nova_entrada = EntradaMaterial(
                 data_movimento=data_movimento,
                 data_nota_fiscal=data_nota_fiscal,
@@ -40,9 +36,8 @@ def nova_entrada():
                 usuario_id=current_user.id
             )
             db.session.add(nova_entrada)
-            db.session.flush()  # Garante que nova_entrada.id esteja disponível
+            db.session.flush()
 
-            # Laço para adicionar itens da entrada
             for i in range(len(item_ids)):
                 if not item_ids[i] or not quantidades[i] or not valores_unitarios[i]:
                     continue
@@ -52,7 +47,6 @@ def nova_entrada():
                 item = Item.query.get(item_ids[i])
 
                 if item:
-                    # Cria o item vinculado à entrada
                     entrada_item = EntradaItem(
                         entrada_id=nova_entrada.id,
                         item_id=item.id,
@@ -61,13 +55,13 @@ def nova_entrada():
                     )
                     db.session.add(entrada_item)
 
-                    # Atualiza o saldo do item
+                    # Atualiza estoque
                     item.estoque_atual += quantidade
                     item.saldo_financeiro += quantidade * valor_unitario
                     if item.estoque_atual > 0:
                         item.valor_unitario = item.saldo_financeiro / item.estoque_atual
 
-                    # Atualiza o valor da natureza de despesa vinculada ao grupo do item
+                    # Atualiza valor da natureza de despesa
                     if item.grupo and item.grupo.natureza_despesa:
                         item.grupo.natureza_despesa.valor += quantidade * valor_unitario
 
@@ -82,33 +76,33 @@ def nova_entrada():
 
     return render_template('nova_entrada.html', fornecedores=fornecedores, itens=itens)
 
-
-# ------------------------------ ROTA: Lista de Entradas ------------------------------ #
+# ------------------------- ROTA: LISTA DE ENTRADAS COM FILTRO E PAGINAÇÃO ------------------------- #
 @entrada_bp.route('/entrada/lista')
 @login_required
 def lista_entradas():
-    filtro = request.args.get('filtro')
-    busca = request.args.get('busca', '').lower()
+    page = request.args.get('page', 1, type=int)
+    filtro = request.args.get('filtro', 'nota')
+    busca = request.args.get('busca', '').strip().lower()
 
-    entradas_query = EntradaMaterial.query.join(Fornecedor)
+    query = EntradaMaterial.query.join(Fornecedor)
 
     if busca:
         if filtro == 'nota':
-            entradas_query = entradas_query.filter(func.lower(EntradaMaterial.numero_nota_fiscal).like(f"%{busca}%"))
+            query = query.filter(EntradaMaterial.numero_nota_fiscal.ilike(f'%{busca}%'))
         elif filtro == 'fornecedor':
-            entradas_query = entradas_query.filter(func.lower(Fornecedor.nome).like(f"%{busca}%"))
+            query = query.filter(Fornecedor.nome.ilike(f'%{busca}%'))
         elif filtro == 'data':
             try:
-                data_formatada = datetime.strptime(busca, '%d/%m/%Y').date()
-                entradas_query = entradas_query.filter(EntradaMaterial.data_movimento == data_formatada)
+                data = datetime.strptime(busca, '%d/%m/%Y').date()
+                query = query.filter(EntradaMaterial.data_movimento == data)
             except ValueError:
-                flash('Formato de data inválido. Use dd/mm/aaaa.', 'warning')
+                flash("Data inválida. Use o formato dd/mm/aaaa.", 'warning')
 
-    entradas = entradas_query.order_by(EntradaMaterial.data_movimento.desc()).all()
-    return render_template('lista_entrada.html', entradas=entradas)
+    entradas = query.order_by(EntradaMaterial.data_movimento.desc()).paginate(page=page, per_page=10)
 
+    return render_template('lista_entrada.html', entradas=entradas, filtro=filtro, busca=busca)
 
-# ------------------------------ ROTA: Visualizar Entrada ------------------------------ #
+# ------------------------- ROTA: VISUALIZAR ENTRADA ------------------------- #
 @entrada_bp.route('/entrada/<int:entrada_id>')
 @login_required
 def visualizar_entrada(entrada_id):

@@ -1,19 +1,19 @@
 {% extends 'base_simplificada.html' %}
 
-{% block title %}Entradas de Materiais{% endblock %}
+{% block title %}Entradas de Estoque{% endblock %}
 
 {% block content %}
 <div class="container py-4">
 
-  <!-- CABEÇALHO -->
+  {# ------------------------------ CABEÇALHO ------------------------------ #}
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="mb-0 text-center flex-grow-1">Entradas de Materiais</h4>
-    <a href="{{ url_for('entrada_bp.nova_entrada') }}" class="btn btn-outline-success">
-      <i class="bi bi-plus-circle fs-5"></i> Nova Entrada
+    <a href="{{ url_for('entrada_bp.nova_entrada') }}" class="btn btn-success btn-lg">
+      <i class="bi bi-plus-circle fs-4 me-1"></i> Nova Entrada
     </a>
+    <h4 class="mb-0 text-center flex-grow-1 text-uppercase">Entradas de Estoque</h4>
   </div>
 
-  <!-- BUSCA COM FILTRO -->
+  {# ------------------------------ FORMULÁRIO DE BUSCA ------------------------------ #}
   <form method="GET" class="row g-2 mb-4 align-items-end" id="formBusca">
     <div class="col-md-4">
       <label for="tipo_busca" class="form-label">Buscar por:</label>
@@ -28,11 +28,13 @@
       <input type="text" name="busca" value="{{ busca }}" class="form-control" id="valor_busca" placeholder="Digite a busca...">
     </div>
     <div class="col-md-2">
-      <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> Buscar</button>
+      <button type="submit" class="btn btn-primary w-100">
+        <i class="bi bi-search"></i> Buscar
+      </button>
     </div>
   </form>
 
-  <!-- TABELA -->
+  {# ------------------------------ TABELA DE ENTRADAS ------------------------------ #}
   <div class="table-responsive">
     <table class="table table-striped table-hover align-middle w-100">
       <thead class="table-dark">
@@ -54,8 +56,7 @@
           <td>{{ entrada.numero_nota_fiscal }}</td>
           <td>{{ entrada.fornecedor.nome }}</td>
           <td class="text-center">
-            <a href="{{ url_for('entrada_bp.visualizar_entrada', entrada_id=entrada.id) }}"
-              class="btn btn-outline-secondary btn-sm">
+            <a href="{{ url_for('entrada_bp.visualizar_entrada', entrada_id=entrada.id) }}" class="btn btn-outline-secondary btn-sm">
               <i class="bi bi-eye"></i> Visualizar
             </a>
           </td>
@@ -69,10 +70,11 @@
     </table>
   </div>
 
-  <!-- PAGINAÇÃO -->
+  {# ------------------------------ PAGINAÇÃO ------------------------------ #}
   {% if entradas.pages > 1 %}
   <nav aria-label="Paginação" class="mt-4">
     <ul class="pagination justify-content-center">
+      {# Botão anterior #}
       {% if entradas.has_prev %}
       <li class="page-item">
         <a class="page-link" href="{{ url_for('entrada_bp.lista_entradas', page=entradas.prev_num, filtro=filtro, busca=busca) }}">Anterior</a>
@@ -81,20 +83,22 @@
       <li class="page-item disabled"><span class="page-link">Anterior</span></li>
       {% endif %}
 
+      {# Números das páginas #}
       {% for page_num in entradas.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
-      {% if page_num %}
-        {% if entradas.page == page_num %}
-        <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+        {% if page_num %}
+          {% if entradas.page == page_num %}
+          <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+          {% else %}
+          <li class="page-item">
+            <a class="page-link" href="{{ url_for('entrada_bp.lista_entradas', page=page_num, filtro=filtro, busca=busca) }}">{{ page_num }}</a>
+          </li>
+          {% endif %}
         {% else %}
-        <li class="page-item">
-          <a class="page-link" href="{{ url_for('entrada_bp.lista_entradas', page=page_num, filtro=filtro, busca=busca) }}">{{ page_num }}</a>
-        </li>
+        <li class="page-item disabled"><span class="page-link">…</span></li>
         {% endif %}
-      {% else %}
-      <li class="page-item disabled"><span class="page-link">…</span></li>
-      {% endif %}
       {% endfor %}
 
+      {# Botão próxima #}
       {% if entradas.has_next %}
       <li class="page-item">
         <a class="page-link" href="{{ url_for('entrada_bp.lista_entradas', page=entradas.next_num, filtro=filtro, busca=busca) }}">Próxima</a>
@@ -110,9 +114,12 @@
 {% endblock %}
 
 {% block scripts %}
+<!-- jQuery e Plugins -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+
 <script>
+  // Aplica a máscara de input conforme o tipo de filtro selecionado
   function aplicarMascara() {
     $('#valor_busca').unmask();
     if ($('#tipo_busca').val() === 'nota') {
@@ -122,6 +129,7 @@
     }
   }
 
+  // Inicialização ao carregar a página
   $(document).ready(function () {
     aplicarMascara();
     $('#tipo_busca').on('change', function () {

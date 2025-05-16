@@ -117,7 +117,14 @@ class EntradaMaterial(db.Model):
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
     usuario = db.relationship('Usuario', backref='entradas')
 
-    itens = db.relationship('EntradaItem', backref='entrada_material', cascade="all, delete-orphan")
+    # Corrigido com overlaps
+    itens = db.relationship(
+        'EntradaItem',
+        backref='entrada_material',
+        cascade="all, delete-orphan",
+        overlaps="entrada,itens_relacionados"
+    )
+
 
 class EntradaItem(db.Model):
     __tablename__ = 'entrada_item'
@@ -128,7 +135,13 @@ class EntradaItem(db.Model):
     valor_unitario = db.Column(db.Numeric(10, 2), nullable=False)
 
     item = db.relationship('Item', backref='entradas')
-    entrada = db.relationship('EntradaMaterial', backref='itens_relacionados')
+
+    # Corrigido com overlaps
+    entrada = db.relationship(
+        'EntradaMaterial',
+        backref='itens_relacionados',
+        overlaps="entrada_material,itens"
+    )
 
     @property
     def valor_total(self):
@@ -142,13 +155,22 @@ class SaidaMaterial(db.Model):
     numero_documento = db.Column(db.String(50), nullable=True)
     observacao = db.Column(db.Text, nullable=True)
 
+    # Operador que registrou a saída
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
     usuario = db.relationship('Usuario', foreign_keys=[usuario_id], backref='saidas')
 
+    # Solicitante da saída
     solicitante_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
     solicitante = db.relationship('Usuario', foreign_keys=[solicitante_id], backref='solicitacoes_saida')
 
-    itens = db.relationship('SaidaItem', backref='saida', cascade='all, delete-orphan')
+    # Relacionamento ajustado com overlaps
+    itens = db.relationship(
+        'SaidaItem',
+        backref='saida_material',
+        cascade='all, delete-orphan',
+        overlaps="saida,itens_relacionados"
+    )
+
 
 class SaidaItem(db.Model):
     __tablename__ = 'saida_item'
@@ -156,8 +178,18 @@ class SaidaItem(db.Model):
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
     quantidade = db.Column(db.Integer, nullable=False)
     valor_unitario = db.Column(db.Float, nullable=False)
+
     saida_id = db.Column(db.Integer, db.ForeignKey('saida_material.id'), nullable=False)
-    item = db.relationship('Item')
+
+    item = db.relationship('Item', backref='saidas')
+
+    # Relacionamento ajustado com overlaps
+    saida = db.relationship(
+        'SaidaMaterial',
+        backref='itens_relacionados',
+        overlaps="saida_material,itens"
+    )
+
 
 # -------------------LOG AUDITAVEL -------------------
 # models.py

@@ -1,29 +1,40 @@
-# ------------------------------ IMPORTAÇÕES ------------------------------ #
+# routes_fornecedor.py
+# Rotas para cadastro e exibição de fornecedores, com filtros e paginação
+
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
 from database import db
 from models import Fornecedor
-import re  # Para validação de CNPJ
+import re
 
-
-# ------------------------------ CRIAÇÃO DO BLUEPRINT ------------------------------ #
+# Criação do blueprint
 fornecedor_bp = Blueprint('fornecedor_bp', __name__, url_prefix='/fornecedor')
 
-
-# ------------------------------ LISTAR FORNECEDORES ------------------------------ #
+# -------------------- LISTAR FORNECEDORES COM FILTRO E PAGINAÇÃO -------------------- #
 @fornecedor_bp.route('/')
 @login_required
 def lista_fornecedor():
-    fornecedores = Fornecedor.query.all()
-    return render_template('lista_fornecedor.html', fornecedores=fornecedores)
+    page = request.args.get('page', 1, type=int)
+    filtro = request.args.get('filtro', 'nome')
+    busca = request.args.get('busca', '').strip().lower()
 
+    query = Fornecedor.query
 
-# ------------------------------ CADASTRAR NOVO FORNECEDOR ------------------------------ #
+    if busca:
+        if filtro == 'nome':
+            query = query.filter(Fornecedor.nome.ilike(f'%{busca}%'))
+        elif filtro == 'cnpj':
+            query = query.filter(Fornecedor.cnpj.ilike(f'%{busca}%'))
+
+    fornecedores = query.order_by(Fornecedor.nome.asc()).paginate(page=page, per_page=10)
+
+    return render_template('lista_fornecedor.html', fornecedores=fornecedores, filtro=filtro, busca=busca)
+
+# -------------------- CADASTRAR NOVO FORNECEDOR -------------------- #
 @fornecedor_bp.route('/novo', methods=['GET', 'POST'])
 @login_required
 def novo_fornecedor():
     if request.method == 'POST':
-        # Coleta os dados do formulário
         nome = request.form['nome']
         cnpj = request.form['cnpj']
         email = request.form['email']
@@ -36,18 +47,15 @@ def novo_fornecedor():
         inscricao_estadual = request.form['inscricao_estadual']
         inscricao_municipal = request.form['inscricao_municipal']
 
-        # Verifica se os campos obrigatórios estão preenchidos
         if not nome or not cnpj:
             flash('Preencha os campos obrigatórios: Nome e CNPJ.', 'warning')
             return redirect(url_for('fornecedor_bp.novo_fornecedor'))
 
-        # Validação de CNPJ simples (apenas formato)
         cnpj_limpo = re.sub(r'\D', '', cnpj)
         if len(cnpj_limpo) != 14:
             flash('CNPJ inválido.', 'danger')
             return redirect(url_for('fornecedor_bp.novo_fornecedor'))
 
-        # Cria o objeto fornecedor
         fornecedor = Fornecedor(
             nome=nome,
             cnpj=cnpj,
@@ -62,7 +70,6 @@ def novo_fornecedor():
             inscricao_municipal=inscricao_municipal
         )
 
-        # Salva no banco de dados
         db.session.add(fornecedor)
         db.session.commit()
 
@@ -71,8 +78,7 @@ def novo_fornecedor():
 
     return render_template('novo_fornecedor.html')
 
-
-# ------------------------------ EDITAR FORNECEDOR ------------------------------ #
+# -------------------- EDITAR FORNECEDOR -------------------- #
 @fornecedor_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
 def editar_fornecedor(id):
@@ -97,8 +103,7 @@ def editar_fornecedor(id):
 
     return render_template('editar_fornecedor.html', fornecedor=fornecedor)
 
-
-# ------------------------------ EXCLUIR FORNECEDOR ------------------------------ #
+# -------------------- EXCLUIR FORNECEDOR -------------------- #
 @fornecedor_bp.route('/excluir/<int:id>', methods=['POST'])
 @login_required
 def excluir_fornecedor(id):
@@ -107,4 +112,3 @@ def excluir_fornecedor(id):
     db.session.commit()
     flash('Fornecedor excluído com sucesso!', 'success')
     return redirect(url_for('fornecedor_bp.lista_fornecedor'))
-

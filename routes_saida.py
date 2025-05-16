@@ -6,6 +6,7 @@ from flask_login import login_required, current_user
 from app_render import db
 from models import Item, SaidaMaterial, SaidaItem, Usuario, UnidadeLocal
 from datetime import date
+from sqlalchemy.orm import aliased
 
 saida_bp = Blueprint('saida_bp', __name__)
 
@@ -13,15 +14,21 @@ saida_bp = Blueprint('saida_bp', __name__)
 @saida_bp.route('/saidas')
 @login_required
 def lista_saidas():
-    # Parâmetros da URL
+    # Parâmetros do filtro
     page = request.args.get('page', 1, type=int)
     filtro = request.args.get('filtro')
     busca = request.args.get('busca', '').strip().lower()
 
-    # Consulta base
-    query = SaidaMaterial.query.join(Usuario, SaidaMaterial.usuario).join(Usuario, SaidaMaterial.solicitante)
+    # Criação de aliases para as duas relações com a mesma tabela `usuarios`
+    responsavel_alias = aliased(Usuario)
+    solicitante_alias = aliased(Usuario)
 
-    # Aplica filtros
+    # Consulta base usando os aliases
+    query = SaidaMaterial.query \
+        .join(responsavel_alias, SaidaMaterial.usuario) \
+        .join(solicitante_alias, SaidaMaterial.solicitante)
+
+    # Aplica os filtros
     if filtro and busca:
         if filtro == 'id' and busca.isdigit():
             query = query.filter(SaidaMaterial.id == int(busca))
@@ -32,16 +39,17 @@ def lista_saidas():
             except:
                 flash('Data inválida. Use o formato DD/MM/AAAA.', 'warning')
         elif filtro == 'responsavel':
-            query = query.join(SaidaMaterial.usuario).filter(Usuario.nome.ilike(f'%{busca}%'))
+            query = query.filter(responsavel_alias.nome.ilike(f'%{busca}%'))
         elif filtro == 'solicitante':
-            query = query.join(SaidaMaterial.solicitante).filter(Usuario.nome.ilike(f'%{busca}%'))
+            query = query.filter(solicitante_alias.nome.ilike(f'%{busca}%'))
         elif filtro == 'setor':
-            query = query.join(SaidaMaterial.solicitante).join(UnidadeLocal).filter(UnidadeLocal.descricao.ilike(f'%{busca}%'))
+            query = query.join(solicitante_alias.unidade_local).filter(UnidadeLocal.descricao.ilike(f'%{busca}%'))
 
-    # Ordena e pagina
+    # Paginação com ordenação
     saidas = query.order_by(SaidaMaterial.data_movimento.desc()).paginate(page=page, per_page=10)
 
     return render_template('lista_saida.html', saidas=saidas, filtro=filtro, busca=busca)
+
 
 # ---------------------- ROTA: NOVA SAÍDA ---------------------- #
 @saida_bp.route('/nova_saida', methods=['GET', 'POST'])

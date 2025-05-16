@@ -1,29 +1,35 @@
 # app_render.py
 # Arquivo principal do sistema Flask para o Almoxarifado
 
+import os
 from flask import Flask
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
-import os
 
-# Importa as extensões globais compartilhadas
+# Importa extensões globais (db, login_manager, migrate)
 from extensoes import db, login_manager, migrate
 
-# -------------------- Carrega variáveis de ambiente --------------------
+# -------------------- Carrega variáveis de ambiente do arquivo .env (para uso local) --------------------
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))
 
 # -------------------- Configuração do login --------------------
-login_manager.login_view = 'main.login'
+login_manager.login_view = 'main.login'  # Rota usada para redirecionar ao login
 login_manager.login_message = 'Por favor, faça login para acessar esta página.'
 
-# -------------------- Cria a aplicação --------------------
+# -------------------- Função Factory que cria a aplicação --------------------
 def create_app():
     app = Flask(__name__)
 
-    # -------------------- Configurações do app --------------------
+    # -------------------- Configurações principais --------------------
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'chave-secreta-padrao'
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+
+    # Corrige URL de banco de dados caso venha com prefixo postgres:// (incompatível com SQLAlchemy)
+    database_url = os.getenv('DATABASE_URL')
+    if database_url and database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # -------------------- Inicializa extensões com o app --------------------
@@ -31,26 +37,29 @@ def create_app():
     login_manager.init_app(app)
     migrate.init_app(app, db)
 
-    # -------------------- Importa modelos após init_app --------------------
-    from models import Usuario, Perfil, UnidadeLocal, NaturezaDespesa, Grupo, Item, Fornecedor, EntradaMaterial, EntradaItem, SaidaMaterial, SaidaItem
+    # -------------------- Importa modelos após init_app para evitar import circular --------------------
+    from models import (
+        Usuario, Perfil, UnidadeLocal, NaturezaDespesa, Grupo, Item,
+        Fornecedor, EntradaMaterial, EntradaItem, SaidaMaterial, SaidaItem
+    )
 
     # -------------------- Define função de carregamento do usuário --------------------
     @login_manager.user_loader
     def load_user(user_id):
         return Usuario.query.get(int(user_id))
 
-    # -------------------- Cria tabelas e dados iniciais --------------------
+    # -------------------- Cria tabelas e dados iniciais se ainda não existirem --------------------
     with app.app_context():
         db.create_all()
 
-        # Criação dos perfis padrão, se não existirem
+        # Cria perfis padrão se não existirem
         perfis_padrao = ['Administrador', 'Solicitante', 'Consultor']
         for nome in perfis_padrao:
             if not Perfil.query.filter_by(nome=nome).first():
                 db.session.add(Perfil(nome=nome))
         db.session.commit()
 
-        # Criação do usuário administrador, se não existir
+        # Cria usuário admin se não existir
         if not Usuario.query.filter_by(email='admin@admin.com').first():
             perfil_admin = Perfil.query.filter_by(nome='Administrador').first()
             admin = Usuario(
@@ -62,7 +71,7 @@ def create_app():
             db.session.add(admin)
             db.session.commit()
 
-    # -------------------- Importa e registra blueprints --------------------
+    # -------------------- Registra todos os blueprints (rotas do sistema) --------------------
     from routes_main import main
     from routes_usuario import usuario_bp
     from routes_area_ul import area_ul_bp
@@ -89,10 +98,10 @@ def create_app():
 
     return app
 
-# -------------------- Instancia final do app --------------------
+# -------------------- Cria a instância final do app --------------------
 app = create_app()
 
-# -------------------- Inicia o servidor se for executado diretamente --------------------
+# -------------------- Executa servidor local se rodar diretamente --------------------
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)

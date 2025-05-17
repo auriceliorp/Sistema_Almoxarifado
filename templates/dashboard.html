@@ -1,19 +1,21 @@
 {% extends 'base_simplificada.html' %}
 
 {% block content %}
+<div class="container mt-4">
 
-<div class="container mt-4">{# ------------------ BOTÕES ADMIN COM MODAIS ------------------ #} {% if usuario.email == 'admin@admin.com' %}
-
+  {# ------------------ BOTÕES ADMIN COM MODAIS ------------------ #}
+  {% if usuario.email == 'admin@admin.com' %}
   <div class="mb-3 d-flex gap-2">
     <button class="btn btn-danger btn-lg" data-bs-toggle="modal" data-bs-target="#modalPopular">
-      <i class="bi bi-robot"></i> Popular Dados
+      <i class="bi bi-robot display-6"></i> Popular Dados
     </button>
     <button class="btn btn-warning btn-lg" data-bs-toggle="modal" data-bs-target="#modalLimpar">
-      <i class="bi bi-trash"></i> Limpar Dados
+      <i class="bi bi-trash display-6"></i> Limpar Dados
     </button>
   </div>
-  {% endif %}{# ------------------ INDICADORES ------------------ #}
+  {% endif %}
 
+  {# ------------------ INDICADORES RESUMIDOS ------------------ #}
   <div class="row mb-4">
     <div class="col-md-3">
       <div class="card text-bg-primary text-center shadow">
@@ -51,24 +53,27 @@
         </div>
       </div>
     </div>
-  </div>{# ------------------ GRÁFICO DE BARRAS ------------------ #}
+  </div>
 
+  {# ------------------ GRÁFICO DE BARRAS ------------------ #}
   <h4 class="mb-3">Comparativo de Entradas e Saídas por ND</h4>
   <div class="card p-4 shadow rounded-3 mb-4">
     <canvas id="graficoEntradas"></canvas>
-  </div>{# ------------------ GRÁFICO DE PIZZA ------------------ #}
+  </div>
 
+  {# ------------------ GRÁFICO DE PIZZA ------------------ #}
   <h4 class="mb-3">Distribuição de Itens por Grupo</h4>
   <div class="card p-4 shadow rounded-3">
     <canvas id="graficoGrupos"></canvas>
   </div>
-</div>{# ------------------ MODAIS ------------------ #}
+</div>
 
+{# ------------------ MODAL: POPULAR DADOS ------------------ #}
 <div class="modal fade" id="modalPopular" tabindex="-1" aria-labelledby="modalPopularLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title">Confirmar Ação</h5>
+        <h5 class="modal-title" id="modalPopularLabel">Confirmar Ação</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
       <div class="modal-body">
@@ -80,11 +85,14 @@
       </div>
     </div>
   </div>
-</div><div class="modal fade" id="modalLimpar" tabindex="-1" aria-labelledby="modalLimparLabel" aria-hidden="true">
+</div>
+
+{# ------------------ MODAL: LIMPAR DADOS ------------------ #}
+<div class="modal fade" id="modalLimpar" tabindex="-1" aria-labelledby="modalLimparLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header bg-warning">
-        <h5 class="modal-title">Confirmar Limpeza</h5>
+        <h5 class="modal-title" id="modalLimparLabel">Confirmar Limpeza</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
       <div class="modal-body">
@@ -96,11 +104,14 @@
       </div>
     </div>
   </div>
-</div>{# ------------------ SCRIPTS ------------------ #}
+</div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script>
-  const ctx = document.getElementById('graficoEntradas').getContext('2d');
-  new Chart(ctx, {
+{# ------------------ SCRIPTS DO CHART.JS ------------------ #}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Gráfico de Barras: Entradas e Saídas por ND
+  const ctxBar = document.getElementById('graficoEntradas').getContext('2d');
+  new Chart(ctxBar, {
     type: 'bar',
     data: {
       labels: {{ dados_entrada | map(attribute='codigo') | list | tojson }},
@@ -134,6 +145,7 @@
     }
   });
 
+  // Gráfico de Pizza: Itens por Grupo
   const ctxPie = document.getElementById('graficoGrupos').getContext('2d');
   new Chart(ctxPie, {
     type: 'pie',
@@ -152,11 +164,9 @@
       responsive: true,
       plugins: {
         legend: { position: 'right' },
-        title: {
-          display: false
-        }
+        title: { display: false }
       }
     }
   });
-</script>{% endblock %}
-
+</script>
+{% endblock %}

@@ -5,14 +5,16 @@
 {% block content %}
 <div class="container py-4">
 
-  {# Cabeçalho com botões #}
+  {# ------------------------ CABEÇALHO COM BOTÃO "NOVO" À ESQUERDA ------------------------ #}
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">Início</a>
-    <h4 class="mb-0 text-center">Fornecedores Cadastrados</h4>
-    <a href="{{ url_for('fornecedor_bp.novo_fornecedor') }}" class="btn btn-success">+ Novo Fornecedor</a>
+    <a href="{{ url_for('fornecedor_bp.novo_fornecedor') }}" class="btn btn-success btn-lg">
+      <i class="bi bi-plus-circle fs-4 me-1"></i> Novo Fornecedor
+    </a>
+    <h4 class="mb-0 text-center flex-grow-1 text-uppercase">Fornecedores Cadastrados</h4>
+    <div></div>
   </div>
 
-  {# Formulário de busca #}
+  {# ------------------------ FORMULÁRIO DE BUSCA ------------------------ #}
   <form method="GET" class="row g-2 mb-4 align-items-end" id="formBusca">
     <div class="col-md-3">
       <label for="tipo_busca" class="form-label">Buscar por:</label>
@@ -34,7 +36,7 @@
     </div>
   </form>
 
-  {# Tabela de fornecedores #}
+  {# ------------------------ TABELA DE RESULTADOS ------------------------ #}
   <div class="table-responsive">
     <table class="table table-striped table-bordered align-middle">
       <thead class="table-light">
@@ -87,7 +89,7 @@
     </table>
   </div>
 
-  {# Paginação #}
+  {# ------------------------ PAGINAÇÃO ------------------------ #}
   {% if fornecedores.pages > 1 %}
   <nav aria-label="Paginação" class="mt-4">
     <ul class="pagination justify-content-center">
@@ -123,5 +125,6 @@
     </ul>
   </nav>
   {% endif %}
+
 </div>
 {% endblock %}

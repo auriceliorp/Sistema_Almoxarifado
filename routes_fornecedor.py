@@ -11,7 +11,6 @@ import re
 fornecedor_bp = Blueprint('fornecedor_bp', __name__, url_prefix='/fornecedor')
 
 # -------------------- LISTAR FORNECEDORES COM FILTRO E PAGINAÇÃO -------------------- #
-# ------------------------------ LISTAR FORNECEDORES COM FILTRO E PAGINAÇÃO ------------------------------ #
 @fornecedor_bp.route('/')
 @login_required
 def lista_fornecedor():
@@ -43,26 +42,32 @@ def novo_fornecedor():
     if request.method == 'POST':
         try:
             # Coleta os dados do formulário
-            nome = request.form.get('nome')
-            cnpj = request.form.get('cnpj')
-            email = request.form.get('email')
-            telefone = request.form.get('telefone')
-            celular = request.form.get('celular')
-            endereco = request.form.get('endereco')
-            numero = request.form.get('numero')
-            complemento = request.form.get('complemento')
-            cep = request.form.get('cep')
-            cidade = request.form.get('cidade')
-            uf = request.form.get('uf')
-            inscricao_estadual = request.form.get('inscricao_estadual')
-            inscricao_municipal = request.form.get('inscricao_municipal')
+            nome = request.form.get('nome', '').strip()
+            cnpj = request.form.get('cnpj', '').strip()
+            email = request.form.get('email', '').strip()
+            telefone = request.form.get('telefone', '').strip()
+            celular = request.form.get('celular', '').strip()
+            endereco = request.form.get('endereco', '').strip()
+            numero = request.form.get('numero', '').strip()
+            complemento = request.form.get('complemento', '').strip()
+            cep = request.form.get('cep', '').strip()
+            cidade = request.form.get('cidade', '').strip()
+            uf = request.form.get('uf', '').strip()
+            inscricao_estadual = request.form.get('inscricao_estadual', '').strip()
+            inscricao_municipal = request.form.get('inscricao_municipal', '').strip()
 
-            # Verifica campos obrigatórios
+            # Debug: imprime os dados recebidos
+            print("[DEBUG] Dados recebidos para novo fornecedor:")
+            print(f"{nome=}, {cnpj=}, {email=}, {telefone=}, {celular=}")
+            print(f"{endereco=}, {numero=}, {complemento=}, {cep=}, {cidade=}, {uf=}")
+            print(f"{inscricao_estadual=}, {inscricao_municipal=}")
+
+            # Validação dos campos obrigatórios
             if not nome or not cnpj:
-                flash('Preencha os campos obrigatórios: Nome e CNPJ.', 'warning')
+                flash('Nome e CNPJ são obrigatórios.', 'danger')
                 return redirect(url_for('fornecedor_bp.novo_fornecedor'))
 
-            # Validação simples de CNPJ
+            # Validação simples de CNPJ (formato/tamanho)
             cnpj_limpo = re.sub(r'\D', '', cnpj)
             if len(cnpj_limpo) != 14:
                 flash('CNPJ inválido.', 'danger')
@@ -98,6 +103,7 @@ def novo_fornecedor():
 
     return render_template('novo_fornecedor.html')
 
+
 # -------------------- EDITAR FORNECEDOR -------------------- #
 @fornecedor_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -105,23 +111,26 @@ def editar_fornecedor(id):
     fornecedor = Fornecedor.query.get_or_404(id)
 
     if request.method == 'POST':
-        fornecedor.nome = request.form['nome']
-        fornecedor.cnpj = request.form['cnpj']
-        fornecedor.email = request.form['email']
-        fornecedor.telefone = request.form['telefone']
-        fornecedor.celular = request.form['celular']
-        fornecedor.endereco = request.form['endereco']
-        fornecedor.numero = request.form['numero']
-        fornecedor.complemento = request.form['complemento']
-        fornecedor.cep = request.form['cep']
-        fornecedor.inscricao_estadual = request.form['inscricao_estadual']
-        fornecedor.inscricao_municipal = request.form['inscricao_municipal']
+        fornecedor.nome = request.form.get('nome', '').strip()
+        fornecedor.cnpj = request.form.get('cnpj', '').strip()
+        fornecedor.email = request.form.get('email', '').strip()
+        fornecedor.telefone = request.form.get('telefone', '').strip()
+        fornecedor.celular = request.form.get('celular', '').strip()
+        fornecedor.endereco = request.form.get('endereco', '').strip()
+        fornecedor.numero = request.form.get('numero', '').strip()
+        fornecedor.complemento = request.form.get('complemento', '').strip()
+        fornecedor.cep = request.form.get('cep', '').strip()
+        fornecedor.cidade = request.form.get('cidade', '').strip()
+        fornecedor.uf = request.form.get('uf', '').strip()
+        fornecedor.inscricao_estadual = request.form.get('inscricao_estadual', '').strip()
+        fornecedor.inscricao_municipal = request.form.get('inscricao_municipal', '').strip()
 
         db.session.commit()
         flash('Fornecedor atualizado com sucesso!', 'success')
         return redirect(url_for('fornecedor_bp.lista_fornecedor'))
 
     return render_template('editar_fornecedor.html', fornecedor=fornecedor)
+
 
 # -------------------- EXCLUIR FORNECEDOR -------------------- #
 @fornecedor_bp.route('/excluir/<int:id>', methods=['POST'])

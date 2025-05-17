@@ -1,16 +1,14 @@
 # routes_dashboard.py
-# Rota para exibir o dashboard com gráficos de movimentações e estatísticas
+# Rota do painel principal com indicadores e gráficos
 
 from flask import Blueprint, render_template
 from flask_login import login_required, current_user
 from sqlalchemy import func
 from extensoes import db
-from models import EntradaItem, SaidaItem, EntradaMaterial, SaidaMaterial, NaturezaDespesa, Item, Grupo
+from models import EntradaItem, SaidaItem, EntradaMaterial, SaidaMaterial, NaturezaDespesa, Item, Fornecedor
 
-# Criação do blueprint
 dashboard_bp = Blueprint('dashboard_bp', __name__, url_prefix='/dashboard')
 
-# -------------------- ROTA: Dashboard com gráficos -------------------- #
 @dashboard_bp.route('/', methods=['GET'])
 @login_required
 def dashboard():
@@ -25,7 +23,7 @@ def dashboard():
         .subquery()
     )
 
-    # Consulta principal: entradas e saídas por ND (mesmo sem movimentação)
+    # Consulta principal: entradas e saídas por ND
     resultados = (
         db.session.query(
             NaturezaDespesa.codigo,
@@ -40,7 +38,6 @@ def dashboard():
         .all()
     )
 
-    # Lista para gráfico de ND
     dados_entrada = [
         {
             'codigo': row.codigo,
@@ -51,29 +48,33 @@ def dashboard():
         for row in resultados
     ]
 
-    # -------------------- GRÁFICO: Itens por Grupo -------------------- #
-    grupo_itens = (
+    # ---------------- INDICADORES ----------------
+    total_itens = db.session.query(func.count(Item.id)).scalar()
+    total_fornecedores = db.session.query(func.count(Fornecedor.id)).scalar()
+    total_entradas = db.session.query(func.count(EntradaMaterial.id)).scalar()
+    total_saidas = db.session.query(func.count(SaidaMaterial.id)).scalar()
+
+    # ---------------- GRÁFICO DE PIZZA ----------------
+    grupo_data = (
         db.session.query(
-            Grupo.nome,
-            func.count(Item.id).label('total_itens')
+            Item.grupo_id,
+            func.count(Item.id).label('quantidade')
         )
-        .outerjoin(Item, Item.grupo_id == Grupo.id)
-        .group_by(Grupo.nome)
-        .order_by(func.count(Item.id).desc())
+        .group_by(Item.grupo_id)
         .all()
     )
 
-    dados_grupo_itens = [
-        {
-            'grupo': g.nome,
-            'total': g.total_itens
-        }
-        for g in grupo_itens
-    ]
+    grafico_grupo_labels = [f'Grupo {g.grupo_id}' for g in grupo_data]
+    grafico_grupo_dados = [int(g.quantidade) for g in grupo_data]
 
     return render_template(
         'dashboard.html',
         dados_entrada=dados_entrada,
-        dados_grupo_itens=dados_grupo_itens,
+        grafico_grupo_labels=grafico_grupo_labels,
+        grafico_grupo_dados=grafico_grupo_dados,
+        total_itens=total_itens,
+        total_fornecedores=total_fornecedores,
+        total_entradas=total_entradas,
+        total_saidas=total_saidas,
         usuario=current_user
     )

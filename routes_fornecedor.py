@@ -11,6 +11,7 @@ import re
 fornecedor_bp = Blueprint('fornecedor_bp', __name__, url_prefix='/fornecedor')
 
 # -------------------- LISTAR FORNECEDORES COM FILTRO E PAGINAÇÃO -------------------- #
+# ------------------------------ LISTAR FORNECEDORES COM FILTRO E PAGINAÇÃO ------------------------------ #
 @fornecedor_bp.route('/')
 @login_required
 def lista_fornecedor():
@@ -25,10 +26,15 @@ def lista_fornecedor():
             query = query.filter(Fornecedor.nome.ilike(f'%{busca}%'))
         elif filtro == 'cnpj':
             query = query.filter(Fornecedor.cnpj.ilike(f'%{busca}%'))
+        elif filtro == 'cidade':
+            query = query.filter(Fornecedor.cidade.ilike(f'%{busca}%'))
+        elif filtro == 'uf':
+            query = query.filter(Fornecedor.uf.ilike(f'%{busca}%'))
 
     fornecedores = query.order_by(Fornecedor.nome.asc()).paginate(page=page, per_page=10)
 
     return render_template('lista_fornecedor.html', fornecedores=fornecedores, filtro=filtro, busca=busca)
+
 
 # -------------------- CADASTRAR NOVO FORNECEDOR -------------------- #
 @fornecedor_bp.route('/novo', methods=['GET', 'POST'])

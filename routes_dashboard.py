@@ -1,14 +1,16 @@
 # routes_dashboard.py
+# Rota para exibir o dashboard com gráficos de movimentações e estatísticas
 
 from flask import Blueprint, render_template
 from flask_login import login_required, current_user
-from sqlalchemy import func, select
+from sqlalchemy import func
 from extensoes import db
-from models import EntradaItem, SaidaItem, EntradaMaterial, SaidaMaterial, NaturezaDespesa, Item
+from models import EntradaItem, SaidaItem, EntradaMaterial, SaidaMaterial, NaturezaDespesa, Item, Grupo
 
 # Criação do blueprint
 dashboard_bp = Blueprint('dashboard_bp', __name__, url_prefix='/dashboard')
 
+# -------------------- ROTA: Dashboard com gráficos -------------------- #
 @dashboard_bp.route('/', methods=['GET'])
 @login_required
 def dashboard():
@@ -23,7 +25,7 @@ def dashboard():
         .subquery()
     )
 
-    # Consulta principal: entradas e saídas por ND (mesmo que não tenha movimentação)
+    # Consulta principal: entradas e saídas por ND (mesmo sem movimentação)
     resultados = (
         db.session.query(
             NaturezaDespesa.codigo,
@@ -38,7 +40,7 @@ def dashboard():
         .all()
     )
 
-    # Conversão para lista de dicionários (para o gráfico)
+    # Lista para gráfico de ND
     dados_entrada = [
         {
             'codigo': row.codigo,
@@ -49,4 +51,29 @@ def dashboard():
         for row in resultados
     ]
 
-    return render_template('dashboard.html', dados_entrada=dados_entrada, usuario=current_user)
+    # -------------------- GRÁFICO: Itens por Grupo -------------------- #
+    grupo_itens = (
+        db.session.query(
+            Grupo.nome,
+            func.count(Item.id).label('total_itens')
+        )
+        .outerjoin(Item, Item.grupo_id == Grupo.id)
+        .group_by(Grupo.nome)
+        .order_by(func.count(Item.id).desc())
+        .all()
+    )
+
+    dados_grupo_itens = [
+        {
+            'grupo': g.nome,
+            'total': g.total_itens
+        }
+        for g in grupo_itens
+    ]
+
+    return render_template(
+        'dashboard.html',
+        dados_entrada=dados_entrada,
+        dados_grupo_itens=dados_grupo_itens,
+        usuario=current_user
+    )

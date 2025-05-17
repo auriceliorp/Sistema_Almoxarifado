@@ -1,10 +1,9 @@
 {% extends 'base_simplificada.html' %}
 
 {% block content %}
-<div class="container mt-4">
 
-  {# ------------------ BOTÕES ADMIN COM MODAIS ------------------ #}
-  {% if usuario.email == 'admin@admin.com' %}
+<div class="container mt-4">{# ------------------ BOTÕES ADMIN COM MODAIS ------------------ #} {% if usuario.email == 'admin@admin.com' %}
+
   <div class="mb-3 d-flex gap-2">
     <button class="btn btn-danger btn-lg" data-bs-toggle="modal" data-bs-target="#modalPopular">
       <i class="bi bi-robot"></i> Popular Dados
@@ -13,58 +12,95 @@
       <i class="bi bi-trash"></i> Limpar Dados
     </button>
   </div>
-  {% endif %}
+  {% endif %}{# ------------------ INDICADORES ------------------ #}
 
-  {# ------------------ MODAL: POPULAR DADOS ------------------ #}
-  <div class="modal fade" id="modalPopular" tabindex="-1" aria-labelledby="modalPopularLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header bg-danger text-white">
-          <h5 class="modal-title" id="modalPopularLabel">Confirmar Ação</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
-        </div>
-        <div class="modal-body">
-          Esta ação irá <strong>popular o banco com dados de teste fictícios</strong>. Deseja continuar?
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <a href="{{ url_for('popular_bp.popular_dados') }}" class="btn btn-danger">Sim, Popular</a>
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card text-bg-primary text-center shadow">
+        <div class="card-body">
+          <i class="bi bi-box-seam display-5"></i>
+          <h5 class="mt-2">Itens</h5>
+          <h3>{{ total_itens }}</h3>
         </div>
       </div>
     </div>
-  </div>
-
-  {# ------------------ MODAL: LIMPAR DADOS ------------------ #}
-  <div class="modal fade" id="modalLimpar" tabindex="-1" aria-labelledby="modalLimparLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header bg-warning text-dark">
-          <h5 class="modal-title" id="modalLimparLabel">Confirmar Limpeza</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-        </div>
-        <div class="modal-body">
-          Esta ação irá <strong>excluir todos os dados de teste</strong>, preservando apenas o usuário administrador. Deseja continuar?
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <a href="{{ url_for('limpar_bp.limpar_dados') }}" class="btn btn-warning">Sim, Limpar</a>
+    <div class="col-md-3">
+      <div class="card text-bg-success text-center shadow">
+        <div class="card-body">
+          <i class="bi bi-truck display-5"></i>
+          <h5 class="mt-2">Fornecedores</h5>
+          <h3>{{ total_fornecedores }}</h3>
         </div>
       </div>
     </div>
-  </div>
+    <div class="col-md-3">
+      <div class="card text-bg-warning text-center shadow">
+        <div class="card-body">
+          <i class="bi bi-arrow-down-circle display-5"></i>
+          <h5 class="mt-2">Entradas</h5>
+          <h3>{{ total_entradas }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-bg-danger text-center shadow">
+        <div class="card-body">
+          <i class="bi bi-arrow-up-circle display-5"></i>
+          <h5 class="mt-2">Saídas</h5>
+          <h3>{{ total_saidas }}</h3>
+        </div>
+      </div>
+    </div>
+  </div>{# ------------------ GRÁFICO DE BARRAS ------------------ #}
 
-  {# ------------------ GRÁFICO ------------------ #}
-  <h2 class="mb-4">Dashboard de Entradas por Natureza de Despesa</h2>
+  <h4 class="mb-3">Comparativo de Entradas e Saídas por ND</h4>
+  <div class="card p-4 shadow rounded-3 mb-4">
+    <canvas id="graficoEntradas"></canvas>
+  </div>{# ------------------ GRÁFICO DE PIZZA ------------------ #}
+
+  <h4 class="mb-3">Distribuição de Itens por Grupo</h4>
   <div class="card p-4 shadow rounded-3">
-    <canvas id="graficoEntradas" width="400" height="200"></canvas>
+    <canvas id="graficoGrupos"></canvas>
   </div>
-</div>
+</div>{# ------------------ MODAIS ------------------ #}
 
-{# ------------------ CHART.JS ------------------ #}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
+<div class="modal fade" id="modalPopular" tabindex="-1" aria-labelledby="modalPopularLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">Confirmar Ação</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        Esta ação irá <strong>popular o banco com dados fictícios</strong>. Deseja continuar?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <a href="{{ url_for('popular_bp.popular_dados') }}" class="btn btn-danger">Sim, Popular</a>
+      </div>
+    </div>
+  </div>
+</div><div class="modal fade" id="modalLimpar" tabindex="-1" aria-labelledby="modalLimparLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-warning">
+        <h5 class="modal-title">Confirmar Limpeza</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        Esta ação irá <strong>excluir todos os dados de teste</strong>, exceto o usuário administrador.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <a href="{{ url_for('limpar_bp.limpar_dados') }}" class="btn btn-warning">Sim, Limpar</a>
+      </div>
+    </div>
+  </div>
+</div>{# ------------------ SCRIPTS ------------------ #}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script>
   const ctx = document.getElementById('graficoEntradas').getContext('2d');
-  const graficoEntradas = new Chart(ctx, {
+  new Chart(ctx, {
     type: 'bar',
     data: {
       labels: {{ dados_entrada | map(attribute='codigo') | list | tojson }},
@@ -72,12 +108,12 @@
         {
           label: 'Entradas (R$)',
           data: {{ dados_entrada | map(attribute='entradas') | list | tojson }},
-          borderWidth: 1
+          backgroundColor: 'rgba(25, 135, 84, 0.7)'
         },
         {
           label: 'Saídas (R$)',
           data: {{ dados_entrada | map(attribute='saidas') | list | tojson }},
-          borderWidth: 1
+          backgroundColor: 'rgba(220, 53, 69, 0.7)'
         }
       ]
     },
@@ -85,10 +121,7 @@
       responsive: true,
       plugins: {
         legend: { position: 'top' },
-        title: {
-          display: true,
-          text: 'Comparativo de Entradas e Saídas por ND'
-        }
+        title: { display: false }
       },
       scales: {
         y: {
@@ -100,5 +133,30 @@
       }
     }
   });
-</script>
-{% endblock %}
+
+  const ctxPie = document.getElementById('graficoGrupos').getContext('2d');
+  new Chart(ctxPie, {
+    type: 'pie',
+    data: {
+      labels: {{ grafico_grupo_labels | tojson }},
+      datasets: [{
+        label: 'Itens por Grupo',
+        data: {{ grafico_grupo_dados | tojson }},
+        backgroundColor: [
+          '#0d6efd', '#6610f2', '#6f42c1', '#d63384', '#dc3545',
+          '#fd7e14', '#ffc107', '#198754', '#20c997', '#0dcaf0'
+        ]
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'right' },
+        title: {
+          display: false
+        }
+      }
+    }
+  });
+</script>{% endblock %}
+

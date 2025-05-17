@@ -5,27 +5,25 @@
 {% block content %}
 <div class="container py-4">
 
-  {# ------------------------------ CABEÇALHO ------------------------------ #}
+  {# Cabeçalho com botões #}
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">
-      <i class="bi bi-house"></i> Início
-    </a>
-    <h4 class="mb-0 text-center flex-grow-1 text-uppercase">Fornecedores Cadastrados</h4>
-    <a href="{{ url_for('fornecedor_bp.novo_fornecedor') }}" class="btn btn-success">
-      <i class="bi bi-plus-circle fs-5 me-1"></i> Novo Fornecedor
-    </a>
+    <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">Início</a>
+    <h4 class="mb-0 text-center">Fornecedores Cadastrados</h4>
+    <a href="{{ url_for('fornecedor_bp.novo_fornecedor') }}" class="btn btn-success">+ Novo Fornecedor</a>
   </div>
 
-  {# ------------------------------ FORMULÁRIO DE BUSCA ------------------------------ #}
+  {# Formulário de busca #}
   <form method="GET" class="row g-2 mb-4 align-items-end" id="formBusca">
-    <div class="col-md-4">
+    <div class="col-md-3">
       <label for="tipo_busca" class="form-label">Buscar por:</label>
       <select name="filtro" id="tipo_busca" class="form-select">
         <option value="nome" {% if filtro == 'nome' %}selected{% endif %}>Nome</option>
         <option value="cnpj" {% if filtro == 'cnpj' %}selected{% endif %}>CNPJ</option>
+        <option value="cidade" {% if filtro == 'cidade' %}selected{% endif %}>Cidade</option>
+        <option value="uf" {% if filtro == 'uf' %}selected{% endif %}>UF</option>
       </select>
     </div>
-    <div class="col-md-6">
+    <div class="col-md-7">
       <label for="valor_busca" class="form-label">Valor:</label>
       <input type="text" name="busca" value="{{ busca }}" class="form-control" id="valor_busca" placeholder="Digite a busca...">
     </div>
@@ -36,10 +34,10 @@
     </div>
   </form>
 
-  {# ------------------------------ TABELA DE FORNECEDORES ------------------------------ #}
+  {# Tabela de fornecedores #}
   <div class="table-responsive">
-    <table class="table table-striped table-hover align-middle w-100">
-      <thead class="table-dark">
+    <table class="table table-striped table-bordered align-middle">
+      <thead class="table-light">
         <tr>
           <th>Nome</th>
           <th>CNPJ</th>
@@ -48,9 +46,11 @@
           <th>Celular</th>
           <th>Endereço</th>
           <th>CEP</th>
+          <th>Cidade</th>
+          <th>UF</th>
           <th>IE</th>
           <th>IM</th>
-          <th class="text-center">Ações</th>
+          <th style="width: 160px;">Ações</th>
         </tr>
       </thead>
       <tbody>
@@ -67,34 +67,30 @@
             {% if fornecedor.complemento %} - {{ fornecedor.complemento }}{% endif %}
           </td>
           <td>{{ fornecedor.cep or '-' }}</td>
+          <td>{{ fornecedor.cidade or '-' }}</td>
+          <td>{{ fornecedor.uf or '-' }}</td>
           <td>{{ fornecedor.inscricao_estadual or '-' }}</td>
           <td>{{ fornecedor.inscricao_municipal or '-' }}</td>
-          <td class="text-center">
-            <a href="{{ url_for('fornecedor_bp.editar_fornecedor', id=fornecedor.id) }}" class="btn btn-sm btn-warning">
-              <i class="bi bi-pencil"></i> Editar
-            </a>
-            <form action="{{ url_for('fornecedor_bp.excluir_fornecedor', id=fornecedor.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir este fornecedor?');">
-              <button type="submit" class="btn btn-sm btn-danger">
-                <i class="bi bi-trash"></i> Excluir
-              </button>
+          <td>
+            <a href="{{ url_for('fornecedor_bp.editar_fornecedor', id=fornecedor.id) }}" class="btn btn-sm btn-warning">Editar</a>
+            <form action="{{ url_for('fornecedor_bp.excluir_fornecedor', id=fornecedor.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Deseja realmente excluir?');">
+              <button type="submit" class="btn btn-sm btn-danger">Excluir</button>
             </form>
           </td>
         </tr>
         {% else %}
         <tr>
-          <td colspan="10" class="text-center text-muted">Nenhum fornecedor encontrado.</td>
+          <td colspan="12" class="text-center text-muted">Nenhum fornecedor encontrado.</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 
-  {# ------------------------------ PAGINAÇÃO ------------------------------ #}
+  {# Paginação #}
   {% if fornecedores.pages > 1 %}
   <nav aria-label="Paginação" class="mt-4">
     <ul class="pagination justify-content-center">
-
-      {# Botão anterior #}
       {% if fornecedores.has_prev %}
       <li class="page-item">
         <a class="page-link" href="{{ url_for('fornecedor_bp.lista_fornecedor', page=fornecedores.prev_num, filtro=filtro, busca=busca) }}">Anterior</a>
@@ -103,7 +99,6 @@
       <li class="page-item disabled"><span class="page-link">Anterior</span></li>
       {% endif %}
 
-      {# Números das páginas #}
       {% for page_num in fornecedores.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
         {% if page_num %}
           {% if fornecedores.page == page_num %}
@@ -118,7 +113,6 @@
         {% endif %}
       {% endfor %}
 
-      {# Botão próxima #}
       {% if fornecedores.has_next %}
       <li class="page-item">
         <a class="page-link" href="{{ url_for('fornecedor_bp.lista_fornecedor', page=fornecedores.next_num, filtro=filtro, busca=busca) }}">Próxima</a>
@@ -126,34 +120,8 @@
       {% else %}
       <li class="page-item disabled"><span class="page-link">Próxima</span></li>
       {% endif %}
-
     </ul>
   </nav>
   {% endif %}
-
 </div>
-{% endblock %}
-
-{% block scripts %}
-<!-- jQuery e Plugin de máscaras -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
-
-<script>
-  // Aplica máscara ao campo de busca conforme o tipo de filtro
-  function aplicarMascara() {
-    $('#valor_busca').unmask();
-    if ($('#tipo_busca').val() === 'cnpj') {
-      $('#valor_busca').mask('00.000.000/0000-00');
-    }
-  }
-
-  $(document).ready(function () {
-    aplicarMascara();
-    $('#tipo_busca').on('change', function () {
-      $('#valor_busca').val('');
-      aplicarMascara();
-    });
-  });
-</script>
 {% endblock %}

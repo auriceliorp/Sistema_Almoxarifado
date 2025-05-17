@@ -41,46 +41,60 @@ def lista_fornecedor():
 @login_required
 def novo_fornecedor():
     if request.method == 'POST':
-        nome = request.form['nome']
-        cnpj = request.form['cnpj']
-        email = request.form['email']
-        telefone = request.form['telefone']
-        celular = request.form['celular']
-        endereco = request.form['endereco']
-        numero = request.form['numero']
-        complemento = request.form['complemento']
-        cep = request.form['cep']
-        inscricao_estadual = request.form['inscricao_estadual']
-        inscricao_municipal = request.form['inscricao_municipal']
+        try:
+            # Coleta os dados do formulário
+            nome = request.form.get('nome')
+            cnpj = request.form.get('cnpj')
+            email = request.form.get('email')
+            telefone = request.form.get('telefone')
+            celular = request.form.get('celular')
+            endereco = request.form.get('endereco')
+            numero = request.form.get('numero')
+            complemento = request.form.get('complemento')
+            cep = request.form.get('cep')
+            cidade = request.form.get('cidade')
+            uf = request.form.get('uf')
+            inscricao_estadual = request.form.get('inscricao_estadual')
+            inscricao_municipal = request.form.get('inscricao_municipal')
 
-        if not nome or not cnpj:
-            flash('Preencha os campos obrigatórios: Nome e CNPJ.', 'warning')
+            # Verifica campos obrigatórios
+            if not nome or not cnpj:
+                flash('Preencha os campos obrigatórios: Nome e CNPJ.', 'warning')
+                return redirect(url_for('fornecedor_bp.novo_fornecedor'))
+
+            # Validação simples de CNPJ
+            cnpj_limpo = re.sub(r'\D', '', cnpj)
+            if len(cnpj_limpo) != 14:
+                flash('CNPJ inválido.', 'danger')
+                return redirect(url_for('fornecedor_bp.novo_fornecedor'))
+
+            # Cria o fornecedor
+            fornecedor = Fornecedor(
+                nome=nome,
+                cnpj=cnpj,
+                email=email,
+                telefone=telefone,
+                celular=celular,
+                endereco=endereco,
+                numero=numero,
+                complemento=complemento,
+                cep=cep,
+                cidade=cidade,
+                uf=uf,
+                inscricao_estadual=inscricao_estadual,
+                inscricao_municipal=inscricao_municipal
+            )
+
+            db.session.add(fornecedor)
+            db.session.commit()
+            flash('Fornecedor cadastrado com sucesso!', 'success')
+            return redirect(url_for('fornecedor_bp.lista_fornecedor'))
+
+        except Exception as e:
+            db.session.rollback()
+            flash('Erro ao cadastrar fornecedor.', 'danger')
+            print(f'[ERRO AO CADASTRAR FORNECEDOR] {e}')
             return redirect(url_for('fornecedor_bp.novo_fornecedor'))
-
-        cnpj_limpo = re.sub(r'\D', '', cnpj)
-        if len(cnpj_limpo) != 14:
-            flash('CNPJ inválido.', 'danger')
-            return redirect(url_for('fornecedor_bp.novo_fornecedor'))
-
-        fornecedor = Fornecedor(
-            nome=nome,
-            cnpj=cnpj,
-            email=email,
-            telefone=telefone,
-            celular=celular,
-            endereco=endereco,
-            numero=numero,
-            complemento=complemento,
-            cep=cep,
-            inscricao_estadual=inscricao_estadual,
-            inscricao_municipal=inscricao_municipal
-        )
-
-        db.session.add(fornecedor)
-        db.session.commit()
-
-        flash('Fornecedor cadastrado com sucesso!', 'success')
-        return redirect(url_for('fornecedor_bp.lista_fornecedor'))
 
     return render_template('novo_fornecedor.html')
 

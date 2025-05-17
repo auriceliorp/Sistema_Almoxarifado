@@ -3,16 +3,19 @@
 {% block content %}
 <div class="container mt-4">
 
-  {# ------------------ BOTÃO ADMIN COM MODAL DE CONFIRMAÇÃO ------------------ #}
+  {# ------------------ BOTÕES ADMIN COM MODAIS ------------------ #}
   {% if usuario.email == 'admin@admin.com' %}
-  <div class="mb-3 text-start">
+  <div class="mb-3 d-flex gap-2">
     <button class="btn btn-danger btn-lg" data-bs-toggle="modal" data-bs-target="#modalPopular">
-      <i class="bi bi-robot"></i> Popular Dados de Teste
+      <i class="bi bi-robot"></i> Popular Dados
+    </button>
+    <button class="btn btn-warning btn-lg" data-bs-toggle="modal" data-bs-target="#modalLimpar">
+      <i class="bi bi-trash"></i> Limpar Dados
     </button>
   </div>
   {% endif %}
 
-  {# ------------------ MODAL DE CONFIRMAÇÃO ------------------ #}
+  {# ------------------ MODAL: POPULAR DADOS ------------------ #}
   <div class="modal fade" id="modalPopular" tabindex="-1" aria-labelledby="modalPopularLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
@@ -26,6 +29,25 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
           <a href="{{ url_for('popular_bp.popular_dados') }}" class="btn btn-danger">Sim, Popular</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# ------------------ MODAL: LIMPAR DADOS ------------------ #}
+  <div class="modal fade" id="modalLimpar" tabindex="-1" aria-labelledby="modalLimparLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-warning text-dark">
+          <h5 class="modal-title" id="modalLimparLabel">Confirmar Limpeza</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          Esta ação irá <strong>excluir todos os dados de teste</strong>, preservando apenas o usuário administrador. Deseja continuar?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <a href="{{ url_for('limpar_bp.limpar_dados') }}" class="btn btn-warning">Sim, Limpar</a>
         </div>
       </div>
     </div>

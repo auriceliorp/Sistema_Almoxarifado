@@ -5,22 +5,23 @@
 {% block content %}
 <div class="container py-4">
 
-  {# ------------------------------ CABEÇALHO ------------------------------ #}
+  {# Cabeçalho da página com botões de navegação #}
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">
-      <i class="bi bi-house"></i> Início
-    </a>
-    <h4 class="mb-0 text-center flex-grow-1 text-uppercase">Editar Fornecedor</h4>
-    <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="btn btn-outline-secondary">
-      <i class="bi bi-arrow-left"></i> Voltar
-    </a>
+    <div>
+      <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">Início</a>
+      <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="btn btn-outline-secondary">Voltar</a>
+    </div>
+    <h4 class="mb-0 text-center">Editar Fornecedor</h4>
+    <div>
+      <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">Sair</a>
+    </div>
   </div>
 
-  {# ------------------------------ FORMULÁRIO DE EDIÇÃO ------------------------------ #}
+  {# Formulário de edição do fornecedor #}
   <form method="POST">
     <div class="row">
       <div class="col-md-8 mb-3">
-        <label for="nome" class="form-label">Nome do Fornecedor *</label>
+        <label for="nome" class="form-label">Nome *</label>
         <input type="text" class="form-control" id="nome" name="nome" required value="{{ fornecedor.nome }}">
       </div>
       <div class="col-md-4 mb-3">
@@ -30,70 +31,75 @@
     </div>
 
     <div class="row">
-      <div class="col-md-4 mb-3">
+      <div class="col-md-6 mb-3">
         <label for="email" class="form-label">E-mail</label>
         <input type="email" class="form-control" id="email" name="email" value="{{ fornecedor.email }}">
       </div>
-      <div class="col-md-4 mb-3">
+      <div class="col-md-3 mb-3">
         <label for="telefone" class="form-label">Telefone</label>
         <input type="text" class="form-control" id="telefone" name="telefone" value="{{ fornecedor.telefone }}">
       </div>
-      <div class="col-md-4 mb-3">
+      <div class="col-md-3 mb-3">
         <label for="celular" class="form-label">Celular</label>
         <input type="text" class="form-control" id="celular" name="celular" value="{{ fornecedor.celular }}">
       </div>
     </div>
 
+    <div class="mb-3">
+      <label for="endereco" class="form-label">Endereço</label>
+      <input type="text" class="form-control" id="endereco" name="endereco" value="{{ fornecedor.endereco }}">
+    </div>
+
     <div class="row">
-      <div class="col-md-6 mb-3">
-        <label for="endereco" class="form-label">Endereço</label>
-        <input type="text" class="form-control" id="endereco" name="endereco" value="{{ fornecedor.endereco }}">
-      </div>
       <div class="col-md-2 mb-3">
         <label for="numero" class="form-label">Número</label>
         <input type="text" class="form-control" id="numero" name="numero" value="{{ fornecedor.numero }}">
       </div>
-      <div class="col-md-4 mb-3">
+      <div class="col-md-6 mb-3">
         <label for="complemento" class="form-label">Complemento</label>
         <input type="text" class="form-control" id="complemento" name="complemento" value="{{ fornecedor.complemento }}">
+      </div>
+      <div class="col-md-2 mb-3">
+        <label for="cep" class="form-label">CEP</label>
+        <input type="text" class="form-control" id="cep" name="cep" value="{{ fornecedor.cep }}">
+      </div>
+      <div class="col-md-2 mb-3">
+        <label for="cidade" class="form-label">Cidade</label>
+        <input type="text" class="form-control" id="cidade" name="cidade" value="{{ fornecedor.cidade }}">
+      </div>
+      <div class="col-md-2 mb-3">
+        <label for="uf" class="form-label">UF</label>
+        <select class="form-select" name="uf" id="uf">
+          <option value="">--</option>
+          {% for sigla in ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'] %}
+          <option value="{{ sigla }}" {% if fornecedor.uf == sigla %}selected{% endif %}>{{ sigla }}</option>
+          {% endfor %}
+        </select>
       </div>
     </div>
 
     <div class="row">
-      <div class="col-md-3 mb-3">
-        <label for="cep" class="form-label">CEP</label>
-        <input type="text" class="form-control" id="cep" name="cep" value="{{ fornecedor.cep }}">
-      </div>
-      <div class="col-md-4 mb-3">
+      <div class="col-md-6 mb-3">
         <label for="inscricao_estadual" class="form-label">Inscrição Estadual</label>
         <input type="text" class="form-control" id="inscricao_estadual" name="inscricao_estadual" value="{{ fornecedor.inscricao_estadual }}">
       </div>
-      <div class="col-md-5 mb-3">
+      <div class="col-md-6 mb-3">
         <label for="inscricao_municipal" class="form-label">Inscrição Municipal</label>
         <input type="text" class="form-control" id="inscricao_municipal" name="inscricao_municipal" value="{{ fornecedor.inscricao_municipal }}">
       </div>
     </div>
 
-    {# ------------------------------ BOTÕES DE AÇÃO ------------------------------ #}
-    <div class="d-flex justify-content-end gap-2 mt-4">
-      <button type="submit" class="btn btn-success">
-        <i class="bi bi-check-circle"></i> Salvar Alterações
-      </button>
-      <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="btn btn-secondary">
-        <i class="bi bi-x-circle"></i> Cancelar
-      </a>
+    <div class="d-flex justify-content-end gap-2">
+      <button type="submit" class="btn btn-success">Salvar Alterações</button>
+      <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="btn btn-secondary">Cancelar</a>
     </div>
   </form>
 </div>
-{% endblock %}
 
-{% block scripts %}
-<!-- jQuery e Plugin de Máscara -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+{# Máscaras com jQuery #}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
-
 <script>
-  // Aplica máscaras nos campos ao carregar a página
   $(document).ready(function () {
     $('#cnpj').mask('00.000.000/0000-00');
     $('#telefone').mask('(00) 0000-0000');

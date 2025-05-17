@@ -7,32 +7,35 @@ Flask-Login==0.6.2
 # Flask-SQLAlchemy: integração do SQLAlchemy com Flask para ORM
 Flask-SQLAlchemy==3.0.3
 
-# SQLAlchemy: ORM usado para comunicação com o banco de dados (Flask-SQLAlchemy depende dele)
+# SQLAlchemy: ORM usado para comunicação com o banco de dados
 SQLAlchemy==2.0.7
 
-# Werkzeug: biblioteca WSGI usada internamente pelo Flask para lidar com requisições e respostas
+# Werkzeug: biblioteca WSGI usada internamente pelo Flask
 Werkzeug==2.2.3
 
-# email-validator: validação de e-mails (útil para formulários de cadastro, por exemplo)
+# email-validator: validação de e-mails
 email-validator==1.3.1
 
-# python-dotenv: permite carregar variáveis de ambiente de um arquivo `.env` (como senhas, configs de banco etc.)
+# python-dotenv: carregar variáveis do .env
 python-dotenv==1.0.0
 
-# gunicorn: servidor WSGI para execução em produção (necessário no Render)
+# gunicorn: servidor WSGI para produção
 gunicorn==20.1.0
 
-# psycopg2-binary: driver do PostgreSQL para Python, usado para conectar ao banco de dados
+# psycopg2-binary: driver PostgreSQL
 psycopg2-binary==2.9.5
 
-# pandas: análise e manipulação de dados, usado em relatórios e importação/exportação de planilhas
-pandas
+# pandas: análise e manipulação de dados
+pandas==2.1.4
 
-# openpyxl: permite leitura e escrita de arquivos Excel (.xlsx), usado com pandas
-openpyxl
+# openpyxl: leitura e escrita de arquivos Excel
+openpyxl==3.1.2
 
-# fpdf: biblioteca para geração de arquivos PDF (por exemplo, relatórios)
+# fpdf: geração de PDFs
 fpdf==1.7.2
 
-# flask-migrate: integra Flask com Alembic, permitindo migrações do banco de dados (upgrade da estrutura)
+# flask-migrate: migração de banco de dados
 flask-migrate==4.0.5
+
+# faker: geração de dados falsos para testes
+Faker==19.13.0

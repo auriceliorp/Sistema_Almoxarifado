@@ -2,16 +2,46 @@
 
 {% block content %}
 <div class="container mt-4">
+
+  {# ------------------ BOTÃO ADMIN COM MODAL DE CONFIRMAÇÃO ------------------ #}
+  {% if usuario.email == 'admin@admin.com' %}
+  <div class="mb-3 text-start">
+    <button class="btn btn-danger btn-lg" data-bs-toggle="modal" data-bs-target="#modalPopular">
+      <i class="bi bi-robot"></i> Popular Dados de Teste
+    </button>
+  </div>
+  {% endif %}
+
+  {# ------------------ MODAL DE CONFIRMAÇÃO ------------------ #}
+  <div class="modal fade" id="modalPopular" tabindex="-1" aria-labelledby="modalPopularLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title" id="modalPopularLabel">Confirmar Ação</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          Esta ação irá <strong>popular o banco com dados de teste fictícios</strong>. Deseja continuar?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <a href="{{ url_for('popular_bp.popular_dados') }}" class="btn btn-danger">Sim, Popular</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# ------------------ GRÁFICO ------------------ #}
   <h2 class="mb-4">Dashboard de Entradas por Natureza de Despesa</h2>
   <div class="card p-4 shadow rounded-3">
     <canvas id="graficoEntradas" width="400" height="200"></canvas>
   </div>
 </div>
 
+{# ------------------ CHART.JS ------------------ #}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
   const ctx = document.getElementById('graficoEntradas').getContext('2d');
-
   const graficoEntradas = new Chart(ctx, {
     type: 'bar',
     data: {
@@ -32,9 +62,7 @@
     options: {
       responsive: true,
       plugins: {
-        legend: {
-          position: 'top'
-        },
+        legend: { position: 'top' },
         title: {
           display: true,
           text: 'Comparativo de Entradas e Saídas por ND'
@@ -44,9 +72,7 @@
         y: {
           beginAtZero: true,
           ticks: {
-            callback: function(value) {
-              return 'R$ ' + value.toLocaleString('pt-BR');
-            }
+            callback: value => 'R$ ' + value.toLocaleString('pt-BR')
           }
         }
       }

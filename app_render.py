@@ -83,7 +83,8 @@ def create_app():
     from routes_saida import saida_bp
     from routes_relatorio import relatorio_bp
     from routes_dashboard import dashboard_bp
-    from routes_popular import popular_bp  # <-- NOVO
+    from routes_popular import popular_bp  # <-- já existente
+    from limpar_dados import limpar_bp     # <-- NOVO
 
     app.register_blueprint(main)
     app.register_blueprint(usuario_bp)
@@ -96,7 +97,8 @@ def create_app():
     app.register_blueprint(saida_bp)
     app.register_blueprint(relatorio_bp)
     app.register_blueprint(dashboard_bp)
-    app.register_blueprint(popular_bp)  # <-- NOVO
+    app.register_blueprint(popular_bp)
+    app.register_blueprint(limpar_bp)      # <-- NOVO
 
     return app
 

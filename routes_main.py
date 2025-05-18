@@ -85,22 +85,27 @@ def logout():
 def index():
     return redirect(url_for('main.login'))
 
-# --- Página Almoxarifado (temporária ou principal) ---
+# --- Página Almoxarifado ---
 @main.route('/almoxarifado')
 @login_required
 def almoxarifado():
     return render_template('almoxarifado.html', usuario=current_user)
-
-# --- Página de instrução de troca de senha ---
-@main.route('/esqueci_senha')
-def esqueci_senha():
-    return render_template('esqueci_senha.html')
 
 # --- Página ND / Grupos / UL ---
 @main.route('/nd_grupos_ul')
 @login_required
 def nd_grupos_ul():
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        # Evita duplicação: NÃO carregar a estrutura inteira novamente
-        return '', 204  # Ou retorne algo mínimo
+        return '', 204  # Evita recarregamento da estrutura em requisições AJAX
     return render_template('nd_grupos_ul.html')
+
+# --- Página de instrução de troca de senha ---
+@main.route('/esqueci_senha')
+def esqueci_senha():
+    return render_template('esqueci_senha.html')
+
+# --- Página de Relatórios (botões desativados por padrão) ---
+@main.route('/relatorios')
+@login_required
+def relatorios():
+    return render_template('relatorios.html', usuario=current_user)

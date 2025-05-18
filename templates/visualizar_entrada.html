@@ -1,19 +1,20 @@
 {% extends 'base_simplificada.html' %}
 
 {% block content %}
-<div class="container mt-4">
+
+<div class="container mt-4">{# ------------------ TÍTULO E BOTÕES DE AÇÃO ------------------ #}
 
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="mb-0">Visualização da Entrada</h2>
-    <div>
-      <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="btn btn-outline-secondary me-2">
-        <i class="bi bi-arrow-left"></i> Voltar
-      </a>
+    <div class="d-flex gap-2">
       <button class="btn btn-outline-primary" onclick="window.print()">
         <i class="bi bi-printer"></i> Imprimir
       </button>
+      <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalEstorno">
+        <i class="bi bi-arrow-counterclockwise"></i> Estornar Entrada
+      </button>
     </div>
-  </div>
+  </div>{# ------------------ DADOS GERAIS DA ENTRADA ------------------ #}
 
   <div class="card shadow-sm rounded-4 mb-4">
     <div class="card-body">
@@ -39,7 +40,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </div>{# ------------------ TABELA DE ITENS DA ENTRADA ------------------ #}
 
   <h5 class="mb-3">Itens da Entrada</h5>
   <div class="table-responsive">
@@ -63,7 +64,23 @@
         {% endfor %}
       </tbody>
     </table>
-  </div>
+  </div></div>{# ------------------ MODAL DE CONFIRMAÇÃO DO ESTORNO ------------------ #}
 
-</div>
-{% endblock %}
+<div class="modal fade" id="modalEstorno" tabindex="-1" aria-labelledby="modalEstornoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="modalEstornoLabel">Confirmar Estorno</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        Deseja realmente estornar esta entrada? Esta ação <strong>irá remover o lançamento e ajustar os saldos dos itens</strong>.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <a href="{{ url_for('entrada_bp.estornar_entrada', entrada_id=entrada.id) }}" class="btn btn-danger">Sim, Estornar</a>
+      </div>
+    </div>
+  </div>
+</div>{% endblock %}
+

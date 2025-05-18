@@ -162,4 +162,3 @@ except Exception as e:
     print(e)
 
 return redirect(url_for('entrada_bp.lista_entradas'))
-

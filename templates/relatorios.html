@@ -1,0 +1,57 @@
+{% extends 'base_simplificada.html' %}
+
+{% block content %}
+
+<div class="container py-4">
+  <h3 class="mb-4">RELATÓRIOS</h3>
+  <div class="row">
+    <div class="col-md-6">
+      <h5 class="text-primary">Movimento Diário de Entrada</h5>
+      <div class="d-grid gap-2">
+        <button class="btn btn-outline-danger" disabled>Mapa do MÊS ATUAL (do primeiro ao último dia)</button>
+        <button class="btn btn-outline-secondary" disabled>Pessoas Requisitantes</button>
+        <button class="btn btn-outline-secondary" disabled>Inventário Atual</button>
+        <button class="btn btn-outline-secondary" disabled>Lista por Grupo e Código de Item</button>
+        <button class="btn btn-outline-secondary" disabled>Lista Alfabética por Grupo</button>
+        <button class="btn btn-outline-danger" disabled>FICHA KARDEX (Todos os Itens)</button>
+        <button class="btn btn-outline-secondary" disabled>Ficha Kardex (Item específico)</button>
+        <button class="btn btn-outline-secondary" disabled>Ficha Kardex (Grupo específico)</button>
+        <button class="btn btn-outline-secondary" disabled>Lista Alfabética de Material</button>
+        <button class="btn btn-outline-secondary" disabled>Inventário (período anterior)</button>
+        <button class="btn btn-outline-secondary" disabled>Materials COM Estoque (Saldo Atual)</button>
+        <button class="btn btn-outline-secondary" disabled>Dados para Custos (DAF)</button>
+        <button class="btn btn-outline-secondary" disabled>Consumo item/Setor Requisitante</button>
+        <button class="btn btn-outline-secondary" disabled>Síntese por Subprojeto/Grupo</button>
+        <button class="btn btn-outline-secondary" disabled>Totais por Área/Subprojeto/Data</button>
+        <button class="btn btn-outline-secondary" disabled>Totais por Área/Subprojeto</button>
+        <button class="btn btn-outline-danger" disabled>Saldos Atuais diferentes dos Anteriores (itens SEM movimentação)</button>
+        <button class="btn btn-outline-secondary" disabled>FORNECEDORES CADASTRADOS</button>
+        <button class="btn btn-outline-success" disabled>Boletim de Documentos Fiscais - BDF</button>
+      </div>
+    </div><div class="col-md-6">
+  <h5 class="text-primary">Material Requisitado por Requisitante</h5>
+  <div class="d-grid gap-2">
+    <button class="btn btn-outline-secondary" disabled>Material Requisitado por Subprojeto</button>
+    <button class="btn btn-outline-secondary" disabled>Resumo Estatístico - Percentuais</button>
+    <button class="btn btn-outline-secondary" disabled>Resumo Estatístico por Requisitante</button>
+    <button class="btn btn-outline-secondary" disabled>Resumo Mensal de Entradas</button>
+    <button class="btn btn-outline-secondary" disabled>Resumo Mensal de Saídas</button>
+    <button class="btn btn-outline-secondary" disabled>Inventário em ordem Alfabética</button>
+    <button class="btn btn-outline-secondary" disabled>Lista de Material por Código</button>
+    <button class="btn btn-outline-secondary" disabled>Itens COM ESTOQUE e sem movimentação (período)</button>
+    <button class="btn btn-outline-secondary" disabled>Custos por SubSetor</button>
+    <button class="btn btn-outline-secondary" disabled>Estoques Zerados</button>
+    <button class="btn btn-outline-secondary" disabled>Consumo Médio por Item/Grupo</button>
+    <button class="btn btn-outline-secondary" disabled>Totais por parte da descrição</button>
+    <button class="btn btn-outline-secondary" disabled>Subprojeto/Materiais (por descrição)</button>
+    <button class="btn btn-outline-secondary" disabled>Totais por Centro de Custo</button>
+    <button class="btn btn-outline-secondary" disabled>MAPA de fechamento DIÁRIO (data atual)</button>
+    <button class="btn btn-outline-danger" disabled>MAPA DE FECHAMENTO de Mês (completo) Anterior</button>
+    <button class="btn btn-outline-danger" disabled>KARDEX - ITENS (relatório reduzido)</button>
+    <button class="btn btn-outline-success" disabled>Saldos Atuais diferentes dos Anteriores (itens COM movimentação)</button>
+  </div>
+</div>
+
+  </div>
+</div>
+{% endblock %}

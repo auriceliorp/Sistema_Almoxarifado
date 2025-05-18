@@ -16,8 +16,8 @@
     vertical-align: middle;
   }
   .home-container {
-  margin-top: 0.5rem;
-}
+    margin-top: 0.5rem;
+  }
 </style>
 
 <div class="container home-container">
@@ -56,6 +56,12 @@
     <div class="col">
       <a href="https://linktr.ee/ctaa.sps" target="_blank" class="btn btn-success w-100 home-btn">
         <i class="bi bi-link-45deg"></i> Links Úteis
+      </a>
+    </div>
+
+    <div class="col">
+      <a href="{{ url_for('main.relatorios') }}" class="btn btn-secondary w-100 home-btn bg-purple text-white">
+        <i class="bi bi-file-earmark-bar-graph"></i> Relatórios
       </a>
     </div>
 

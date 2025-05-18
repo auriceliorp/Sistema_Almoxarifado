@@ -1,15 +1,18 @@
 # routes_entrada.py
-# Rotas para entrada de materiais, com filtro, paginação e estorno
+# Rotas para entrada de materiais, com filtro, paginação e estorno com auditoria
 
+# ------------------------- IMPORTAÇÕES ------------------------- #
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
+from datetime import datetime
+
 from app_render import db
 from models import Fornecedor, Item, EntradaMaterial, EntradaItem
-from datetime import datetime
-from utils.auditoria import registrar_auditoria  # Importa a função de auditoria
+from utils.auditoria import registrar_auditoria
 
-# Criação do blueprint
+# ------------------------- BLUEPRINT ------------------------- #
 entrada_bp = Blueprint('entrada_bp', __name__, template_folder='templates')
+
 
 # ------------------------- ROTA: NOVA ENTRADA ------------------------- #
 @entrada_bp.route('/entrada/nova', methods=['GET', 'POST'])
@@ -77,7 +80,8 @@ def nova_entrada():
 
     return render_template('nova_entrada.html', fornecedores=fornecedores, itens=itens)
 
-# ------------------------- ROTA: LISTA DE ENTRADAS COM FILTRO E PAGINAÇÃO ------------------------- #
+
+# ------------------------- ROTA: LISTA DE ENTRADAS ------------------------- #
 @entrada_bp.route('/entrada/lista')
 @login_required
 def lista_entradas():
@@ -102,6 +106,7 @@ def lista_entradas():
     entradas = query.order_by(EntradaMaterial.data_movimento.desc()).paginate(page=page, per_page=10)
     return render_template('lista_entrada.html', entradas=entradas, filtro=filtro, busca=busca)
 
+
 # ------------------------- ROTA: VISUALIZAR ENTRADA ------------------------- #
 @entrada_bp.route('/entrada/<int:entrada_id>')
 @login_required
@@ -110,7 +115,8 @@ def visualizar_entrada(entrada_id):
     itens = EntradaItem.query.filter_by(entrada_id=entrada_id).all()
     return render_template('visualizar_entrada.html', entrada=entrada, itens=itens)
 
-# ------------------------- ROTA: ESTORNAR ENTRADA ------------------------- #
+
+# ------------------------- ROTA: ESTORNAR ENTRADA COM AUDITORIA ------------------------- #
 @entrada_bp.route('/entrada/estornar/<int:entrada_id>', methods=['POST'])
 @login_required
 def estornar_entrada(entrada_id):
@@ -118,7 +124,7 @@ def estornar_entrada(entrada_id):
     itens = EntradaItem.query.filter_by(entrada_id=entrada_id).all()
 
     try:
-        # Captura os dados antes do estorno para auditoria
+        # Captura dados para o log de auditoria antes do estorno
         dados_antes = {
             'entrada': {
                 'id': entrada.id,
@@ -136,32 +142,30 @@ def estornar_entrada(entrada_id):
             ]
         }
 
+        # Estorno de cada item
         for entrada_item in itens:
             item = Item.query.get(entrada_item.item_id)
             if item:
-                # Verifica se o estoque permite o estorno
                 if item.estoque_atual < entrada_item.quantidade:
                     flash(f'Estoque insuficiente para estornar item {item.nome}.', 'danger')
                     return redirect(url_for('entrada_bp.lista_entradas'))
 
-                # Atualiza saldo
                 item.estoque_atual -= entrada_item.quantidade
                 item.saldo_financeiro -= entrada_item.quantidade * float(entrada_item.valor_unitario)
-                if item.estoque_atual > 0:
-                    item.valor_unitario = item.saldo_financeiro / item.estoque_atual
-                else:
-                    item.valor_unitario = 0.0
+                item.valor_unitario = (
+                    item.saldo_financeiro / item.estoque_atual
+                    if item.estoque_atual > 0 else 0.0
+                )
 
-                # Atualiza valor da ND
                 if item.grupo and item.grupo.natureza_despesa:
                     item.grupo.natureza_despesa.valor -= entrada_item.quantidade * float(entrada_item.valor_unitario)
 
-        # Remove os registros
+        # Remove entrada e itens
         for entrada_item in itens:
             db.session.delete(entrada_item)
         db.session.delete(entrada)
 
-        # Registra auditoria antes do commit
+        # Registro de auditoria antes do commit
         registrar_auditoria(
             acao='estorno',
             tabela='entrada_material',
@@ -179,7 +183,3 @@ def estornar_entrada(entrada_id):
         print(e)
 
     return redirect(url_for('entrada_bp.lista_entradas'))
-
-
-O arquivo routes_entrada.py completo já está atualizado com a lógica de auditoria no estorno. Incluí também comentários sugerindo boas práticas, como posicionar os imports no topo e revisar o conteúdo do log. Se quiser, posso agora gerar os templates e rota para visualizar os registros de auditoria no sistema. Deseja seguir com isso?
-

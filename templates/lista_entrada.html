@@ -3,17 +3,16 @@
 {% block title %}Entradas de Estoque{% endblock %}
 
 {% block content %}
-<div class="container py-4">
 
-  {# ------------------ CABEÇALHO ------------------ #}
+<div class="container py-4">{# ------------------------------ CABEÇALHO ------------------------------ #}
+
   <div class="d-flex justify-content-between align-items-center mb-4">
     <a href="{{ url_for('entrada_bp.nova_entrada') }}" class="btn btn-success btn-lg">
       <i class="bi bi-plus-circle fs-4 me-1"></i> Nova Entrada
     </a>
     <h4 class="mb-0 text-center flex-grow-1 text-uppercase">Entradas de Estoque</h4>
-  </div>
+  </div>{# ------------------------------ FORMULÁRIO DE BUSCA ------------------------------ #}
 
-  {# ------------------ FILTRO ------------------ #}
   <form method="GET" class="row g-2 mb-4 align-items-end" id="formBusca">
     <div class="col-md-4">
       <label for="tipo_busca" class="form-label">Buscar por:</label>
@@ -32,9 +31,8 @@
         <i class="bi bi-search"></i> Buscar
       </button>
     </div>
-  </form>
+  </form>{# ------------------------------ TABELA DE ENTRADAS ------------------------------ #}
 
-  {# ------------------ TABELA DE ENTRADAS ------------------ #}
   <div class="table-responsive">
     <table class="table table-striped table-hover align-middle w-100">
       <thead class="table-dark">
@@ -44,7 +42,6 @@
           <th>Data Nota Fiscal</th>
           <th>Nº Nota Fiscal</th>
           <th>Fornecedor</th>
-          <th>Status</th>
           <th class="text-center">Ações</th>
         </tr>
       </thead>
@@ -56,60 +53,79 @@
           <td>{{ entrada.data_nota_fiscal.strftime('%d/%m/%Y') }}</td>
           <td>{{ entrada.numero_nota_fiscal }}</td>
           <td>{{ entrada.fornecedor.nome }}</td>
-          <td>
-            {% if entrada.estornada %}
-              <span class="badge bg-danger">Estornada</span>
-            {% else %}
-              <span class="badge bg-success">Ativa</span>
-            {% endif %}
-          </td>
           <td class="text-center">
             <a href="{{ url_for('entrada_bp.visualizar_entrada', entrada_id=entrada.id) }}" class="btn btn-outline-secondary btn-sm">
               <i class="bi bi-eye"></i> Visualizar
             </a>
+            {% if not entrada.estornada %}
+            <form action="{{ url_for('entrada_bp.estornar_entrada', entrada_id=entrada.id) }}" method="POST" class="d-inline-block ms-1" onsubmit="return confirm('Deseja realmente estornar esta entrada?')">
+              <button type="submit" class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-x-circle"></i> Estornar
+              </button>
+            </form>
+            {% endif %}
           </td>
         </tr>
         {% else %}
         <tr>
-          <td colspan="7" class="text-center text-muted">Nenhuma entrada encontrada.</td>
+          <td colspan="6" class="text-center text-muted">Nenhuma entrada encontrada.</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
-  </div>
+  </div>{# ------------------------------ PAGINAÇÃO ------------------------------ #} {% if entradas.pages > 1 %}
 
-  {# ------------------ PAGINAÇÃO ------------------ #}
-  {% if entradas.pages > 1 %}
-  <nav class="mt-4" aria-label="Paginação">
+  <nav aria-label="Paginação" class="mt-4">
     <ul class="pagination justify-content-center">
       {% if entradas.has_prev %}
-        <li class="page-item">
-          <a class="page-link" href="{{ url_for('entrada_bp.lista_entradas', page=entradas.prev_num, filtro=filtro, busca=busca) }}">Anterior</a>
-        </li>
+      <li class="page-item">
+        <a class="page-link" href="{{ url_for('entrada_bp.lista_entradas', page=entradas.prev_num, filtro=filtro, busca=busca) }}">Anterior</a>
+      </li>
       {% else %}
-        <li class="page-item disabled"><span class="page-link">Anterior</span></li>
-      {% endif %}
-
-      {% for page_num in entradas.iter_pages() %}
-        {% if page_num %}
-          <li class="page-item {% if entradas.page == page_num %}active{% endif %}">
-            <a class="page-link" href="{{ url_for('entrada_bp.lista_entradas', page=page_num, filtro=filtro, busca=busca) }}">{{ page_num }}</a>
-          </li>
-        {% else %}
-          <li class="page-item disabled"><span class="page-link">…</span></li>
-        {% endif %}
-      {% endfor %}
-
-      {% if entradas.has_next %}
-        <li class="page-item">
-          <a class="page-link" href="{{ url_for('entrada_bp.lista_entradas', page=entradas.next_num, filtro=filtro, busca=busca) }}">Próxima</a>
-        </li>
+      <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+      {% endif %}{% for page_num in entradas.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+    {% if page_num %}
+      {% if entradas.page == page_num %}
+      <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
       {% else %}
-        <li class="page-item disabled"><span class="page-link">Próxima</span></li>
+      <li class="page-item">
+        <a class="page-link" href="{{ url_for('entrada_bp.lista_entradas', page=page_num, filtro=filtro, busca=busca) }}">{{ page_num }}</a>
+      </li>
       {% endif %}
-    </ul>
-  </nav>
+    {% else %}
+    <li class="page-item disabled"><span class="page-link">…</span></li>
+    {% endif %}
+  {% endfor %}
+
+  {% if entradas.has_next %}
+  <li class="page-item">
+    <a class="page-link" href="{{ url_for('entrada_bp.lista_entradas', page=entradas.next_num, filtro=filtro, busca=busca) }}">Próxima</a>
+  </li>
+  {% else %}
+  <li class="page-item disabled"><span class="page-link">Próxima</span></li>
   {% endif %}
+</ul>
 
-</div>
-{% endblock %}
+  </nav>
+  {% endif %}</div>
+{% endblock %}{% block scripts %}
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script><script>
+  function aplicarMascara() {
+    $('#valor_busca').unmask();
+    if ($('#tipo_busca').val() === 'nota') {
+      $('#valor_busca').mask('000.000.000');
+    } else if ($('#tipo_busca').val() === 'data') {
+      $('#valor_busca').mask('00/00/0000');
+    }
+  }
+
+  $(document).ready(function () {
+    aplicarMascara();
+    $('#tipo_busca').on('change', function () {
+      $('#valor_busca').val('');
+      aplicarMascara();
+    });
+  });
+</script>{% endblock %}
+

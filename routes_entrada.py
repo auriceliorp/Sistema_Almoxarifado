@@ -35,7 +35,8 @@ def nova_entrada():
                 data_nota_fiscal=data_nota_fiscal,
                 numero_nota_fiscal=numero_nota_fiscal,
                 fornecedor_id=fornecedor_id,
-                usuario_id=current_user.id
+                usuario_id=current_user.id,
+                estornada=False
             )
             db.session.add(nova_entrada)
             db.session.flush()
@@ -115,8 +116,7 @@ def visualizar_entrada(entrada_id):
 def estornar_entrada(entrada_id):
     entrada = EntradaMaterial.query.get_or_404(entrada_id)
 
-    # Impede estorno duplicado
-    if entrada.estornado:
+    if entrada.estornada:
         flash('Esta entrada já foi estornada anteriormente.', 'warning')
         return redirect(url_for('entrada_bp.lista_entradas'))
 
@@ -157,8 +157,7 @@ def estornar_entrada(entrada_id):
                 if item.grupo and item.grupo.natureza_despesa:
                     item.grupo.natureza_despesa.valor -= entrada_item.quantidade * float(entrada_item.valor_unitario)
 
-        # Marcar a entrada como estornada
-        entrada.estornado = True
+        entrada.estornada = True
 
         registrar_auditoria(
             acao='estorno',
@@ -177,5 +176,3 @@ def estornar_entrada(entrada_id):
         print(e)
 
     return redirect(url_for('entrada_bp.lista_entradas'))
-
-

@@ -114,6 +114,12 @@ def visualizar_entrada(entrada_id):
 @login_required
 def estornar_entrada(entrada_id):
     entrada = EntradaMaterial.query.get_or_404(entrada_id)
+
+    # Impede estorno duplicado
+    if entrada.estornado:
+        flash('Esta entrada já foi estornada anteriormente.', 'warning')
+        return redirect(url_for('entrada_bp.lista_entradas'))
+
     itens = EntradaItem.query.filter_by(entrada_id=entrada_id).all()
 
     try:
@@ -144,15 +150,15 @@ def estornar_entrada(entrada_id):
                 item.estoque_atual -= entrada_item.quantidade
                 item.saldo_financeiro -= entrada_item.quantidade * float(entrada_item.valor_unitario)
                 item.valor_unitario = (
-                    item.saldo_financeiro / item.estoque_atual if item.estoque_atual > 0 else 0.0
+                    item.saldo_financeiro / item.estoque_atual
+                    if item.estoque_atual > 0 else 0.0
                 )
 
                 if item.grupo and item.grupo.natureza_despesa:
                     item.grupo.natureza_despesa.valor -= entrada_item.quantidade * float(entrada_item.valor_unitario)
 
-        for entrada_item in itens:
-            db.session.delete(entrada_item)
-        db.session.delete(entrada)
+        # Marcar a entrada como estornada
+        entrada.estornado = True
 
         registrar_auditoria(
             acao='estorno',
@@ -171,4 +177,5 @@ def estornar_entrada(entrada_id):
         print(e)
 
     return redirect(url_for('entrada_bp.lista_entradas'))
+
 

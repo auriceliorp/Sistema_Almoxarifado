@@ -2,8 +2,11 @@
 
 {% block content %}
 <div class="container mt-4">
+
+  <!-- Título da página -->
   <h2>Visualizar Entrada de Materiais</h2>
 
+  <!-- Card com dados da entrada -->
   <div class="card my-4">
     <div class="card-body">
       <p><strong>Data do Movimento:</strong> {{ entrada.data_movimento.strftime('%d/%m/%Y') }}</p>
@@ -14,6 +17,7 @@
     </div>
   </div>
 
+  <!-- Tabela com os itens da entrada -->
   <h4>Itens da Entrada</h4>
   <table class="table table-bordered">
     <thead>
@@ -36,10 +40,14 @@
     </tbody>
   </table>
 
+  <!-- Botões de ação: Voltar e Estornar -->
   <div class="mt-4 d-flex justify-content-between">
+    <!-- Botão Voltar para a lista de entradas -->
     <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="btn btn-outline-secondary">
       <i class="bi bi-arrow-left"></i> Voltar
     </a>
+
+    <!-- Botão Estornar, redireciona para confirmação do estorno -->
     <a href="{{ url_for('entrada_bp.estornar_entrada', id=entrada.id) }}" class="btn btn-outline-danger">
       <i class="bi bi-arrow-counterclockwise"></i> Estornar Entrada
     </a>

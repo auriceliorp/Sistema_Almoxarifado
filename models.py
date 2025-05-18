@@ -192,12 +192,28 @@ class SaidaItem(db.Model):
 # ------------------- LOG AUDITÁVEL -------------------
 class AuditLog(db.Model):
     __tablename__ = 'audit_log'
+
+    # Chave primária do log
     id = db.Column(db.Integer, primary_key=True)
+
+    # ID do usuário responsável pela ação (nullable em casos automatizados)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
     usuario = db.relationship('Usuario')
+
+    # Tipo de ação realizada: ex: 'inserção', 'edição', 'exclusão', 'estorno', etc.
     acao = db.Column(db.String(20), nullable=False)
+
+    # Nome da tabela afetada (ex: 'entrada_material', 'item', etc.)
     tabela = db.Column(db.String(50), nullable=False)
+
+    # ID do registro afetado na tabela (opcional)
     registro_id = db.Column(db.Integer, nullable=True)
+
+    # Dados antes da ação (JSON serializado em string)
     dados_anteriores = db.Column(db.Text)
+
+    # Dados após a ação (JSON serializado em string)
     dados_novos = db.Column(db.Text)
+
+    # Data e hora da operação
     data_hora = db.Column(db.DateTime, default=datetime.utcnow)

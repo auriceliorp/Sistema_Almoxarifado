@@ -1,157 +1,165 @@
-# routes_entrada.py
-# Rotas para entrada de materiais, com filtro, paginação e estorno
+routes_entrada.py
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_login import login_required, current_user
-from app_render import db
-from models import Fornecedor, Item, EntradaMaterial, EntradaItem
-from datetime import datetime
+Rotas para entrada de materiais, com filtro, paginação e estorno
 
-# Criação do blueprint
-entrada_bp = Blueprint('entrada_bp', __name__, template_folder='templates')
+from flask import Blueprint, render_template, request, redirect, url_for, flash from flask_login import login_required, current_user from app_render import db from models import Fornecedor, Item, EntradaMaterial, EntradaItem from datetime import datetime from utils.auditoria import registrar_auditoria  # Importa a função de auditoria
 
+Criação do blueprint
 
-# ------------------------- ROTA: NOVA ENTRADA ------------------------- #
-@entrada_bp.route('/entrada/nova', methods=['GET', 'POST'])
-@login_required
-def nova_entrada():
-    fornecedores = Fornecedor.query.all()
-    itens = Item.query.all()
+entrada_bp = Blueprint('entrada_bp', name, template_folder='templates')
 
-    if request.method == 'POST':
-        try:
-            data_movimento = datetime.strptime(request.form.get('data_movimento'), '%Y-%m-%d')
-            data_nota_fiscal = datetime.strptime(request.form.get('data_nota_fiscal'), '%Y-%m-%d')
-            numero_nota_fiscal = request.form.get('numero_nota_fiscal')
-            fornecedor_id = request.form.get('fornecedor')
+------------------------- ROTA: NOVA ENTRADA -------------------------
 
-            item_ids = request.form.getlist('item_id[]')
-            quantidades = request.form.getlist('quantidade[]')
-            valores_unitarios = request.form.getlist('valor_unitario[]')
+@entrada_bp.route('/entrada/nova', methods=['GET', 'POST']) @login_required def nova_entrada(): fornecedores = Fornecedor.query.all() itens = Item.query.all()
 
-            nova_entrada = EntradaMaterial(
-                data_movimento=data_movimento,
-                data_nota_fiscal=data_nota_fiscal,
-                numero_nota_fiscal=numero_nota_fiscal,
-                fornecedor_id=fornecedor_id,
-                usuario_id=current_user.id
-            )
-            db.session.add(nova_entrada)
-            db.session.flush()
-
-            for i in range(len(item_ids)):
-                if not item_ids[i] or not quantidades[i] or not valores_unitarios[i]:
-                    continue
-
-                quantidade = int(quantidades[i])
-                valor_unitario = float(valores_unitarios[i])
-                item = Item.query.get(item_ids[i])
-
-                if item:
-                    entrada_item = EntradaItem(
-                        entrada_id=nova_entrada.id,
-                        item_id=item.id,
-                        quantidade=quantidade,
-                        valor_unitario=valor_unitario
-                    )
-                    db.session.add(entrada_item)
-
-                    # Atualiza saldo
-                    item.estoque_atual += quantidade
-                    item.saldo_financeiro += quantidade * valor_unitario
-                    if item.estoque_atual > 0:
-                        item.valor_unitario = item.saldo_financeiro / item.estoque_atual
-
-                    # Atualiza valor da ND
-                    if item.grupo and item.grupo.natureza_despesa:
-                        item.grupo.natureza_despesa.valor += quantidade * valor_unitario
-
-            db.session.commit()
-            flash('Entrada registrada com sucesso.', 'success')
-            return redirect(url_for('entrada_bp.lista_entradas'))
-
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Erro ao salvar entrada: {e}', 'danger')
-            print(e)
-
-    return render_template('nova_entrada.html', fornecedores=fornecedores, itens=itens)
-
-
-# ------------------------- ROTA: LISTA DE ENTRADAS COM FILTRO E PAGINAÇÃO ------------------------- #
-@entrada_bp.route('/entrada/lista')
-@login_required
-def lista_entradas():
-    page = request.args.get('page', 1, type=int)
-    filtro = request.args.get('filtro', 'nota')
-    busca = request.args.get('busca', '').strip().lower()
-
-    query = EntradaMaterial.query.join(Fornecedor)
-
-    if busca:
-        if filtro == 'nota':
-            query = query.filter(EntradaMaterial.numero_nota_fiscal.ilike(f'%{busca}%'))
-        elif filtro == 'fornecedor':
-            query = query.filter(Fornecedor.nome.ilike(f'%{busca}%'))
-        elif filtro == 'data':
-            try:
-                data = datetime.strptime(busca, '%d/%m/%Y').date()
-                query = query.filter(EntradaMaterial.data_movimento == data)
-            except ValueError:
-                flash("Data inválida. Use o formato dd/mm/aaaa.", 'warning')
-
-    entradas = query.order_by(EntradaMaterial.data_movimento.desc()).paginate(page=page, per_page=10)
-    return render_template('lista_entrada.html', entradas=entradas, filtro=filtro, busca=busca)
-
-
-# ------------------------- ROTA: VISUALIZAR ENTRADA ------------------------- #
-@entrada_bp.route('/entrada/<int:entrada_id>')
-@login_required
-def visualizar_entrada(entrada_id):
-    entrada = EntradaMaterial.query.get_or_404(entrada_id)
-    itens = EntradaItem.query.filter_by(entrada_id=entrada_id).all()
-    return render_template('visualizar_entrada.html', entrada=entrada, itens=itens)
-
-
-# ------------------------- ROTA: ESTORNAR ENTRADA ------------------------- #
-@entrada_bp.route('/entrada/estornar/<int:entrada_id>', methods=['POST'])
-@login_required
-def estornar_entrada(entrada_id):
-    entrada = EntradaMaterial.query.get_or_404(entrada_id)
-    itens = EntradaItem.query.filter_by(entrada_id=entrada_id).all()
-
+if request.method == 'POST':
     try:
-        for entrada_item in itens:
-            item = Item.query.get(entrada_item.item_id)
+        data_movimento = datetime.strptime(request.form.get('data_movimento'), '%Y-%m-%d')
+        data_nota_fiscal = datetime.strptime(request.form.get('data_nota_fiscal'), '%Y-%m-%d')
+        numero_nota_fiscal = request.form.get('numero_nota_fiscal')
+        fornecedor_id = request.form.get('fornecedor')
+
+        item_ids = request.form.getlist('item_id[]')
+        quantidades = request.form.getlist('quantidade[]')
+        valores_unitarios = request.form.getlist('valor_unitario[]')
+
+        nova_entrada = EntradaMaterial(
+            data_movimento=data_movimento,
+            data_nota_fiscal=data_nota_fiscal,
+            numero_nota_fiscal=numero_nota_fiscal,
+            fornecedor_id=fornecedor_id,
+            usuario_id=current_user.id
+        )
+        db.session.add(nova_entrada)
+        db.session.flush()
+
+        for i in range(len(item_ids)):
+            if not item_ids[i] or not quantidades[i] or not valores_unitarios[i]:
+                continue
+
+            quantidade = int(quantidades[i])
+            valor_unitario = float(valores_unitarios[i])
+            item = Item.query.get(item_ids[i])
+
             if item:
-                # Verifica se o estoque permite o estorno
-                if item.estoque_atual < entrada_item.quantidade:
-                    flash(f'Estoque insuficiente para estornar item {item.nome}.', 'danger')
-                    return redirect(url_for('entrada_bp.lista_entradas'))
+                entrada_item = EntradaItem(
+                    entrada_id=nova_entrada.id,
+                    item_id=item.id,
+                    quantidade=quantidade,
+                    valor_unitario=valor_unitario
+                )
+                db.session.add(entrada_item)
 
                 # Atualiza saldo
-                item.estoque_atual -= entrada_item.quantidade
-                item.saldo_financeiro -= entrada_item.quantidade * float(entrada_item.valor_unitario)
+                item.estoque_atual += quantidade
+                item.saldo_financeiro += quantidade * valor_unitario
                 if item.estoque_atual > 0:
                     item.valor_unitario = item.saldo_financeiro / item.estoque_atual
-                else:
-                    item.valor_unitario = 0.0
 
                 # Atualiza valor da ND
                 if item.grupo and item.grupo.natureza_despesa:
-                    item.grupo.natureza_despesa.valor -= entrada_item.quantidade * float(entrada_item.valor_unitario)
-
-        # Remove os registros
-        for entrada_item in itens:
-            db.session.delete(entrada_item)
-        db.session.delete(entrada)
+                    item.grupo.natureza_despesa.valor += quantidade * valor_unitario
 
         db.session.commit()
-        flash('Entrada estornada com sucesso.', 'success')
+        flash('Entrada registrada com sucesso.', 'success')
+        return redirect(url_for('entrada_bp.lista_entradas'))
 
     except Exception as e:
         db.session.rollback()
-        flash(f'Erro ao estornar entrada: {e}', 'danger')
+        flash(f'Erro ao salvar entrada: {e}', 'danger')
         print(e)
 
-    return redirect(url_for('entrada_bp.lista_entradas'))
+return render_template('nova_entrada.html', fornecedores=fornecedores, itens=itens)
+
+------------------------- ROTA: LISTA DE ENTRADAS COM FILTRO E PAGINAÇÃO -------------------------
+
+@entrada_bp.route('/entrada/lista') @login_required def lista_entradas(): page = request.args.get('page', 1, type=int) filtro = request.args.get('filtro', 'nota') busca = request.args.get('busca', '').strip().lower()
+
+query = EntradaMaterial.query.join(Fornecedor)
+
+if busca:
+    if filtro == 'nota':
+        query = query.filter(EntradaMaterial.numero_nota_fiscal.ilike(f'%{busca}%'))
+    elif filtro == 'fornecedor':
+        query = query.filter(Fornecedor.nome.ilike(f'%{busca}%'))
+    elif filtro == 'data':
+        try:
+            data = datetime.strptime(busca, '%d/%m/%Y').date()
+            query = query.filter(EntradaMaterial.data_movimento == data)
+        except ValueError:
+            flash("Data inválida. Use o formato dd/mm/aaaa.", 'warning')
+
+entradas = query.order_by(EntradaMaterial.data_movimento.desc()).paginate(page=page, per_page=10)
+return render_template('lista_entrada.html', entradas=entradas, filtro=filtro, busca=busca)
+
+------------------------- ROTA: VISUALIZAR ENTRADA -------------------------
+
+@entrada_bp.route('/entrada/int:entrada_id') @login_required def visualizar_entrada(entrada_id): entrada = EntradaMaterial.query.get_or_404(entrada_id) itens = EntradaItem.query.filter_by(entrada_id=entrada_id).all() return render_template('visualizar_entrada.html', entrada=entrada, itens=itens)
+
+------------------------- ROTA: ESTORNAR ENTRADA -------------------------
+
+@entrada_bp.route('/entrada/estornar/int:entrada_id', methods=['POST']) @login_required def estornar_entrada(entrada_id): entrada = EntradaMaterial.query.get_or_404(entrada_id) itens = EntradaItem.query.filter_by(entrada_id=entrada_id).all()
+
+try:
+    # Captura os dados antes do estorno para auditoria
+    dados_antes = {
+        'entrada': {
+            'id': entrada.id,
+            'numero_nota_fiscal': entrada.numero_nota_fiscal,
+            'data_movimento': entrada.data_movimento.strftime('%Y-%m-%d'),
+            'fornecedor_id': entrada.fornecedor_id,
+            'usuario_id': entrada.usuario_id
+        },
+        'itens': [
+            {
+                'item_id': ei.item_id,
+                'quantidade': ei.quantidade,
+                'valor_unitario': float(ei.valor_unitario)
+            } for ei in itens
+        ]
+    }
+
+    for entrada_item in itens:
+        item = Item.query.get(entrada_item.item_id)
+        if item:
+            # Verifica se o estoque permite o estorno
+            if item.estoque_atual < entrada_item.quantidade:
+                flash(f'Estoque insuficiente para estornar item {item.nome}.', 'danger')
+                return redirect(url_for('entrada_bp.lista_entradas'))
+
+            # Atualiza saldo
+            item.estoque_atual -= entrada_item.quantidade
+            item.saldo_financeiro -= entrada_item.quantidade * float(entrada_item.valor_unitario)
+            if item.estoque_atual > 0:
+                item.valor_unitario = item.saldo_financeiro / item.estoque_atual
+            else:
+                item.valor_unitario = 0.0
+
+            # Atualiza valor da ND
+            if item.grupo and item.grupo.natureza_despesa:
+                item.grupo.natureza_despesa.valor -= entrada_item.quantidade * float(entrada_item.valor_unitario)
+
+    # Remove os registros
+    for entrada_item in itens:
+        db.session.delete(entrada_item)
+    db.session.delete(entrada)
+
+    # Registra auditoria antes do commit
+    registrar_auditoria(
+        acao='estorno',
+        tabela='entrada_material',
+        registro_id=entrada.id,
+        dados_antes=dados_antes,
+        dados_depois=None
+    )
+
+    db.session.commit()
+    flash('Entrada estornada com sucesso.', 'success')
+
+except Exception as e:
+    db.session.rollback()
+    flash(f'Erro ao estornar entrada: {e}', 'danger')
+    print(e)
+
+return redirect(url_for('entrada_bp.lista_entradas'))
+

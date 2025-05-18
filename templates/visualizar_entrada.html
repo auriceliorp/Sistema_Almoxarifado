@@ -3,10 +3,10 @@
 {% block content %}
 <div class="container mt-4">
 
-  <!-- Título da página -->
+  {# ---------------------- Cabeçalho da página ---------------------- #}
   <h2>Visualizar Entrada de Materiais</h2>
 
-  <!-- Card com dados da entrada -->
+  {# ---------------------- Bloco de dados principais da entrada ---------------------- #}
   <div class="card my-4">
     <div class="card-body">
       <p><strong>Data do Movimento:</strong> {{ entrada.data_movimento.strftime('%d/%m/%Y') }}</p>
@@ -17,7 +17,7 @@
     </div>
   </div>
 
-  <!-- Tabela com os itens da entrada -->
+  {# ---------------------- Tabela de itens da entrada ---------------------- #}
   <h4>Itens da Entrada</h4>
   <table class="table table-bordered">
     <thead>
@@ -40,17 +40,22 @@
     </tbody>
   </table>
 
-  <!-- Botões de ação: Voltar e Estornar -->
+  {# ---------------------- Botões de ação ---------------------- #}
   <div class="mt-4 d-flex justify-content-between">
-    <!-- Botão Voltar para a lista de entradas -->
+
+    {# Botão para voltar à lista de entradas #}
     <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="btn btn-outline-secondary">
       <i class="bi bi-arrow-left"></i> Voltar
     </a>
 
-    <!-- Botão Estornar, redireciona para confirmação do estorno -->
-    <a href="{{ url_for('entrada_bp.estornar_entrada', id=entrada.id) }}" class="btn btn-outline-danger">
-      <i class="bi bi-arrow-counterclockwise"></i> Estornar Entrada
-    </a>
+    {# Botão de estorno com método POST e parâmetro correto (entrada_id) #}
+    <form action="{{ url_for('entrada_bp.estornar_entrada', entrada_id=entrada.id) }}" method="post" class="d-inline">
+      <button type="submit" class="btn btn-outline-danger"
+              onclick="return confirm('Confirmar estorno desta entrada?')">
+        <i class="bi bi-arrow-counterclockwise"></i> Estornar Entrada
+      </button>
+    </form>
+
   </div>
 </div>
 {% endblock %}

@@ -1,0 +1,63 @@
+{% extends 'base_simplificada.html' %}
+
+{% block title %}Logs de Auditoria{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+  <h2 class="mb-4">Logs de Auditoria</h2>  <div class="table-responsive">
+    <table class="table table-bordered table-striped">
+      <thead class="table-dark">
+        <tr>
+          <th>Data e Hora</th>
+          <th>Usuário</th>
+          <th>Ação</th>
+          <th>Tabela</th>
+          <th>ID do Registro</th>
+          <th>Detalhes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td>{{ log.data_hora.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+          <td>{{ log.usuario.nome if log.usuario else '---' }}</td>
+          <td>{{ log.acao }}</td>
+          <td>{{ log.tabela }}</td>
+          <td>{{ log.registro_id or '-' }}</td>
+          <td>
+            <a href="{{ url_for('auditoria_bp.detalhes_log', log_id=log.id) }}" class="btn btn-outline-secondary btn-sm">
+              <i class="bi bi-eye"></i> Visualizar
+            </a>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center text-muted">Nenhum log encontrado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}{% block detalhes_log %}
+
+<div class="container mt-4">
+  <h2 class="mb-4">Detalhes do Log</h2>
+  <div class="card shadow p-4">
+    <p><strong>Data e Hora:</strong> {{ log.data_hora.strftime('%d/%m/%Y %H:%M:%S') }}</p>
+    <p><strong>Usuário:</strong> {{ log.usuario.nome if log.usuario else '---' }}</p>
+    <p><strong>Ação:</strong> {{ log.acao }}</p>
+    <p><strong>Tabela:</strong> {{ log.tabela }}</p>
+    <p><strong>ID do Registro:</strong> {{ log.registro_id or '-' }}</p><div class="row">
+  <div class="col-md-6">
+    <h5>Dados Anteriores</h5>
+    <pre class="bg-light p-3 border rounded">{{ log.dados_anteriores | tojson(indent=2) }}</pre>
+  </div>
+  <div class="col-md-6">
+    <h5>Dados Novos</h5>
+    <pre class="bg-light p-3 border rounded">{{ log.dados_novos | tojson(indent=2) }}</pre>
+  </div>
+</div>
+
+  </div>
+</div>
+{% endblock %}

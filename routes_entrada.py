@@ -1,8 +1,6 @@
 routes_entrada.py
 
-Rotas para entrada de materiais, com filtro, paginação e auditoria (inserção e estorno)
-
-------------------------- IMPORTAÇÕES -------------------------
+Rotas para entrada de materiais, com filtro, paginação, visualização, estorno e auditoria
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash from flask_login import login_required, current_user from datetime import datetime
 
@@ -35,9 +33,7 @@ if request.method == 'POST':
             usuario_id=current_user.id
         )
         db.session.add(nova_entrada)
-        db.session.flush()  # Garante o ID da entrada para referências
-
-        itens_dados = []  # Lista para armazenar dados dos itens para auditoria
+        db.session.flush()
 
         for i in range(len(item_ids)):
             if not item_ids[i] or not quantidades[i] or not valores_unitarios[i]:
@@ -56,40 +52,13 @@ if request.method == 'POST':
                 )
                 db.session.add(entrada_item)
 
-                # Atualiza o saldo do item
                 item.estoque_atual += quantidade
                 item.saldo_financeiro += quantidade * valor_unitario
                 if item.estoque_atual > 0:
                     item.valor_unitario = item.saldo_financeiro / item.estoque_atual
 
-                # Atualiza o valor da natureza de despesa
                 if item.grupo and item.grupo.natureza_despesa:
                     item.grupo.natureza_despesa.valor += quantidade * valor_unitario
-
-                # Registra os dados do item para auditoria
-                itens_dados.append({
-                    'item_id': item.id,
-                    'quantidade': quantidade,
-                    'valor_unitario': valor_unitario
-                })
-
-        # Registra auditoria da inserção da entrada
-        registrar_auditoria(
-            acao='insercao',
-            tabela='entrada_material',
-            registro_id=nova_entrada.id,
-            dados_antes=None,
-            dados_depois={
-                'entrada': {
-                    'id': nova_entrada.id,
-                    'numero_nota_fiscal': nova_entrada.numero_nota_fiscal,
-                    'data_movimento': nova_entrada.data_movimento.strftime('%Y-%m-%d'),
-                    'fornecedor_id': nova_entrada.fornecedor_id,
-                    'usuario_id': nova_entrada.usuario_id
-                },
-                'itens': itens_dados
-            }
-        )
 
         db.session.commit()
         flash('Entrada registrada com sucesso.', 'success')
@@ -101,4 +70,89 @@ if request.method == 'POST':
         print(e)
 
 return render_template('nova_entrada.html', fornecedores=fornecedores, itens=itens)
+
+------------------------- ROTA: LISTA DE ENTRADAS -------------------------
+
+@entrada_bp.route('/entrada/lista') @login_required def lista_entradas(): page = request.args.get('page', 1, type=int) filtro = request.args.get('filtro', 'nota') busca = request.args.get('busca', '').strip().lower()
+
+query = EntradaMaterial.query.join(Fornecedor)
+
+if busca:
+    if filtro == 'nota':
+        query = query.filter(EntradaMaterial.numero_nota_fiscal.ilike(f'%{busca}%'))
+    elif filtro == 'fornecedor':
+        query = query.filter(Fornecedor.nome.ilike(f'%{busca}%'))
+    elif filtro == 'data':
+        try:
+            data = datetime.strptime(busca, '%d/%m/%Y').date()
+            query = query.filter(EntradaMaterial.data_movimento == data)
+        except ValueError:
+            flash("Data inválida. Use o formato dd/mm/aaaa.", 'warning')
+
+entradas = query.order_by(EntradaMaterial.data_movimento.desc()).paginate(page=page, per_page=10)
+return render_template('lista_entrada.html', entradas=entradas, filtro=filtro, busca=busca)
+
+------------------------- ROTA: VISUALIZAR ENTRADA -------------------------
+
+@entrada_bp.route('/entrada/int:entrada_id') @login_required def visualizar_entrada(entrada_id): entrada = EntradaMaterial.query.get_or_404(entrada_id) itens = EntradaItem.query.filter_by(entrada_id=entrada_id).all() return render_template('visualizar_entrada.html', entrada=entrada, itens=itens)
+
+------------------------- ROTA: ESTORNAR ENTRADA COM AUDITORIA -------------------------
+
+@entrada_bp.route('/entrada/estornar/int:entrada_id', methods=['POST']) @login_required def estornar_entrada(entrada_id): entrada = EntradaMaterial.query.get_or_404(entrada_id) itens = EntradaItem.query.filter_by(entrada_id=entrada_id).all()
+
+try:
+    dados_antes = {
+        'entrada': {
+            'id': entrada.id,
+            'numero_nota_fiscal': entrada.numero_nota_fiscal,
+            'data_movimento': entrada.data_movimento.strftime('%Y-%m-%d'),
+            'fornecedor_id': entrada.fornecedor_id,
+            'usuario_id': entrada.usuario_id
+        },
+        'itens': [
+            {
+                'item_id': ei.item_id,
+                'quantidade': ei.quantidade,
+                'valor_unitario': float(ei.valor_unitario)
+            } for ei in itens
+        ]
+    }
+
+    for entrada_item in itens:
+        item = Item.query.get(entrada_item.item_id)
+        if item:
+            if item.estoque_atual < entrada_item.quantidade:
+                flash(f'Estoque insuficiente para estornar item {item.nome}.', 'danger')
+                return redirect(url_for('entrada_bp.lista_entradas'))
+
+            item.estoque_atual -= entrada_item.quantidade
+            item.saldo_financeiro -= entrada_item.quantidade * float(entrada_item.valor_unitario)
+            item.valor_unitario = (
+                item.saldo_financeiro / item.estoque_atual if item.estoque_atual > 0 else 0.0
+            )
+
+            if item.grupo and item.grupo.natureza_despesa:
+                item.grupo.natureza_despesa.valor -= entrada_item.quantidade * float(entrada_item.valor_unitario)
+
+    for entrada_item in itens:
+        db.session.delete(entrada_item)
+    db.session.delete(entrada)
+
+    registrar_auditoria(
+        acao='estorno',
+        tabela='entrada_material',
+        registro_id=entrada.id,
+        dados_antes=dados_antes,
+        dados_depois=None
+    )
+
+    db.session.commit()
+    flash('Entrada estornada com sucesso.', 'success')
+
+except Exception as e:
+    db.session.rollback()
+    flash(f'Erro ao estornar entrada: {e}', 'danger')
+    print(e)
+
+return redirect(url_for('entrada_bp.lista_entradas'))
 

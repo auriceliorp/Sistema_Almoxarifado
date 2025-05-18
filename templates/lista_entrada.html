@@ -56,14 +56,20 @@
           <td>{{ entrada.numero_nota_fiscal }}</td>
           <td>{{ entrada.fornecedor.nome }}</td>
           <td class="text-center">
-            {# Botão de Visualização #}
+
+            {# Botão de Visualização da Entrada #}
             <a href="{{ url_for('entrada_bp.visualizar_entrada', entrada_id=entrada.id) }}" class="btn btn-outline-secondary btn-sm me-1">
               <i class="bi bi-eye"></i> Visualizar
             </a>
-            {# Botão de Estorno da Entrada #}
-            <a href="{{ url_for('entrada_bp.estornar_entrada', id=entrada.id) }}" class="btn btn-outline-danger btn-sm">
-              <i class="bi bi-arrow-counterclockwise"></i> Estornar
-            </a>
+
+            {# Botão de Estorno - envia POST para rota de estorno #}
+            <form action="{{ url_for('entrada_bp.estornar_entrada', entrada_id=entrada.id) }}" method="post" class="d-inline">
+              <button type="submit" class="btn btn-outline-danger btn-sm"
+                      onclick="return confirm('Confirmar estorno desta entrada?')">
+                <i class="bi bi-arrow-counterclockwise"></i> Estornar
+              </button>
+            </form>
+
           </td>
         </tr>
         {% else %}
@@ -79,7 +85,6 @@
   {% if entradas.pages > 1 %}
   <nav aria-label="Paginação" class="mt-4">
     <ul class="pagination justify-content-center">
-      {# Botão anterior #}
       {% if entradas.has_prev %}
       <li class="page-item">
         <a class="page-link" href="{{ url_for('entrada_bp.lista_entradas', page=entradas.prev_num, filtro=filtro, busca=busca) }}">Anterior</a>
@@ -88,7 +93,6 @@
       <li class="page-item disabled"><span class="page-link">Anterior</span></li>
       {% endif %}
 
-      {# Números das páginas #}
       {% for page_num in entradas.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
         {% if page_num %}
           {% if entradas.page == page_num %}
@@ -103,7 +107,6 @@
         {% endif %}
       {% endfor %}
 
-      {# Botão próxima #}
       {% if entradas.has_next %}
       <li class="page-item">
         <a class="page-link" href="{{ url_for('entrada_bp.lista_entradas', page=entradas.next_num, filtro=filtro, busca=busca) }}">Próxima</a>

@@ -1,47 +1,56 @@
 {% extends 'base_simplificada.html' %}
 
 {% block content %}
-<div class="container mt-4">
+
+<div class="container mt-4">{# -------------------- CABEÇALHO -------------------- #}
 
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="mb-0">Visualização da Entrada</h2>
-    <button class="btn btn-outline-primary" onclick="window.print()">
-      <i class="bi bi-printer"></i> Imprimir
-    </button>
-  </div>
-
-  {% if entrada.estornada %}
-    <div class="alert alert-danger d-flex align-items-center" role="alert">
-      <i class="bi bi-x-octagon-fill me-2"></i>
-      Esta entrada foi <strong>estornada</strong> e permanece visível apenas para consulta e auditoria.
+    <div>
+      <button class="btn btn-outline-primary" onclick="window.print()">
+        <i class="bi bi-printer"></i> Imprimir
+      </button>
+      {% if not entrada.estornada %}
+      <form method="POST" action="{{ url_for('entrada_bp.estornar_entrada', entrada_id=entrada.id) }}" class="d-inline ms-2">
+        <button type="submit" class="btn btn-outline-danger">
+          <i class="bi bi-x-circle"></i> Estornar
+        </button>
+      </form>
+      {% endif %}
     </div>
-  {% endif %}
+  </div>{# -------------------- DADOS DA ENTRADA -------------------- #}
 
-  <div class="card shadow-sm rounded-4 mb-4">
+  <div class="card shadow-sm rounded-4 mb-4 {% if entrada.estornada %}border-danger{% endif %}">
     <div class="card-body">
-      <div class="row mb-2">
-        <div class="col-md-6">
-          <strong>Data do Movimento:</strong> {{ entrada.data_movimento.strftime('%d/%m/%Y') }}
-        </div>
-        <div class="col-md-6">
-          <strong>Data da Nota Fiscal:</strong> {{ entrada.data_nota_fiscal.strftime('%d/%m/%Y') }}
-        </div>
+      {% if entrada.estornada %}
+      <div class="alert alert-danger d-flex align-items-center" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        <div>Esta entrada foi <strong>estornada</strong>.</div>
       </div>
-      <div class="row mb-2">
-        <div class="col-md-6">
-          <strong>Número da Nota Fiscal:</strong> {{ entrada.numero_nota_fiscal }}
-        </div>
-        <div class="col-md-6">
-          <strong>Fornecedor:</strong> {{ entrada.fornecedor.nome }}
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-12">
-          <strong>Registrado por:</strong> {{ entrada.usuario.nome }}
-        </div>
-      </div>
+      {% endif %}<div class="row mb-2">
+    <div class="col-md-6">
+      <strong>Data do Movimento:</strong> {{ entrada.data_movimento.strftime('%d/%m/%Y') }}
+    </div>
+    <div class="col-md-6">
+      <strong>Data da Nota Fiscal:</strong> {{ entrada.data_nota_fiscal.strftime('%d/%m/%Y') }}
     </div>
   </div>
+  <div class="row mb-2">
+    <div class="col-md-6">
+      <strong>Número da Nota Fiscal:</strong> {{ entrada.numero_nota_fiscal }}
+    </div>
+    <div class="col-md-6">
+      <strong>Fornecedor:</strong> {{ entrada.fornecedor.nome }}
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <strong>Registrado por:</strong> {{ entrada.usuario.nome }}
+    </div>
+  </div>
+</div>
+
+  </div>{# -------------------- ITENS DA ENTRADA -------------------- #}
 
   <h5 class="mb-3">Itens da Entrada</h5>
   <div class="table-responsive">
@@ -66,6 +75,5 @@
       </tbody>
     </table>
   </div>
-
 </div>
 {% endblock %}

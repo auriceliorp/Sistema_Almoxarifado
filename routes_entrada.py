@@ -172,6 +172,3 @@ def estornar_entrada(entrada_id):
 
     return redirect(url_for('entrada_bp.lista_entradas'))
 
-
-Arquivo routes_entrada.py atualizado com todas as funcionalidades e comentários foi finalizado e está pronto para uso. Se desejar, podemos prosseguir com a auditoria de saídas, visualização de logs ou implementar filtros nos relatórios. Qual o próximo passo?
-

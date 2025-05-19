@@ -1,69 +1,101 @@
 {# ===================== DASHBOARD: ALMOXARIFADO ===================== #}
 
-<div class="row mb-4">
-  <div class="col-12">
-    <div class="card shadow p-4">
-      <h5 class="mb-3">Itens com Estoque Abaixo do Mínimo</h5>
-      <table class="table table-hover table-sm align-middle">
-        <thead class="table-light">
-          <tr>
-            <th>Código</th>
-            <th>Nome</th>
-            <th>Grupo</th>
-            <th>Estoque Atual</th>
-            <th>Estoque Mínimo</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for item in itens_abaixo_minimo %}
-          <tr class="table-warning">
-            <td>{{ item.codigo_sap }}</td>
-            <td>{{ item.nome }}</td>
-            <td>{{ item.grupo.nome }}</td>
-            <td><strong>{{ item.estoque_atual }}</strong></td>
-            <td>{{ item.estoque_minimo }}</td>
-          </tr>
-          {% else %}
-          <tr>
-            <td colspan="5" class="text-center text-muted">Nenhum item com estoque crítico no momento.</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+<!-- ESTILO PERSONALIZADO PARA ESTA ABA -->
+<style>
+  .card-estoque {
+    border: none;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1.5rem;
+  }
+
+  .bg-estoque-baixo { background-color: #fee2e2; color: #991b1b; }
+  .bg-movimentado { background-color: #dbeafe; color: #1e3a8a; }
+
+  .table thead {
+    background-color: #f8fafc;
+  }
+
+  .badge-critico {
+    background-color: #dc2626;
+    color: white;
+  }
+
+  .badge-alerta {
+    background-color: #facc15;
+    color: #92400e;
+  }
+
+  .badge-normal {
+    background-color: #22c55e;
+    color: white;
+  }
+</style>
+
+<!-- Tabela: Itens com Estoque Abaixo do Mínimo -->
+<div class="card-estoque bg-estoque-baixo">
+  <h5 class="mb-3"><i class="bi bi-exclamation-circle me-2"></i>Itens com Estoque Abaixo do Mínimo</h5>
+  <div class="table-responsive">
+    <table class="table table-sm table-hover align-middle">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Nome</th>
+          <th>Grupo</th>
+          <th>Estoque Atual</th>
+          <th>Mínimo</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in itens_abaixo_minimo %}
+        <tr>
+          <td>{{ item.codigo_sap }}</td>
+          <td>{{ item.nome }}</td>
+          <td>{{ item.grupo.nome }}</td>
+          <td><span class="badge badge-critico">{{ item.estoque_atual }}</span></td>
+          <td>{{ item.estoque_minimo }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5" class="text-muted text-center">Nenhum item com estoque crítico.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 </div>
 
-<div class="row mb-4">
-  <div class="col-12">
-    <div class="card shadow p-4">
-      <h5 class="mb-3">Itens Mais Movimentados (Entradas e Saídas)</h5>
-      <table class="table table-hover table-sm align-middle">
-        <thead class="table-light">
-          <tr>
-            <th>Código</th>
-            <th>Nome</th>
-            <th>Entradas</th>
-            <th>Saídas</th>
-            <th>Total Movimentado</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for item in itens_movimentados %}
-          <tr>
-            <td>{{ item.codigo_sap }}</td>
-            <td>{{ item.nome }}</td>
-            <td>{{ item.total_entradas }}</td>
-            <td>{{ item.total_saidas }}</td>
-            <td><strong>{{ item.total_entradas + item.total_saidas }}</strong></td>
-          </tr>
-          {% else %}
-          <tr>
-            <td colspan="5" class="text-center text-muted">Sem movimentações recentes.</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+<!-- Tabela: Itens mais movimentados -->
+<div class="card-estoque bg-movimentado">
+  <h5 class="mb-3"><i class="bi bi-arrow-left-right me-2"></i>Itens Mais Movimentados</h5>
+  <div class="table-responsive">
+    <table class="table table-sm table-hover align-middle">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Nome</th>
+          <th>Entradas</th>
+          <th>Saídas</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in itens_movimentados %}
+        <tr>
+          <td>{{ item.codigo_sap }}</td>
+          <td>{{ item.nome }}</td>
+          <td><span class="badge badge-normal">{{ item.total_entradas }}</span></td>
+          <td><span class="badge badge-alerta">{{ item.total_saidas }}</span></td>
+          <td><strong>{{ item.total_entradas + item.total_saidas }}</strong></td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5" class="text-muted text-center">Sem movimentações registradas.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 </div>
+

@@ -1,236 +1,212 @@
 {% extends 'base_simplificada.html' %}
+{% block title %}Novo Processo - Painel de Contratações{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-  <h4 class="mb-4">Novo Processo de Contratação</h4>
+  <h2 class="mb-4">Novo Processo</h2>
 
   <form method="POST">
     <div class="row g-3">
-
-      <!-- Ano, Abertura, Homologação, Período -->
       <div class="col-md-2">
-        <label class="form-label">Ano</label>
-        <input type="text" class="form-control" name="ano" required>
+        <label for="ano" class="form-label">Ano</label>
+        <input type="number" id="ano" name="ano" class="form-control" required>
+      </div>
+
+      <div class="col-md-3">
+        <label for="data_abertura" class="form-label">Data de Abertura</label>
+        <input type="date" id="data_abertura" name="data_abertura" class="form-control">
       </div>
       <div class="col-md-3">
-        <label class="form-label">Data de Abertura</label>
-        <input type="date" class="form-control" name="data_abertura">
+        <label for="data_homologacao" class="form-label">Data de Homologação</label>
+        <input type="date" id="data_homologacao" name="data_homologacao" class="form-control">
       </div>
+      <div class="col-md-2">
+        <label for="periodo_dias" class="form-label">Período (Dias)</label>
+        <input type="number" id="periodo_dias" name="periodo_dias" class="form-control" readonly>
+      </div>
+
+      <div class="col-md-4">
+        <label for="numero_sei" class="form-label">Nº Processo SEI</label>
+        <input type="text" id="numero_sei" name="numero_sei" class="form-control" required>
+      </div>
+
+      <div class="col-md-4">
+        <label for="modalidade" class="form-label">Modalidade</label>
+        <select name="modalidade" id="modalidade" class="form-select">
+          <option value="">Selecione</option>
+          <option value="Dispensa de Licitação">Dispensa de Licitação</option>
+          <option value="Dispensa de Licitação Eletrônica">Dispensa de Licitação Eletrônica</option>
+          <option value="Inexigibilidade de Licitação">Inexigibilidade de Licitação</option>
+          <option value="Pregão Eletrônico">Pregão Eletrônico</option>
+          <option value="Licitação Embrapa">Licitação Embrapa</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label for="registro_precos" class="form-label">Registro de Preços</label>
+        <select name="registro_precos" id="registro_precos" class="form-select">
+          <option value="">Selecione</option>
+          <option value="Sim">Sim</option>
+          <option value="Não">Não</option>
+          <option value="Não se aplica">Não se aplica</option>
+        </select>
+      </div>
+
+      <div class="col-md-4">
+        <label for="orgaos_participantes" class="form-label">Órgãos Participantes</label>
+        <select name="orgaos_participantes" id="orgaos_participantes" class="form-select">
+          <option value="">Selecione</option>
+          <option value="Sim">Sim</option>
+          <option value="Não">Não</option>
+          <option value="Não se aplica">Não se aplica</option>
+        </select>
+      </div>
+
+      <div class="col-md-4">
+        <label for="numero_licitacao" class="form-label">Nº Licitação</label>
+        <input type="text" name="numero_licitacao" id="numero_licitacao" class="form-control">
+      </div>
+
+      <div class="col-md-4">
+        <label for="parecer_juridico" class="form-label">Parecer Jurídico</label>
+        <input type="text" name="parecer_juridico" class="form-control">
+      </div>
+
+      <div class="col-md-6">
+        <label for="fundamentacao_legal" class="form-label">Fundamentação Legal</label>
+        <textarea name="fundamentacao_legal" class="form-control"></textarea>
+      </div>
+
+      <div class="col-md-6">
+        <label for="objeto" class="form-label">Objeto</label>
+        <textarea name="objeto" class="form-control" required></textarea>
+      </div>
+
+      <div class="col-md-4">
+        <label for="natureza_despesa" class="form-label">Natureza da Despesa</label>
+        <select name="natureza_despesa" class="form-select">
+          <option value="">Selecione</option>
+          <option value="Consumo">Consumo</option>
+          <option value="Serviço">Serviço</option>
+          <option value="Obras/Serviço de engenharia">Obras/Serviço de engenharia</option>
+          <option value="Investimento">Investimento</option>
+        </select>
+      </div>
+
+      <div class="col-md-4">
+        <label for="valor_estimado" class="form-label">Valor Estimado (R$)</label>
+        <input type="text" name="valor_estimado" id="valor_estimado" class="form-control">
+      </div>
+      <div class="col-md-4">
+        <label for="valor_homologado" class="form-label">Valor Homologado (R$)</label>
+        <input type="text" name="valor_homologado" id="valor_homologado" class="form-control">
+      </div>
+      <div class="col-md-4">
+        <label for="percentual_economia" class="form-label">% Economia</label>
+        <input type="text" name="percentual_economia" id="percentual_economia" class="form-control" readonly>
+      </div>
+
       <div class="col-md-3">
-        <label class="form-label">Data de Homologação</label>
-        <input type="date" class="form-control" name="data_homologacao">
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">Período (dias)</label>
-        <input type="text" class="form-control" name="periodo_dias" id="periodo_dias" readonly>
-      </div>
-
-      <!-- Processo SEI -->
-      <div class="col-md-4">
-        <label class="form-label">Nº Processo SEI</label>
-        <input type="text" class="form-control" name="numero_sei" placeholder="21152.000001/2025-57" required>
-      </div>
-
-      <!-- Modalidade, Registro de Preços, Órgãos Participantes -->
-      <div class="col-md-4">
-        <label class="form-label">Modalidade de Licitação</label>
-        <select class="form-select" name="modalidade">
-          <option selected disabled>Selecione</option>
-          <option>Dispensa de Licitação</option>
-          <option>Dispensa de Licitação Eletrônica</option>
-          <option>Inexigibilidade de Licitação</option>
-          <option>Pregão Eletrônico</option>
-          <option>Licitação Embrapa</option>
-        </select>
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Registro de Preços</label>
-        <select class="form-select" name="registro_precos">
-          <option selected disabled>Selecione</option>
-          <option>Sim</option>
-          <option>Não</option>
-          <option>Não se aplica</option>
-        </select>
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Órgãos Participantes</label>
-        <select class="form-select" name="orgaos_participantes">
-          <option selected disabled>Selecione</option>
-          <option>Sim</option>
-          <option>Não</option>
-          <option>Não se aplica</option>
-        </select>
-      </div>
-
-      <!-- Número da Licitação, Parecer, Fundamentação -->
-      <div class="col-md-4">
-        <label class="form-label">Número da Licitação</label>
-        <input type="text" class="form-control" name="numero_licitacao">
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Parecer Jurídico</label>
-        <input type="text" class="form-control" name="parecer_juridico">
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Fundamentação Legal</label>
-        <select class="form-select" name="fundamentacao_legal">
-          <option selected disabled>Selecione</option>
-          <option>Art. 17, I (RLCC) c/c Art. 6º, XVI (Lei 14.133/2021) - Pregão</option>
-          <option>Art. 29, I (Lei 13.303/2016) c/c Art. 98, Art. 100 e Art. 103, §3º - Dispensa</option>
-          <option>Art. 29, II - Dispensa</option>
-          <option>Art. 29, X - Prestadoras de Serviço Público</option>
-          <option>Art. 29, XV - Contratação Emergencial</option>
-          <option>Art. 30, I - Inexigibilidade</option>
-          <option>Art. 30, II - Inexigibilidade</option>
-          <option>Art. 108, IV - Congressos, Feiras e Exposições</option>
-          <option>Art. 75, IV, “c” - P&D</option>
-          <option>Art. 17, II - Licitação Embrapa</option>
-        </select>
-      </div>
-
-      <!-- Objeto -->
-      <div class="col-md-12">
-        <label class="form-label">Objeto</label>
-        <textarea class="form-control" name="objeto" rows="3" required></textarea>
-      </div>
-
-      <!-- Natureza, Estimado, Homologado, Economia -->
-      <div class="col-md-4">
-        <label class="form-label">Natureza da Despesa</label>
-        <select class="form-select" name="natureza_despesa">
-          <option selected disabled>Selecione</option>
-          <option>Consumo</option>
-          <option>Serviço</option>
-          <option>Obras/Serviço de engenharia</option>
-          <option>Investimento</option>
-        </select>
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">Valor Estimado (R$)</label>
-        <input type="text" class="form-control" name="valor_estimado" id="valor_estimado">
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">Valor Homologado (R$)</label>
-        <input type="text" class="form-control" name="valor_homologado" id="valor_homologado">
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">% Economia</label>
-        <input type="text" class="form-control" name="percentual_economia" id="percentual_economia" readonly>
-      </div>
-
-      <!-- Impugnação, Recurso, Desertos -->
-      <div class="col-md-2">
         <label class="form-label">Impugnação</label>
-        <select class="form-select" name="impugnacao">
-          <option selected disabled>Selecione</option>
-          <option>Sim</option>
-          <option>Não</option>
-          <option>Não se aplica</option>
-        </select>
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">Recurso</label>
-        <select class="form-select" name="recurso">
-          <option selected disabled>Selecione</option>
-          <option>Sim</option>
-          <option>Não</option>
-          <option>Não se aplica</option>
-        </select>
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">Itens Desertos</label>
-        <select class="form-select" name="itens_desertos">
-          <option selected disabled>Selecione</option>
-          <option>Sim</option>
-          <option>Não</option>
-          <option>Não se aplica</option>
+        <select name="impugnacao" class="form-select">
+          <option value="">Selecione</option>
+          <option value="Sim">Sim</option>
+          <option value="Não">Não</option>
+          <option value="Não se aplica">Não se aplica</option>
         </select>
       </div>
 
-      <!-- Responsável, Setor, Status -->
-      <div class="col-md-4">
-        <label class="form-label">Responsável pela Condução</label>
-        <select name="responsavel_conducao" class="form-select">
+      <div class="col-md-3">
+        <label class="form-label">Recurso</label>
+        <select name="recurso" class="form-select">
+          <option value="">Selecione</option>
+          <option value="Sim">Sim</option>
+          <option value="Não">Não</option>
+          <option value="Não se aplica">Não se aplica</option>
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Itens Desertos</label>
+        <select name="itens_desertos" class="form-select">
+          <option value="">Selecione</option>
+          <option value="Sim">Sim</option>
+          <option value="Não">Não</option>
+        </select>
+      </div>
+
+      <div class="col-md-6">
+        <label for="responsavel_conducao" class="form-label">Responsável pela Condução</label>
+        <input type="text" name="responsavel_conducao" class="form-control">
+      </div>
+
+      <div class="col-md-6">
+        <label for="solicitante_id" class="form-label">Solicitante</label>
+        <select name="solicitante_id" id="solicitante_id" class="form-select">
+          <option value="">Selecione</option>
           {% for u in usuarios %}
-            <option value="{{ u.nome }}">{{ u.nome }}</option>
+            <option value="{{ u.id }}">{{ u.nome }}</option>
           {% endfor %}
         </select>
       </div>
-      <div class="col-md-4">
-        <label class="form-label">Setor Responsável</label>
+
+      <div class="col-md-3">
+        <label for="setor_responsavel" class="form-label">Setor Responsável</label>
         <select name="setor_responsavel" class="form-select">
-          <option>SPS</option>
-          <option>SOF</option>
-          <option>SCC</option>
-          <option>CHAA</option>
+          <option value="">Selecione</option>
+          <option value="SPS">SPS</option>
+          <option value="SOF">SOF</option>
+          <option value="SCC">SCC</option>
+          <option value="CHAA">CHAA</option>
         </select>
       </div>
-      <div class="col-md-4">
-        <label class="form-label">Status</label>
+
+      <div class="col-md-3">
+        <label for="status" class="form-label">Status</label>
         <select name="status" class="form-select">
-          <option>Processo Iniciado</option>
-          <option>Em andamento</option>
-          <option>Concluído</option>
-          <option>Aguardando Definições</option>
-          <option>Cancelada</option>
+          <option value="">Selecione</option>
+          <option value="Processo Iniciado">Processo Iniciado</option>
+          <option value="Em andamento">Em andamento</option>
+          <option value="Concluido">Concluido</option>
+          <option value="Aguardando Definições">Aguardando Definições</option>
+          <option value="Cancelada">Cancelada</option>
         </select>
       </div>
     </div>
 
     <div class="mt-4">
-      <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Salvar</button>
-      <a href="{{ url_for('painel_bp.lista_painel') }}" class="btn btn-secondary">Voltar</a>
+      <button type="submit" class="btn btn-success">Salvar</button>
+      <a href="{{ url_for('painel_bp.lista_painel') }}" class="btn btn-secondary">Cancelar</a>
     </div>
   </form>
 </div>
 
-<!-- Scripts de Cálculo -->
 <script>
-  function calcularEconomia() {
-    const estimado = parseFloat(document.getElementById('valor_estimado').value.replace(',', '.')) || 0;
-    const homologado = parseFloat(document.getElementById('valor_homologado').value.replace(',', '.')) || 0;
-    const economia = estimado > 0 ? ((estimado - homologado) / estimado * 100).toFixed(2) + '%' : '';
-    document.getElementById('percentual_economia').value = economia;
-  }
+  const abertura = document.getElementById('data_abertura');
+  const homologacao = document.getElementById('data_homologacao');
+  const campoDias = document.getElementById('periodo_dias');
 
-  function calcularPeriodo() {
-    const dataAbertura = document.querySelector('input[name="data_abertura"]').value;
-    const dataHomologacao = document.querySelector('input[name="data_homologacao"]').value;
+  [abertura, homologacao].forEach(input => {
+    input.addEventListener('change', () => {
+      if (abertura.value && homologacao.value) {
+        const inicio = new Date(abertura.value);
+        const fim = new Date(homologacao.value);
+        const diff = Math.ceil((fim - inicio) / (1000 * 60 * 60 * 24));
+        campoDias.value = diff > 0 ? diff : 0;
+      }
+    });
+  });
 
-    if (dataAbertura && dataHomologacao) {
-      const dt1 = new Date(dataAbertura);
-      const dt2 = new Date(dataHomologacao);
-      const diff = Math.floor((dt2 - dt1) / (1000 * 60 * 60 * 24)); // dias
-      document.getElementById('periodo_dias').value = diff >= 0 ? diff : '';
-    } else {
-      document.getElementById('periodo_dias').value = '';
-    }
-  }
+  const estimado = document.getElementById('valor_estimado');
+  const homologado = document.getElementById('valor_homologado');
+  const economia = document.getElementById('percentual_economia');
 
- const inputEstimado = document.getElementById('valor_estimado');
-const inputHomologado = document.getElementById('valor_homologado');
-const campoEconomia = document.getElementById('percentual_economia');
-
-function calcularEconomia() {
-  const estimado = parseFloat(inputEstimado.value.replace(',', '.')) || 0;
-  const homologado = parseFloat(inputHomologado.value.replace(',', '.')) || 0;
-
-  if (estimado > 0) {
-    const economia = ((estimado - homologado) / estimado * 100).toFixed(2);
-    campoEconomia.value = `${economia}%`;
-  } else {
-    campoEconomia.value = '';
-  }
-}
-
-// Chamada automática ao carregar
-window.addEventListener('DOMContentLoaded', calcularEconomia);
-
-// Chamada ao editar manualmente
-inputEstimado.addEventListener('input', calcularEconomia);
-inputHomologado.addEventListener('input', calcularEconomia);
-
-  document.querySelector('input[name="data_abertura"]').addEventListener('input', calcularPeriodo);
-  document.querySelector('input[name="data_homologacao"]').addEventListener('input', calcularPeriodo);
+  [estimado, homologado].forEach(input => {
+    input.addEventListener('input', () => {
+      const val1 = parseFloat(estimado.value.replace(',', '.')) || 0;
+      const val2 = parseFloat(homologado.value.replace(',', '.')) || 0;
+      const diff = val1 - val2;
+      economia.value = val1 > 0 ? ((diff / val1) * 100).toFixed(2) + '%' : '';
+    });
+  });
 </script>
 {% endblock %}

@@ -3,11 +3,10 @@
 {% block content %}
 <div class="container mt-4">
 
-  {# ------------------ ESTILO PERSONALIZADO PARA ABAS ------------------ #}
   <style>
     .nav-tabs .nav-link {
-      background-color: #e9f3f1;  /* fundo claro azul-esverdeado */
-      color: #004b5b;             /* azul escuro Embrapa */
+      background-color: #e9f3f1;
+      color: #004b5b;
       border: none;
       border-radius: 0.25rem 0.25rem 0 0;
       margin-right: 4px;
@@ -25,7 +24,7 @@
     }
   </style>
 
-  {# ------------------ ABAS DE NAVEGAÇÃO ------------------ #}
+  <!-- Abas de navegação -->
   <ul class="nav nav-tabs mb-4" id="tabsDashboard" role="tablist">
     <li class="nav-item" role="presentation">
       <button class="nav-link active" id="tab-geral" data-bs-toggle="tab" data-bs-target="#geral" type="button" role="tab">Visão Geral</button>
@@ -44,37 +43,31 @@
     </li>
   </ul>
 
-  {# ------------------ CONTEÚDO DE CADA ABA ------------------ #}
+  <!-- Conteúdo das abas -->
   <div class="tab-content" id="conteudoDashboard">
 
-    <!-- Aba: Visão Geral -->
     <div class="tab-pane fade show active" id="geral" role="tabpanel">
       {% include 'partials/dashboard_geral.html' %}
     </div>
 
-    <!-- Aba: Almoxarifado -->
     <div class="tab-pane fade" id="almox" role="tabpanel">
       {% include 'partials/dashboard_almoxarifado.html' %}
     </div>
 
-    <!-- Aba: Compras -->
     <div class="tab-pane fade" id="compras" role="tabpanel">
       {% include 'partials/dashboard_compras.html' %}
     </div>
 
-    <!-- Aba: Patrimônio -->
     <div class="tab-pane fade" id="patrimonio" role="tabpanel">
       {% include 'partials/dashboard_patrimonio.html' %}
     </div>
 
-    <!-- Aba: Publicações -->
     <div class="tab-pane fade" id="publicacoes" role="tabpanel">
       {% include 'partials/dashboard_publicacoes.html' %}
     </div>
 
   </div>
 
-  {# ------------------ BOTÕES DE ADMINISTRADOR (POPULAR/LIMPAR) ------------------ #}
   {% if usuario.email == 'admin@admin.com' %}
   <div style="position: fixed; bottom: 20px; right: 20px; z-index: 999;">
     <button class="btn btn-outline-danger me-2" data-bs-toggle="modal" data-bs-target="#modalPopular" title="Popular dados de teste">
@@ -86,7 +79,7 @@
   </div>
   {% endif %}
 
-  {# ------------------ MODAL: POPULAR DADOS ------------------ #}
+  <!-- Modal: Popular -->
   <div class="modal fade" id="modalPopular" tabindex="-1" aria-labelledby="modalPopularLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
@@ -105,7 +98,7 @@
     </div>
   </div>
 
-  {# ------------------ MODAL: LIMPAR DADOS ------------------ #}
+  <!-- Modal: Limpar -->
   <div class="modal fade" id="modalLimpar" tabindex="-1" aria-labelledby="modalLimparLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">

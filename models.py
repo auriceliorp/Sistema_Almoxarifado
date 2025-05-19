@@ -253,6 +253,10 @@ class PainelContratacao(db.Model):
     status = db.Column(db.String(50), nullable=True)
     excluido = db.Column(db.Boolean, default=False)
 
+    solicitante_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
+    solicitante = db.relationship('Usuario', foreign_keys=[solicitante_id])
+
+
 
     def __repr__(self):
         return f"<PainelContratacao {self.numero_sei}>"

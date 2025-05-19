@@ -1,0 +1,70 @@
+{% extends 'base_simplificada.html' %}
+
+{% block content %}
+<div class="container mt-4">
+  <h4 class="mb-4">Bens Patrimoniais</h4>
+
+  <!-- Formulário de Filtros -->
+  <form method="GET" class="row g-3 mb-4">
+    <div class="col-md-3">
+      <input type="text" name="descricao" class="form-control" placeholder="Descrição" value="{{ request.args.get('descricao', '') }}">
+    </div>
+    <div class="col-md-3">
+      <input type="text" name="numero_ul" class="form-control" placeholder="Nº UL" value="{{ request.args.get('numero_ul', '') }}">
+    </div>
+    <div class="col-md-3">
+      <select name="grupo_id" class="form-select">
+        <option value="">Todos os Grupos</option>
+        {% for grupo in grupos %}
+          <option value="{{ grupo.id }}" {% if request.args.get('grupo_id') == grupo.id|string %}selected{% endif %}>{{ grupo.nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Buscar</button>
+      <a href="{{ url_for('patrimonio_bp.novo_bem') }}" class="btn btn-success ms-2"><i class="bi bi-plus-circle"></i> Novo Bem</a>
+    </div>
+  </form>
+
+  <!-- Tabela de Bens Patrimoniais -->
+  <div class="table-responsive">
+    <table class="table table-sm table-striped align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Nº UL</th>
+          <th>Nº SAP</th>
+          <th>Descrição</th>
+          <th>Grupo</th>
+          <th>Detentor</th>
+          <th>Situação</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for bem in bens %}
+        <tr>
+          <td>{{ bem.numero_ul }}</td>
+          <td>{{ bem.numero_sap }}</td>
+          <td>{{ bem.descricao[:30] }}{% if bem.descricao|length > 30 %}...{% endif %}</td>
+          <td>{{ bem.grupo.nome }}</td>
+          <td>{{ bem.detentor.nome }}</td>
+          <td>{{ bem.situacao }}</td>
+          <td>
+            <a href="{{ url_for('patrimonio_bp.visualizar_bem', id=bem.id) }}" class="btn btn-sm btn-outline-primary" title="Visualizar">
+              <i class="bi bi-eye"></i>
+            </a>
+            <a href="{{ url_for('patrimonio_bp.editar_bem', id=bem.id) }}" class="btn btn-sm btn-outline-secondary" title="Editar">
+              <i class="bi bi-pencil"></i>
+            </a>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7">Nenhum bem encontrado.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

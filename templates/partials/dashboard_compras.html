@@ -21,40 +21,34 @@
   }
 </style>
 
-<!-- AVISO DE DESENVOLVIMENTO -->
-<div class="alert alert-info d-flex align-items-center shadow-sm">
-  <i class="bi bi-info-circle-fill me-2"></i>
-  Módulo de Compras em desenvolvimento. Os dados exibidos são ilustrativos.
-</div>
-
 <!-- INDICADORES -->
 <div class="row mb-4">
   <div class="col-md-3 col-12">
     <div class="card-indicador card-proc-total">
       <i class="bi bi-folder-check display-6"></i>
       <h6>Total de Processos</h6>
-      <h3>35</h3>
+      <h3>{{ total_processos }}</h3>
     </div>
   </div>
   <div class="col-md-3 col-12">
     <div class="card-indicador card-proc-valor">
       <i class="bi bi-cash-stack display-6"></i>
       <h6>Total Estimado</h6>
-      <h3>R$ 4,7 mi</h3>
+      <h3>R$ {{ total_estimado | round(2) | replace('.', ',') }}</h3>
     </div>
   </div>
   <div class="col-md-3 col-12">
     <div class="card-indicador card-proc-sei">
       <i class="bi bi-file-earmark-text display-6"></i>
       <h6>Com número SEI</h6>
-      <h3>28</h3>
+      <h3>{{ total_com_sei }}</h3>
     </div>
   </div>
   <div class="col-md-3 col-12">
     <div class="card-indicador card-proc-ok">
       <i class="bi bi-check-circle display-6"></i>
       <h6>Concluídos</h6>
-      <h3>14</h3>
+      <h3>{{ total_concluidos }}</h3>
     </div>
   </div>
 </div>
@@ -65,7 +59,7 @@
   <canvas id="graficoModalidades"></canvas>
 </div>
 
-<!-- TABELA DE PROCESSOS (ILUSTRATIVA) -->
+<!-- TABELA DE PROCESSOS RECENTES -->
 <div class="card shadow p-4">
   <h5 class="mb-3">Processos Recentes</h5>
   <div class="table-responsive">
@@ -80,27 +74,17 @@
         </tr>
       </thead>
       <tbody>
+        {% for p in processos_recentes %}
         <tr>
-          <td>21152.000001/2025-57</td>
-          <td>Aquisição de materiais de limpeza</td>
-          <td>Pregão Eletrônico</td>
-          <td><span class="badge bg-warning text-dark">Em Andamento</span></td>
-          <td>João Silva</td>
+          <td>{{ p.numero_sei }}</td>
+          <td>{{ p.objeto[:40] }}{% if p.objeto|length > 40 %}...{% endif %}</td>
+          <td>{{ p.modalidade }}</td>
+          <td><span class="badge bg-secondary">{{ p.status }}</span></td>
+          <td>{{ p.responsavel_conducao }}</td>
         </tr>
-        <tr>
-          <td>21152.000015/2025-57</td>
-          <td>Contratação de transporte executivo</td>
-          <td>Dispensa</td>
-          <td><span class="badge bg-success">Concluído</span></td>
-          <td>Maria Costa</td>
-        </tr>
-        <tr>
-          <td>21152.000028/2025-57</td>
-          <td>Manutenção de aparelhos de ar</td>
-          <td>Inexigibilidade</td>
-          <td><span class="badge bg-info">Cotação</span></td>
-          <td>Pedro Nunes</td>
-        </tr>
+        {% else %}
+        <tr><td colspan="5">Nenhum processo encontrado.</td></tr>
+        {% endfor %}
       </tbody>
     </table>
   </div>
@@ -113,13 +97,11 @@
   new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: ['Pregão Eletrônico', 'Dispensa', 'Inexigibilidade', 'Concorrência', 'Leilão'],
+      labels: {{ modalidades_labels|tojson }},
       datasets: [{
         label: 'Quantidade de Processos',
-        data: [12, 8, 6, 5, 4],
-        backgroundColor: [
-          '#93c5fd', '#86efac', '#fde68a', '#ddd6fe', '#fda4af'
-        ],
+        data: {{ modalidades_data|tojson }},
+        backgroundColor: ['#93c5fd', '#86efac', '#fde68a', '#ddd6fe', '#fda4af'],
         borderRadius: 4,
         barThickness: 30
       }]
@@ -137,11 +119,11 @@
       scales: {
         y: {
           beginAtZero: true,
-          ticks: {
-            stepSize: 2
-          }
+          ticks: { stepSize: 1 }
         }
       }
     }
   });
 </script>
+{% endblock %}
+

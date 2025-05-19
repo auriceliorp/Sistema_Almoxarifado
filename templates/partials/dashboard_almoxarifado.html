@@ -1,0 +1,69 @@
+{# ===================== DASHBOARD: ALMOXARIFADO ===================== #}
+
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card shadow p-4">
+      <h5 class="mb-3">Itens com Estoque Abaixo do Mínimo</h5>
+      <table class="table table-hover table-sm align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Código</th>
+            <th>Nome</th>
+            <th>Grupo</th>
+            <th>Estoque Atual</th>
+            <th>Estoque Mínimo</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in itens_abaixo_minimo %}
+          <tr class="table-warning">
+            <td>{{ item.codigo_sap }}</td>
+            <td>{{ item.nome }}</td>
+            <td>{{ item.grupo.nome }}</td>
+            <td><strong>{{ item.estoque_atual }}</strong></td>
+            <td>{{ item.estoque_minimo }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5" class="text-center text-muted">Nenhum item com estoque crítico no momento.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card shadow p-4">
+      <h5 class="mb-3">Itens Mais Movimentados (Entradas e Saídas)</h5>
+      <table class="table table-hover table-sm align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Código</th>
+            <th>Nome</th>
+            <th>Entradas</th>
+            <th>Saídas</th>
+            <th>Total Movimentado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in itens_movimentados %}
+          <tr>
+            <td>{{ item.codigo_sap }}</td>
+            <td>{{ item.nome }}</td>
+            <td>{{ item.total_entradas }}</td>
+            <td>{{ item.total_saidas }}</td>
+            <td><strong>{{ item.total_entradas + item.total_saidas }}</strong></td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5" class="text-center text-muted">Sem movimentações recentes.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -10,7 +10,7 @@
       <!-- Ano, Abertura, Homologação, Período -->
       <div class="col-md-2">
         <label class="form-label">Ano</label>
-        <input type="number" class="form-control" name="ano" required>
+        <input type="text" class="form-control" name="ano" required>
       </div>
       <div class="col-md-3">
         <label class="form-label">Data de Abertura</label>
@@ -22,7 +22,7 @@
       </div>
       <div class="col-md-2">
         <label class="form-label">Período (dias)</label>
-        <input type="number" class="form-control" name="periodo_dias">
+        <input type="text" class="form-control" name="periodo_dias" id="periodo_dias" readonly>
       </div>
 
       <!-- Processo SEI -->
@@ -52,9 +52,14 @@
           <option>Não se aplica</option>
         </select>
       </div>
-      <div class="col-md-12">
+      <div class="col-md-4">
         <label class="form-label">Órgãos Participantes</label>
-        <input type="text" class="form-control" name="orgaos_participantes">
+        <select class="form-select" name="orgaos_participantes">
+          <option selected disabled>Selecione</option>
+          <option>Sim</option>
+          <option>Não</option>
+          <option>Não se aplica</option>
+        </select>
       </div>
 
       <!-- Número da Licitação, Parecer, Fundamentação -->
@@ -70,8 +75,8 @@
         <label class="form-label">Fundamentação Legal</label>
         <select class="form-select" name="fundamentacao_legal">
           <option selected disabled>Selecione</option>
-          <option>Art. 17, I (RLCC da Embrapa) c/c Art. 6º, XVI (Lei 14.133/2021) - Pregão</option>
-          <option>Art. 29, I (Lei 13.303/2016) c/c Art. 98, Caput, Art. 100 e Art. 103, §3º (RLCC da Embrapa) - Dispensa</option>
+          <option>Art. 17, I (RLCC) c/c Art. 6º, XVI (Lei 14.133/2021) - Pregão</option>
+          <option>Art. 29, I (Lei 13.303/2016) c/c Art. 98, Art. 100 e Art. 103, §3º - Dispensa</option>
           <option>Art. 29, II - Dispensa</option>
           <option>Art. 29, X - Prestadoras de Serviço Público</option>
           <option>Art. 29, XV - Contratação Emergencial</option>
@@ -102,11 +107,11 @@
       </div>
       <div class="col-md-2">
         <label class="form-label">Valor Estimado (R$)</label>
-        <input type="text" class="form-control" name="valor_estimado" id="valor_estimado" placeholder="ex: 10000,00">
+        <input type="text" class="form-control" name="valor_estimado" id="valor_estimado">
       </div>
       <div class="col-md-2">
         <label class="form-label">Valor Homologado (R$)</label>
-        <input type="text" class="form-control" name="valor_homologado" id="valor_homologado" placeholder="ex: 9500,00">
+        <input type="text" class="form-control" name="valor_homologado" id="valor_homologado">
       </div>
       <div class="col-md-2">
         <label class="form-label">% Economia</label>
@@ -179,7 +184,7 @@
   </form>
 </div>
 
-<!-- SCRIPT PARA CÁLCULO AUTOMÁTICO DE ECONOMIA -->
+<!-- Scripts de Cálculo -->
 <script>
   function calcularEconomia() {
     const estimado = parseFloat(document.getElementById('valor_estimado').value.replace(',', '.')) || 0;
@@ -188,7 +193,23 @@
     document.getElementById('percentual_economia').value = economia;
   }
 
+  function calcularPeriodo() {
+    const dataAbertura = document.querySelector('input[name="data_abertura"]').value;
+    const dataHomologacao = document.querySelector('input[name="data_homologacao"]').value;
+
+    if (dataAbertura && dataHomologacao) {
+      const dt1 = new Date(dataAbertura);
+      const dt2 = new Date(dataHomologacao);
+      const diff = Math.floor((dt2 - dt1) / (1000 * 60 * 60 * 24)); // dias
+      document.getElementById('periodo_dias').value = diff >= 0 ? diff : '';
+    } else {
+      document.getElementById('periodo_dias').value = '';
+    }
+  }
+
   document.getElementById('valor_estimado').addEventListener('input', calcularEconomia);
   document.getElementById('valor_homologado').addEventListener('input', calcularEconomia);
+  document.querySelector('input[name="data_abertura"]').addEventListener('input', calcularPeriodo);
+  document.querySelector('input[name="data_homologacao"]').addEventListener('input', calcularPeriodo);
 </script>
 {% endblock %}

@@ -1,0 +1,58 @@
+{% extends 'base_simplificada.html' %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4>Visualizar Bem Patrimonial</h4>
+    <a href="{{ url_for('patrimonio_bp.editar_bem', id=bem.id) }}" class="btn btn-primary">
+      <i class="bi bi-pencil-square"></i> Editar
+    </a>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-md-4">
+      {% if bem.foto %}
+        <img src="{{ url_for('static', filename='uploads/' ~ bem.foto) }}" class="img-fluid rounded shadow-sm" alt="Foto do Bem">
+      {% else %}
+        <div class="text-muted fst-italic">Sem foto disponível</div>
+      {% endif %}
+    </div>
+    <div class="col-md-8">
+      <dl class="row">
+        <dt class="col-sm-4">Patrimônio UL</dt>
+        <dd class="col-sm-8">{{ bem.patrimonio_ul }}</dd>
+
+        <dt class="col-sm-4">Patrimônio SAP</dt>
+        <dd class="col-sm-8">{{ bem.patrimonio_sap }}</dd>
+
+        <dt class="col-sm-4">Patrimônio SIADS</dt>
+        <dd class="col-sm-8">{{ bem.patrimonio_siads or 'Não definido' }}</dd>
+
+        <dt class="col-sm-4">Descrição</dt>
+        <dd class="col-sm-8">{{ bem.descricao }}</dd>
+
+        <dt class="col-sm-4">Grupo / Classificação</dt>
+        <dd class="col-sm-8">{{ bem.grupo }}</dd>
+
+        <dt class="col-sm-4">Detentor Atual</dt>
+        <dd class="col-sm-8">{{ bem.detentor.nome }}</dd>
+
+        <dt class="col-sm-4">Localização</dt>
+        <dd class="col-sm-8">{{ bem.localizacao }}</dd>
+
+        <dt class="col-sm-4">Situação</dt>
+        <dd class="col-sm-8">{{ bem.situacao }}</dd>
+
+        <dt class="col-sm-4">Observações</dt>
+        <dd class="col-sm-8">{{ bem.observacoes or 'Nenhuma' }}</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="mt-4">
+    <a href="{{ url_for('patrimonio_bp.lista_bens') }}" class="btn btn-secondary">
+      <i class="bi bi-arrow-left"></i> Voltar à Lista
+    </a>
+  </div>
+</div>
+{% endblock %}

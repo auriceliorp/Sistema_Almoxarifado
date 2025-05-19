@@ -1,0 +1,194 @@
+{% extends 'base_simplificada.html' %}
+
+{% block content %}
+<div class="container mt-4">
+  <h4 class="mb-4">Novo Processo de Contratação</h4>
+
+  <form method="POST">
+    <div class="row g-3">
+
+      <!-- Ano, Abertura, Homologação, Período -->
+      <div class="col-md-2">
+        <label class="form-label">Ano</label>
+        <input type="number" class="form-control" name="ano" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Data de Abertura</label>
+        <input type="date" class="form-control" name="data_abertura">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Data de Homologação</label>
+        <input type="date" class="form-control" name="data_homologacao">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Período (dias)</label>
+        <input type="number" class="form-control" name="periodo_dias">
+      </div>
+
+      <!-- Processo SEI -->
+      <div class="col-md-4">
+        <label class="form-label">Nº Processo SEI</label>
+        <input type="text" class="form-control" name="numero_sei" placeholder="21152.000001/2025-57" required>
+      </div>
+
+      <!-- Modalidade, Registro de Preços, Órgãos Participantes -->
+      <div class="col-md-4">
+        <label class="form-label">Modalidade de Licitação</label>
+        <select class="form-select" name="modalidade">
+          <option selected disabled>Selecione</option>
+          <option>Dispensa de Licitação</option>
+          <option>Dispensa de Licitação Eletrônica</option>
+          <option>Inexigibilidade de Licitação</option>
+          <option>Pregão Eletrônico</option>
+          <option>Licitação Embrapa</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Registro de Preços</label>
+        <select class="form-select" name="registro_precos">
+          <option selected disabled>Selecione</option>
+          <option>Sim</option>
+          <option>Não</option>
+          <option>Não se aplica</option>
+        </select>
+      </div>
+      <div class="col-md-12">
+        <label class="form-label">Órgãos Participantes</label>
+        <input type="text" class="form-control" name="orgaos_participantes">
+      </div>
+
+      <!-- Número da Licitação, Parecer, Fundamentação -->
+      <div class="col-md-4">
+        <label class="form-label">Número da Licitação</label>
+        <input type="text" class="form-control" name="numero_licitacao">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Parecer Jurídico</label>
+        <input type="text" class="form-control" name="parecer_juridico">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Fundamentação Legal</label>
+        <select class="form-select" name="fundamentacao_legal">
+          <option selected disabled>Selecione</option>
+          <option>Art. 17, I (RLCC da Embrapa) c/c Art. 6º, XVI (Lei 14.133/2021) - Pregão</option>
+          <option>Art. 29, I (Lei 13.303/2016) c/c Art. 98, Caput, Art. 100 e Art. 103, §3º (RLCC da Embrapa) - Dispensa</option>
+          <option>Art. 29, II - Dispensa</option>
+          <option>Art. 29, X - Prestadoras de Serviço Público</option>
+          <option>Art. 29, XV - Contratação Emergencial</option>
+          <option>Art. 30, I - Inexigibilidade</option>
+          <option>Art. 30, II - Inexigibilidade</option>
+          <option>Art. 108, IV - Congressos, Feiras e Exposições</option>
+          <option>Art. 75, IV, “c” - P&D</option>
+          <option>Art. 17, II - Licitação Embrapa</option>
+        </select>
+      </div>
+
+      <!-- Objeto -->
+      <div class="col-md-12">
+        <label class="form-label">Objeto</label>
+        <textarea class="form-control" name="objeto" rows="3" required></textarea>
+      </div>
+
+      <!-- Natureza, Estimado, Homologado, Economia -->
+      <div class="col-md-4">
+        <label class="form-label">Natureza da Despesa</label>
+        <select class="form-select" name="natureza_despesa">
+          <option selected disabled>Selecione</option>
+          <option>Consumo</option>
+          <option>Serviço</option>
+          <option>Obras/Serviço de engenharia</option>
+          <option>Investimento</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Valor Estimado (R$)</label>
+        <input type="text" class="form-control" name="valor_estimado" id="valor_estimado" placeholder="ex: 10000,00">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Valor Homologado (R$)</label>
+        <input type="text" class="form-control" name="valor_homologado" id="valor_homologado" placeholder="ex: 9500,00">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">% Economia</label>
+        <input type="text" class="form-control" name="percentual_economia" id="percentual_economia" readonly>
+      </div>
+
+      <!-- Impugnação, Recurso, Desertos -->
+      <div class="col-md-2">
+        <label class="form-label">Impugnação</label>
+        <select class="form-select" name="impugnacao">
+          <option selected disabled>Selecione</option>
+          <option>Sim</option>
+          <option>Não</option>
+          <option>Não se aplica</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Recurso</label>
+        <select class="form-select" name="recurso">
+          <option selected disabled>Selecione</option>
+          <option>Sim</option>
+          <option>Não</option>
+          <option>Não se aplica</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Itens Desertos</label>
+        <select class="form-select" name="itens_desertos">
+          <option selected disabled>Selecione</option>
+          <option>Sim</option>
+          <option>Não</option>
+          <option>Não se aplica</option>
+        </select>
+      </div>
+
+      <!-- Responsável, Setor, Status -->
+      <div class="col-md-4">
+        <label class="form-label">Responsável pela Condução</label>
+        <select name="responsavel_conducao" class="form-select">
+          {% for u in usuarios %}
+            <option value="{{ u.nome }}">{{ u.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Setor Responsável</label>
+        <select name="setor_responsavel" class="form-select">
+          <option>SPS</option>
+          <option>SOF</option>
+          <option>SCC</option>
+          <option>CHAA</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+          <option>Processo Iniciado</option>
+          <option>Em andamento</option>
+          <option>Concluído</option>
+          <option>Aguardando Definições</option>
+          <option>Cancelada</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Salvar</button>
+      <a href="{{ url_for('painel_bp.lista_painel') }}" class="btn btn-secondary">Voltar</a>
+    </div>
+  </form>
+</div>
+
+<!-- SCRIPT PARA CÁLCULO AUTOMÁTICO DE ECONOMIA -->
+<script>
+  function calcularEconomia() {
+    const estimado = parseFloat(document.getElementById('valor_estimado').value.replace(',', '.')) || 0;
+    const homologado = parseFloat(document.getElementById('valor_homologado').value.replace(',', '.')) || 0;
+    const economia = estimado > 0 ? ((estimado - homologado) / estimado * 100).toFixed(2) + '%' : '';
+    document.getElementById('percentual_economia').value = economia;
+  }
+
+  document.getElementById('valor_estimado').addEventListener('input', calcularEconomia);
+  document.getElementById('valor_homologado').addEventListener('input', calcularEconomia);
+</script>
+{% endblock %}

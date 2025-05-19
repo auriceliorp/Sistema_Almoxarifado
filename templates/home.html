@@ -4,64 +4,101 @@
 
 {% block content %}
 
+<!-- Estilos customizados para a tela inicial -->
 <style>
-  .home-btn {
-    padding: 1.5rem;
-    font-size: 1.3rem;
-    font-weight: 500;
-  }
-  .home-btn i {
-    font-size: 1.8rem;
-    margin-right: 0.8rem;
-    vertical-align: middle;
-  }
+  /* Container geral da home */
   .home-container {
-    margin-top: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  /* Estilo dos botões tipo card */
+  .home-card {
+    padding: 1.5rem;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 500;
+    border-radius: 12px;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* sombra leve */
+  }
+
+  /* Ícones acima do texto */
+  .home-card i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  /* Efeito hover para dar leve elevação ao passar o mouse */
+  .home-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Botões desabilitados visualmente */
+  .btn-disabled {
+    pointer-events: none;
+    opacity: 0.6;
   }
 </style>
 
+<!-- Container com layout responsivo: 1 coluna no celular, 2 em tablets, 3 em desktop -->
 <div class="container home-container">
-  <div class="row row-cols-1 row-cols-md-2 g-4">
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
 
+    <!-- Botão Almoxarifado (ativo) -->
     <div class="col">
-      <a href="{{ url_for('main.almoxarifado') }}" class="btn btn-primary w-100 home-btn">
-        <i class="bi bi-archive"></i> Almoxarifado
+      <a href="{{ url_for('main.almoxarifado') }}" class="btn btn-primary w-100 home-card">
+        <i class="bi bi-archive"></i>
+        Almoxarifado
       </a>
     </div>
 
+    <!-- Botão Compras (desabilitado por enquanto) -->
     <div class="col">
-      <button class="btn btn-secondary w-100 home-btn" disabled>
-        <i class="bi bi-cart-check"></i> Compras
-      </button>
+      <div class="btn btn-secondary w-100 home-card btn-disabled">
+        <i class="bi bi-cart-check"></i>
+        Compras
+      </div>
     </div>
 
+    <!-- Botão Patrimônio (desabilitado) -->
     <div class="col">
-      <button class="btn btn-secondary w-100 home-btn" disabled>
-        <i class="bi bi-building"></i> Patrimônio
-      </button>
+      <div class="btn btn-secondary w-100 home-card btn-disabled">
+        <i class="bi bi-building"></i>
+        Patrimônio
+      </div>
     </div>
 
+    <!-- Botão Publicações (desabilitado) -->
     <div class="col">
-      <button class="btn btn-secondary w-100 home-btn" disabled>
-        <i class="bi bi-journal-text"></i> Publicações
-      </button>
+      <div class="btn btn-secondary w-100 home-card btn-disabled">
+        <i class="bi bi-journal-text"></i>
+        Publicações
+      </div>
     </div>
 
+    <!-- Botão Dashboard (ativo) -->
     <div class="col">
-      <a href="{{ url_for('dashboard_bp.dashboard') }}" class="btn btn-info w-100 home-btn text-dark">
-        <i class="bi bi-graph-up"></i> Dashboard
+      <a href="{{ url_for('dashboard_bp.dashboard') }}" class="btn btn-info text-dark w-100 home-card">
+        <i class="bi bi-graph-up"></i>
+        Dashboard
       </a>
     </div>
 
+    <!-- Botão Links Úteis (link externo) -->
     <div class="col">
-      <a href="https://linktr.ee/ctaa.sps" target="_blank" class="btn btn-success w-100 home-btn">
-        <i class="bi bi-link-45deg"></i> Links Úteis
+      <a href="https://linktr.ee/ctaa.sps" target="_blank" class="btn btn-success w-100 home-card">
+        <i class="bi bi-link-45deg"></i>
+        Links Úteis
       </a>
     </div>
 
+    <!-- Botão Relatórios (ativo com cor personalizada roxa) -->
     <div class="col">
-      <a href="{{ url_for('main.relatorios') }}" class="btn btn-secondary w-100 home-btn bg-purple text-white">
-        <i class="bi bi-file-earmark-bar-graph"></i> Relatórios
+      <a href="{{ url_for('main.relatorios') }}" class="btn w-100 home-card text-white" style="background-color: #6f42c1;">
+        <i class="bi bi-file-earmark-bar-graph"></i>
+        Relatórios
       </a>
     </div>
 

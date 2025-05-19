@@ -106,3 +106,46 @@ def novo_painel():
     # Enviar lista de usuários para o select
     usuarios = Usuario.query.order_by(Usuario.nome).all()
     return render_template('painel/novo_painel.html', usuarios=usuarios, usuario=current_user)
+
+# -------------------- EDITAR PROCESSO EXISTENTE -------------------- #
+@painel_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
+@login_required
+def editar_painel(id):
+    processo = PainelContratacao.query.get_or_404(id)
+
+    if request.method == 'POST':
+        try:
+            processo.ano = int(request.form.get('ano'))
+            processo.data_abertura = datetime.strptime(request.form.get('data_abertura'), '%Y-%m-%d') if request.form.get('data_abertura') else None
+            processo.data_homologacao = datetime.strptime(request.form.get('data_homologacao'), '%Y-%m-%d') if request.form.get('data_homologacao') else None
+            processo.periodo_dias = int(request.form.get('periodo_dias')) if request.form.get('periodo_dias') else None
+            processo.numero_sei = request.form.get('numero_sei')
+            processo.modalidade = request.form.get('modalidade')
+            processo.registro_precos = request.form.get('registro_precos')
+            processo.orgaos_participantes = request.form.get('orgaos_participantes')
+            processo.numero_licitacao = request.form.get('numero_licitacao')
+            processo.parecer_juridico = request.form.get('parecer_juridico')
+            processo.fundamentacao_legal = request.form.get('fundamentacao_legal')
+            processo.objeto = request.form.get('objeto')
+            processo.natureza_despesa = request.form.get('natureza_despesa')
+            processo.valor_estimado = float(request.form.get('valor_estimado').replace(',', '.')) if request.form.get('valor_estimado') else None
+            processo.valor_homologado = float(request.form.get('valor_homologado').replace(',', '.')) if request.form.get('valor_homologado') else None
+            processo.percentual_economia = request.form.get('percentual_economia')
+            processo.impugnacao = request.form.get('impugnacao')
+            processo.recurso = request.form.get('recurso')
+            processo.itens_desertos = request.form.get('itens_desertos')
+            processo.responsavel_conducao = request.form.get('responsavel_conducao')
+            processo.setor_responsavel = request.form.get('setor_responsavel')
+            processo.status = request.form.get('status')
+
+            db.session.commit()
+            flash('Processo atualizado com sucesso!', 'success')
+            return redirect(url_for('painel_bp.lista_painel'))
+
+        except Exception as e:
+            print(f"Erro ao atualizar processo: {e}")
+            flash('Erro ao atualizar processo. Verifique os dados e tente novamente.', 'danger')
+
+    usuarios = Usuario.query.order_by(Usuario.nome).all()
+    return render_template('painel/editar_painel.html', processo=processo, usuarios=usuarios, usuario=current_user)
+

@@ -1,58 +1,93 @@
-{# ===================== DASHBOARD: PATRIMÔNIO (ILUSTRATIVO) ===================== #}
+{# ===================== DASHBOARD: PATRIMÔNIO ===================== #}
 
-<div class="card shadow p-4 mb-4">
-  <h5 class="mb-3">Resumo Patrimonial</h5>
-  <div class="alert alert-info">
-    <i class="bi bi-info-circle-fill me-2"></i>
-    Módulo de Patrimônio em desenvolvimento. Os dados exibidos são ilustrativos.
+<!-- ESTILO PERSONALIZADO -->
+<style>
+  .card-patrimonio {
+    border: none;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
+
+  .card-ativos     { background-color: #dbeafe; color: #1e3a8a; }
+  .card-inventario { background-color: #fef9c3; color: #92400e; }
+  .card-alienar    { background-color: #fecaca; color: #991b1b; }
+
+  .table thead {
+    background-color: #f8fafc;
+  }
+
+  .badge-ativo     { background-color: #22c55e; color: white; }
+  .badge-inventario{ background-color: #facc15; color: #92400e; }
+  .badge-alienar   { background-color: #ef4444; color: white; }
+</style>
+
+<!-- AVISO DE DESENVOLVIMENTO -->
+<div class="alert alert-info d-flex align-items-center shadow-sm">
+  <i class="bi bi-info-circle-fill me-2"></i>
+  Módulo de Patrimônio em desenvolvimento. Os dados exibidos são ilustrativos.
+</div>
+
+<!-- INDICADORES -->
+<div class="row mb-4">
+  <div class="col-md-4 col-12">
+    <div class="card-patrimonio card-ativos">
+      <i class="bi bi-building display-6"></i>
+      <h6>Bens Ativos</h6>
+      <h3>235</h3>
+    </div>
   </div>
-  <div class="row text-center">
-    <div class="col-md-4">
-      <div class="card bg-light shadow-sm p-3">
-        <h6>Bens Ativos</h6>
-        <h4>235</h4>
-      </div>
+  <div class="col-md-4 col-12">
+    <div class="card-patrimonio card-inventario">
+      <i class="bi bi-clipboard-data display-6"></i>
+      <h6>Pendentes de Inventário</h6>
+      <h3>42</h3>
     </div>
-    <div class="col-md-4">
-      <div class="card bg-light shadow-sm p-3">
-        <h6>Bens Pendentes de Inventário</h6>
-        <h4>42</h4>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="card bg-light shadow-sm p-3">
-        <h6>Bens a Alienar</h6>
-        <h4>15</h4>
-      </div>
+  </div>
+  <div class="col-md-4 col-12">
+    <div class="card-patrimonio card-alienar">
+      <i class="bi bi-trash display-6"></i>
+      <h6>Bens a Alienar</h6>
+      <h3>15</h3>
     </div>
   </div>
 </div>
 
+<!-- TABELA DE BENS -->
 <div class="card shadow p-4">
   <h5 class="mb-3">Últimos Bens Cadastrados</h5>
-  <table class="table table-sm table-hover align-middle">
-    <thead class="table-light">
-      <tr>
-        <th>Patrimônio</th>
-        <th>Descrição</th>
-        <th>Local</th>
-        <th>Situação</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>0408724</td>
-        <td>Ar Condicionado Split 18000 BTU</td>
-        <td>Sala de Reunião</td>
-        <td><span class="badge bg-success">Ativo</span></td>
-      </tr>
-      <tr>
-        <td>0407983</td>
-        <td>Computador Desktop Dell</td>
-        <td>Administração</td>
-        <td><span class="badge bg-warning text-dark">Inventariar</span></td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="table-responsive">
+    <table class="table table-sm table-hover align-middle">
+      <thead>
+        <tr>
+          <th>Patrimônio</th>
+          <th>Descrição</th>
+          <th>Local</th>
+          <th>Situação</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>0408724</td>
+          <td>Ar Condicionado Split 18000 BTU</td>
+          <td>Sala de Reunião</td>
+          <td><span class="badge badge-ativo">Ativo</span></td>
+        </tr>
+        <tr>
+          <td>0407983</td>
+          <td>Computador Desktop Dell</td>
+          <td>Administração</td>
+          <td><span class="badge badge-inventario">Inventariar</span></td>
+        </tr>
+        <tr>
+          <td>0408597</td>
+          <td>Armário em aço duas portas</td>
+          <td>Arquivo</td>
+          <td><span class="badge badge-alienar">Alienar</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>
-

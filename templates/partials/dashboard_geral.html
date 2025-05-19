@@ -1,59 +1,74 @@
 {# ===================== DASHBOARD: VISÃO GERAL ===================== #}
+
+<!-- ESTILO PERSONALIZADO PARA INDICADORES -->
+<style>
+  .card-indicador {
+    border: none;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  }
+
+  .card-itens { background-color: #dbeafe; color: #1e3a8a; }
+  .card-fornecedores { background-color: #d1fae5; color: #065f46; }
+  .card-entradas { background-color: #fef9c3; color: #92400e; }
+  .card-saidas { background-color: #fecaca; color: #991b1b; }
+
+  .card-indicador i {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .card-indicador h3 { font-size: 1.5rem; }
+    .card-indicador i { font-size: 1.8rem; }
+  }
+</style>
+
+<!-- INDICADORES -->
 <div class="row mb-4">
-  <!-- Card: Total de Itens -->
-  <div class="col-md-3">
-    <div class="card text-white bg-primary text-center shadow">
-      <div class="card-body">
-        <i class="bi bi-box-seam display-5"></i>
-        <h5 class="mt-2">Itens</h5>
-        <h3>{{ total_itens }}</h3>
-      </div>
+  <div class="col-md-3 col-12">
+    <div class="card-indicador card-itens">
+      <i class="bi bi-box-seam"></i>
+      <h6>Itens</h6>
+      <h3>{{ total_itens }}</h3>
     </div>
   </div>
-
-  <!-- Card: Fornecedores -->
-  <div class="col-md-3">
-    <div class="card text-white bg-success text-center shadow">
-      <div class="card-body">
-        <i class="bi bi-truck display-5"></i>
-        <h5 class="mt-2">Fornecedores</h5>
-        <h3>{{ total_fornecedores }}</h3>
-      </div>
+  <div class="col-md-3 col-12">
+    <div class="card-indicador card-fornecedores">
+      <i class="bi bi-truck"></i>
+      <h6>Fornecedores</h6>
+      <h3>{{ total_fornecedores }}</h3>
     </div>
   </div>
-
-  <!-- Card: Entradas -->
-  <div class="col-md-3">
-    <div class="card text-white bg-warning text-center shadow">
-      <div class="card-body">
-        <i class="bi bi-arrow-down-circle display-5"></i>
-        <h5 class="mt-2">Entradas</h5>
-        <h3>{{ total_entradas }}</h3>
-      </div>
+  <div class="col-md-3 col-12">
+    <div class="card-indicador card-entradas">
+      <i class="bi bi-arrow-down-circle"></i>
+      <h6>Entradas</h6>
+      <h3>{{ total_entradas }}</h3>
     </div>
   </div>
-
-  <!-- Card: Saídas -->
-  <div class="col-md-3">
-    <div class="card text-white bg-danger text-center shadow">
-      <div class="card-body">
-        <i class="bi bi-arrow-up-circle display-5"></i>
-        <h5 class="mt-2">Saídas</h5>
-        <h3>{{ total_saidas }}</h3>
-      </div>
+  <div class="col-md-3 col-12">
+    <div class="card-indicador card-saidas">
+      <i class="bi bi-arrow-up-circle"></i>
+      <h6>Saídas</h6>
+      <h3>{{ total_saidas }}</h3>
     </div>
   </div>
 </div>
 
-{# ---------------- GRÁFICO DE BARRAS (Entradas e Saídas por ND) ---------------- #}
+<!-- GRÁFICO DE BARRAS -->
 <div class="card p-4 shadow rounded-3 mb-4">
   <h5 class="mb-3">Comparativo de Entradas e Saídas por Natureza de Despesa</h5>
   <canvas id="graficoEntradas"></canvas>
 </div>
 
-{# ---------------- GRÁFICO DE DONUT + TABELAS ---------------- #}
+<!-- GRÁFICO DE DONUT + TABELAS -->
 <div class="row">
-  <!-- Gráfico de Pizza (Donut) -->
+  <!-- Gráfico de Grupos -->
   <div class="col-md-6">
     <div class="card p-4 shadow rounded-3 mb-4">
       <h5 class="mb-3">Distribuição de Itens por Grupo</h5>
@@ -75,6 +90,8 @@
             <td>{{ entrada.item }}</td>
             <td>{{ entrada.data.strftime('%d/%m/%Y') }}</td>
           </tr>
+          {% else %}
+          <tr><td colspan="2" class="text-muted text-center">Nenhuma entrada registrada</td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -92,6 +109,8 @@
             <td>{{ saida.item }}</td>
             <td>{{ saida.data.strftime('%d/%m/%Y') }}</td>
           </tr>
+          {% else %}
+          <tr><td colspan="2" class="text-muted text-center">Nenhuma saída registrada</td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -99,10 +118,10 @@
   </div>
 </div>
 
-{# ---------------- SCRIPTS DO CHART.JS ---------------- #}
+<!-- SCRIPTS CHART.JS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  // GRÁFICO DE BARRAS
+  // Gráfico de Barras
   new Chart(document.getElementById('graficoEntradas'), {
     type: 'bar',
     data: {
@@ -111,20 +130,18 @@
         {
           label: 'Entradas (R$)',
           data: {{ dados_entrada | map(attribute='entradas') | list | tojson }},
-          backgroundColor: '#198754'
+          backgroundColor: '#38bdf8'
         },
         {
           label: 'Saídas (R$)',
           data: {{ dados_entrada | map(attribute='saidas') | list | tojson }},
-          backgroundColor: '#dc3545'
+          backgroundColor: '#f87171'
         }
       ]
     },
     options: {
       responsive: true,
-      plugins: {
-        legend: { position: 'top' }
-      },
+      plugins: { legend: { position: 'top' } },
       scales: {
         y: {
           beginAtZero: true,
@@ -136,7 +153,7 @@
     }
   });
 
-  // GRÁFICO DE DONUT
+  // Gráfico de Donut
   new Chart(document.getElementById('graficoGrupos'), {
     type: 'doughnut',
     data: {
@@ -144,8 +161,8 @@
       datasets: [{
         data: {{ grafico_grupo_dados | tojson }},
         backgroundColor: [
-          '#0d6efd', '#6610f2', '#6f42c1', '#d63384', '#dc3545',
-          '#fd7e14', '#ffc107', '#198754', '#20c997', '#0dcaf0'
+          '#60a5fa', '#818cf8', '#a78bfa', '#f472b6', '#f87171',
+          '#fb923c', '#facc15', '#34d399', '#2dd4bf', '#38bdf8'
         ]
       }]
     },

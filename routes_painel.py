@@ -150,3 +150,14 @@ def editar_painel(id):
 
     usuarios = Usuario.query.order_by(Usuario.nome).all()
     return render_template('painel/editar_painel.html', processo=processo, usuarios=usuarios, usuario=current_user)
+
+# -------------------- EXCLUSÃO LÓGICA -------------------- #
+@painel_bp.route('/excluir/<int:id>')
+@login_required
+def excluir_painel(id):
+    processo = PainelContratacao.query.get_or_404(id)
+    processo.excluido = True
+    db.session.commit()
+    flash(f'Processo {processo.numero_sei} marcado como excluído.', 'success')
+    return redirect(url_for('painel_bp.lista_painel'))
+

@@ -1,0 +1,47 @@
+{% extends 'base_simplificada.html' %}
+
+{% block content %}
+<div class="container mt-4">
+
+  <!-- Abas de Navegação -->
+  <ul class="nav nav-tabs mb-4" id="tabsDashboard" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="tab-geral" data-bs-toggle="tab" data-bs-target="#geral" type="button" role="tab">Visão Geral</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-almox" data-bs-toggle="tab" data-bs-target="#almox" type="button" role="tab">Almoxarifado</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-compras" data-bs-toggle="tab" data-bs-target="#compras" type="button" role="tab">Compras</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-patrimonio" data-bs-toggle="tab" data-bs-target="#patrimonio" type="button" role="tab">Patrimônio</button>
+    </li>
+  </ul>
+
+  <!-- Conteúdo de cada aba -->
+  <div class="tab-content" id="conteudoDashboard">
+
+    <!-- Aba: Visão Geral -->
+    <div class="tab-pane fade show active" id="geral" role="tabpanel">
+      {% include 'partials/dashboard_geral.html' %}
+    </div>
+
+    <!-- Aba: Almoxarifado -->
+    <div class="tab-pane fade" id="almox" role="tabpanel">
+      {% include 'partials/dashboard_almoxarifado.html' %}
+    </div>
+
+    <!-- Aba: Compras -->
+    <div class="tab-pane fade" id="compras" role="tabpanel">
+      {% include 'partials/dashboard_compras.html' %}
+    </div>
+
+    <!-- Aba: Patrimônio -->
+    <div class="tab-pane fade" id="patrimonio" role="tabpanel">
+      {% include 'partials/dashboard_patrimonio.html' %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

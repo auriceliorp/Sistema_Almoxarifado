@@ -1,32 +1,55 @@
-<div class="card shadow p-4 mb-4">
-  <h5 class="mb-3">Publicações Recentes no D.O.U.</h5>
-  <div class="alert alert-info">
-    <i class="bi bi-info-circle-fill me-2"></i>
-    Esta seção está em fase de estruturação. Os dados abaixo são apenas ilustrativos.
-  </div>
+{# ===================== DASHBOARD: PUBLICAÇÕES ===================== #}
 
-  <table class="table table-sm table-hover align-middle">
-    <thead class="table-light">
-      <tr>
-        <th>Data</th>
-        <th>Assunto</th>
-        <th>Tipo</th>
-        <th>Responsável</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>17/05/2025</td>
-        <td>Aviso de Licitação – Pregão nº 07/2025</td>
-        <td>Licitação</td>
-        <td>João Silva</td>
-      </tr>
-      <tr>
-        <td>14/05/2025</td>
-        <td>Extrato de Termo de Doação – Bens Inservíveis</td>
-        <td>Patrimônio</td>
-        <td>Maria Costa</td>
-      </tr>
-    </tbody>
-  </table>
+<!-- ESTILO PERSONALIZADO -->
+<style>
+  .table thead {
+    background-color: #f8fafc;
+  }
+
+  .badge-licitacao  { background-color: #93c5fd; color: #1e3a8a; }
+  .badge-patrimonio { background-color: #facc15; color: #92400e; }
+  .badge-outro      { background-color: #a5b4fc; color: #3730a3; }
+</style>
+
+<!-- AVISO DE DESENVOLVIMENTO -->
+<div class="alert alert-info d-flex align-items-center shadow-sm">
+  <i class="bi bi-info-circle-fill me-2"></i>
+  Módulo de Publicações em desenvolvimento. Os dados exibidos são ilustrativos.
+</div>
+
+<!-- TABELA DE PUBLICAÇÕES -->
+<div class="card shadow p-4">
+  <h5 class="mb-3">Publicações Recentes no Diário Oficial</h5>
+  <div class="table-responsive">
+    <table class="table table-sm table-hover align-middle">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Assunto</th>
+          <th>Tipo</th>
+          <th>Responsável</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>17/05/2025</td>
+          <td>Aviso de Licitação – Pregão nº 07/2025</td>
+          <td><span class="badge badge-licitacao">Licitação</span></td>
+          <td>João Silva</td>
+        </tr>
+        <tr>
+          <td>14/05/2025</td>
+          <td>Extrato de Termo de Doação – Bens Inservíveis</td>
+          <td><span class="badge badge-patrimonio">Patrimônio</span></td>
+          <td>Maria Costa</td>
+        </tr>
+        <tr>
+          <td>09/05/2025</td>
+          <td>Designação de Comissão Permanente</td>
+          <td><span class="badge badge-outro">Outro</span></td>
+          <td>Carlos Nunes</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>

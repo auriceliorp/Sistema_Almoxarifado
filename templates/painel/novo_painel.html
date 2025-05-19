@@ -9,7 +9,7 @@
     <div class="row g-3">
       <div class="col-md-2">
         <label for="ano" class="form-label">Ano</label>
-        <input type="number" id="ano" name="ano" class="form-control" required>
+        <input type="text" id="ano" name="ano" class="form-control" required>
       </div>
 
       <div class="col-md-3">
@@ -73,7 +73,14 @@
 
       <div class="col-md-6">
         <label for="fundamentacao_legal" class="form-label">Fundamentação Legal</label>
-        <textarea name="fundamentacao_legal" class="form-control"></textarea>
+        <select name="fundamentacao_legal" class="form-select">
+          <option value="">Selecione</option>
+          <option value="Art. 75, I">Art. 75, I</option>
+          <option value="Art. 75, II">Art. 75, II</option>
+          <option value="Art. 75, VIII">Art. 75, VIII</option>
+          <option value="Art. 74">Art. 74</option>
+          <option value="Art. 72">Art. 72</option>
+        </select>
       </div>
 
       <div class="col-md-6">
@@ -136,7 +143,12 @@
 
       <div class="col-md-6">
         <label for="responsavel_conducao" class="form-label">Responsável pela Condução</label>
-        <input type="text" name="responsavel_conducao" class="form-control">
+        <select name="responsavel_conducao" id="responsavel_conducao" class="form-select">
+          <option value="">Selecione</option>
+          {% for u in usuarios %}
+            <option value="{{ u.nome }}">{{ u.nome }}</option>
+          {% endfor %}
+        </select>
       </div>
 
       <div class="col-md-6">
@@ -192,6 +204,8 @@
         const fim = new Date(homologacao.value);
         const diff = Math.ceil((fim - inicio) / (1000 * 60 * 60 * 24));
         campoDias.value = diff > 0 ? diff : 0;
+      } else {
+        campoDias.value = '';
       }
     });
   });

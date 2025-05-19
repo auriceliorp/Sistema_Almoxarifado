@@ -4,6 +4,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from datetime import datetime
+from sqlalchemy.orm import joinedload
 from extensoes import db
 from models import PainelContratacao, Usuario
 
@@ -36,7 +37,12 @@ def lista_painel():
     if objeto:
         query = query.filter(PainelContratacao.objeto.ilike(f"%{objeto}%"))
 
-    processos = query.order_by(PainelContratacao.ano.desc(), PainelContratacao.data_abertura.desc()).all()
+    processos = (
+        query
+        .options(joinedload(PainelContratacao.solicitante))
+        .order_by(PainelContratacao.ano.desc(), PainelContratacao.data_abertura.desc())
+        .all()
+    )
     usuarios = Usuario.query.order_by(Usuario.nome).all()
 
     return render_template('painel/lista_painel.html', processos=processos, usuarios=usuarios, usuario=current_user)

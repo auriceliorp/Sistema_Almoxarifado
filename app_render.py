@@ -1,11 +1,10 @@
 # app_render.py
-# Arquivo principal do sistema Flask para o Almoxarifado
+# Arquivo principal do sistema Flask para o Almoxarifado e Patrimônio
 
 import os
 from flask import Flask
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
-
 
 # Importa extensões globais (db, login_manager, migrate)
 from extensoes import db, login_manager, migrate
@@ -41,7 +40,7 @@ def create_app():
     # -------------------- Importa modelos após init_app para evitar import circular --------------------
     from models import (
         Usuario, Perfil, UnidadeLocal, NaturezaDespesa, Grupo, Item,
-        Fornecedor, EntradaMaterial, EntradaItem, SaidaMaterial, SaidaItem
+        Fornecedor, EntradaMaterial, EntradaItem, SaidaMaterial, SaidaItem, BemPatrimonial
     )
 
     # -------------------- Define função de carregamento do usuário --------------------
@@ -84,12 +83,13 @@ def create_app():
     from routes_saida import saida_bp
     from routes_relatorio import relatorio_bp
     from routes_dashboard import dashboard_bp
-    from routes_popular import popular_bp  # <-- já existente
-    from limpar_dados import limpar_bp     # <-- já existente
-    from routes_auditoria import auditoria_bp  # <-- ADICIONADO
-    from routes_painel import painel_bp
+    from routes_popular import popular_bp       # <-- já existente
+    from limpar_dados import limpar_bp          # <-- já existente
+    from routes_auditoria import auditoria_bp   # <-- já existente
+    from routes_painel import painel_bp         # <-- já existente
+    from routes_patrimonio import patrimonio_bp # <-- ADICIONADO AGORA
 
-
+    # Registro dos blueprints
     app.register_blueprint(main)
     app.register_blueprint(usuario_bp)
     app.register_blueprint(area_ul_bp)
@@ -103,8 +103,9 @@ def create_app():
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(popular_bp)
     app.register_blueprint(limpar_bp)
-    app.register_blueprint(auditoria_bp)  # <-- ADICIONADO
+    app.register_blueprint(auditoria_bp)
     app.register_blueprint(painel_bp)
+    app.register_blueprint(patrimonio_bp)       # <-- NOVO REGISTRO
 
     return app
 

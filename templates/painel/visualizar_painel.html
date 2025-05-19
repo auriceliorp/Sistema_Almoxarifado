@@ -1,0 +1,89 @@
+{% extends 'base_simplificada.html' %}
+
+{% block content %}
+<div class="container mt-4">
+  <h4 class="mb-4">Detalhes do Processo de Contratação</h4>
+  <div class="row g-3">
+    <div class="col-md-2">
+      <strong>Ano:</strong> {{ processo.ano }}
+    </div>
+    <div class="col-md-3">
+      <strong>Data de Abertura:</strong> {{ processo.data_abertura.strftime('%d/%m/%Y') if processo.data_abertura else '' }}
+    </div>
+    <div class="col-md-3">
+      <strong>Data de Homologação:</strong> {{ processo.data_homologacao.strftime('%d/%m/%Y') if processo.data_homologacao else '' }}
+    </div>
+    <div class="col-md-2">
+      <strong>Período (dias):</strong> {{ processo.periodo_dias }}
+    </div>
+
+    <div class="col-md-4">
+      <strong>Nº Processo SEI:</strong> {{ processo.numero_sei }}
+    </div>
+
+    <div class="col-md-4">
+      <strong>Modalidade:</strong> {{ processo.modalidade }}
+    </div>
+    <div class="col-md-4">
+      <strong>Registro de Preços:</strong> {{ processo.registro_precos }}
+    </div>
+    <div class="col-md-4">
+      <strong>Órgãos Participantes:</strong> {{ processo.orgaos_participantes }}
+    </div>
+    <div class="col-md-4">
+      <strong>Nº Licitação:</strong> {{ processo.numero_licitacao }}
+    </div>
+    <div class="col-md-4">
+      <strong>Parecer Jurídico:</strong> {{ processo.parecer_juridico }}
+    </div>
+    <div class="col-md-4">
+      <strong>Fundamentação Legal:</strong> {{ processo.fundamentacao_legal }}
+    </div>
+
+    <div class="col-md-12">
+      <strong>Objeto:</strong><br>
+      <p>{{ processo.objeto }}</p>
+    </div>
+
+    <div class="col-md-4">
+      <strong>Natureza da Despesa:</strong> {{ processo.natureza_despesa }}
+    </div>
+    <div class="col-md-2">
+      <strong>Valor Estimado:</strong> R$ {{ '%.2f'|format(processo.valor_estimado|float) }}
+    </div>
+    <div class="col-md-2">
+      <strong>Valor Homologado:</strong> R$ {{ '%.2f'|format(processo.valor_homologado|float) }}
+    </div>
+    <div class="col-md-2">
+      <strong>% Economia:</strong> {{ processo.percentual_economia }}
+    </div>
+
+    <div class="col-md-2">
+      <strong>Impugnação:</strong> {{ processo.impugnacao }}
+    </div>
+    <div class="col-md-2">
+      <strong>Recurso:</strong> {{ processo.recurso }}
+    </div>
+    <div class="col-md-2">
+      <strong>Itens Desertos:</strong> {{ processo.itens_desertos }}
+    </div>
+
+    <div class="col-md-4">
+      <strong>Responsável pela Condução:</strong> {{ processo.responsavel_conducao }}
+    </div>
+    <div class="col-md-4">
+      <strong>Solicitante:</strong> {{ processo.solicitante.nome if processo.solicitante else '' }}
+    </div>
+    <div class="col-md-4">
+      <strong>Setor Responsável:</strong> {{ processo.setor_responsavel }}
+    </div>
+    <div class="col-md-4">
+      <strong>Status:</strong> {{ processo.status }}
+    </div>
+  </div>
+
+  <div class="mt-4">
+    <a href="{{ url_for('painel_bp.lista_painel') }}" class="btn btn-secondary">Voltar</a>
+  </div>
+</div>
+{% endblock %}

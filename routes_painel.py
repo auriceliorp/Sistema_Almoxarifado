@@ -19,7 +19,7 @@ def lista_painel():
     modalidade = request.args.get('modalidade')
     status = request.args.get('status')
 
-    query = PainelContratacao.query
+    query = PainelContratacao.query.filter_by(excluido=False)  # <-- apenas não excluídos
 
     if ano:
         query = query.filter(PainelContratacao.ano == ano)
@@ -53,7 +53,7 @@ def novo_painel():
             objeto = request.form.get('objeto')
             natureza_despesa = request.form.get('natureza_despesa')
 
-            # Tratamento de valores numéricos (br -> us)
+            # Valores monetários com formatação BR
             valor_estimado = request.form.get('valor_estimado', '').replace('.', '').replace(',', '.')
             valor_homologado = request.form.get('valor_homologado', '').replace('.', '').replace(',', '.')
 
@@ -87,7 +87,8 @@ def novo_painel():
                 itens_desertos=itens_desertos,
                 responsavel_conducao=responsavel_conducao,
                 setor_responsavel=setor_responsavel,
-                status=status
+                status=status,
+                excluido=False  # padrão
             )
 
             db.session.add(processo)
@@ -125,13 +126,11 @@ def editar_painel(id):
             processo.objeto = request.form.get('objeto')
             processo.natureza_despesa = request.form.get('natureza_despesa')
 
-            # Tratamento de valores numéricos (br -> us)
             valor_estimado = request.form.get('valor_estimado', '').replace('.', '').replace(',', '.')
             valor_homologado = request.form.get('valor_homologado', '').replace('.', '').replace(',', '.')
 
             processo.valor_estimado = float(valor_estimado) if valor_estimado else None
             processo.valor_homologado = float(valor_homologado) if valor_homologado else None
-
             processo.percentual_economia = request.form.get('percentual_economia')
             processo.impugnacao = request.form.get('impugnacao')
             processo.recurso = request.form.get('recurso')
@@ -151,13 +150,13 @@ def editar_painel(id):
     usuarios = Usuario.query.order_by(Usuario.nome).all()
     return render_template('painel/editar_painel.html', processo=processo, usuarios=usuarios, usuario=current_user)
 
+
 # -------------------- EXCLUSÃO LÓGICA -------------------- #
 @painel_bp.route('/excluir/<int:id>')
 @login_required
 def excluir_painel(id):
     processo = PainelContratacao.query.get_or_404(id)
-    processo.excluido = True
+    processo.excluido = True  # apenas marca como excluído
     db.session.commit()
-    flash(f'Processo {processo.numero_sei} marcado como excluído.', 'success')
+    flash(f'O processo {processo.numero_sei} foi excluído logicamente.', 'success')
     return redirect(url_for('painel_bp.lista_painel'))
-

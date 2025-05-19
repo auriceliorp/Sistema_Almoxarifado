@@ -218,3 +218,40 @@ class AuditLog(db.Model):
 
     # Data e hora da operação
     data_hora = db.Column(db.DateTime, default=datetime.utcnow)
+
+# ------------------- PAINEL DE CONTRATAÇÕES -------------------
+class PainelContratacao(db.Model):
+    __tablename__ = 'painel_contratacoes'
+
+    id = db.Column(db.Integer, primary_key=True)
+    ano = db.Column(db.Integer, nullable=False)
+    data_abertura = db.Column(db.Date, nullable=True)
+    data_homologacao = db.Column(db.Date, nullable=True)
+    periodo_dias = db.Column(db.Integer, nullable=True)
+
+    numero_sei = db.Column(db.String(25), nullable=False)  # Ex: 21152.000001/2025-57
+    modalidade = db.Column(db.String(100), nullable=True)
+    registro_precos = db.Column(db.String(100), nullable=True)
+    orgaos_participantes = db.Column(db.Text, nullable=True)
+    numero_licitacao = db.Column(db.String(50), nullable=True)
+
+    parecer_juridico = db.Column(db.String(100), nullable=True)
+    fundamentacao_legal = db.Column(db.Text, nullable=True)
+    objeto = db.Column(db.Text, nullable=False)
+
+    natureza_despesa = db.Column(db.String(100), nullable=True)
+    valor_estimado = db.Column(db.Numeric(14, 2), nullable=True)
+    valor_homologado = db.Column(db.Numeric(14, 2), nullable=True)
+    percentual_economia = db.Column(db.String(10), nullable=True)
+
+    impugnacao = db.Column(db.String(10), nullable=True)
+    recurso = db.Column(db.String(10), nullable=True)
+    itens_desertos = db.Column(db.String(10), nullable=True)
+
+    responsavel_conducao = db.Column(db.String(100), nullable=True)
+    setor_responsavel = db.Column(db.String(100), nullable=True)
+    status = db.Column(db.String(50), nullable=True)
+
+    def __repr__(self):
+        return f"<PainelContratacao {self.numero_sei}>"
+

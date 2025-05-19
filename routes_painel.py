@@ -5,19 +5,39 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from datetime import datetime
 from extensoes import db
-from models import PainelContratacao
+from models import PainelContratacao, Usuario
 
+# Blueprint do módulo
 painel_bp = Blueprint('painel_bp', __name__, url_prefix='/painel')
 
-# -------------------- LISTAGEM DE PROCESSOS -------------------- #
+
+# -------------------- LISTAGEM DE PROCESSOS COM FILTROS -------------------- #
 @painel_bp.route('/lista')
 @login_required
 def lista_painel():
-    processos = PainelContratacao.query.order_by(PainelContratacao.ano.desc(), PainelContratacao.data_abertura.desc()).all()
+    # Obter parâmetros de filtro
+    ano = request.args.get('ano')
+    modalidade = request.args.get('modalidade')
+    status = request.args.get('status')
+
+    # Construir a query base
+    query = PainelContratacao.query
+
+    # Aplicar filtros dinamicamente
+    if ano:
+        query = query.filter(PainelContratacao.ano == ano)
+    if modalidade:
+        query = query.filter(PainelContratacao.modalidade.ilike(f"%{modalidade}%"))
+    if status:
+        query = query.filter(PainelContratacao.status == status)
+
+    # Ordenação padrão
+    processos = query.order_by(PainelContratacao.ano.desc(), PainelContratacao.data_abertura.desc()).all()
+
     return render_template('painel/lista_painel.html', processos=processos, usuario=current_user)
 
 
-# -------------------- NOVO PROCESSO -------------------- #
+# -------------------- NOVO PROCESSO (GET e POST) -------------------- #
 @painel_bp.route('/novo', methods=['GET', 'POST'])
 @login_required
 def novo_painel():
@@ -83,4 +103,6 @@ def novo_painel():
             print(f"Erro ao salvar processo: {e}")
             flash('Erro ao salvar processo. Verifique os dados e tente novamente.', 'danger')
 
-    return render_template('painel/novo_painel.html', usuario=current_user)
+    # Enviar lista de usuários para o select
+    usuarios = Usuario.query.order_by(Usuario.nome).all()
+    return render_template('painel/novo_painel.html', usuarios=usuarios, usuario=current_user)

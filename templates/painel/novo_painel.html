@@ -207,8 +207,29 @@
     }
   }
 
-  document.getElementById('valor_estimado').addEventListener('input', calcularEconomia);
-  document.getElementById('valor_homologado').addEventListener('input', calcularEconomia);
+ const inputEstimado = document.getElementById('valor_estimado');
+const inputHomologado = document.getElementById('valor_homologado');
+const campoEconomia = document.getElementById('percentual_economia');
+
+function calcularEconomia() {
+  const estimado = parseFloat(inputEstimado.value.replace(',', '.')) || 0;
+  const homologado = parseFloat(inputHomologado.value.replace(',', '.')) || 0;
+
+  if (estimado > 0) {
+    const economia = ((estimado - homologado) / estimado * 100).toFixed(2);
+    campoEconomia.value = `${economia}%`;
+  } else {
+    campoEconomia.value = '';
+  }
+}
+
+// Chamada automática ao carregar
+window.addEventListener('DOMContentLoaded', calcularEconomia);
+
+// Chamada ao editar manualmente
+inputEstimado.addEventListener('input', calcularEconomia);
+inputHomologado.addEventListener('input', calcularEconomia);
+
   document.querySelector('input[name="data_abertura"]').addEventListener('input', calcularPeriodo);
   document.querySelector('input[name="data_homologacao"]').addEventListener('input', calcularPeriodo);
 </script>

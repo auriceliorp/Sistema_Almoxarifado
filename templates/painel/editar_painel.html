@@ -141,12 +141,21 @@
         </select>
       </div>
 
-      <!-- Responsável, Setor, Status -->
+      <!-- Responsável, Solicitante, Setor, Status -->
       <div class="col-md-4">
         <label class="form-label">Responsável pela Condução</label>
         <select name="responsavel_conducao" class="form-select">
           {% for u in usuarios %}
             <option value="{{ u.nome }}" {% if processo.responsavel_conducao == u.nome %}selected{% endif %}>{{ u.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Solicitante</label>
+        <select name="solicitante_id" class="form-select">
+          <option value="">Selecione</option>
+          {% for u in usuarios %}
+            <option value="{{ u.id }}" {% if processo.solicitante_id == u.id %}selected{% endif %}>{{ u.nome }}</option>
           {% endfor %}
         </select>
       </div>
@@ -216,3 +225,4 @@
   document.querySelector('input[name="data_homologacao"]').addEventListener('input', calcularPeriodo);
 </script>
 {% endblock %}
+

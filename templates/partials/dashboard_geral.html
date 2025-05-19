@@ -1,0 +1,159 @@
+{# ===================== DASHBOARD: VISÃO GERAL ===================== #}
+<div class="row mb-4">
+  <!-- Card: Total de Itens -->
+  <div class="col-md-3">
+    <div class="card text-white bg-primary text-center shadow">
+      <div class="card-body">
+        <i class="bi bi-box-seam display-5"></i>
+        <h5 class="mt-2">Itens</h5>
+        <h3>{{ total_itens }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card: Fornecedores -->
+  <div class="col-md-3">
+    <div class="card text-white bg-success text-center shadow">
+      <div class="card-body">
+        <i class="bi bi-truck display-5"></i>
+        <h5 class="mt-2">Fornecedores</h5>
+        <h3>{{ total_fornecedores }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card: Entradas -->
+  <div class="col-md-3">
+    <div class="card text-white bg-warning text-center shadow">
+      <div class="card-body">
+        <i class="bi bi-arrow-down-circle display-5"></i>
+        <h5 class="mt-2">Entradas</h5>
+        <h3>{{ total_entradas }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card: Saídas -->
+  <div class="col-md-3">
+    <div class="card text-white bg-danger text-center shadow">
+      <div class="card-body">
+        <i class="bi bi-arrow-up-circle display-5"></i>
+        <h5 class="mt-2">Saídas</h5>
+        <h3>{{ total_saidas }}</h3>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ---------------- GRÁFICO DE BARRAS (Entradas e Saídas por ND) ---------------- #}
+<div class="card p-4 shadow rounded-3 mb-4">
+  <h5 class="mb-3">Comparativo de Entradas e Saídas por Natureza de Despesa</h5>
+  <canvas id="graficoEntradas"></canvas>
+</div>
+
+{# ---------------- GRÁFICO DE DONUT + TABELAS ---------------- #}
+<div class="row">
+  <!-- Gráfico de Pizza (Donut) -->
+  <div class="col-md-6">
+    <div class="card p-4 shadow rounded-3 mb-4">
+      <h5 class="mb-3">Distribuição de Itens por Grupo</h5>
+      <canvas id="graficoGrupos"></canvas>
+    </div>
+  </div>
+
+  <!-- Últimas Entradas e Saídas -->
+  <div class="col-md-6">
+    <div class="card shadow p-3 mb-3">
+      <h6 class="fw-bold">Últimas Entradas</h6>
+      <table class="table table-sm table-hover">
+        <thead>
+          <tr><th>Item</th><th>Data</th></tr>
+        </thead>
+        <tbody>
+          {% for entrada in ultimas_entradas %}
+          <tr>
+            <td>{{ entrada.item }}</td>
+            <td>{{ entrada.data.strftime('%d/%m/%Y') }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card shadow p-3">
+      <h6 class="fw-bold">Últimas Saídas</h6>
+      <table class="table table-sm table-hover">
+        <thead>
+          <tr><th>Item</th><th>Data</th></tr>
+        </thead>
+        <tbody>
+          {% for saida in ultimas_saidas %}
+          <tr>
+            <td>{{ saida.item }}</td>
+            <td>{{ saida.data.strftime('%d/%m/%Y') }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{# ---------------- SCRIPTS DO CHART.JS ---------------- #}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // GRÁFICO DE BARRAS
+  new Chart(document.getElementById('graficoEntradas'), {
+    type: 'bar',
+    data: {
+      labels: {{ dados_entrada | map(attribute='codigo') | list | tojson }},
+      datasets: [
+        {
+          label: 'Entradas (R$)',
+          data: {{ dados_entrada | map(attribute='entradas') | list | tojson }},
+          backgroundColor: '#198754'
+        },
+        {
+          label: 'Saídas (R$)',
+          data: {{ dados_entrada | map(attribute='saidas') | list | tojson }},
+          backgroundColor: '#dc3545'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top' }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: value => 'R$ ' + value.toLocaleString('pt-BR')
+          }
+        }
+      }
+    }
+  });
+
+  // GRÁFICO DE DONUT
+  new Chart(document.getElementById('graficoGrupos'), {
+    type: 'doughnut',
+    data: {
+      labels: {{ grafico_grupo_labels | tojson }},
+      datasets: [{
+        data: {{ grafico_grupo_dados | tojson }},
+        backgroundColor: [
+          '#0d6efd', '#6610f2', '#6f42c1', '#d63384', '#dc3545',
+          '#fd7e14', '#ffc107', '#198754', '#20c997', '#0dcaf0'
+        ]
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom' }
+      }
+    }
+  });
+</script>

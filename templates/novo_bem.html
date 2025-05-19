@@ -1,0 +1,77 @@
+<!-- Template: novo_bem.html - Cadastro de Bens Patrimoniais -->
+{% extends 'base_simplificada.html' %}
+
+{% block content %}
+<div class="container mt-4">
+  <h4 class="mb-4">Cadastrar Bem Patrimonial</h4>
+
+  <form method="POST" enctype="multipart/form-data">
+    <div class="row g-3">
+
+      <!-- Número Patrimonial (UL, SAP, SIADS) -->
+      <div class="col-md-4">
+        <label class="form-label">Nº Patrimônio (UL)</label>
+        <input type="text" class="form-control" name="num_ul" required>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Nº Patrimônio (SAP)</label>
+        <input type="text" class="form-control" name="num_sap">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Nº Patrimônio (SIADS)</label>
+        <input type="text" class="form-control" name="num_siads">
+      </div>
+
+      <!-- Nome, Descrição e Foto -->
+      <div class="col-md-6">
+        <label class="form-label">Nome do Bem</label>
+        <input type="text" class="form-control" name="nome" required>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Foto do Bem</label>
+        <input type="file" class="form-control" name="foto">
+      </div>
+      <div class="col-md-12">
+        <label class="form-label">Descrição</label>
+        <textarea class="form-control" name="descricao" rows="3"></textarea>
+      </div>
+
+      <!-- Grupo de Bens / Classificação Contábil -->
+      <div class="col-md-6">
+        <label class="form-label">Grupo de Bens</label>
+        <select class="form-select" name="grupo_id">
+          {% for grupo in grupos %}
+            <option value="{{ grupo.id }}">{{ grupo.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Classificação Contábil</label>
+        <input type="text" class="form-control" name="classificacao_contabil">
+      </div>
+
+      <!-- Detentor -->
+      <div class="col-md-6">
+        <label class="form-label">Detentor</label>
+        <select class="form-select" name="detentor_id">
+          {% for u in usuarios %}
+            <option value="{{ u.id }}">{{ u.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Localização -->
+      <div class="col-md-6">
+        <label class="form-label">Localização</label>
+        <input type="text" class="form-control" name="localizacao">
+      </div>
+
+    </div>
+
+    <div class="mt-4">
+      <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Cadastrar Bem</button>
+      <a href="{{ url_for('patrimonio_bp.lista_bens') }}" class="btn btn-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

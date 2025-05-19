@@ -1,0 +1,61 @@
+{% extends 'base_simplificada.html' %}
+
+{% block content %}
+<div class="container mt-4">
+  <h4 class="mb-4">Editar Bem Patrimonial</h4>
+  <form method="POST" enctype="multipart/form-data">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label">Nº Patrimônio (Unidade Local)</label>
+        <input type="text" class="form-control" name="patrimonio_ul" value="{{ bem.patrimonio_ul }}" required>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Nº Patrimônio SAP</label>
+        <input type="text" class="form-control" name="patrimonio_sap" value="{{ bem.patrimonio_sap }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Nº Patrimônio SIADS</label>
+        <input type="text" class="form-control" name="patrimonio_siads" value="{{ bem.patrimonio_siads }}">
+      </div>
+      <div class="col-md-8">
+        <label class="form-label">Nome do Bem</label>
+        <input type="text" class="form-control" name="nome" value="{{ bem.nome }}" required>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Grupo de Bens</label>
+        <input type="text" class="form-control" name="grupo_bem" value="{{ bem.grupo_bem }}">
+      </div>
+      <div class="col-md-12">
+        <label class="form-label">Classificação Contábil</label>
+        <input type="text" class="form-control" name="classificacao_contabil" value="{{ bem.classificacao_contabil }}">
+      </div>
+      <div class="col-md-12">
+        <label class="form-label">Descrição</label>
+        <textarea class="form-control" name="descricao" rows="3">{{ bem.descricao }}</textarea>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Detentor</label>
+        <select class="form-select" name="detentor_id">
+          <option value="">-- Selecione --</option>
+          {% for u in usuarios %}
+            <option value="{{ u.id }}" {% if bem.detentor_id == u.id %}selected{% endif %}>{{ u.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Foto Atual</label><br>
+        {% if bem.foto %}
+          <img src="{{ url_for('static', filename='fotos_bens/' ~ bem.foto) }}" alt="Foto" class="img-thumbnail" style="max-height: 120px;">
+        {% else %}
+          <p class="text-muted">Sem foto</p>
+        {% endif %}
+        <input type="file" class="form-control mt-2" name="foto">
+      </div>
+    </div>
+    <div class="mt-4">
+      <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Salvar</button>
+      <a href="{{ url_for('patrimonio_bp.lista_bens') }}" class="btn btn-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

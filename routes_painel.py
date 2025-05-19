@@ -7,7 +7,6 @@ from datetime import datetime
 from extensoes import db
 from models import PainelContratacao, Usuario
 
-# Blueprint do módulo
 painel_bp = Blueprint('painel_bp', __name__, url_prefix='/painel')
 
 
@@ -18,8 +17,11 @@ def lista_painel():
     ano = request.args.get('ano')
     modalidade = request.args.get('modalidade')
     status = request.args.get('status')
+    solicitante_id = request.args.get('solicitante_id')
+    numero_sei = request.args.get('numero_sei')
+    objeto = request.args.get('objeto')
 
-    query = PainelContratacao.query.filter_by(excluido=False)  # <-- apenas não excluídos
+    query = PainelContratacao.query.filter_by(excluido=False)
 
     if ano:
         query = query.filter(PainelContratacao.ano == ano)
@@ -27,10 +29,17 @@ def lista_painel():
         query = query.filter(PainelContratacao.modalidade.ilike(f"%{modalidade}%"))
     if status:
         query = query.filter(PainelContratacao.status == status)
+    if solicitante_id:
+        query = query.filter(PainelContratacao.solicitante_id == solicitante_id)
+    if numero_sei:
+        query = query.filter(PainelContratacao.numero_sei.ilike(f"%{numero_sei}%"))
+    if objeto:
+        query = query.filter(PainelContratacao.objeto.ilike(f"%{objeto}%"))
 
     processos = query.order_by(PainelContratacao.ano.desc(), PainelContratacao.data_abertura.desc()).all()
+    usuarios = Usuario.query.order_by(Usuario.nome).all()
 
-    return render_template('painel/lista_painel.html', processos=processos, usuario=current_user)
+    return render_template('painel/lista_painel.html', processos=processos, usuarios=usuarios, usuario=current_user)
 
 
 # -------------------- NOVO PROCESSO -------------------- #
@@ -53,7 +62,6 @@ def novo_painel():
             objeto = request.form.get('objeto')
             natureza_despesa = request.form.get('natureza_despesa')
 
-            # Valores monetários com formatação BR
             valor_estimado = request.form.get('valor_estimado', '').replace('.', '').replace(',', '.')
             valor_homologado = request.form.get('valor_homologado', '').replace('.', '').replace(',', '.')
 
@@ -62,6 +70,7 @@ def novo_painel():
             recurso = request.form.get('recurso')
             itens_desertos = request.form.get('itens_desertos')
             responsavel_conducao = request.form.get('responsavel_conducao')
+            solicitante_id = request.form.get('solicitante_id') or None
             setor_responsavel = request.form.get('setor_responsavel')
             status = request.form.get('status')
 
@@ -86,9 +95,10 @@ def novo_painel():
                 recurso=recurso,
                 itens_desertos=itens_desertos,
                 responsavel_conducao=responsavel_conducao,
+                solicitante_id=int(solicitante_id) if solicitante_id else None,
                 setor_responsavel=setor_responsavel,
                 status=status,
-                excluido=False  # padrão
+                excluido=False
             )
 
             db.session.add(processo)
@@ -136,6 +146,7 @@ def editar_painel(id):
             processo.recurso = request.form.get('recurso')
             processo.itens_desertos = request.form.get('itens_desertos')
             processo.responsavel_conducao = request.form.get('responsavel_conducao')
+            processo.solicitante_id = int(request.form.get('solicitante_id')) if request.form.get('solicitante_id') else None
             processo.setor_responsavel = request.form.get('setor_responsavel')
             processo.status = request.form.get('status')
 
@@ -156,7 +167,7 @@ def editar_painel(id):
 @login_required
 def excluir_painel(id):
     processo = PainelContratacao.query.get_or_404(id)
-    processo.excluido = True  # apenas marca como excluído
+    processo.excluido = True
     db.session.commit()
     flash(f'O processo {processo.numero_sei} foi excluído logicamente.', 'success')
     return redirect(url_for('painel_bp.lista_painel'))

@@ -5,7 +5,10 @@ from flask import Blueprint, render_template
 from flask_login import login_required, current_user
 from sqlalchemy import func
 from extensoes import db
-from models import EntradaItem, SaidaItem, EntradaMaterial, SaidaMaterial, NaturezaDespesa, Item, Fornecedor
+from models import (
+    EntradaItem, SaidaItem, EntradaMaterial, SaidaMaterial,
+    NaturezaDespesa, Item, Fornecedor, PainelContratacao
+)
 
 dashboard_bp = Blueprint('dashboard_bp', __name__, url_prefix='/dashboard')
 
@@ -53,7 +56,7 @@ def dashboard():
     total_entradas = db.session.query(func.count(EntradaMaterial.id)).scalar()
     total_saidas = db.session.query(func.count(SaidaMaterial.id)).scalar()
 
-    # ---------------- GRÁFICO DE PIZZA (DONUT) ----------------
+    # ---------------- GRÁFICO DE PIZZA (DONUT) - Itens por Grupo ----------------
     grupo_data = (
         db.session.query(
             Item.grupo_id,
@@ -67,21 +70,38 @@ def dashboard():
     grafico_grupo_dados = [int(g.quantidade) for g in grupo_data]
 
     # ---------------- ABA ALMOXARIFADO ----------------
-
-    # Itens com estoque abaixo do mínimo
     itens_abaixo_minimo = Item.query.filter(Item.estoque_atual < Item.estoque_minimo).all()
 
-    # Itens mais movimentados (simples: calcular total entradas e saídas por item)
     itens_movimentados = Item.query.limit(10).all()
-
     for item in itens_movimentados:
         entradas = db.session.query(func.sum(EntradaItem.quantidade)).filter_by(item_id=item.id).scalar() or 0
         saidas = db.session.query(func.sum(SaidaItem.quantidade)).filter_by(item_id=item.id).scalar() or 0
         item.total_entradas = entradas
         item.total_saidas = saidas
 
+    # ---------------- ABA COMPRAS ----------------
+    total_processos = db.session.query(func.count()).select_from(PainelContratacao).filter_by(excluido=False).scalar()
+    total_estimado = db.session.query(func.sum(PainelContratacao.valor_estimado)).filter_by(excluido=False).scalar() or 0
+    total_com_sei = db.session.query(func.count()).select_from(PainelContratacao)\
+        .filter(PainelContratacao.numero_sei != None, PainelContratacao.numero_sei != '', PainelContratacao.excluido == False).scalar()
+    total_concluidos = db.session.query(func.count()).select_from(PainelContratacao)\
+        .filter(PainelContratacao.status == 'Concluido', PainelContratacao.excluido == False).scalar()
+
+    modalidades = db.session.query(PainelContratacao.modalidade, func.count())\
+        .filter(PainelContratacao.excluido == False)\
+        .group_by(PainelContratacao.modalidade).all()
+
+    labels_modalidades = [m[0] or 'Não Informada' for m in modalidades]
+    valores_modalidades = [m[1] for m in modalidades]
+
+    ultimos_processos = db.session.query(PainelContratacao)\
+        .filter(PainelContratacao.excluido == False)\
+        .order_by(PainelContratacao.data_abertura.desc())\
+        .limit(5).all()
+
     return render_template(
         'dashboard.html',
+        usuario=current_user,
         dados_entrada=dados_entrada,
         grafico_grupo_labels=grafico_grupo_labels,
         grafico_grupo_dados=grafico_grupo_dados,
@@ -91,5 +111,11 @@ def dashboard():
         total_saidas=total_saidas,
         itens_abaixo_minimo=itens_abaixo_minimo,
         itens_movimentados=itens_movimentados,
-        usuario=current_user
+        total_processos=total_processos,
+        total_estimado=total_estimado,
+        total_com_sei=total_com_sei,
+        total_concluidos=total_concluidos,
+        labels_modalidades=labels_modalidades,
+        valores_modalidades=valores_modalidades,
+        ultimos_processos=ultimos_processos
     )

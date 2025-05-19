@@ -15,15 +15,12 @@ painel_bp = Blueprint('painel_bp', __name__, url_prefix='/painel')
 @painel_bp.route('/lista')
 @login_required
 def lista_painel():
-    # Obter parâmetros de filtro
     ano = request.args.get('ano')
     modalidade = request.args.get('modalidade')
     status = request.args.get('status')
 
-    # Construir a query base
     query = PainelContratacao.query
 
-    # Aplicar filtros dinamicamente
     if ano:
         query = query.filter(PainelContratacao.ano == ano)
     if modalidade:
@@ -31,19 +28,17 @@ def lista_painel():
     if status:
         query = query.filter(PainelContratacao.status == status)
 
-    # Ordenação padrão
     processos = query.order_by(PainelContratacao.ano.desc(), PainelContratacao.data_abertura.desc()).all()
 
     return render_template('painel/lista_painel.html', processos=processos, usuario=current_user)
 
 
-# -------------------- NOVO PROCESSO (GET e POST) -------------------- #
+# -------------------- NOVO PROCESSO -------------------- #
 @painel_bp.route('/novo', methods=['GET', 'POST'])
 @login_required
 def novo_painel():
     if request.method == 'POST':
         try:
-            # Obter dados do formulário
             ano = int(request.form.get('ano'))
             data_abertura = datetime.strptime(request.form.get('data_abertura'), '%Y-%m-%d') if request.form.get('data_abertura') else None
             data_homologacao = datetime.strptime(request.form.get('data_homologacao'), '%Y-%m-%d') if request.form.get('data_homologacao') else None
@@ -57,8 +52,11 @@ def novo_painel():
             fundamentacao_legal = request.form.get('fundamentacao_legal')
             objeto = request.form.get('objeto')
             natureza_despesa = request.form.get('natureza_despesa')
-            valor_estimado = request.form.get('valor_estimado').replace(',', '.')
-            valor_homologado = request.form.get('valor_homologado').replace(',', '.')
+
+            # Tratamento de valores numéricos (br -> us)
+            valor_estimado = request.form.get('valor_estimado', '').replace('.', '').replace(',', '.')
+            valor_homologado = request.form.get('valor_homologado', '').replace('.', '').replace(',', '.')
+
             percentual_economia = request.form.get('percentual_economia')
             impugnacao = request.form.get('impugnacao')
             recurso = request.form.get('recurso')
@@ -67,7 +65,6 @@ def novo_painel():
             setor_responsavel = request.form.get('setor_responsavel')
             status = request.form.get('status')
 
-            # Criar nova instância
             processo = PainelContratacao(
                 ano=ano,
                 data_abertura=data_abertura,
@@ -93,7 +90,6 @@ def novo_painel():
                 status=status
             )
 
-            # Salvar no banco
             db.session.add(processo)
             db.session.commit()
             flash('Processo cadastrado com sucesso!', 'success')
@@ -103,11 +99,11 @@ def novo_painel():
             print(f"Erro ao salvar processo: {e}")
             flash('Erro ao salvar processo. Verifique os dados e tente novamente.', 'danger')
 
-    # Enviar lista de usuários para o select
     usuarios = Usuario.query.order_by(Usuario.nome).all()
     return render_template('painel/novo_painel.html', usuarios=usuarios, usuario=current_user)
 
-# -------------------- EDITAR PROCESSO EXISTENTE -------------------- #
+
+# -------------------- EDITAR PROCESSO -------------------- #
 @painel_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
 def editar_painel(id):
@@ -128,8 +124,14 @@ def editar_painel(id):
             processo.fundamentacao_legal = request.form.get('fundamentacao_legal')
             processo.objeto = request.form.get('objeto')
             processo.natureza_despesa = request.form.get('natureza_despesa')
-            processo.valor_estimado = float(request.form.get('valor_estimado').replace(',', '.')) if request.form.get('valor_estimado') else None
-            processo.valor_homologado = float(request.form.get('valor_homologado').replace(',', '.')) if request.form.get('valor_homologado') else None
+
+            # Tratamento de valores numéricos (br -> us)
+            valor_estimado = request.form.get('valor_estimado', '').replace('.', '').replace(',', '.')
+            valor_homologado = request.form.get('valor_homologado', '').replace('.', '').replace(',', '.')
+
+            processo.valor_estimado = float(valor_estimado) if valor_estimado else None
+            processo.valor_homologado = float(valor_homologado) if valor_homologado else None
+
             processo.percentual_economia = request.form.get('percentual_economia')
             processo.impugnacao = request.form.get('impugnacao')
             processo.recurso = request.form.get('recurso')
@@ -148,4 +150,3 @@ def editar_painel(id):
 
     usuarios = Usuario.query.order_by(Usuario.nome).all()
     return render_template('painel/editar_painel.html', processo=processo, usuarios=usuarios, usuario=current_user)
-

@@ -1,0 +1,80 @@
+{% extends 'base_simplificada.html' %}
+
+{% block content %}
+<div class="container mt-4">
+  <h4 class="mb-4">Painel de Contratações</h4>
+
+  <!-- FILTROS -->
+  <form method="GET" class="row g-2 mb-4">
+    <div class="col-md-3">
+      <label class="form-label">Ano</label>
+      <input type="number" name="ano" class="form-control" value="{{ request.args.get('ano', '') }}">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Modalidade</label>
+      <input type="text" name="modalidade" class="form-control" value="{{ request.args.get('modalidade', '') }}">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Status</label>
+      <select name="status" class="form-select">
+        <option value="">Todos</option>
+        <option {% if request.args.get('status') == 'Processo Iniciado' %}selected{% endif %}>Processo Iniciado</option>
+        <option {% if request.args.get('status') == 'Em andamento' %}selected{% endif %}>Em andamento</option>
+        <option {% if request.args.get('status') == 'Concluído' %}selected{% endif %}>Concluído</option>
+        <option {% if request.args.get('status') == 'Aguardando Definições' %}selected{% endif %}>Aguardando Definições</option>
+        <option {% if request.args.get('status') == 'Cancelada' %}selected{% endif %}>Cancelada</option>
+      </select>
+    </div>
+    <div class="col-md-1 d-flex align-items-end">
+      <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-search"></i></button>
+    </div>
+  </form>
+
+  <!-- TABELA -->
+  <div class="table-responsive">
+    <table class="table table-sm table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Ano</th>
+          <th>Processo SEI</th>
+          <th>Modalidade</th>
+          <th>Objeto</th>
+          <th>Responsável</th>
+          <th>Status</th>
+          <th class="text-end">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in processos %}
+        <tr>
+          <td>{{ p.ano }}</td>
+          <td>{{ p.numero_sei }}</td>
+          <td>{{ p.modalidade }}</td>
+          <td>{{ p.objeto[:60] }}{% if p.objeto|length > 60 %}...{% endif %}</td>
+          <td>{{ p.responsavel_conducao }}</td>
+          <td>
+            <span class="badge text-bg-light">{{ p.status }}</span>
+          </td>
+          <td class="text-end">
+            <a href="{{ url_for('painel_bp.novo_painel', id=p.id) }}" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-pencil"></i>
+            </a>
+            <!-- botão de visualização futura -->
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7" class="text-center text-muted">Nenhum processo encontrado.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mt-3">
+    <a href="{{ url_for('painel_bp.novo_painel') }}" class="btn btn-success">
+      <i class="bi bi-plus-circle me-1"></i>Novo Processo
+    </a>
+  </div>
+</div>
+{% endblock %}

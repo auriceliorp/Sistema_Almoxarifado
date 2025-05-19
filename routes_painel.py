@@ -177,3 +177,11 @@ def excluir_painel(id):
     db.session.commit()
     flash(f'O processo {processo.numero_sei} foi excluído logicamente.', 'success')
     return redirect(url_for('painel_bp.lista_painel'))
+
+# -------------------- VISUALIZAR PROCESSO -------------------- #
+@painel_bp.route('/visualizar/<int:id>')
+@login_required
+def visualizar_painel(id):
+    processo = PainelContratacao.query.get_or_404(id)
+    usuarios = Usuario.query.order_by(Usuario.nome).all()
+    return render_template('painel/visualizar_painel.html', processo=processo, usuarios=usuarios, usuario=current_user)

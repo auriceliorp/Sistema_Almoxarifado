@@ -1,24 +1,63 @@
 {% extends 'base_simplificada.html' %}
+{% block title %}Painel de Contratações{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-  <h4 class="mb-4">Painel de Contratações</h4>
+  <h2 class="mb-4">Painel de Contratações</h2>
 
-  <a href="{{ url_for('painel_bp.novo_painel') }}" class="btn btn-primary mb-3">
-    <i class="bi bi-plus-circle me-1"></i> Novo Processo
-  </a>
+  {# -------------------- FILTROS -------------------- #}
+  <form method="get" class="row g-3 mb-4">
+    <div class="col-md-2">
+      <input type="text" name="ano" class="form-control" placeholder="Ano" value="{{ request.args.get('ano', '') }}">
+    </div>
+    <div class="col-md-3">
+      <input type="text" name="numero_sei" class="form-control" placeholder="Nº SEI" value="{{ request.args.get('numero_sei', '') }}">
+    </div>
+    <div class="col-md-3">
+      <input type="text" name="modalidade" class="form-control" placeholder="Modalidade" value="{{ request.args.get('modalidade', '') }}">
+    </div>
+    <div class="col-md-4">
+      <input type="text" name="objeto" class="form-control" placeholder="Objeto" value="{{ request.args.get('objeto', '') }}">
+    </div>
+    <div class="col-md-4">
+      <select name="solicitante_id" class="form-select">
+        <option value="">Solicitante</option>
+        {% for u in usuarios %}
+          <option value="{{ u.id }}" {% if request.args.get('solicitante_id') == u.id|string %}selected{% endif %}>{{ u.nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <select name="status" class="form-select">
+        <option value="">Status</option>
+        <option value="Processo Iniciado">Processo Iniciado</option>
+        <option value="Em andamento">Em andamento</option>
+        <option value="Concluido">Concluido</option>
+        <option value="Aguardando Definições">Aguardando Definições</option>
+        <option value="Cancelada">Cancelada</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <button class="btn btn-primary w-100" type="submit">Filtrar</button>
+    </div>
+    <div class="col-md-3">
+      <a href="{{ url_for('painel_bp.novo_painel') }}" class="btn btn-success w-100">Novo Processo</a>
+    </div>
+  </form>
 
-  {% if processos %}
+  {# -------------------- TABELA -------------------- #}
   <div class="table-responsive">
-    <table class="table table-bordered table-hover align-middle">
+    <table class="table table-bordered table-hover">
       <thead class="table-light">
         <tr>
           <th>Ano</th>
-          <th>Processo SEI</th>
+          <th>Nº SEI</th>
           <th>Modalidade</th>
+          <th>Nº Licitação</th>
           <th>Objeto</th>
+          <th>Solicitante</th>
           <th>Status</th>
-          <th style="width: 140px;">Ações</th>
+          <th class="text-center">Ações</th>
         </tr>
       </thead>
       <tbody>
@@ -27,46 +66,20 @@
           <td>{{ processo.ano }}</td>
           <td>{{ processo.numero_sei }}</td>
           <td>{{ processo.modalidade }}</td>
-          <td>{{ processo.objeto[:60] }}{% if processo.objeto|length > 60 %}...{% endif %}</td>
+          <td>{{ processo.numero_licitacao }}</td>
+          <td>{{ processo.objeto[:40] }}{% if processo.objeto|length > 40 %}...{% endif %}</td>
+          <td>{{ processo.solicitante.nome if processo.solicitante else '-' }}</td>
           <td>{{ processo.status }}</td>
-          <td>
-            <a href="{{ url_for('painel_bp.editar_painel', id=processo.id) }}" class="btn btn-sm btn-warning" title="Editar">
-              <i class="bi bi-pencil-square"></i>
-            </a>
-
-            <!-- Botão que abre modal de confirmação -->
-            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#modalExcluir{{ processo.id }}" title="Excluir">
-              <i class="bi bi-trash"></i>
-            </button>
-
-            <!-- Modal de confirmação de exclusão -->
-            <div class="modal fade" id="modalExcluir{{ processo.id }}" tabindex="-1" aria-labelledby="modalExcluirLabel{{ processo.id }}" aria-hidden="true">
-              <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                  <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title" id="modalExcluirLabel{{ processo.id }}">Confirmar Exclusão</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                  </div>
-                  <div class="modal-body">
-                    Tem certeza que deseja excluir o processo <strong>{{ processo.numero_sei }}</strong>?
-                    <br><small class="text-muted">A exclusão será apenas lógica e o processo poderá ser recuperado futuramente.</small>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <a href="{{ url_for('painel_bp.excluir_painel', id=processo.id) }}" class="btn btn-danger">Confirmar Exclusão</a>
-                  </div>
-                </div>
-              </div>
-            </div>
-
+          <td class="text-center">
+            <a href="{{ url_for('painel_bp.editar_painel', id=processo.id) }}" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i></a>
+            <a href="{{ url_for('painel_bp.excluir_painel', id=processo.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Deseja realmente excluir?')"><i class="bi bi-trash"></i></a>
           </td>
         </tr>
+        {% else %}
+        <tr><td colspan="8" class="text-center">Nenhum processo encontrado.</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
-  {% else %}
-    <div class="alert alert-info">Nenhum processo cadastrado até o momento.</div>
-  {% endif %}
 </div>
 {% endblock %}

@@ -6,6 +6,7 @@ from flask import Flask
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
 
+
 # Importa extensões globais (db, login_manager, migrate)
 from extensoes import db, login_manager, migrate
 
@@ -86,6 +87,8 @@ def create_app():
     from routes_popular import popular_bp  # <-- já existente
     from limpar_dados import limpar_bp     # <-- já existente
     from routes_auditoria import auditoria_bp  # <-- ADICIONADO
+    from routes_painel import painel_bp
+
 
     app.register_blueprint(main)
     app.register_blueprint(usuario_bp)
@@ -101,6 +104,7 @@ def create_app():
     app.register_blueprint(popular_bp)
     app.register_blueprint(limpar_bp)
     app.register_blueprint(auditoria_bp)  # <-- ADICIONADO
+    app.register_blueprint(painel_bp)
 
     return app
 

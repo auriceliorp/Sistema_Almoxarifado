@@ -261,3 +261,38 @@ class PainelContratacao(db.Model):
     def __repr__(self):
         return f"<PainelContratacao {self.numero_sei}>"
 
+
+# ------------------- CONTROLE DE BENS -------------------
+    class BemPatrimonial(db.Model):
+    __tablename__ = 'bens_patrimoniais'
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    # Identificação
+    numero_patrimonio_ul = db.Column(db.String(20), unique=True, nullable=False)  # Patrimônio da Unidade Local
+    numero_patrimonio_sap = db.Column(db.String(20), unique=True, nullable=False)
+    numero_patrimonio_siads = db.Column(db.String(20), unique=True, nullable=True)  # Pode ser nulo por enquanto
+
+    descricao = db.Column(db.String(255), nullable=False)
+    marca = db.Column(db.String(100))
+    modelo = db.Column(db.String(100))
+    numero_serie = db.Column(db.String(100))
+    data_aquisicao = db.Column(db.Date)
+    valor_aquisicao = db.Column(db.Numeric(12, 2))
+
+    # Localização e responsável
+    unidade_local_id = db.Column(db.Integer, db.ForeignKey('unidade_local.id'), nullable=False)
+    detentor_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+
+    # Estado do bem
+    estado = db.Column(db.String(50))  # Em uso, Em manutenção, Baixado, Transferido, Doado, etc
+    observacao = db.Column(db.Text)
+
+    # Histórico simplificado
+    data_cadastro = db.Column(db.DateTime, default=datetime.utcnow)
+    ativo = db.Column(db.Boolean, default=True)
+
+    # Relacionamentos
+    unidade_local = db.relationship('UnidadeLocal', backref='bens')
+    detentor = db.relationship('Usuario', backref='bens')
+

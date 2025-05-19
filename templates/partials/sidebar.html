@@ -35,17 +35,23 @@
       </ul>
     </li>
 
-    <li class="nav-item mt-3">
-      <a class="nav-link text-white fw-bold d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#submenuCompras" role="button">
-        <span><i class="bi bi-cart-check me-1"></i> Compras</span><i class="bi bi-chevron-down"></i>
+  <li class="nav-item mt-3">
+  <a class="nav-link text-white fw-bold d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#submenuCompras" role="button">
+    <span><i class="bi bi-cart-check me-1"></i> Compras</span><i class="bi bi-chevron-down"></i>
+  </a>
+  <ul class="collapse nav flex-column ms-3" id="submenuCompras">
+    <li class="nav-item">
+      <a href="{{ url_for('painel_bp.lista_painel') }}" class="nav-link text-white">
+        Painel de Contratações
       </a>
-      <ul class="collapse nav flex-column ms-3" id="submenuCompras">
-        <li class="nav-item"><a href="#" class="nav-link text-white disabled">Requisições</a></li>
-        <li class="nav-item"><a href="#" class="nav-link text-white disabled">Fornecedores</a></li>
-        <li class="nav-item"><a href="#" class="nav-link text-white disabled">Cotações</a></li>
-        <li class="nav-item"><a href="#" class="nav-link text-white disabled">Processos SEI</a></li>
-      </ul>
     </li>
+    <li class="nav-item"><a href="#" class="nav-link text-white disabled">Requisições</a></li>
+    <li class="nav-item"><a href="#" class="nav-link text-white disabled">Fornecedores</a></li>
+    <li class="nav-item"><a href="#" class="nav-link text-white disabled">Cotações</a></li>
+    <li class="nav-item"><a href="#" class="nav-link text-white disabled">Processos SEI</a></li>
+  </ul>
+</li>
+
 
     <li class="nav-item mt-3">
       <a href="#" class="nav-link text-white fw-bold disabled"><i class="bi bi-journal-text me-1"></i> Publicações</a>

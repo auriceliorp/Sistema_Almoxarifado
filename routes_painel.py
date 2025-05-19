@@ -4,7 +4,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from datetime import datetime
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, func
 from extensoes import db
 from models import PainelContratacao, Usuario
 
@@ -185,3 +185,54 @@ def visualizar_painel(id):
     processo = PainelContratacao.query.get_or_404(id)
     usuarios = Usuario.query.order_by(Usuario.nome).all()
     return render_template('painel/visualizar_painel.html', processo=processo, usuarios=usuarios, usuario=current_user)
+
+# --------------------routes_dashboard.py (adicionar ao final ou adaptar)-------------------- #
+
+# Blueprint do dashboard
+from datetime import datetime
+
+dashboard_bp = Blueprint('dashboard_bp', __name__, url_prefix='/dashboard')
+
+@dashboard_bp.route('/compras')
+@login_required
+def dashboard_compras():
+    # Total de processos (não excluídos)
+    total_processos = db.session.query(func.count()).select_from(PainelContratacao).filter_by(excluido=False).scalar()
+
+    # Total estimado
+    total_estimado = db.session.query(func.sum(PainelContratacao.valor_estimado))\
+        .filter(PainelContratacao.excluido == False).scalar() or 0
+
+    # Com número SEI
+    total_com_sei = db.session.query(func.count()).select_from(PainelContratacao)\
+        .filter(PainelContratacao.numero_sei != None, PainelContratacao.numero_sei != '', PainelContratacao.excluido == False).scalar()
+
+    # Concluídos
+    total_concluidos = db.session.query(func.count()).select_from(PainelContratacao)\
+        .filter(PainelContratacao.status == 'Concluido', PainelContratacao.excluido == False).scalar()
+
+    # Gráfico: distribuição por modalidade
+    modalidades = db.session.query(PainelContratacao.modalidade, func.count())\
+        .filter(PainelContratacao.excluido == False)\
+        .group_by(PainelContratacao.modalidade).all()
+
+    labels_modalidades = [m[0] or 'Não Informada' for m in modalidades]
+    valores_modalidades = [m[1] for m in modalidades]
+
+    # Últimos 5 processos
+    ultimos_processos = db.session.query(PainelContratacao)\
+        .filter(PainelContratacao.excluido == False)\
+        .order_by(PainelContratacao.data_abertura.desc())\
+        .limit(5).all()
+
+    return render_template('dashboard_compras.html',
+        total_processos=total_processos,
+        total_estimado=total_estimado,
+        total_com_sei=total_com_sei,
+        total_concluidos=total_concluidos,
+        labels_modalidades=labels_modalidades,
+        valores_modalidades=valores_modalidades,
+        ultimos_processos=ultimos_processos,
+        usuario=current_user
+    )
+

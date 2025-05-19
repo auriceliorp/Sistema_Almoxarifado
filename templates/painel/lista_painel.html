@@ -56,9 +56,10 @@
             <span class="badge text-bg-light">{{ p.status }}</span>
           </td>
           <td class="text-end">
-            <a href="{{ url_for('painel_bp.novo_painel', id=p.id) }}" class="btn btn-sm btn-outline-primary">
-              <i class="bi bi-pencil"></i>
-            </a>
+            <a href="{{ url_for('painel_bp.editar_painel', id=processo.id) }}" class="btn btn-sm btn-warning">
+  <i class="bi bi-pencil-square"></i>
+</a>
+
             <!-- botão de visualização futura -->
           </td>
         </tr>

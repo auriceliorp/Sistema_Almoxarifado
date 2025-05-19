@@ -1,0 +1,218 @@
+{% extends 'base_simplificada.html' %}
+
+{% block content %}
+<div class="container mt-4">
+  <h4 class="mb-4">Editar Processo de Contratação</h4>
+
+  <form method="POST">
+    <div class="row g-3">
+
+      <!-- Ano, Abertura, Homologação, Período -->
+      <div class="col-md-2">
+        <label class="form-label">Ano</label>
+        <input type="text" class="form-control" name="ano" value="{{ processo.ano }}" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Data de Abertura</label>
+        <input type="date" class="form-control" name="data_abertura" value="{{ processo.data_abertura }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Data de Homologação</label>
+        <input type="date" class="form-control" name="data_homologacao" value="{{ processo.data_homologacao }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Período (dias)</label>
+        <input type="text" class="form-control" name="periodo_dias" id="periodo_dias" value="{{ processo.periodo_dias }}" readonly>
+      </div>
+
+      <!-- Processo SEI -->
+      <div class="col-md-4">
+        <label class="form-label">Nº Processo SEI</label>
+        <input type="text" class="form-control" name="numero_sei" value="{{ processo.numero_sei }}" required>
+      </div>
+
+      <!-- Modalidade, Registro de Preços, Órgãos Participantes -->
+      <div class="col-md-4">
+        <label class="form-label">Modalidade de Licitação</label>
+        <select class="form-select" name="modalidade">
+          <option selected disabled>Selecione</option>
+          {% for opt in ['Dispensa de Licitação', 'Dispensa de Licitação Eletrônica', 'Inexigibilidade de Licitação', 'Pregão Eletrônico', 'Licitação Embrapa'] %}
+            <option {% if processo.modalidade == opt %}selected{% endif %}>{{ opt }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Registro de Preços</label>
+        <select class="form-select" name="registro_precos">
+          {% for opt in ['Sim', 'Não', 'Não se aplica'] %}
+            <option {% if processo.registro_precos == opt %}selected{% endif %}>{{ opt }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Órgãos Participantes</label>
+        <select class="form-select" name="orgaos_participantes">
+          {% for opt in ['Sim', 'Não', 'Não se aplica'] %}
+            <option {% if processo.orgaos_participantes == opt %}selected{% endif %}>{{ opt }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Número da Licitação, Parecer, Fundamentação -->
+      <div class="col-md-4">
+        <label class="form-label">Número da Licitação</label>
+        <input type="text" class="form-control" name="numero_licitacao" value="{{ processo.numero_licitacao }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Parecer Jurídico</label>
+        <input type="text" class="form-control" name="parecer_juridico" value="{{ processo.parecer_juridico }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Fundamentação Legal</label>
+        <select class="form-select" name="fundamentacao_legal">
+          {% for opt in [
+            "Art. 17, I (RLCC) c/c Art. 6º, XVI (Lei 14.133/2021) - Pregão",
+            "Art. 29, I (Lei 13.303/2016) c/c Art. 98, Art. 100 e Art. 103, §3º - Dispensa",
+            "Art. 29, II - Dispensa",
+            "Art. 29, X - Prestadoras de Serviço Público",
+            "Art. 29, XV - Contratação Emergencial",
+            "Art. 30, I - Inexigibilidade",
+            "Art. 30, II - Inexigibilidade",
+            "Art. 108, IV - Congressos, Feiras e Exposições",
+            "Art. 75, IV, “c” - P&D",
+            "Art. 17, II - Licitação Embrapa"
+          ] %}
+            <option {% if processo.fundamentacao_legal == opt %}selected{% endif %}>{{ opt }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Objeto -->
+      <div class="col-md-12">
+        <label class="form-label">Objeto</label>
+        <textarea class="form-control" name="objeto" rows="3" required>{{ processo.objeto }}</textarea>
+      </div>
+
+      <!-- Natureza, Estimado, Homologado, Economia -->
+      <div class="col-md-4">
+        <label class="form-label">Natureza da Despesa</label>
+        <select class="form-select" name="natureza_despesa">
+          {% for opt in ['Consumo', 'Serviço', 'Obras/Serviço de engenharia', 'Investimento'] %}
+            <option {% if processo.natureza_despesa == opt %}selected{% endif %}>{{ opt }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Valor Estimado (R$)</label>
+        <input type="text" class="form-control" id="valor_estimado" name="valor_estimado" value="{{ processo.valor_estimado }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Valor Homologado (R$)</label>
+        <input type="text" class="form-control" id="valor_homologado" name="valor_homologado" value="{{ processo.valor_homologado }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">% Economia</label>
+        <input type="text" class="form-control" id="percentual_economia" name="percentual_economia" value="{{ processo.percentual_economia }}" readonly>
+      </div>
+
+      <!-- Impugnação, Recurso, Desertos -->
+      <div class="col-md-2">
+        <label class="form-label">Impugnação</label>
+        <select class="form-select" name="impugnacao">
+          {% for opt in ['Sim', 'Não', 'Não se aplica'] %}
+            <option {% if processo.impugnacao == opt %}selected{% endif %}>{{ opt }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Recurso</label>
+        <select class="form-select" name="recurso">
+          {% for opt in ['Sim', 'Não', 'Não se aplica'] %}
+            <option {% if processo.recurso == opt %}selected{% endif %}>{{ opt }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Itens Desertos</label>
+        <select class="form-select" name="itens_desertos">
+          {% for opt in ['Sim', 'Não', 'Não se aplica'] %}
+            <option {% if processo.itens_desertos == opt %}selected{% endif %}>{{ opt }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Responsável, Setor, Status -->
+      <div class="col-md-4">
+        <label class="form-label">Responsável pela Condução</label>
+        <select name="responsavel_conducao" class="form-select">
+          {% for u in usuarios %}
+            <option value="{{ u.nome }}" {% if processo.responsavel_conducao == u.nome %}selected{% endif %}>{{ u.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Setor Responsável</label>
+        <select name="setor_responsavel" class="form-select">
+          {% for opt in ['SPS', 'SOF', 'SCC', 'CHAA'] %}
+            <option {% if processo.setor_responsavel == opt %}selected{% endif %}>{{ opt }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+          {% for opt in ['Processo Iniciado', 'Em andamento', 'Concluído', 'Aguardando Definições', 'Cancelada'] %}
+            <option {% if processo.status == opt %}selected{% endif %}>{{ opt }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Salvar Alterações</button>
+      <a href="{{ url_for('painel_bp.lista_painel') }}" class="btn btn-secondary">Voltar</a>
+    </div>
+  </form>
+</div>
+
+<!-- Scripts para cálculo -->
+<script>
+  const inputEstimado = document.getElementById('valor_estimado');
+  const inputHomologado = document.getElementById('valor_homologado');
+  const campoEconomia = document.getElementById('percentual_economia');
+
+  function calcularEconomia() {
+    const estimado = parseFloat(inputEstimado.value.replace(',', '.')) || 0;
+    const homologado = parseFloat(inputHomologado.value.replace(',', '.')) || 0;
+
+    if (estimado > 0) {
+      const economia = ((estimado - homologado) / estimado * 100).toFixed(2);
+      campoEconomia.value = `${economia}%`;
+    } else {
+      campoEconomia.value = '';
+    }
+  }
+
+  function calcularPeriodo() {
+    const dtAbertura = document.querySelector('input[name="data_abertura"]').value;
+    const dtHomolog = document.querySelector('input[name="data_homologacao"]').value;
+
+    if (dtAbertura && dtHomolog) {
+      const d1 = new Date(dtAbertura);
+      const d2 = new Date(dtHomolog);
+      const diff = Math.floor((d2 - d1) / (1000 * 60 * 60 * 24));
+      document.getElementById('periodo_dias').value = diff >= 0 ? diff : '';
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    calcularEconomia();
+    calcularPeriodo();
+  });
+
+  inputEstimado.addEventListener('input', calcularEconomia);
+  inputHomologado.addEventListener('input', calcularEconomia);
+  document.querySelector('input[name="data_abertura"]').addEventListener('input', calcularPeriodo);
+  document.querySelector('input[name="data_homologacao"]').addEventListener('input', calcularPeriodo);
+</script>
+{% endblock %}

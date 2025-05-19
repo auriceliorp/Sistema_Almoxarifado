@@ -265,7 +265,6 @@ class PainelContratacao(db.Model):
 # ------------------- CONTROLE DE BENS -------------------
 from extensoes import db
 from datetime import datetime
-
 class BemPatrimonial(db.Model):
     __tablename__ = 'bens_patrimoniais'
 
@@ -274,25 +273,18 @@ class BemPatrimonial(db.Model):
     numero_ul = db.Column(db.String(50), unique=True, nullable=False)       # Nº Patrimônio da Unidade Local
     numero_sap = db.Column(db.String(50), unique=True, nullable=False)      # Nº SAP
     numero_siads = db.Column(db.String(50), unique=True, nullable=True)     # Nº SIADS (pode ser preenchido depois)
-    
     nome = db.Column(db.String(120), nullable=False)
     descricao = db.Column(db.Text, nullable=True)
-
     grupo_bem = db.Column(db.String(100), nullable=True)                    # Grupo ou categoria do bem
     classificacao_contabil = db.Column(db.String(100), nullable=True)       # Classificação contábil
-
     foto = db.Column(db.String(255), nullable=True)                         # Caminho para o arquivo da foto
-
     detentor_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True)
+    excluido = db.Column(db.Boolean, default=False)
     detentor = db.relationship('Usuario', backref='bens')
-
     localizacao = db.Column(db.String(100), nullable=True)
-
     data_aquisicao = db.Column(db.Date, nullable=True)
     valor_aquisicao = db.Column(db.Float, nullable=True)
-
     status = db.Column(db.String(50), default='Ativo')  # Ativo, Baixado, Em transferência etc.
-
     data_cadastro = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):

@@ -1,91 +1,112 @@
 {# ===================== DASHBOARD: COMPRAS ===================== #}
 
+<!-- ESTILO PERSONALIZADO -->
+<style>
+  .card-indicador {
+    border: none;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
+
+  .card-proc-total { background-color: #dbeafe; color: #1e3a8a; }
+  .card-proc-valor { background-color: #d1fae5; color: #065f46; }
+  .card-proc-sei   { background-color: #fef9c3; color: #92400e; }
+  .card-proc-ok    { background-color: #fecaca; color: #991b1b; }
+
+  .table thead {
+    background-color: #f8fafc;
+  }
+</style>
+
+<!-- AVISO DE DESENVOLVIMENTO -->
+<div class="alert alert-info d-flex align-items-center shadow-sm">
+  <i class="bi bi-info-circle-fill me-2"></i>
+  Módulo de Compras em desenvolvimento. Os dados exibidos são ilustrativos.
+</div>
+
+<!-- INDICADORES -->
 <div class="row mb-4">
-  <!-- Indicadores -->
-  <div class="col-md-3">
-    <div class="card text-bg-primary text-center shadow">
-      <div class="card-body">
-        <i class="bi bi-folder-check display-6"></i>
-        <h6 class="mt-2">Total de Processos</h6>
-        <h3>35</h3>
-      </div>
+  <div class="col-md-3 col-12">
+    <div class="card-indicador card-proc-total">
+      <i class="bi bi-folder-check display-6"></i>
+      <h6>Total de Processos</h6>
+      <h3>35</h3>
     </div>
   </div>
-  <div class="col-md-3">
-    <div class="card text-bg-success text-center shadow">
-      <div class="card-body">
-        <i class="bi bi-cash-stack display-6"></i>
-        <h6 class="mt-2">Total Estimado</h6>
-        <h3>R$ 4,7 mi</h3>
-      </div>
+  <div class="col-md-3 col-12">
+    <div class="card-indicador card-proc-valor">
+      <i class="bi bi-cash-stack display-6"></i>
+      <h6>Total Estimado</h6>
+      <h3>R$ 4,7 mi</h3>
     </div>
   </div>
-  <div class="col-md-3">
-    <div class="card text-bg-info text-center shadow">
-      <div class="card-body">
-        <i class="bi bi-file-earmark-text display-6"></i>
-        <h6 class="mt-2">Com número SEI</h6>
-        <h3>28</h3>
-      </div>
+  <div class="col-md-3 col-12">
+    <div class="card-indicador card-proc-sei">
+      <i class="bi bi-file-earmark-text display-6"></i>
+      <h6>Com número SEI</h6>
+      <h3>28</h3>
     </div>
   </div>
-  <div class="col-md-3">
-    <div class="card text-bg-secondary text-center shadow">
-      <div class="card-body">
-        <i class="bi bi-check-circle display-6"></i>
-        <h6 class="mt-2">Concluídos</h6>
-        <h3>14</h3>
-      </div>
+  <div class="col-md-3 col-12">
+    <div class="card-indicador card-proc-ok">
+      <i class="bi bi-check-circle display-6"></i>
+      <h6>Concluídos</h6>
+      <h3>14</h3>
     </div>
   </div>
 </div>
 
-<!-- Gráfico de Modalidades com Chart.js -->
-<div class="card p-4 mb-4 shadow">
+<!-- GRÁFICO DE MODALIDADES COM CHART.JS -->
+<div class="card shadow p-4 mb-4">
   <h5 class="mb-3">Distribuição por Modalidade de Licitação</h5>
   <canvas id="graficoModalidades"></canvas>
 </div>
 
-<!-- Tabela ilustrativa de processos -->
+<!-- TABELA DE PROCESSOS (ILUSTRATIVA) -->
 <div class="card shadow p-4">
   <h5 class="mb-3">Processos Recentes</h5>
-  <table class="table table-sm table-hover align-middle">
-    <thead class="table-light">
-      <tr>
-        <th>Nº Processo SEI</th>
-        <th>Objeto</th>
-        <th>Modalidade</th>
-        <th>Status</th>
-        <th>Responsável</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>21152.000001/2025-57</td>
-        <td>Aquisição de materiais de limpeza</td>
-        <td>Pregão Eletrônico</td>
-        <td><span class="badge bg-warning text-dark">Em Andamento</span></td>
-        <td>João Silva</td>
-      </tr>
-      <tr>
-        <td>21152.000015/2025-57</td>
-        <td>Contratação de transporte executivo</td>
-        <td>Dispensa</td>
-        <td><span class="badge bg-success">Concluído</span></td>
-        <td>Maria Costa</td>
-      </tr>
-      <tr>
-        <td>21152.000028/2025-57</td>
-        <td>Manutenção de aparelhos de ar</td>
-        <td>Inexigibilidade</td>
-        <td><span class="badge bg-info">Cotação</span></td>
-        <td>Pedro Nunes</td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="table-responsive">
+    <table class="table table-sm table-hover align-middle">
+      <thead>
+        <tr>
+          <th>Nº Processo SEI</th>
+          <th>Objeto</th>
+          <th>Modalidade</th>
+          <th>Status</th>
+          <th>Responsável</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>21152.000001/2025-57</td>
+          <td>Aquisição de materiais de limpeza</td>
+          <td>Pregão Eletrônico</td>
+          <td><span class="badge bg-warning text-dark">Em Andamento</span></td>
+          <td>João Silva</td>
+        </tr>
+        <tr>
+          <td>21152.000015/2025-57</td>
+          <td>Contratação de transporte executivo</td>
+          <td>Dispensa</td>
+          <td><span class="badge bg-success">Concluído</span></td>
+          <td>Maria Costa</td>
+        </tr>
+        <tr>
+          <td>21152.000028/2025-57</td>
+          <td>Manutenção de aparelhos de ar</td>
+          <td>Inexigibilidade</td>
+          <td><span class="badge bg-info">Cotação</span></td>
+          <td>Pedro Nunes</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>
 
-<!-- Script Chart.js para gráfico dinâmico -->
+<!-- SCRIPT CHART.JS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
   const ctx = document.getElementById('graficoModalidades').getContext('2d');
@@ -97,11 +118,7 @@
         label: 'Quantidade de Processos',
         data: [12, 8, 6, 5, 4],
         backgroundColor: [
-          '#0d6efd',
-          '#20c997',
-          '#ffc107',
-          '#6610f2',
-          '#6f42c1'
+          '#93c5fd', '#86efac', '#fde68a', '#ddd6fe', '#fda4af'
         ],
         borderRadius: 4,
         barThickness: 30
@@ -111,9 +128,11 @@
       responsive: true,
       plugins: {
         legend: { display: false },
-        tooltip: { callbacks: {
-          label: ctx => `${ctx.parsed.y} processos`
-        }}
+        tooltip: {
+          callbacks: {
+            label: ctx => `${ctx.parsed.y} processos`
+          }
+        }
       },
       scales: {
         y: {

@@ -29,7 +29,12 @@
         <span><i class="bi bi-building me-1"></i> Patrimônio</span><i class="bi bi-chevron-down"></i>
       </a>
       <ul class="collapse nav flex-column ms-3" id="submenuPatrimonio">
-        <li class="nav-item"><a href="#" class="nav-link text-white disabled">Inventário</a></li>
+         <li class="nav-item">
+  <a href="{{ url_for('patrimonio_bp.listar_bens') }}" class="nav-link text-white">
+    Bens Patrimoniais
+  </a>
+</li>
+       <li class="nav-item"><a href="#" class="nav-link text-white disabled">Inventário</a></li>
         <li class="nav-item"><a href="#" class="nav-link text-white disabled">Transferência</a></li>
         <li class="nav-item"><a href="#" class="nav-link text-white disabled">Relatórios</a></li>
       </ul>

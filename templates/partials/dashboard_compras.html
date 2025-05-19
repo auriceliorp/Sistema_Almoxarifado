@@ -34,7 +34,7 @@
     <div class="card-indicador card-proc-valor">
       <i class="bi bi-cash-stack display-6"></i>
       <h6>Total Estimado</h6>
-      <h3>R$ {{ total_estimado | round(2) | replace('.', ',') }}</h3>
+      <h3>R$ {{ total_estimado | round(2) | string | replace('.', ',') }}</h3>
     </div>
   </div>
   <div class="col-md-3 col-12">
@@ -74,7 +74,7 @@
         </tr>
       </thead>
       <tbody>
-        {% for p in processos_recentes %}
+        {% for p in ultimos_processos %}
         <tr>
           <td>{{ p.numero_sei }}</td>
           <td>{{ p.objeto[:40] }}{% if p.objeto|length > 40 %}...{% endif %}</td>
@@ -97,10 +97,10 @@
   new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: {{ modalidades_labels|tojson }},
+      labels: {{ labels_modalidades | tojson }},
       datasets: [{
         label: 'Quantidade de Processos',
-        data: {{ modalidades_data|tojson }},
+        data: {{ valores_modalidades | tojson }},
         backgroundColor: ['#93c5fd', '#86efac', '#fde68a', '#ddd6fe', '#fda4af'],
         borderRadius: 4,
         barThickness: 30
@@ -112,7 +112,7 @@
         legend: { display: false },
         tooltip: {
           callbacks: {
-            label: ctx => `${ctx.parsed.y} processos`
+            label: function(ctx) { return `${ctx.parsed.y} processos`; }
           }
         }
       },
@@ -126,4 +126,3 @@
   });
 </script>
 {% endblock %}
-

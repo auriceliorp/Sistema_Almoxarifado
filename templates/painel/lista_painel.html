@@ -4,78 +4,69 @@
 <div class="container mt-4">
   <h4 class="mb-4">Painel de Contratações</h4>
 
-  <!-- FILTROS -->
-  <form method="GET" class="row g-2 mb-4">
-    <div class="col-md-3">
-      <label class="form-label">Ano</label>
-      <input type="number" name="ano" class="form-control" value="{{ request.args.get('ano', '') }}">
-    </div>
-    <div class="col-md-4">
-      <label class="form-label">Modalidade</label>
-      <input type="text" name="modalidade" class="form-control" value="{{ request.args.get('modalidade', '') }}">
-    </div>
-    <div class="col-md-4">
-      <label class="form-label">Status</label>
-      <select name="status" class="form-select">
-        <option value="">Todos</option>
-        <option {% if request.args.get('status') == 'Processo Iniciado' %}selected{% endif %}>Processo Iniciado</option>
-        <option {% if request.args.get('status') == 'Em andamento' %}selected{% endif %}>Em andamento</option>
-        <option {% if request.args.get('status') == 'Concluído' %}selected{% endif %}>Concluído</option>
-        <option {% if request.args.get('status') == 'Aguardando Definições' %}selected{% endif %}>Aguardando Definições</option>
-        <option {% if request.args.get('status') == 'Cancelada' %}selected{% endif %}>Cancelada</option>
-      </select>
-    </div>
-    <div class="col-md-1 d-flex align-items-end">
-      <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-search"></i></button>
-    </div>
-  </form>
+  <a href="{{ url_for('painel_bp.novo_painel') }}" class="btn btn-primary mb-3">
+    <i class="bi bi-plus-circle me-1"></i> Novo Processo
+  </a>
 
-  <!-- TABELA -->
+  {% if processos %}
   <div class="table-responsive">
-    <table class="table table-sm table-hover align-middle">
+    <table class="table table-bordered table-hover align-middle">
       <thead class="table-light">
         <tr>
           <th>Ano</th>
           <th>Processo SEI</th>
           <th>Modalidade</th>
           <th>Objeto</th>
-          <th>Responsável</th>
           <th>Status</th>
-          <th class="text-end">Ações</th>
+          <th style="width: 140px;">Ações</th>
         </tr>
       </thead>
       <tbody>
-        {% for p in processos %}
+        {% for processo in processos %}
         <tr>
-          <td>{{ p.ano }}</td>
-          <td>{{ p.numero_sei }}</td>
-          <td>{{ p.modalidade }}</td>
-          <td>{{ p.objeto[:60] }}{% if p.objeto|length > 60 %}...{% endif %}</td>
-          <td>{{ p.responsavel_conducao }}</td>
+          <td>{{ processo.ano }}</td>
+          <td>{{ processo.numero_sei }}</td>
+          <td>{{ processo.modalidade }}</td>
+          <td>{{ processo.objeto[:60] }}{% if processo.objeto|length > 60 %}...{% endif %}</td>
+          <td>{{ processo.status }}</td>
           <td>
-            <span class="badge text-bg-light">{{ p.status }}</span>
-          </td>
-          <td class="text-end">
-            <a href="{{ url_for('painel_bp.editar_painel', id=processo.id) }}" class="btn btn-sm btn-warning">
-  <i class="bi bi-pencil-square"></i>
-</a>
+            <a href="{{ url_for('painel_bp.editar_painel', id=processo.id) }}" class="btn btn-sm btn-warning" title="Editar">
+              <i class="bi bi-pencil-square"></i>
+            </a>
 
-            <!-- botão de visualização futura -->
+            <!-- Botão que abre modal de confirmação -->
+            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#modalExcluir{{ processo.id }}" title="Excluir">
+              <i class="bi bi-trash"></i>
+            </button>
+
+            <!-- Modal de confirmação de exclusão -->
+            <div class="modal fade" id="modalExcluir{{ processo.id }}" tabindex="-1" aria-labelledby="modalExcluirLabel{{ processo.id }}" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                  <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="modalExcluirLabel{{ processo.id }}">Confirmar Exclusão</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                  </div>
+                  <div class="modal-body">
+                    Tem certeza que deseja excluir o processo <strong>{{ processo.numero_sei }}</strong>?
+                    <br><small class="text-muted">A exclusão será apenas lógica e o processo poderá ser recuperado futuramente.</small>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <a href="{{ url_for('painel_bp.excluir_painel', id=processo.id) }}" class="btn btn-danger">Confirmar Exclusão</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </td>
-        </tr>
-        {% else %}
-        <tr>
-          <td colspan="7" class="text-center text-muted">Nenhum processo encontrado.</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
-
-  <div class="mt-3">
-    <a href="{{ url_for('painel_bp.novo_painel') }}" class="btn btn-success">
-      <i class="bi bi-plus-circle me-1"></i>Novo Processo
-    </a>
-  </div>
+  {% else %}
+    <div class="alert alert-info">Nenhum processo cadastrado até o momento.</div>
+  {% endif %}
 </div>
 {% endblock %}

@@ -3,7 +3,29 @@
 {% block content %}
 <div class="container mt-4">
 
-  <!-- Abas de Navegação -->
+  {# ------------------ ESTILO PERSONALIZADO PARA ABAS ------------------ #}
+  <style>
+    .nav-tabs .nav-link {
+      background-color: #e9f3f1;  /* fundo claro azul-esverdeado */
+      color: #004b5b;             /* azul escuro Embrapa */
+      border: none;
+      border-radius: 0.25rem 0.25rem 0 0;
+      margin-right: 4px;
+    }
+
+    .nav-tabs .nav-link.active {
+      background-color: #d0e7e4;
+      color: #004b5b;
+      font-weight: bold;
+      box-shadow: inset 0 -2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-tabs {
+      border-bottom: 2px solid #bcd4d2;
+    }
+  </style>
+
+  {# ------------------ ABAS DE NAVEGAÇÃO ------------------ #}
   <ul class="nav nav-tabs mb-4" id="tabsDashboard" role="tablist">
     <li class="nav-item" role="presentation">
       <button class="nav-link active" id="tab-geral" data-bs-toggle="tab" data-bs-target="#geral" type="button" role="tab">Visão Geral</button>
@@ -17,9 +39,12 @@
     <li class="nav-item" role="presentation">
       <button class="nav-link" id="tab-patrimonio" data-bs-toggle="tab" data-bs-target="#patrimonio" type="button" role="tab">Patrimônio</button>
     </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-publicacoes" data-bs-toggle="tab" data-bs-target="#publicacoes" type="button" role="tab">Publicações</button>
+    </li>
   </ul>
 
-  <!-- Conteúdo de cada aba -->
+  {# ------------------ CONTEÚDO DE CADA ABA ------------------ #}
   <div class="tab-content" id="conteudoDashboard">
 
     <!-- Aba: Visão Geral -->
@@ -42,6 +67,62 @@
       {% include 'partials/dashboard_patrimonio.html' %}
     </div>
 
+    <!-- Aba: Publicações -->
+    <div class="tab-pane fade" id="publicacoes" role="tabpanel">
+      {% include 'partials/dashboard_publicacoes.html' %}
+    </div>
+
   </div>
+
+  {# ------------------ BOTÕES DE ADMINISTRADOR (POPULAR/LIMPAR) ------------------ #}
+  {% if usuario.email == 'admin@admin.com' %}
+  <div style="position: fixed; bottom: 20px; right: 20px; z-index: 999;">
+    <button class="btn btn-outline-danger me-2" data-bs-toggle="modal" data-bs-target="#modalPopular" title="Popular dados de teste">
+      <i class="bi bi-robot"></i>
+    </button>
+    <button class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#modalLimpar" title="Limpar dados de teste">
+      <i class="bi bi-trash"></i>
+    </button>
+  </div>
+  {% endif %}
+
+  {# ------------------ MODAL: POPULAR DADOS ------------------ #}
+  <div class="modal fade" id="modalPopular" tabindex="-1" aria-labelledby="modalPopularLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title" id="modalPopularLabel">Popular Dados de Teste</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          Deseja <strong>popular o sistema com dados fictícios</strong>?
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <a href="{{ url_for('popular_bp.popular_dados') }}" class="btn btn-danger">Popular</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# ------------------ MODAL: LIMPAR DADOS ------------------ #}
+  <div class="modal fade" id="modalLimpar" tabindex="-1" aria-labelledby="modalLimparLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-warning">
+          <h5 class="modal-title" id="modalLimparLabel">Limpar Dados</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          Esta ação irá <strong>excluir todos os dados de teste</strong>, exceto o usuário administrador.
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <a href="{{ url_for('limpar_bp.limpar_dados') }}" class="btn btn-warning">Limpar</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 {% endblock %}

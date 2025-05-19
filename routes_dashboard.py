@@ -12,7 +12,7 @@ dashboard_bp = Blueprint('dashboard_bp', __name__, url_prefix='/dashboard')
 @dashboard_bp.route('/', methods=['GET'])
 @login_required
 def dashboard():
-    # Subconsulta: total de saídas por ND
+    # ---------------- ENTRADAS E SAÍDAS POR NATUREZA DE DESPESA ----------------
     subquery_saidas = (
         db.session.query(
             Item.natureza_despesa_id.label('nd_id'),
@@ -23,7 +23,6 @@ def dashboard():
         .subquery()
     )
 
-    # Consulta principal: entradas e saídas por ND
     resultados = (
         db.session.query(
             NaturezaDespesa.codigo,
@@ -48,13 +47,13 @@ def dashboard():
         for row in resultados
     ]
 
-    # ---------------- INDICADORES ----------------
+    # ---------------- INDICADORES GERAIS ----------------
     total_itens = db.session.query(func.count(Item.id)).scalar()
     total_fornecedores = db.session.query(func.count(Fornecedor.id)).scalar()
     total_entradas = db.session.query(func.count(EntradaMaterial.id)).scalar()
     total_saidas = db.session.query(func.count(SaidaMaterial.id)).scalar()
 
-    # ---------------- GRÁFICO DE PIZZA ----------------
+    # ---------------- GRÁFICO DE PIZZA (DONUT) ----------------
     grupo_data = (
         db.session.query(
             Item.grupo_id,
@@ -67,14 +66,19 @@ def dashboard():
     grafico_grupo_labels = [f'Grupo {g.grupo_id}' for g in grupo_data]
     grafico_grupo_dados = [int(g.quantidade) for g in grupo_data]
 
-    # ---------------- DADOS PARA ABA ALMOXARIFADO ----------------
+    # ---------------- ABA ALMOXARIFADO ----------------
+
+    # Itens com estoque abaixo do mínimo
     itens_abaixo_minimo = Item.query.filter(Item.estoque_atual < Item.estoque_minimo).all()
 
-    itens_movimentados = (
-        db.session.query(Item)
-        .limit(10)  # exemplo: top 10 mais movimentados
-        .all()
-    )
+    # Itens mais movimentados (simples: calcular total entradas e saídas por item)
+    itens_movimentados = Item.query.limit(10).all()
+
+    for item in itens_movimentados:
+        entradas = db.session.query(func.sum(EntradaItem.quantidade)).filter_by(item_id=item.id).scalar() or 0
+        saidas = db.session.query(func.sum(SaidaItem.quantidade)).filter_by(item_id=item.id).scalar() or 0
+        item.total_entradas = entradas
+        item.total_saidas = saidas
 
     return render_template(
         'dashboard.html',

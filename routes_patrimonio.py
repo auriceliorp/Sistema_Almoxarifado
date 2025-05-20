@@ -5,22 +5,22 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from extensoes import db
-from models import BemPatrimonial, Usuario, GrupoPatrimonio  # Atualizado para GrupoPatrimonio
-from PIL import Image  # Pillow para redimensionar imagem
+from models import BemPatrimonial, Usuario, GrupoPatrimonio  # Importa os modelos necessários
+from PIL import Image  # Biblioteca Pillow para manipulação de imagens
 import os
 
-# Cria o blueprint do módulo de Patrimônio
+# Criação do blueprint para o módulo de patrimônio
 patrimonio_bp = Blueprint('patrimonio_bp', __name__, url_prefix='/patrimonio')
 
-# Pasta para salvar as fotos dos bens
+# Caminho da pasta onde as fotos serão salvas
 UPLOAD_FOLDER = 'static/fotos_bens'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
-# Cria a pasta se ela não existir
+# Cria a pasta de upload caso ela não exista
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
-# Função auxiliar para validar extensão do arquivo
+# Função auxiliar para validar extensões de arquivo de imagem
 def arquivo_permitido(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -54,15 +54,15 @@ def novo_bem():
         numero_sap = request.form.get('numero_sap')
         numero_siads = request.form.get('numero_siads')
         descricao = request.form.get('descricao')
-        grupo_bem = request.form.get('grupo_bem')  # agora é string, vindo do select
-        classificacao_contabil = request.form.get('classificacao_contabil')
+        grupo_bem = request.form.get('grupo_bem')  # Código do grupo selecionado
+        classificacao_contabil = request.form.get('classificacao_contabil')  # Preenchido automaticamente
         detentor_id = request.form.get('detentor_id')
         status = request.form.get('situacao')
         data_aquisicao = request.form.get('data_aquisicao')
         valor_aquisicao = request.form.get('valor_aquisicao')
         observacoes = request.form.get('observacoes')
 
-        # Processamento da imagem
+        # Processamento do upload da foto
         foto = request.files.get('foto')
         foto_path = None
         if foto and foto.filename != '':
@@ -81,6 +81,7 @@ def novo_bem():
                 flash(f'Erro ao processar imagem: {e}', 'danger')
                 return redirect(request.url)
 
+        # Criação e persistência do objeto no banco
         bem = BemPatrimonial(
             nome=nome,
             numero_ul=numero_ul,
@@ -93,7 +94,8 @@ def novo_bem():
             status=status,
             data_aquisicao=data_aquisicao or None,
             valor_aquisicao=valor_aquisicao or None,
-            foto=foto_path
+            foto=foto_path,
+            observacoes=observacoes
         )
         db.session.add(bem)
         db.session.commit()
@@ -122,7 +124,9 @@ def editar_bem(id):
         bem.status = request.form.get('situacao')
         bem.data_aquisicao = request.form.get('data_aquisicao') or None
         bem.valor_aquisicao = request.form.get('valor_aquisicao') or None
+        bem.observacoes = request.form.get('observacoes')
 
+        # Atualiza a imagem se uma nova for enviada
         foto = request.files.get('foto')
         if foto and foto.filename != '':
             if not arquivo_permitido(foto.filename):

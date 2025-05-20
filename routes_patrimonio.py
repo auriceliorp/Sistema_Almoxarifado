@@ -5,7 +5,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from extensoes import db
-from models import BemPatrimonial, Usuario, Grupo
+from models import BemPatrimonial, Usuario, GrupoPatrimonio  # Atualizado para GrupoPatrimonio
 from PIL import Image  # Pillow para redimensionar imagem
 import os
 
@@ -46,7 +46,7 @@ def listar_bens():
 @login_required
 def novo_bem():
     usuarios = Usuario.query.order_by(Usuario.nome).all()
-    grupos = Grupo.query.order_by(Grupo.nome).all()
+    grupos = GrupoPatrimonio.query.order_by(GrupoPatrimonio.codigo).all()
 
     if request.method == 'POST':
         nome = request.form.get('nome')
@@ -54,9 +54,13 @@ def novo_bem():
         numero_sap = request.form.get('numero_sap')
         numero_siads = request.form.get('numero_siads')
         descricao = request.form.get('descricao')
-        grupo_id = request.form.get('grupo_id')
-        detentor_id = request.form.get('detentor_id')
+        grupo_bem = request.form.get('grupo_bem')  # agora é string, vindo do select
         classificacao_contabil = request.form.get('classificacao_contabil')
+        detentor_id = request.form.get('detentor_id')
+        status = request.form.get('situacao')
+        data_aquisicao = request.form.get('data_aquisicao')
+        valor_aquisicao = request.form.get('valor_aquisicao')
+        observacoes = request.form.get('observacoes')
 
         # Processamento da imagem
         foto = request.files.get('foto')
@@ -83,9 +87,12 @@ def novo_bem():
             numero_sap=numero_sap,
             numero_siads=numero_siads,
             descricao=descricao,
-            grupo_id=grupo_id,
-            detentor_id=detentor_id,
+            grupo_bem=grupo_bem,
             classificacao_contabil=classificacao_contabil,
+            detentor_id=detentor_id,
+            status=status,
+            data_aquisicao=data_aquisicao or None,
+            valor_aquisicao=valor_aquisicao or None,
             foto=foto_path
         )
         db.session.add(bem)
@@ -101,7 +108,7 @@ def novo_bem():
 def editar_bem(id):
     bem = BemPatrimonial.query.get_or_404(id)
     usuarios = Usuario.query.order_by(Usuario.nome).all()
-    grupos = Grupo.query.order_by(Grupo.nome).all()
+    grupos = GrupoPatrimonio.query.order_by(GrupoPatrimonio.codigo).all()
 
     if request.method == 'POST':
         bem.nome = request.form.get('nome')
@@ -109,9 +116,12 @@ def editar_bem(id):
         bem.numero_sap = request.form.get('numero_sap')
         bem.numero_siads = request.form.get('numero_siads')
         bem.descricao = request.form.get('descricao')
-        bem.grupo_id = request.form.get('grupo_id')
-        bem.detentor_id = request.form.get('detentor_id')
+        bem.grupo_bem = request.form.get('grupo_bem')
         bem.classificacao_contabil = request.form.get('classificacao_contabil')
+        bem.detentor_id = request.form.get('detentor_id')
+        bem.status = request.form.get('situacao')
+        bem.data_aquisicao = request.form.get('data_aquisicao') or None
+        bem.valor_aquisicao = request.form.get('valor_aquisicao') or None
 
         foto = request.files.get('foto')
         if foto and foto.filename != '':

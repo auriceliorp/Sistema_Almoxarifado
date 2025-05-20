@@ -1,24 +1,35 @@
+# routes_area_ul.py
+# Rotas para gerenciamento de Locais, Unidades Locais, Grupos e Naturezas de Despesa em abas dinâmicas
+
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
 from extensoes import db
-from models import UnidadeLocal, Local
+from models import UnidadeLocal, Local, Grupo, NaturezaDespesa
 
 area_ul_bp = Blueprint('area_ul_bp', __name__, url_prefix='/ul')
 
-# Função auxiliar para identificar requisições AJAX
+# ------------------------------ Função AJAX ------------------------------ #
 def is_ajax():
     return request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
+# ------------------------------ DASHBOARD ORGANIZAÇÃO ------------------------------ #
+@area_ul_bp.route('/organizacao')
+@login_required
+def dashboard_organizacao():
+    locais = Local.query.order_by(Local.descricao).all()
+    uls = UnidadeLocal.query.order_by(UnidadeLocal.codigo).all()
+    grupos = Grupo.query.order_by(Grupo.nome).all()
+    nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
+    return render_template('dashboard_organizacao.html', locais=locais, uls=uls, grupos=grupos, nds=nds)
 
-# ------------------------------ LISTAGEM ------------------------------ #
+# ------------------------------ LISTAGEM UL ------------------------------ #
 @area_ul_bp.route('/')
 @login_required
 def lista_ul():
     uls = UnidadeLocal.query.order_by(UnidadeLocal.codigo).all()
     if is_ajax():
         return render_template('partials/ul/lista_ul.html', uls=uls)
-    return redirect(url_for('main.nd_grupos_ul'))
-
+    return redirect(url_for('area_ul_bp.dashboard_organizacao'))
 
 # ------------------------------ NOVA UL ------------------------------ #
 @area_ul_bp.route('/novo', methods=['GET', 'POST'])
@@ -50,7 +61,6 @@ def nova_ul():
     if is_ajax():
         return render_template('partials/ul/form_ul.html', ul=None, locais=locais)
     return redirect(url_for('area_ul_bp.lista_ul'))
-
 
 # ------------------------------ EDITAR UL ------------------------------ #
 @area_ul_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
@@ -84,7 +94,6 @@ def editar_ul(id):
     if is_ajax():
         return render_template('partials/ul/form_ul.html', ul=ul, locais=locais)
     return redirect(url_for('area_ul_bp.lista_ul'))
-
 
 # ------------------------------ EXCLUIR UL ------------------------------ #
 @area_ul_bp.route('/excluir/<int:id>', methods=['POST'])

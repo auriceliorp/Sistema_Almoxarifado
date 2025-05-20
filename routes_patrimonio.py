@@ -28,18 +28,23 @@ def arquivo_permitido(filename):
 @patrimonio_bp.route('/bens')
 @login_required
 def listar_bens():
-    termo = request.args.get('termo')
+    numero_ul = request.args.get('numero_ul')
+    numero_sap = request.args.get('numero_sap')
+    grupo_bem = request.args.get('grupo_bem')
+
     query = BemPatrimonial.query.filter_by(excluido=False)
 
-    if termo:
-        query = query.filter(
-            BemPatrimonial.nome.ilike(f"%{termo}%") |
-            BemPatrimonial.numero_ul.ilike(f"%{termo}%") |
-            BemPatrimonial.numero_sap.ilike(f"%{termo}%")
-        )
+    if numero_ul:
+        query = query.filter(BemPatrimonial.numero_ul.ilike(f"%{numero_ul}%"))
+    if numero_sap:
+        query = query.filter(BemPatrimonial.numero_sap.ilike(f"%{numero_sap}%"))
+    if grupo_bem:
+        query = query.filter(BemPatrimonial.grupo_bem == grupo_bem)
 
     bens = query.order_by(BemPatrimonial.nome.asc()).all()
-    return render_template('patrimonio/listar_bens.html', bens=bens, usuario=current_user)
+    grupos = GrupoPatrimonio.query.order_by(GrupoPatrimonio.codigo).all()
+
+    return render_template('patrimonio/listar_bens.html', bens=bens, grupos=grupos, usuario=current_user)
 
 # ------------------------ ROTA: CADASTRAR BEM ------------------------ #
 @patrimonio_bp.route('/bens/novo', methods=['GET', 'POST'])
@@ -54,15 +59,14 @@ def novo_bem():
         numero_sap = request.form.get('numero_sap')
         numero_siads = request.form.get('numero_siads')
         descricao = request.form.get('descricao')
-        grupo_bem = request.form.get('grupo_bem')  # Código do grupo selecionado
-        classificacao_contabil = request.form.get('classificacao_contabil')  # Preenchido automaticamente
+        grupo_bem = request.form.get('grupo_bem')
+        classificacao_contabil = request.form.get('classificacao_contabil')
         detentor_id = request.form.get('detentor_id')
         status = request.form.get('situacao')
         data_aquisicao = request.form.get('data_aquisicao')
         valor_aquisicao = request.form.get('valor_aquisicao')
         observacoes = request.form.get('observacoes')
 
-        # Processamento do upload da foto
         foto = request.files.get('foto')
         foto_path = None
         if foto and foto.filename != '':
@@ -81,7 +85,6 @@ def novo_bem():
                 flash(f'Erro ao processar imagem: {e}', 'danger')
                 return redirect(request.url)
 
-        # Criação e persistência do objeto no banco
         bem = BemPatrimonial(
             nome=nome,
             numero_ul=numero_ul,
@@ -126,7 +129,6 @@ def editar_bem(id):
         bem.valor_aquisicao = request.form.get('valor_aquisicao') or None
         bem.observacoes = request.form.get('observacoes')
 
-        # Atualiza a imagem se uma nova for enviada
         foto = request.files.get('foto')
         if foto and foto.filename != '':
             if not arquivo_permitido(foto.filename):

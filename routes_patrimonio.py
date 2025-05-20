@@ -50,7 +50,7 @@ def novo_bem():
 
     if request.method == 'POST':
         nome = request.form.get('nome')
-        numero_local = request.form.get('numero_local')
+        numero_ul = request.form.get('numero_ul')
         numero_sap = request.form.get('numero_sap')
         numero_siads = request.form.get('numero_siads')
         descricao = request.form.get('descricao')

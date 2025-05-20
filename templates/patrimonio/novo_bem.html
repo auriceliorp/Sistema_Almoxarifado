@@ -32,7 +32,7 @@
       <!-- Grupo de Bens -->
       <div class="col-md-6">
         <label class="form-label">Grupo de Bens *</label>
-        <select class="form-select" name="grupo_bem" required>
+        <select class="form-select" name="grupo_bem" id="grupoSelect" required>
           <option selected disabled>Selecione</option>
           {% for grupo in grupos %}
             <option value="{{ grupo.codigo }}">{{ grupo.codigo }} - {{ grupo.descricao }}</option>
@@ -40,10 +40,10 @@
         </select>
       </div>
 
-      <!-- Classificação Contábil -->
+      <!-- Classificação Contábil (preenchida automaticamente com o código) -->
       <div class="col-md-6">
         <label class="form-label">Classificação Contábil</label>
-        <input type="text" class="form-control" name="classificacao_contabil">
+        <input type="text" class="form-control" name="classificacao_contabil" id="classificacaoContabil" readonly>
       </div>
 
       <!-- Detentor -->
@@ -100,5 +100,17 @@
     </div>
   </form>
 </div>
-{% endblock %}
 
+<!-- Script para preenchimento automático do campo Classificação Contábil -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const grupoSelect = document.getElementById("grupoSelect");
+    const classificacaoContabil = document.getElementById("classificacaoContabil");
+
+    grupoSelect.addEventListener("change", function () {
+      const codigoSelecionado = this.value;
+      classificacaoContabil.value = codigoSelecionado || '';
+    });
+  });
+</script>
+{% endblock %}

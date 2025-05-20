@@ -91,11 +91,13 @@ def index():
 def almoxarifado():
     return render_template('almoxarifado.html', usuario=current_user)
 
-# --- Página ND / Grupos / UL / AREA
-@main.route('/organizacao')
+# --- Página ND / Grupos / UL ---
+@main.route('/nd_grupos_ul')
 @login_required
-def dashboard_organizacao()::
-    return render_template('organizacao/dashboard_organizacao.html', usuario=current_user)
+def nd_grupos_ul():
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return '', 204  # Evita recarregamento da estrutura em requisições AJAX
+    return render_template('nd_grupos_ul.html')
 
 # --- Página de instrução de troca de senha ---
 @main.route('/esqueci_senha')
@@ -107,3 +109,10 @@ def esqueci_senha():
 @login_required
 def relatorios():
     return render_template('relatorios.html', usuario=current_user)
+
+# --- Página Dashboard de Organização ---
+@main.route('/dashboard_organizacao')
+@login_required
+def dashboard_organizacao():
+    return render_template('organizacao/dashboard_organizacao.html', usuario=current_user)
+

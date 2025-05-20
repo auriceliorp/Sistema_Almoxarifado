@@ -91,13 +91,11 @@ def index():
 def almoxarifado():
     return render_template('almoxarifado.html', usuario=current_user)
 
-# --- Página ND / Grupos / UL ---
-@main.route('/nd_grupos_ul')
+# --- Página ND / Grupos / UL / AREA
+@main.route('/organizacao')
 @login_required
-def nd_grupos_ul():
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return '', 204  # Evita recarregamento da estrutura em requisições AJAX
-    return render_template('nd_grupos_ul.html')
+def dashboard_organizacao()::
+    return render_template('organizacao/dashboard_organizacao.html', usuario=current_user)
 
 # --- Página de instrução de troca de senha ---
 @main.route('/esqueci_senha')

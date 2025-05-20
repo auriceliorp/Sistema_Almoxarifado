@@ -2,7 +2,6 @@
 
 {% block content %}
 <div class="container mt-4">
-
   <style>
     .nav-tabs .nav-link {
       background-color: #e9f3f1;
@@ -46,19 +45,27 @@
   <div class="tab-content" id="organizacaoTabsContent">
 
     <div class="tab-pane fade show active" id="nd" role="tabpanel" aria-labelledby="nd-tab">
-      {% include 'partials/nd/lista_nd.html' %}
+      <div id="conteudo-dinamico">
+        {% include 'partials/nd/lista_nd.html' %}
+      </div>
     </div>
 
     <div class="tab-pane fade" id="grupo" role="tabpanel" aria-labelledby="grupo-tab">
-      {% include 'partials/grupo/lista_grupo.html' %}
+      <div id="conteudo-dinamico">
+        {% include 'partials/grupo/lista_grupo.html' %}
+      </div>
     </div>
 
     <div class="tab-pane fade" id="ul" role="tabpanel" aria-labelledby="ul-tab">
-      {% include 'partials/ul/lista_ul.html' %}
+      <div id="conteudo-dinamico">
+        {% include 'partials/ul/lista_ul.html' %}
+      </div>
     </div>
 
     <div class="tab-pane fade" id="area" role="tabpanel" aria-labelledby="area-tab">
-      {% include 'partials/area/lista_area.html' %}
+      <div id="conteudo-dinamico">
+        {% include 'partials/area/lista_area.html' %}
+      </div>
     </div>
 
   </div>

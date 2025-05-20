@@ -129,8 +129,10 @@
       {% endif %}
     {% endwith %}
 
-    <!-- Bloco de conteúdo específico da página -->
-    {% block content %}{% endblock %}
+    <!-- Conteúdo dinâmico carregado por AJAX -->
+    <div id="conteudo-dinamico">
+      {% block content %}{% endblock %}
+    </div>
   </main>
 
   <!-- Scripts -->
@@ -143,6 +145,35 @@
       const sidebar = document.getElementById('sidebarMenu');
       sidebar.classList.toggle('show');
     });
+
+    // Função para carregar conteúdo dinâmico via fetch/AJAX
+    function carregarConteudo(url) {
+      const container = document.getElementById('conteudo-dinamico');
+      if (!container) return;
+
+      container.innerHTML = `
+        <div class="text-center p-5">
+          <div class="spinner-border text-primary" role="status"></div>
+        </div>`;
+
+      fetch(url, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
+      .then(response => {
+        if (!response.ok) throw new Error('Erro ao carregar conteúdo');
+        return response.text();
+      })
+      .then(html => {
+        container.innerHTML = html;
+      })
+      .catch(error => {
+        container.innerHTML = `
+          <div class="alert alert-danger mt-3">
+            <strong>Erro:</strong> Não foi possível carregar o conteúdo.
+          </div>`;
+        console.error(error);
+      });
+    }
   </script>
 
 </body>

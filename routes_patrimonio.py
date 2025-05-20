@@ -34,7 +34,7 @@ def listar_bens():
     if termo:
         query = query.filter(
             BemPatrimonial.nome.ilike(f"%{termo}%") |
-            BemPatrimonial.numero_local.ilike(f"%{termo}%") |
+            BemPatrimonial.numero_ul.ilike(f"%{termo}%") |
             BemPatrimonial.numero_sap.ilike(f"%{termo}%")
         )
 
@@ -79,7 +79,7 @@ def novo_bem():
 
         bem = BemPatrimonial(
             nome=nome,
-            numero_local=numero_local,
+            numero_ul=numero_ul,
             numero_sap=numero_sap,
             numero_siads=numero_siads,
             descricao=descricao,
@@ -105,7 +105,7 @@ def editar_bem(id):
 
     if request.method == 'POST':
         bem.nome = request.form.get('nome')
-        bem.numero_local = request.form.get('numero_local')
+        bem.numero_ul = request.form.get('numero_ul')
         bem.numero_sap = request.form.get('numero_sap')
         bem.numero_siads = request.form.get('numero_siads')
         bem.descricao = request.form.get('descricao')

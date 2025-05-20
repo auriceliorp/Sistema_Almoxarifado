@@ -7,16 +7,16 @@
   <!-- Formulário de Filtros -->
   <form method="GET" class="row g-3 mb-4">
     <div class="col-md-3">
-      <input type="text" name="descricao" class="form-control" placeholder="Descrição" value="{{ request.args.get('descricao', '') }}">
+      <input type="text" name="numero_ul" class="form-control" placeholder="Nº Patrimônio" value="{{ request.args.get('numero_ul', '') }}">
     </div>
     <div class="col-md-3">
-      <input type="text" name="numero_ul" class="form-control" placeholder="Nº UL" value="{{ request.args.get('numero_ul', '') }}">
+      <input type="text" name="numero_sap" class="form-control" placeholder="Nº SAP" value="{{ request.args.get('numero_sap', '') }}">
     </div>
     <div class="col-md-3">
-      <select name="grupo_id" class="form-select">
+      <select name="grupo_bem" class="form-select">
         <option value="">Todos os Grupos</option>
         {% for grupo in grupos %}
-          <option value="{{ grupo.id }}" {% if request.args.get('grupo_id') == grupo.id|string %}selected{% endif %}>{{ grupo.nome }}</option>
+          <option value="{{ grupo.codigo }}" {% if request.args.get('grupo_bem') == grupo.codigo %}selected{% endif %}>{{ grupo.codigo }} - {{ grupo.descricao }}</option>
         {% endfor %}
       </select>
     </div>
@@ -31,9 +31,9 @@
     <table class="table table-sm table-striped align-middle">
       <thead class="table-light">
         <tr>
-          <th>Nº UL</th>
+          <th>Nº Patrimônio</th>
           <th>Nº SAP</th>
-          <th>Descrição</th>
+          <th>Nome</th>
           <th>Grupo</th>
           <th>Detentor</th>
           <th>Situação</th>
@@ -45,10 +45,10 @@
         <tr>
           <td>{{ bem.numero_ul }}</td>
           <td>{{ bem.numero_sap }}</td>
-          <td>{{ bem.descricao[:30] }}{% if bem.descricao|length > 30 %}...{% endif %}</td>
-          <td>{{ bem.grupo_nome }}</td>
-          <td>{{ bem.detentor.nome }}</td>
-          <td>{{ bem.situacao }}</td>
+          <td>{{ bem.nome[:30] }}{% if bem.nome|length > 30 %}...{% endif %}</td>
+          <td>{{ bem.grupo_bem }}</td>
+          <td>{{ bem.detentor.nome if bem.detentor else '' }}</td>
+          <td>{{ bem.status }}</td>
           <td>
             <a href="{{ url_for('patrimonio_bp.visualizar_bem', id=bem.id) }}" class="btn btn-sm btn-outline-primary" title="Visualizar">
               <i class="bi bi-eye"></i>

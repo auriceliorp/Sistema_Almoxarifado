@@ -1,5 +1,5 @@
 # routes_area_ul.py
-# Rotas para gerenciamento de Áreas e Unidades Locais
+# Rotas para gerenciamento de Áreas e Unidades Locais (sem AJAX)
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
@@ -119,3 +119,4 @@ def excluir_ul(id):
     db.session.commit()
     flash('Unidade Local excluída com sucesso!')
     return redirect(url_for('area_ul_bp.lista_ul'))
+

@@ -286,6 +286,8 @@ class BemPatrimonial(db.Model):
     valor_aquisicao = db.Column(db.Float, nullable=True)
     status = db.Column(db.String(50), default='Ativo')  # Ativo, Baixado, Em transferência etc.
     data_cadastro = db.Column(db.DateTime, default=datetime.utcnow)
+    observacoes = db.Column(db.Text, nullable=True)
+
 
     def __repr__(self):
         return f"<BemPatrimonial {self.numero_ul} - {self.nome}>"

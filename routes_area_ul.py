@@ -19,7 +19,7 @@ def lista_areas():
     areas = Local.query.order_by(Local.descricao).all()
     if is_ajax():
         return render_template('partials/area/lista_area.html', areas=areas)
-    return redirect(url_for('main.nd_grupos_ul'))
+    return redirect(url_for('main.dashboard_organizacao'))
 
 @area_ul_bp.route('/areas/nova', methods=['GET', 'POST'])
 @login_required
@@ -91,7 +91,7 @@ def lista_ul():
     uls = UnidadeLocal.query.order_by(UnidadeLocal.codigo).all()
     if is_ajax():
         return render_template('partials/ul/lista_ul.html', uls=uls)
-    return redirect(url_for('main.nd_grupos_ul'))
+    return redirect(url_for('main.dashboard_organizacao'))
 
 @area_ul_bp.route('/novo', methods=['GET', 'POST'])
 @login_required

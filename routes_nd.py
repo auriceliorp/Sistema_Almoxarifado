@@ -1,3 +1,6 @@
+# routes_nd.py
+# Rotas para gerenciamento de Natureza de Despesa (ND)
+
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
 from extensoes import db
@@ -10,7 +13,6 @@ nd_bp = Blueprint('nd_bp', __name__, url_prefix='/nd')
 def is_ajax():
     return request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
-
 # ------------------------------ LISTAGEM ------------------------------ #
 @nd_bp.route('/')
 @login_required
@@ -18,8 +20,7 @@ def lista_nd():
     nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
     if is_ajax():
         return render_template('partials/nd/lista_nd.html', nds=nds)
-    return redirect(url_for('main.nd_grupos_ul'))  # fallback para página com abas
-
+    return redirect(url_for('main.dashboard_organizacao'))
 
 # ------------------------------ NOVA ND ------------------------------ #
 @nd_bp.route('/novo', methods=['GET', 'POST'])
@@ -45,11 +46,9 @@ def nova_nd():
             return render_template('partials/nd/lista_nd.html', nds=nds)
         return redirect(url_for('nd_bp.lista_nd'))
 
-    # GET → formulário de criação
     if is_ajax():
         return render_template('partials/nd/form_nd.html', nd=None)
     return redirect(url_for('nd_bp.lista_nd'))
-
 
 # ------------------------------ EDITAR ND ------------------------------ #
 @nd_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
@@ -77,11 +76,9 @@ def editar_nd(id):
             return render_template('partials/nd/lista_nd.html', nds=nds)
         return redirect(url_for('nd_bp.lista_nd'))
 
-    # GET → formulário de edição
     if is_ajax():
         return render_template('partials/nd/form_nd.html', nd=nd)
     return redirect(url_for('nd_bp.lista_nd'))
-
 
 # ------------------------------ EXCLUIR ND ------------------------------ #
 @nd_bp.route('/excluir/<int:id>', methods=['POST'])
@@ -96,3 +93,4 @@ def excluir_nd(id):
         nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
         return render_template('partials/nd/lista_nd.html', nds=nds)
     return redirect(url_for('nd_bp.lista_nd'))
+

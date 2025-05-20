@@ -1,53 +1,66 @@
 {% extends 'base_simplificada.html' %}
-{% block title %}Organização Administrativa{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  <!-- Cabeçalho com navegação -->
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <a href="{{ url_for('main.home') }}" class="btn btn-outline-primary">Início</a>
-    <h4 class="m-0">Organização Administrativa</h4>
-    <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">Sair</a>
-  </div>
+<div class="container mt-4">
+
+  <style>
+    .nav-tabs .nav-link {
+      background-color: #e9f3f1;
+      color: #004b5b;
+      border: none;
+      border-radius: 0.25rem 0.25rem 0 0;
+      margin-right: 4px;
+    }
+
+    .nav-tabs .nav-link.active {
+      background-color: #d0e7e4;
+      color: #004b5b;
+      font-weight: bold;
+      box-shadow: inset 0 -2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-tabs {
+      border-bottom: 2px solid #bcd4d2;
+    }
+  </style>
+
+  <h4 class="mb-4">Organização Administrativa</h4>
 
   <!-- Abas de navegação -->
-  <ul class="nav nav-tabs mb-3" id="organizacaoTabs" role="tablist">
+  <ul class="nav nav-tabs mb-4" id="organizacaoTabs" role="tablist">
     <li class="nav-item" role="presentation">
-      <button class="nav-link active" id="nd-tab" data-bs-toggle="tab" data-bs-target="#nd" type="button" role="tab" aria-controls="nd" aria-selected="true">
-        Natureza de Despesa
-      </button>
+      <button class="nav-link active" id="nd-tab" data-bs-toggle="tab" data-bs-target="#nd" type="button" role="tab">Natureza de Despesa</button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link" id="grupo-tab" data-bs-toggle="tab" data-bs-target="#grupo" type="button" role="tab" aria-controls="grupo" aria-selected="false">
-        Grupos
-      </button>
+      <button class="nav-link" id="grupo-tab" data-bs-toggle="tab" data-bs-target="#grupo" type="button" role="tab">Grupos</button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link" id="ul-tab" data-bs-toggle="tab" data-bs-target="#ul" type="button" role="tab" aria-controls="ul" aria-selected="false">
-        Unidades Locais
-      </button>
+      <button class="nav-link" id="ul-tab" data-bs-toggle="tab" data-bs-target="#ul" type="button" role="tab">Unidades Locais</button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link" id="area-tab" data-bs-toggle="tab" data-bs-target="#area" type="button" role="tab" aria-controls="area" aria-selected="false">
-        Áreas
-      </button>
+      <button class="nav-link" id="area-tab" data-bs-toggle="tab" data-bs-target="#area" type="button" role="tab">Áreas</button>
     </li>
   </ul>
 
   <!-- Conteúdo das abas -->
   <div class="tab-content" id="organizacaoTabsContent">
+
     <div class="tab-pane fade show active" id="nd" role="tabpanel" aria-labelledby="nd-tab">
       {% include 'partials/nd/lista_nd.html' %}
     </div>
+
     <div class="tab-pane fade" id="grupo" role="tabpanel" aria-labelledby="grupo-tab">
       {% include 'partials/grupo/lista_grupo.html' %}
     </div>
+
     <div class="tab-pane fade" id="ul" role="tabpanel" aria-labelledby="ul-tab">
       {% include 'partials/ul/lista_ul.html' %}
     </div>
+
     <div class="tab-pane fade" id="area" role="tabpanel" aria-labelledby="area-tab">
       {% include 'partials/area/lista_area.html' %}
     </div>
+
   </div>
 </div>
 {% endblock %}

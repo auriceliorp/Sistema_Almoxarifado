@@ -1,15 +1,22 @@
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-6 offset-md-3">
-            <h2 class="mt-4">Cadastrar Novo Local</h2>
-            <form method="POST">
-                <div class="mb-3">
-                    <label for="nome" class="form-label">Nome do Local</label>
-                    <input type="text" class="form-control" id="nome" name="nome" required>
-                </div>
-                <button type="submit" class="btn btn-success w-100">Salvar</button>
-            </form>
-        </div>
-    </div>
-</div>
+<div class="mb-4">
+  <h5 class="text-primary">{{ 'Editar Área' if area else 'Nova Área' }}</h5>
 
+  <form method="POST">
+    <div class="mb-3">
+      <label for="descricao" class="form-label">Descrição *</label>
+      <input type="text" class="form-control" id="descricao" name="descricao"
+             value="{{ area.descricao if area else '' }}" required>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2">
+      <a href="{{ url_for('area_ul_bp.lista_areas') }}"
+         class="btn btn-outline-secondary"
+         onclick="carregarConteudo(this.href); return false;">
+        <i class="bi bi-x-circle"></i> Cancelar
+      </a>
+      <button type="submit" class="btn btn-primary">
+        <i class="bi bi-check-circle"></i> {{ 'Salvar Alterações' if area else 'Salvar' }}
+      </button>
+    </div>
+  </form>
+</div>

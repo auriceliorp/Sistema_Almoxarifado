@@ -1,26 +1,30 @@
+# routes_grupo.py
+# Rotas para gerenciamento de Grupos vinculados à Natureza de Despesa
+
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
 from extensoes import db
 from models import Grupo, NaturezaDespesa
 
+# Criação do blueprint
 grupo_bp = Blueprint('grupo_bp', __name__, url_prefix='/grupo')
 
-# Função auxiliar para checar se é uma requisição AJAX
+# Função auxiliar para detectar requisições AJAX
 def is_ajax():
     return request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
 
-# ------------------------------ LISTAGEM ------------------------------ #
+# ------------------------------ LISTAGEM DE GRUPOS ------------------------------ #
 @grupo_bp.route('/')
 @login_required
 def lista_grupos():
     grupos = Grupo.query.order_by(Grupo.nome).all()
     if is_ajax():
         return render_template('partials/grupo/lista_grupo.html', grupos=grupos)
-    return redirect(url_for('main.nd_grupos_ul'))  # fallback para a tela com abas
+    return redirect(url_for('main.dashboard_organizacao'))
 
 
-# ------------------------------ NOVO GRUPO ------------------------------ #
+# ------------------------------ CADASTRAR NOVO GRUPO ------------------------------ #
 @grupo_bp.route('/novo', methods=['GET', 'POST'])
 @login_required
 def novo_grupo():
@@ -46,13 +50,12 @@ def novo_grupo():
             return render_template('partials/grupo/lista_grupo.html', grupos=grupos)
         return redirect(url_for('grupo_bp.lista_grupos'))
 
-    # GET
     if is_ajax():
         return render_template('partials/grupo/form_grupo.html', grupo=None, naturezas=naturezas)
     return redirect(url_for('grupo_bp.lista_grupos'))
 
 
-# ------------------------------ EDITAR GRUPO ------------------------------ #
+# ------------------------------ EDITAR GRUPO EXISTENTE ------------------------------ #
 @grupo_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
 def editar_grupo(id):
@@ -79,7 +82,6 @@ def editar_grupo(id):
             return render_template('partials/grupo/lista_grupo.html', grupos=grupos)
         return redirect(url_for('grupo_bp.lista_grupos'))
 
-    # GET
     if is_ajax():
         return render_template('partials/grupo/form_grupo.html', grupo=grupo, naturezas=naturezas)
     return redirect(url_for('grupo_bp.lista_grupos'))

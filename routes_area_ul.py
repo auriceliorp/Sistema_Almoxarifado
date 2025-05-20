@@ -6,6 +6,7 @@ from flask_login import login_required
 from extensoes import db
 from models import UnidadeLocal, Local
 
+# Criação do blueprint com prefixo '/ul'
 area_ul_bp = Blueprint('area_ul_bp', __name__, url_prefix='/ul')
 
 # ------------------------------ FUNÇÃO AUXILIAR ------------------------------ #
@@ -19,7 +20,7 @@ def lista_areas():
     areas = Local.query.order_by(Local.descricao).all()
     if is_ajax():
         return render_template('partials/area/lista_area.html', areas=areas)
-    return redirect(url_for('main.dashboard_organizacao'))
+    return render_template('organizacao/dashboard_organizacao.html')
 
 @area_ul_bp.route('/areas/nova', methods=['GET', 'POST'])
 @login_required
@@ -44,7 +45,7 @@ def nova_area():
 
     if is_ajax():
         return render_template('partials/area/form_area.html', area=None)
-    return redirect(url_for('area_ul_bp.lista_areas'))
+    return render_template('organizacao/dashboard_organizacao.html')
 
 @area_ul_bp.route('/areas/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -69,7 +70,7 @@ def editar_area(id):
 
     if is_ajax():
         return render_template('partials/area/form_area.html', area=area)
-    return redirect(url_for('area_ul_bp.lista_areas'))
+    return render_template('organizacao/dashboard_organizacao.html')
 
 @area_ul_bp.route('/areas/excluir/<int:id>', methods=['POST'])
 @login_required
@@ -91,7 +92,7 @@ def lista_ul():
     uls = UnidadeLocal.query.order_by(UnidadeLocal.codigo).all()
     if is_ajax():
         return render_template('partials/ul/lista_ul.html', uls=uls)
-    return redirect(url_for('main.dashboard_organizacao'))
+    return render_template('organizacao/dashboard_organizacao.html')
 
 @area_ul_bp.route('/novo', methods=['GET', 'POST'])
 @login_required
@@ -121,7 +122,7 @@ def nova_ul():
 
     if is_ajax():
         return render_template('partials/ul/form_ul.html', ul=None, locais=areas)
-    return redirect(url_for('area_ul_bp.lista_ul'))
+    return render_template('organizacao/dashboard_organizacao.html')
 
 @area_ul_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -153,7 +154,7 @@ def editar_ul(id):
 
     if is_ajax():
         return render_template('partials/ul/form_ul.html', ul=ul, locais=areas)
-    return redirect(url_for('area_ul_bp.lista_ul'))
+    return render_template('organizacao/dashboard_organizacao.html')
 
 @area_ul_bp.route('/excluir/<int:id>', methods=['POST'])
 @login_required

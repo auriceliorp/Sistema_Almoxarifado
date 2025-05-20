@@ -291,3 +291,15 @@ class BemPatrimonial(db.Model):
 
     def __repr__(self):
         return f"<BemPatrimonial {self.numero_ul} - {self.nome}>"
+
+# ------------------- GRUPO DE BENS PATRIMONIAIS -------------------
+class GrupoPatrimonio(db.Model):
+    __tablename__ = 'grupos_patrimonio'
+
+    id = db.Column(db.Integer, primary_key=True)
+    codigo = db.Column(db.String(20), nullable=False)
+    descricao = db.Column(db.String(150), nullable=False)
+
+    def __repr__(self):
+        return f"<GrupoPatrimonio {self.codigo} - {self.descricao}>"
+

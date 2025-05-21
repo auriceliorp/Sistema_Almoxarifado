@@ -11,9 +11,9 @@
   <table class="table table-bordered table-striped table-sm">
     <thead class="table-dark">
       <tr>
-        <th style="width: 60%;">Nome</th>
-        <th style="width: 30%;">Natureza de Despesa</th>
-        <th style="width: 10%;" class="text-center">Ações</th>
+        <th>Nome</th>
+        <th>Natureza de Despesa</th>
+        <th class="text-center">Ações</th>
       </tr>
     </thead>
     <tbody>
@@ -22,9 +22,33 @@
         <td>{{ grupo.nome }}</td>
         <td>{{ grupo.natureza_despesa.nome }}</td>
         <td class="text-center">
-          <a href="{{ url_for('grupo_bp.editar_grupo', id=grupo.id) }}" class="btn btn-sm btn-outline-primary">
+          <a href="{{ url_for('grupo_bp.editar_grupo', id=grupo.id) }}" class="btn btn-sm btn-outline-primary me-1">
             <i class="bi bi-pencil"></i>
           </a>
+          <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalExcluirGrupo{{ grupo.id }}">
+            <i class="bi bi-trash"></i>
+          </button>
+
+          <div class="modal fade" id="modalExcluirGrupo{{ grupo.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                  <h5 class="modal-title">Confirmar Exclusão</h5>
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  Deseja excluir <strong>{{ grupo.nome }}</strong>?
+                </div>
+                <div class="modal-footer">
+                  <form method="POST" action="{{ url_for('grupo_bp.excluir_grupo', id=grupo.id) }}">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </td>
       </tr>
       {% endfor %}

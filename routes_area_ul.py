@@ -54,7 +54,7 @@ def novo_local():
         db.session.commit()
         flash('Área cadastrada com sucesso!')
         return redirect(url_for('area_ul_bp.dashboard_organizacao'))
-    return render_template('partials/area/form_local.html')
+    return render_template('partials/area/form_area.html')
 
 # ------------------------- ROTA: EDITAR LOCAL (Área) ------------------------- #
 @area_ul_bp.route('/locais/editar/<int:id>', methods=['GET', 'POST'])
@@ -66,7 +66,7 @@ def editar_local(id):
         db.session.commit()
         flash('Área atualizada com sucesso!')
         return redirect(url_for('area_ul_bp.dashboard_organizacao'))
-    return render_template('partials/area/form_local.html', local=local)
+    return render_template('partials/area/form_area.html', local=local)
 
 # ------------------------- ROTA: NOVA UNIDADE LOCAL ------------------------- #
 @area_ul_bp.route('/uls/novo', methods=['GET', 'POST'])

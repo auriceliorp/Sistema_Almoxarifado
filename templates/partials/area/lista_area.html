@@ -1,42 +1,27 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <h5 class="mb-0 text-primary">Áreas Administrativas</h5>
-  <a href="{{ url_for('area_ul_bp.nova_area') }}" class="btn btn-outline-success btn-sm">
+  <h5 class="mb-0 text-primary">Áreas (Locais)</h5>
+  <a href="{{ url_for('area_ul_bp.novo_local') }}" class="btn btn-outline-success btn-sm">
     <i class="bi bi-plus-circle"></i> Nova Área
   </a>
 </div>
 
-<div class="table-responsive">
-  <table class="table table-bordered table-hover align-middle table-sm">
-    <thead class="table-success">
-      <tr>
-        <th style="width: 10%;">ID</th>
-        <th>Descrição</th>
-        <th style="width: 20%;" class="text-center">Ações</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for area in areas %}
-      <tr>
-        <td>{{ area.id }}</td>
-        <td>{{ area.descricao }}</td>
-        <td class="text-center">
-          <a href="{{ url_for('area_ul_bp.editar_area', id=area.id) }}" class="btn btn-sm btn-outline-primary">
-            <i class="bi bi-pencil"></i>
-          </a>
-          <form action="{{ url_for('area_ul_bp.excluir_area', id=area.id) }}" method="POST" class="d-inline"
-                onsubmit="return confirm('Deseja realmente excluir esta área?');">
-            <button type="submit" class="btn btn-sm btn-outline-danger">
-              <i class="bi bi-trash"></i>
-            </button>
-          </form>
-        </td>
-      </tr>
-      {% else %}
-      <tr>
-        <td colspan="3" class="text-center text-muted">Nenhuma área cadastrada.</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
-
+<table class="table table-bordered table-striped table-sm">
+  <thead class="table-dark">
+    <tr>
+      <th style="width: 90%;">Descrição</th>
+      <th style="width: 10%;" class="text-center">Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for area in areas %}
+    <tr>
+      <td>{{ area.descricao }}</td>
+      <td class="text-center">
+        <a href="{{ url_for('area_ul_bp.editar_local', id=area.id) }}" class="btn btn-sm btn-outline-primary">
+          <i class="bi bi-pencil"></i>
+        </a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

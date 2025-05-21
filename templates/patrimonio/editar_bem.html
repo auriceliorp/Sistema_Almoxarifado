@@ -4,7 +4,6 @@
 <div class="container mt-4">
   <h4 class="mb-4">Editar Bem Patrimonial</h4>
 
-  <!-- Formulário de edição -->
   <form method="POST" enctype="multipart/form-data">
     <div class="row g-3">
       <!-- Identificadores -->
@@ -90,15 +89,18 @@
         <input type="number" step="0.01" class="form-control" name="valor_aquisicao" value="{{ bem.valor_aquisicao }}">
       </div>
 
-      <!-- Foto -->
+      <!-- Foto Atual + Upload + Preview -->
       <div class="col-md-6">
         <label class="form-label">Foto do Bem</label><br>
         {% if bem.foto %}
-          <img src="/{{ bem.foto }}" alt="Foto" class="img-thumbnail mb-2" style="max-height: 120px;">
+          <img src="{{ url_for('static', filename=bem.foto[7:] if bem.foto.startswith('static/') else bem.foto) }}" alt="Foto Atual" class="img-thumbnail mb-2" style="max-height: 120px;" id="imagemAtual">
         {% else %}
           <p class="text-muted">Sem foto</p>
         {% endif %}
-        <input type="file" class="form-control" name="foto" accept="image/*">
+        <input type="file" class="form-control" name="foto" id="fotoInput" accept="image/*">
+        <div class="mt-2">
+          <img id="previewImagem" src="#" alt="Pré-visualização da nova imagem" style="display: none; max-height: 120px;" class="img-thumbnail">
+        </div>
       </div>
 
       <!-- Observações -->
@@ -116,17 +118,37 @@
   </form>
 </div>
 
-<!-- Script para preencher automaticamente a classificação contábil -->
+<!-- Scripts -->
 <script>
   document.addEventListener("DOMContentLoaded", function () {
+    // Classificação contábil automática
     const grupoSelect = document.getElementById("grupoSelect");
     const classificacaoContabil = document.getElementById("classificacaoContabil");
 
     grupoSelect.addEventListener("change", function () {
       classificacaoContabil.value = this.value || '';
     });
+
+    // Preview de imagem nova
+    const fotoInput = document.getElementById("fotoInput");
+    const previewImagem = document.getElementById("previewImagem");
+    const imagemAtual = document.getElementById("imagemAtual");
+
+    fotoInput.addEventListener("change", function () {
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          previewImagem.src = e.target.result;
+          previewImagem.style.display = 'block';
+          if (imagemAtual) imagemAtual.style.display = 'none';
+        }
+        reader.readAsDataURL(file);
+      } else {
+        previewImagem.style.display = 'none';
+        if (imagemAtual) imagemAtual.style.display = 'block';
+      }
+    });
   });
 </script>
 {% endblock %}
-
-

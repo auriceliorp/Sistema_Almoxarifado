@@ -1,61 +1,49 @@
 {% extends 'base_simplificada.html' %}
+
 {% block content %}
 <div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h5 class="text-primary mb-0">Unidades Locais</h5>
-    <a href="{{ url_for('area_ul_bp.novo_ul') }}" class="btn btn-outline-success btn-sm">
-      <i class="bi bi-plus-circle"></i> Nova UL
-    </a>
+  <h4 class="mb-4">Áreas (Locais)</h4>
+
+  <!-- Filtro -->
+  <form method="GET" class="mb-3">
+    <div class="input-group">
+      <input type="text" name="filtro" class="form-control" placeholder="Buscar por descrição..." value="{{ request.args.get('filtro', '') }}">
+      <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Buscar</button>
+      <a href="{{ url_for('area_ul_bp.novo_local') }}" class="btn btn-success ms-2"><i class="bi bi-plus-circle"></i> Nova Área</a>
+    </div>
+  </form>
+
+  <!-- Tabela -->
+  <div class="table-responsive">
+    <table class="table table-sm table-bordered align-middle">
+      <thead class="table-light">
+        <tr>
+          <th style="width: 80%;">Descrição</th>
+          <th class="text-center" style="width: 20%;">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for local in locais %}
+        <tr>
+          <td>{{ local.descricao }}</td>
+          <td class="text-center">
+            <a href="{{ url_for('area_ul_bp.editar_local', id=local.id) }}" class="btn btn-sm btn-outline-primary" title="Editar">
+              <i class="bi bi-pencil"></i>
+            </a>
+            <a href="{{ url_for('area_ul_bp.excluir_local', id=local.id) }}" class="btn btn-sm btn-outline-danger" title="Excluir" onclick="return confirm('Deseja realmente excluir esta área?');">
+              <i class="bi bi-trash"></i>
+            </a>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="2" class="text-center text-muted">Nenhuma área encontrada.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
-
-  <table class="table table-bordered table-striped table-sm">
-    <thead class="table-dark">
-      <tr>
-        <th>Código</th>
-        <th>Descrição</th>
-        <th>Área</th>
-        <th class="text-center">Ações</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for ul in uls %}
-      <tr>
-        <td>{{ ul.codigo }}</td>
-        <td>{{ ul.descricao }}</td>
-        <td>{{ ul.local.descricao }}</td>
-        <td class="text-center">
-          <a href="{{ url_for('area_ul_bp.editar_ul', id=ul.id) }}" class="btn btn-sm btn-outline-primary me-1">
-            <i class="bi bi-pencil"></i>
-          </a>
-          <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalExcluirUL{{ ul.id }}">
-            <i class="bi bi-trash"></i>
-          </button>
-
-          <div class="modal fade" id="modalExcluirUL{{ ul.id }}" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-              <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                  <h5 class="modal-title">Confirmar Exclusão</h5>
-                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                  Deseja excluir <strong>{{ ul.descricao }}</strong>?
-                </div>
-                <div class="modal-footer">
-                  <form method="POST" action="{{ url_for('area_ul_bp.excluir_ul', id=ul.id) }}">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-danger">Excluir</button>
-                  </form>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
 </div>
 {% endblock %}
+
 

@@ -2,7 +2,7 @@
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
-from database import db
+from extensoes import db
 from models import NaturezaDespesa
 
 # Criação do blueprint da natureza de despesa

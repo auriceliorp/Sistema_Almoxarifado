@@ -103,17 +103,15 @@ def editar_grupo(id):
 @grupo_bp.route('/excluir/<int:id>', methods=['POST'])
 @login_required
 def excluir_grupo(id):
-    """
-    Exclui um grupo de itens.
-    """
     grupo = Grupo.query.get_or_404(id)
     try:
         db.session.delete(grupo)
         db.session.commit()
-        flash('Grupo excluído com sucesso!')
+        flash('Grupo excluído com sucesso!', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Erro ao excluir grupo: {e}')
+        flash(f'Erro ao excluir grupo: {e}', 'danger')
     return redirect(url_for('grupo_bp.lista_grupos'))
+
 
 

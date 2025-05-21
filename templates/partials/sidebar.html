@@ -1,115 +1,97 @@
 {# templates/partials/sidebar.html #}
 
-<!-- Sidebar -->
-<nav id="sidebarMenu" class="sidebar bg-dark text-white p-3 d-md-block d-none"
-     style="min-height: 100vh; width: 250px; position: fixed; top: 56px; left: 0; z-index: 1000; overflow-y: auto;">
-  {% if usuario %}
-  <div class="d-flex align-items-center mb-4">
-    <i class="bi bi-person-circle fs-4 me-2"></i>
-    <strong>{{ usuario.nome }}</strong>
-  </div>
-  {% endif %}
+<!-- Sidebar -->  <nav id="sidebarMenu" class="sidebar bg-dark text-white p-3 d-none d-md-block"  
+     style="min-height: 100vh; width: 250px; position: fixed; top: 56px; left: 0; z-index: 1000; overflow-y: auto;">  
+  {% if usuario %}  
+  <div class="d-flex align-items-center mb-4">  
+    <i class="bi bi-person-circle fs-4 me-2"></i>  
+    <strong>{{ usuario.nome }}</strong>  
+  </div>  
+  {% endif %}    <ul class="nav flex-column">  <!-- Almoxarifado -->  
+<li class="nav-item">  
+  <a class="nav-link text-white fw-bold d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#submenuAlmox" role="button">  
+    <span><i class="bi bi-archive me-1"></i> Almoxarifado</span><i class="bi bi-chevron-down"></i>  
+  </a>  
+  <ul class="collapse show nav flex-column ms-3" id="submenuAlmox">  
+    <li class="nav-item"><a href="{{ url_for('item_bp.lista_itens') }}" class="nav-link text-white">Itens</a></li>  
+    <li class="nav-item"><a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="nav-link text-white">Fornecedores</a></li>  
+    <li class="nav-item"><a href="{{ url_for('entrada_bp.lista_entradas') }}" class="nav-link text-white">Entrada de Materiais</a></li>  
+    <li class="nav-item"><a href="{{ url_for('saida_bp.lista_saidas') }}" class="nav-link text-white">Saída de Materiais</a></li>  
+    <li class="nav-item"><a href="{{ url_for('main.relatorios') }}" class="nav-link text-white">Relatórios</a></li>  
+  </ul>  
+</li>  
 
-  <ul class="nav flex-column">
+<!-- Patrimônio -->  
+<li class="nav-item mt-3">  
+  <a class="nav-link text-white fw-bold d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#submenuPatrimonio" role="button">  
+    <span><i class="bi bi-building me-1"></i> Patrimônio</span><i class="bi bi-chevron-down"></i>  
+  </a>  
+  <ul class="collapse nav flex-column ms-3" id="submenuPatrimonio">  
+    <li class="nav-item"><a href="{{ url_for('patrimonio_bp.listar_bens') }}" class="nav-link text-white">Bens Patrimoniais</a></li>  
+    <li class="nav-item"><a href="#" class="nav-link text-white disabled">Inventário</a></li>  
+    <li class="nav-item"><a href="#" class="nav-link text-white disabled">Transferência</a></li>  
+    <li class="nav-item"><a href="#" class="nav-link text-white disabled">Relatórios</a></li>  
+  </ul>  
+</li>  
 
-    <!-- Almoxarifado -->
-    <li class="nav-item">
-      <a class="nav-link text-white fw-bold d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#submenuAlmox" role="button">
-        <span><i class="bi bi-archive me-1"></i> Almoxarifado</span><i class="bi bi-chevron-down"></i>
-      </a>
-      <ul class="collapse show nav flex-column ms-3" id="submenuAlmox">
-        <li class="nav-item"><a href="{{ url_for('item_bp.lista_itens') }}" class="nav-link text-white">Itens</a></li>
-        <li class="nav-item"><a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="nav-link text-white">Fornecedores</a></li>
-        <li class="nav-item"><a href="{{ url_for('entrada_bp.lista_entradas') }}" class="nav-link text-white">Entrada de Materiais</a></li>
-        <li class="nav-item"><a href="{{ url_for('saida_bp.lista_saidas') }}" class="nav-link text-white">Saída de Materiais</a></li>
-        <li class="nav-item"><a href="{{ url_for('main.relatorios') }}" class="nav-link text-white">Relatórios</a></li>
-      </ul>
-    </li>
+<!-- Compras -->  
+<li class="nav-item mt-3">  
+  <a class="nav-link text-white fw-bold d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#submenuCompras" role="button">  
+    <span><i class="bi bi-cart-check me-1"></i> Compras</span><i class="bi bi-chevron-down"></i>  
+  </a>  
+  <ul class="collapse nav flex-column ms-3" id="submenuCompras">  
+    <li class="nav-item"><a href="{{ url_for('painel_bp.lista_painel') }}" class="nav-link text-white">Painel de Contratações</a></li>  
+    <li class="nav-item"><a href="#" class="nav-link text-white disabled">Requisições</a></li>  
+    <li class="nav-item"><a href="#" class="nav-link text-white disabled">Fornecedores</a></li>  
+    <li class="nav-item"><a href="#" class="nav-link text-white disabled">Cotações</a></li>  
+    <li class="nav-item"><a href="#" class="nav-link text-white disabled">Processos SEI</a></li>  
+  </ul>  
+</li>  
 
-    <!-- Patrimônio -->
-    <li class="nav-item mt-3">
-      <a class="nav-link text-white fw-bold d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#submenuPatrimonio" role="button">
-        <span><i class="bi bi-building me-1"></i> Patrimônio</span><i class="bi bi-chevron-down"></i>
-      </a>
-      <ul class="collapse nav flex-column ms-3" id="submenuPatrimonio">
-        <li class="nav-item"><a href="{{ url_for('patrimonio_bp.listar_bens') }}" class="nav-link text-white">Bens Patrimoniais</a></li>
-        <li class="nav-item"><a href="#" class="nav-link text-white disabled">Inventário</a></li>
-        <li class="nav-item"><a href="#" class="nav-link text-white disabled">Transferência</a></li>
-        <li class="nav-item"><a href="#" class="nav-link text-white disabled">Relatórios</a></li>
-      </ul>
-    </li>
+<!-- Publicações -->  
+<li class="nav-item mt-3">  
+  <a href="#" class="nav-link text-white fw-bold disabled"><i class="bi bi-journal-text me-1"></i> Publicações</a>  
+</li>
 
-    <!-- Compras -->
-    <li class="nav-item mt-3">
-      <a class="nav-link text-white fw-bold d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#submenuCompras" role="button">
-        <span><i class="bi bi-cart-check me-1"></i> Compras</span><i class="bi bi-chevron-down"></i>
-      </a>
-      <ul class="collapse nav flex-column ms-3" id="submenuCompras">
-        <li class="nav-item"><a href="{{ url_for('painel_bp.lista_painel') }}" class="nav-link text-white">Painel de Contratações</a></li>
-        <li class="nav-item"><a href="#" class="nav-link text-white disabled">Requisições</a></li>
-        <li class="nav-item"><a href="#" class="nav-link text-white disabled">Fornecedores</a></li>
-        <li class="nav-item"><a href="#" class="nav-link text-white disabled">Cotações</a></li>
-        <li class="nav-item"><a href="#" class="nav-link text-white disabled">Processos SEI</a></li>
-      </ul>
-    </li>
+   <!-- Dashboard (link direto) -->  <li class="nav-item mt-3">  
+  <a href="{{ url_for('dashboard_bp.dashboard') }}" class="nav-link text-white fw-bold">  
+    <i class="bi bi-graph-up-arrow me-1"></i> Dashboard  
+  </a>  
+</li>  <!-- Configurações -->  
+<li class="nav-item mt-3">  
+  <a class="nav-link text-white fw-bold d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#submenuConfig" role="button">  
+    <span><i class="bi bi-gear me-1"></i> Configurações</span><i class="bi bi-chevron-down"></i>  
+  </a>  
+  <ul class="collapse show nav flex-column ms-3" id="submenuConfig">  
+    <li class="nav-item"><a href="{{ url_for('usuario_bp.lista_usuarios') }}" class="nav-link text-white">Perfis e Usuários</a></li>  
+    <li class="nav-item mt-2 text-white-50 small">Organização Administrativa</li>  
+    <li class="nav-item"><a href="{{ url_for('nd_bp.lista_nd') }}" class="nav-link text-white">Natureza de Despesa</a></li>  
+    <li class="nav-item"><a href="{{ url_for('grupo_bp.lista_grupos') }}" class="nav-link text-white">Grupos</a></li>  
+    <li class="nav-item"><a href="{{ url_for('area_ul_bp.lista_locais') }}" class="nav-link text-white">Áreas</a></li>  
+    <li class="nav-item"><a href="{{ url_for('area_ul_bp.lista_uls') }}" class="nav-link text-white">Unidades Locais</a></li>  
+  </ul>  
+</li>  
 
-    <!-- Publicações -->
-    <li class="nav-item mt-3">
-      <a href="#" class="nav-link text-white fw-bold disabled"><i class="bi bi-journal-text me-1"></i> Publicações</a>
-    </li>
+<!-- Auditoria (somente admin) -->  
+{% if usuario and usuario.email == 'admin@admin.com' %}  
+<li class="nav-item mt-3">  
+  <a href="{{ url_for('auditoria_bp.lista_logs') }}" class="nav-link text-white fw-bold">  
+    <i class="bi bi-shield-lock me-1"></i> Auditoria  
+  </a>  
+</li>  
+{% endif %}  
 
-    <!-- Dashboard -->
-    <li class="nav-item mt-3">
-      <a href="{{ url_for('dashboard_bp.dashboard') }}" class="nav-link text-white fw-bold">
-        <i class="bi bi-graph-up-arrow me-1"></i> Dashboard
-      </a>
-    </li>
+<!-- Botão Sair estilizado -->  
+<li class="nav-item mt-4">  
+  <a href="{{ url_for('main.logout') }}" class="btn btn-warning fw-bold w-100 text-dark text-center">  
+    <i class="bi bi-box-arrow-right me-2"></i> Sair  
+  </a>  
+</li>
 
-    <!-- Configurações -->
-    <li class="nav-item mt-3">
-      <a class="nav-link text-white fw-bold d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#submenuConfig" role="button">
-        <span><i class="bi bi-gear me-1"></i> Configurações</span><i class="bi bi-chevron-down"></i>
-      </a>
-      <ul class="collapse show nav flex-column ms-3" id="submenuConfig">
-        <li class="nav-item"><a href="{{ url_for('usuario_bp.lista_usuarios') }}" class="nav-link text-white">Perfis e Usuários</a></li>
-        <li class="nav-item mt-2 text-white-50 small">Organização Administrativa</li>
-        <li class="nav-item"><a href="{{ url_for('nd_bp.lista_nd') }}" class="nav-link text-white">Natureza de Despesa</a></li>
-        <li class="nav-item"><a href="{{ url_for('grupo_bp.lista_grupos') }}" class="nav-link text-white">Grupos</a></li>
-        <li class="nav-item"><a href="{{ url_for('area_ul_bp.lista_locais') }}" class="nav-link text-white">Áreas</a></li>
-        <li class="nav-item"><a href="{{ url_for('area_ul_bp.lista_uls') }}" class="nav-link text-white">Unidades Locais</a></li>
-      </ul>
-    </li>
-
-    <!-- Auditoria (somente admin) -->
-    {% if usuario and usuario.email == 'admin@admin.com' %}
-    <li class="nav-item mt-3">
-      <a href="{{ url_for('auditoria_bp.lista_logs') }}" class="nav-link text-white fw-bold">
-        <i class="bi bi-shield-lock me-1"></i> Auditoria
-      </a>
-    </li>
-    {% endif %}
-
-    <!-- Botão Sair estilizado -->
-    <li class="nav-item mt-4">
-      <a href="{{ url_for('main.logout') }}" class="btn btn-warning fw-bold w-100 text-dark text-center">
-        <i class="bi bi-box-arrow-right me-2"></i> Sair
-      </a>
-    </li>
-
-  </ul>
-</nav>
-
-<!-- Script para abrir o menu lateral em mobile -->
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const toggleBtn = document.getElementById('toggleSidebar');
-    const sidebar = document.getElementById('sidebarMenu');
-
-    if (toggleBtn && sidebar) {
-      toggleBtn.addEventListener('click', function () {
-        sidebar.classList.toggle('d-none');
-        sidebar.classList.toggle('d-block');
-      });
-    }
-  });
+  </ul>  
+</nav>  <!-- Script para botão hamburguer -->  <script>  
+  document.getElementById('toggleSidebar').addEventListener('click', function () {  
+    const sidebar = document.getElementById('sidebarMenu');  
+    sidebar.classList.toggle('d-none');  
+  });  
 </script>

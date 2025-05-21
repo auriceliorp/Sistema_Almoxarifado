@@ -27,6 +27,20 @@ def dashboard_organizacao():
     return render_template('organizacao/dashboard_organizacao.html',
                            nds=nds, grupos=grupos, areas=areas, uls=uls)
 
+# ------------------------- ROTA: LISTA DE ÁREAS (LOCAIS) - AJAX ------------------------- #
+@area_ul_bp.route('/locais')
+@login_required
+def lista_locais():
+    areas = Local.query.order_by(Local.descricao).all()
+    return render_template('partials/area/lista_area.html', areas=areas)
+
+# ------------------------- ROTA: LISTA DE ULs - AJAX ------------------------- #
+@area_ul_bp.route('/uls')
+@login_required
+def lista_uls():
+    uls = UnidadeLocal.query.order_by(UnidadeLocal.codigo).all()
+    return render_template('partials/ul/lista_ul.html', uls=uls)
+
 # ------------------------- ROTA: NOVO LOCAL (Área) ------------------------- #
 @area_ul_bp.route('/locais/novo', methods=['GET', 'POST'])
 @login_required

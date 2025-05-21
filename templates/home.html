@@ -62,12 +62,14 @@
       </div>
     </div>
 
-    <!-- Botão Patrimônio (desabilitado) -->
-    <div class="col">
-      <div class="btn btn-secondary w-100 home-card btn-disabled">
-        <i class="bi bi-building"></i>
-        Patrimônio
-      </div>
+    <!-- Botão Patrimônio (ativo) -->
+<div class="col">
+  <a href="{{ url_for('patrimonio_bp.listar_bens') }}" class="btn btn-secondary w-100 home-card">
+    <i class="bi bi-building"></i>
+    Patrimônio
+  </a>
+</div>
+
     </div>
 
     <!-- Botão Publicações (desabilitado) -->

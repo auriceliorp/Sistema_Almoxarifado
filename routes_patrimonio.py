@@ -57,15 +57,15 @@ def novo_bem():
     if request.method == 'POST':
         nome = request.form.get('nome')
         numero_ul = request.form.get('numero_ul')
-        numero_sap = request.form.get('numero_sap')
-        numero_siads = request.form.get('numero_siads')
+        numero_sap = request.form.get('numero_sap') or None
+        numero_siads = request.form.get('numero_siads') or None
         descricao = request.form.get('descricao')
-        grupo_bem = request.form.get('grupo_bem')
-        classificacao_contabil = request.form.get('classificacao_contabil')
+        grupo_bem = request.form.get('grupo_bem') or None
+        classificacao_contabil = request.form.get('classificacao_contabil') or None
         detentor_id = request.form.get('detentor_id')
         status = request.form.get('situacao')
         data_aquisicao = request.form.get('data_aquisicao')
-        valor_aquisicao = request.form.get('valor_aquisicao')
+        valor_aquisicao = request.form.get('valor_aquisicao') or None
         localizacao = request.form.get('localizacao')
         observacoes = request.form.get('observacoes')
 

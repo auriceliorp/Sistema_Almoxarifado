@@ -40,6 +40,18 @@
         </select>
       </div>
 
+      <!-- Localização (Unidade Local) -->
+<div class="col-md-6">
+  <label class="form-label">Localização *</label>
+  <select class="form-select" name="localizacao" required>
+    <option selected disabled>Selecione</option>
+    {% for ul in uls %}
+      <option value="{{ ul.descricao }}">{{ ul.codigo }} - {{ ul.descricao }}</option>
+    {% endfor %}
+  </select>
+</div>
+
+
       <!-- Classificação Contábil (preenchida automaticamente com o código) -->
       <div class="col-md-6">
         <label class="form-label">Classificação Contábil</label>

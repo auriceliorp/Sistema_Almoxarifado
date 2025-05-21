@@ -3,7 +3,6 @@
 {% block title %}Almoxarifado - Sistema Integrado SPS{% endblock %}
 
 {% block content %}
-
 <style>
   .almox-container {
     margin-top: 1rem;
@@ -15,18 +14,11 @@
     font-size: 1.1rem;
     font-weight: 500;
     border-radius: 12px;
-    background-color: #eef7fc;
-    color: #004b5b;
     transition: all 0.2s ease-in-out;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     text-decoration: none;
     display: block;
-  }
-
-  .almox-card:hover {
-    transform: translateY(-4px);
-    background-color: #dff0f8;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+    color: #004b5b;
   }
 
   .almox-card i {
@@ -35,24 +27,34 @@
     display: block;
   }
 
-  h3, h5 {
-    color: #004b5b;
+  .almox-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
   }
+
+  /* Cores suaves por seção */
+  .bg-gerenciamento { background-color: #e8f4fd; }
+  .bg-movimentacao { background-color: #fff9e6; }
+  .bg-relatorio { background-color: #e9f6f2; }
+
+  h3, h5 { color: #004b5b; }
 </style>
 
 <div class="container almox-container">
   <h3 class="text-center fw-bold mb-2">Sistema de Gestão de Almoxarifado</h3>
-    <!-- Sessão: Gerenciamento -->
+  <p class="text-center text-muted mb-4">Gerencie entradas, saídas e controle de materiais de forma eficiente.</p>
+
+  <!-- Sessão: Gerenciamento -->
   <h5 class="fw-semibold mb-3">Gerenciamento</h5>
   <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4 mb-4">
     <div class="col">
-      <a href="{{ url_for('item_bp.lista_itens') }}" class="almox-card">
+      <a href="{{ url_for('item_bp.lista_itens') }}" class="almox-card bg-gerenciamento">
         <i class="bi bi-box"></i>
         Itens
       </a>
     </div>
     <div class="col">
-      <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="almox-card">
+      <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="almox-card bg-gerenciamento">
         <i class="bi bi-person-check"></i>
         Fornecedores
       </a>
@@ -63,13 +65,13 @@
   <h5 class="fw-semibold mb-3">Movimentações</h5>
   <div class="row row-cols-1 row-cols-md-2 g-4 mb-4">
     <div class="col">
-      <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="almox-card">
+      <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="almox-card bg-movimentacao">
         <i class="bi bi-box-arrow-in-down"></i>
         Entrada de Materiais
       </a>
     </div>
     <div class="col">
-      <a href="{{ url_for('saida_bp.lista_saidas') }}" class="almox-card">
+      <a href="{{ url_for('saida_bp.lista_saidas') }}" class="almox-card bg-movimentacao">
         <i class="bi bi-box-arrow-up"></i>
         Saída de Materiais
       </a>
@@ -80,7 +82,7 @@
   <h5 class="fw-semibold mb-3">Relatórios</h5>
   <div class="row row-cols-1 row-cols-md-2 g-4">
     <div class="col">
-      <a href="{{ url_for('relatorio_bp.mapa_fechamento') }}" class="almox-card">
+      <a href="{{ url_for('relatorio_bp.mapa_fechamento') }}" class="almox-card bg-relatorio">
         <i class="bi bi-bar-chart-line"></i>
         Mapa de Fechamento Mensal
       </a>

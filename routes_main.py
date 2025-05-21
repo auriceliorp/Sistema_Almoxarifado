@@ -38,7 +38,7 @@ def login():
             perfil = usuario.perfil.nome if usuario.perfil else ''
 
             if perfil == 'Administrador':
-                return redirect(url_for('main.home'))
+                return redirect(url_for('main.dashboard'))
             elif perfil == 'Solicitante':
                 return redirect(url_for('main.home_solicitante'))
             elif perfil == 'Consultor':
@@ -52,7 +52,7 @@ def login():
 
     return render_template('login.html')
 
-# --- Página principal para Administrador ---
+# --- Página principal para Administrador (ANTIGA HOME) ---
 @main.route('/home')
 @login_required
 @perfil_required(['Administrador'])
@@ -73,6 +73,13 @@ def home_solicitante():
 def home_consultor():
     return render_template('home_consultor.html', usuario=current_user)
 
+# --- Dashboard principal para Administrador ---
+@main.route('/dashboard')
+@login_required
+@perfil_required(['Administrador'])
+def dashboard():
+    return render_template('dashboard.html', usuario=current_user)
+
 # --- Logout do sistema ---
 @main.route('/logout')
 @login_required
@@ -91,12 +98,12 @@ def index():
 def almoxarifado():
     return render_template('almoxarifado.html', usuario=current_user)
 
-# --- Página ND / Grupos / UL ---
+# --- Página ND / Grupos / UL (usada antes com abas) ---
 @main.route('/nd_grupos_ul')
 @login_required
 def nd_grupos_ul():
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return '', 204  # Evita recarregamento da estrutura em requisições AJAX
+        return '', 204
     return render_template('nd_grupos_ul.html')
 
 # --- Página de instrução de troca de senha ---
@@ -104,15 +111,16 @@ def nd_grupos_ul():
 def esqueci_senha():
     return render_template('esqueci_senha.html')
 
-# --- Página de Relatórios (botões desativados por padrão) ---
+# --- Página de Relatórios ---
 @main.route('/relatorios')
 @login_required
 def relatorios():
     return render_template('relatorios.html', usuario=current_user)
 
-# --- Página Dashboard de Organização ---
+# --- Página Dashboard de Organização Administrativa (se ainda utilizada) ---
 @main.route('/dashboard_organizacao')
 @login_required
 def dashboard_organizacao():
     return render_template('organizacao/dashboard_organizacao.html', usuario=current_user)
+
 

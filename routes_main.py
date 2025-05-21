@@ -37,8 +37,10 @@ def login():
             login_user(usuario)
             perfil = usuario.perfil.nome if usuario.perfil else ''
 
+            # Redirecionamento baseado no perfil
             if perfil == 'Administrador':
-                return redirect(url_for('main.dashboard'))
+                # Importante: direciona para o dashboard do blueprint correto
+                return redirect(url_for('dashboard_bp.dashboard'))
             elif perfil == 'Solicitante':
                 return redirect(url_for('main.home_solicitante'))
             elif perfil == 'Consultor':
@@ -52,7 +54,7 @@ def login():
 
     return render_template('login.html')
 
-# --- Página principal para Administrador (ANTIGA HOME) ---
+# --- Página principal para Administrador (não mais usada como página inicial) ---
 @main.route('/home')
 @login_required
 @perfil_required(['Administrador'])
@@ -73,13 +75,6 @@ def home_solicitante():
 def home_consultor():
     return render_template('home_consultor.html', usuario=current_user)
 
-# --- Dashboard principal para Administrador ---
-@main.route('/dashboard')
-@login_required
-@perfil_required(['Administrador'])
-def dashboard():
-    return render_template('dashboard.html', usuario=current_user)
-
 # --- Logout do sistema ---
 @main.route('/logout')
 @login_required
@@ -98,7 +93,7 @@ def index():
 def almoxarifado():
     return render_template('almoxarifado.html', usuario=current_user)
 
-# --- Página ND / Grupos / UL (usada antes com abas) ---
+# --- Página ND / Grupos / UL (AJAX ou layout antigo) ---
 @main.route('/nd_grupos_ul')
 @login_required
 def nd_grupos_ul():
@@ -117,10 +112,8 @@ def esqueci_senha():
 def relatorios():
     return render_template('relatorios.html', usuario=current_user)
 
-# --- Página Dashboard de Organização Administrativa (se ainda utilizada) ---
+# --- Página Dashboard de Organização (Organização Administrativa) ---
 @main.route('/dashboard_organizacao')
 @login_required
 def dashboard_organizacao():
     return render_template('organizacao/dashboard_organizacao.html', usuario=current_user)
-
-

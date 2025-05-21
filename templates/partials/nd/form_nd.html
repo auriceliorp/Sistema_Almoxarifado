@@ -1,7 +1,7 @@
 <div class="mb-4">
   <h5 class="text-primary">{{ 'Editar ND' if nd else 'Nova ND' }}</h5>
 
-  <form onsubmit="enviarFormularioND(event)" 
+  <form onsubmit="enviarFormularioND(event)"
         action="{{ url_for('nd_bp.editar_nd', id=nd.id) if nd else url_for('nd_bp.novo_nd') }}">
     <div class="mb-3">
       <label for="codigo" class="form-label">Código *</label>
@@ -43,6 +43,10 @@ function enviarFormularioND(event) {
     document.getElementById('conteudo-dinamico').innerHTML = html;
     document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
     document.querySelector('.nav-link[href$="/nd/"]').classList.add('active');
+  })
+  .catch(error => {
+    console.error('Erro ao enviar formulário ND:', error);
+    alert('Ocorreu um erro ao salvar a Natureza de Despesa.');
   });
 }
 </script>

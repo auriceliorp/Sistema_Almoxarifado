@@ -31,6 +31,7 @@ def listar_bens():
     numero_ul = request.args.get('numero_ul')
     numero_sap = request.args.get('numero_sap')
     grupo_bem = request.args.get('grupo_bem')
+    localizacao = request.args.get('localizacao')
 
     query = BemPatrimonial.query.filter_by(excluido=False)
 
@@ -40,11 +41,14 @@ def listar_bens():
         query = query.filter(BemPatrimonial.numero_sap.ilike(f"%{numero_sap}%"))
     if grupo_bem:
         query = query.filter(BemPatrimonial.grupo_bem == grupo_bem)
+    if localizacao:
+        query = query.filter(BemPatrimonial.localizacao == localizacao)
 
     bens = query.order_by(BemPatrimonial.nome.asc()).all()
     grupos = GrupoPatrimonio.query.order_by(GrupoPatrimonio.codigo).all()
+    uls = UnidadeLocal.query.order_by(UnidadeLocal.descricao).all()
 
-    return render_template('patrimonio/listar_bens.html', bens=bens, grupos=grupos, usuario=current_user)
+    return render_template('patrimonio/listar_bens.html', bens=bens, grupos=grupos, uls=uls, usuario=current_user)
 
 # ------------------------ ROTA: CADASTRAR BEM ------------------------ #
 @patrimonio_bp.route('/bens/novo', methods=['GET', 'POST'])
@@ -164,4 +168,3 @@ def editar_bem(id):
 def visualizar_bem(id):
     bem = BemPatrimonial.query.get_or_404(id)
     return render_template('patrimonio/visualizar_bem.html', bem=bem, usuario=current_user)
-

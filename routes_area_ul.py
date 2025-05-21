@@ -26,3 +26,64 @@ def dashboard_organizacao():
     uls = UnidadeLocal.query.all()
     return render_template('organizacao/dashboard_organizacao.html',
                            nds=nds, grupos=grupos, areas=areas, uls=uls)
+
+# ------------------------- ROTA: NOVO LOCAL (Área) ------------------------- #
+@area_ul_bp.route('/locais/novo', methods=['GET', 'POST'])
+@login_required
+def novo_local():
+    if request.method == 'POST':
+        descricao = request.form.get('descricao')
+        if not descricao:
+            flash('Descrição é obrigatória.')
+            return redirect(url_for('area_ul_bp.novo_local'))
+        db.session.add(Local(descricao=descricao))
+        db.session.commit()
+        flash('Área cadastrada com sucesso!')
+        return redirect(url_for('area_ul_bp.dashboard_organizacao'))
+    return render_template('partials/area/form_local.html')
+
+# ------------------------- ROTA: EDITAR LOCAL (Área) ------------------------- #
+@area_ul_bp.route('/locais/editar/<int:id>', methods=['GET', 'POST'])
+@login_required
+def editar_local(id):
+    local = Local.query.get_or_404(id)
+    if request.method == 'POST':
+        local.descricao = request.form.get('descricao')
+        db.session.commit()
+        flash('Área atualizada com sucesso!')
+        return redirect(url_for('area_ul_bp.dashboard_organizacao'))
+    return render_template('partials/area/form_local.html', local=local)
+
+# ------------------------- ROTA: NOVA UNIDADE LOCAL ------------------------- #
+@area_ul_bp.route('/uls/novo', methods=['GET', 'POST'])
+@login_required
+def novo_ul():
+    locais = Local.query.all()
+    if request.method == 'POST':
+        codigo = request.form.get('codigo')
+        descricao = request.form.get('descricao')
+        local_id = request.form.get('local_id')
+        if not codigo or not descricao or not local_id:
+            flash('Todos os campos são obrigatórios.')
+            return redirect(url_for('area_ul_bp.novo_ul'))
+        ul = UnidadeLocal(codigo=codigo, descricao=descricao, local_id=local_id)
+        db.session.add(ul)
+        db.session.commit()
+        flash('Unidade Local cadastrada com sucesso!')
+        return redirect(url_for('area_ul_bp.dashboard_organizacao'))
+    return render_template('partials/ul/form_ul.html', locais=locais)
+
+# ------------------------- ROTA: EDITAR UNIDADE LOCAL ------------------------- #
+@area_ul_bp.route('/uls/editar/<int:id>', methods=['GET', 'POST'])
+@login_required
+def editar_ul(id):
+    ul = UnidadeLocal.query.get_or_404(id)
+    locais = Local.query.all()
+    if request.method == 'POST':
+        ul.codigo = request.form.get('codigo')
+        ul.descricao = request.form.get('descricao')
+        ul.local_id = request.form.get('local_id')
+        db.session.commit()
+        flash('Unidade Local atualizada com sucesso!')
+        return redirect(url_for('area_ul_bp.dashboard_organizacao'))
+    return render_template('partials/ul/form_ul.html', ul=ul, locais=locais)

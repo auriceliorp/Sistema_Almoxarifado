@@ -34,24 +34,25 @@ def novo_nd():
 
         if not codigo or not nome:
             flash('Preencha todos os campos obrigatórios.')
-            return redirect(url_for('nd_bp.novo_nd'))
+            return render_template('partials/nd/form_nd.html')
 
         # Verifica se já existe ND com mesmo código
         existente = NaturezaDespesa.query.filter_by(codigo=codigo).first()
         if existente:
             flash('Já existe uma Natureza de Despesa com este código.')
-            return redirect(url_for('nd_bp.novo_nd'))
+            return render_template('partials/nd/form_nd.html')
 
         try:
             nova_nd = NaturezaDespesa(codigo=codigo, nome=nome)
             db.session.add(nova_nd)
             db.session.commit()
+            nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
             flash('Natureza de Despesa cadastrada com sucesso!')
-            return redirect(url_for('nd_bp.lista_nd'))
+            return render_template('partials/nd/lista_nd.html', nds=nds)
         except Exception as e:
             db.session.rollback()
             flash(f'Erro ao cadastrar ND: {e}')
-            return redirect(url_for('nd_bp.novo_nd'))
+            return render_template('partials/nd/form_nd.html')
 
     return render_template('partials/nd/form_nd.html')
 
@@ -68,8 +69,16 @@ def editar_nd(id):
     if request.method == 'POST':
         nd.codigo = request.form.get('codigo')
         nd.nome = request.form.get('nome')
-        db.session.commit()
-        flash('Natureza de Despesa atualizada com sucesso!')
-        return redirect(url_for('nd_bp.lista_nd'))
+
+        try:
+            db.session.commit()
+            nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
+            flash('Natureza de Despesa atualizada com sucesso!')
+            return render_template('partials/nd/lista_nd.html', nds=nds)
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao atualizar ND: {e}')
+            return render_template('partials/nd/form_nd.html', nd=nd)
 
     return render_template('partials/nd/form_nd.html', nd=nd)
+

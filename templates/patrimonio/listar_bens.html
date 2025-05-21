@@ -1,5 +1,4 @@
 {% extends 'base_simplificada.html' %}
-
 {% block content %}
 <div class="container mt-4">
   <h4 class="mb-4">Bens Patrimoniais</h4>
@@ -21,8 +20,15 @@
       </select>
     </div>
     <div class="col-md-3">
-      <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Buscar</button>
-      <a href="{{ url_for('patrimonio_bp.novo_bem') }}" class="btn btn-success ms-2"><i class="bi bi-plus-circle"></i> Novo Bem</a>
+      <input type="text" name="localizacao" class="form-control" placeholder="Localização" value="{{ request.args.get('localizacao', '') }}">
+    </div>
+
+    <div class="col-md-12 d-flex justify-content-between">
+      <div></div>
+      <div>
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Buscar</button>
+        <a href="{{ url_for('patrimonio_bp.novo_bem') }}" class="btn btn-success ms-2"><i class="bi bi-plus-circle"></i> Novo Bem</a>
+      </div>
     </div>
   </form>
 
@@ -36,6 +42,7 @@
           <th>Nome</th>
           <th>Grupo</th>
           <th>Detentor</th>
+          <th>Localização</th>
           <th>Situação</th>
           <th>Ações</th>
         </tr>
@@ -48,6 +55,7 @@
           <td>{{ bem.nome[:30] }}{% if bem.nome|length > 30 %}...{% endif %}</td>
           <td>{{ bem.grupo_bem }}</td>
           <td>{{ bem.detentor.nome if bem.detentor else '' }}</td>
+          <td>{{ bem.localizacao }}</td>
           <td>{{ bem.status }}</td>
           <td>
             <a href="{{ url_for('patrimonio_bp.visualizar_bem', id=bem.id) }}" class="btn btn-sm btn-outline-primary" title="Visualizar">
@@ -60,7 +68,7 @@
         </tr>
         {% else %}
         <tr>
-          <td colspan="7">Nenhum bem encontrado.</td>
+          <td colspan="8">Nenhum bem encontrado.</td>
         </tr>
         {% endfor %}
       </tbody>

@@ -1,7 +1,10 @@
 {% extends 'base_simplificada.html' %}
+
 {% block content %}
 <div class="container mt-4">
   <h4 class="mb-4">Editar Bem Patrimonial</h4>
+
+  <!-- Formulário de edição -->
   <form method="POST" enctype="multipart/form-data">
     <div class="row g-3">
       <!-- Identificadores -->
@@ -32,7 +35,7 @@
       <div class="col-md-6">
         <label class="form-label">Grupo de Bens *</label>
         <select class="form-select" name="grupo_bem" id="grupoSelect" required>
-          <option disabled>Selecione</option>
+          <option selected disabled>Selecione</option>
           {% for grupo in grupos %}
             <option value="{{ grupo.codigo }}" {% if bem.grupo_bem == grupo.codigo %}selected{% endif %}>{{ grupo.codigo }} - {{ grupo.descricao }}</option>
           {% endfor %}
@@ -43,7 +46,7 @@
       <div class="col-md-6">
         <label class="form-label">Localização *</label>
         <select class="form-select" name="localizacao" required>
-          <option disabled>Selecione</option>
+          <option selected disabled>Selecione</option>
           {% for ul in uls %}
             <option value="{{ ul.descricao }}" {% if bem.localizacao == ul.descricao %}selected{% endif %}>{{ ul.codigo }} - {{ ul.descricao }}</option>
           {% endfor %}
@@ -60,7 +63,7 @@
       <div class="col-md-6">
         <label class="form-label">Detentor Atual *</label>
         <select class="form-select" name="detentor_id" required>
-          <option disabled>Selecione</option>
+          <option selected disabled>Selecione</option>
           {% for u in usuarios %}
             <option value="{{ u.id }}" {% if bem.detentor_id == u.id %}selected{% endif %}>{{ u.nome }}</option>
           {% endfor %}
@@ -71,8 +74,8 @@
       <div class="col-md-6">
         <label class="form-label">Situação</label>
         <select class="form-select" name="situacao">
-          {% for status in ['Ativo', 'Em uso', 'Transferido', 'Baixado', 'Em manutenção', 'Para doação'] %}
-            <option value="{{ status }}" {% if bem.status == status %}selected{% endif %}>{{ status }}</option>
+          {% for opcao in ['Ativo', 'Em uso', 'Transferido', 'Baixado', 'Em manutenção', 'Para doação'] %}
+            <option value="{{ opcao }}" {% if bem.status == opcao %}selected{% endif %}>{{ opcao }}</option>
           {% endfor %}
         </select>
       </div>
@@ -80,7 +83,7 @@
       <!-- Data e Valor de Aquisição -->
       <div class="col-md-6">
         <label class="form-label">Data de Aquisição</label>
-        <input type="date" class="form-control" name="data_aquisicao" value="{{ bem.data_aquisicao|date('Y-m-d') if bem.data_aquisicao else '' }}">
+        <input type="date" class="form-control" name="data_aquisicao" value="{{ bem.data_aquisicao.strftime('%Y-%m-%d') if bem.data_aquisicao else '' }}">
       </div>
       <div class="col-md-6">
         <label class="form-label">Valor de Aquisição</label>
@@ -89,13 +92,13 @@
 
       <!-- Foto -->
       <div class="col-md-6">
-        <label class="form-label">Foto Atual</label><br>
+        <label class="form-label">Foto do Bem</label><br>
         {% if bem.foto %}
-          <img src="/{{ bem.foto }}" alt="Foto" class="img-thumbnail" style="max-height: 120px;">
+          <img src="/{{ bem.foto }}" alt="Foto" class="img-thumbnail mb-2" style="max-height: 120px;">
         {% else %}
           <p class="text-muted">Sem foto</p>
         {% endif %}
-        <input type="file" class="form-control mt-2" name="foto" accept="image/*">
+        <input type="file" class="form-control" name="foto" accept="image/*">
       </div>
 
       <!-- Observações -->
@@ -113,16 +116,16 @@
   </form>
 </div>
 
-<!-- Script para preenchimento automático do campo Classificação Contábil -->
+<!-- Script para preencher automaticamente a classificação contábil -->
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const grupoSelect = document.getElementById("grupoSelect");
     const classificacaoContabil = document.getElementById("classificacaoContabil");
 
     grupoSelect.addEventListener("change", function () {
-      const codigoSelecionado = this.value;
-      classificacaoContabil.value = codigoSelecionado || '';
+      classificacaoContabil.value = this.value || '';
     });
   });
 </script>
 {% endblock %}
+

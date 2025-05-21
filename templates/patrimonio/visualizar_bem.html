@@ -11,7 +11,8 @@
   <div class="row g-4">
     <div class="col-md-4">
       {% if bem.foto %}
-        <img src="{{ url_for('static', filename=bem.foto) }}" class="img-fluid rounded shadow-sm" alt="Foto do Bem">
+        <img src="{{ url_for('static', filename=bem.foto[7:] if bem.foto.startswith('static/') else bem.foto) }}"
+             class="img-fluid rounded shadow-sm" alt="Foto do Bem">
       {% else %}
         <div class="text-muted fst-italic">Sem foto disponível</div>
       {% endif %}
@@ -68,3 +69,4 @@
   </div>
 </div>
 {% endblock %}
+

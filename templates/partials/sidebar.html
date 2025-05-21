@@ -75,15 +75,33 @@
       </ul>
     </li>
 
-    <li class="nav-item mt-3">
-      <a class="nav-link text-white fw-bold d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#submenuConfig" role="button">
-        <span><i class="bi bi-gear me-1"></i> Configurações</span><i class="bi bi-chevron-down"></i>
-      </a>
-      <ul class="collapse show nav flex-column ms-3" id="submenuConfig">
-        <li class="nav-item"><a href="{{ url_for('usuario_bp.lista_usuarios') }}" class="nav-link text-white">Perfis e Usuários</a></li>
-        <li class="nav-item"> <a href="{{ url_for('main.dashboard_organizacao') }}" class="nav-link text-white">Organização Administrativa</a></li>
-      </ul>
-    </li>
+    <!-- Configurações -->
+<li class="nav-item">
+  <a class="nav-link" data-bs-toggle="collapse" href="#configuracoesMenu" role="button" aria-expanded="false">
+    <i class="bi bi-gear me-2"></i> Configurações
+  </a>
+  <div class="collapse" id="configuracoesMenu">
+    <ul class="btn-toggle-nav list-unstyled ps-4">
+      <li><a class="nav-link" href="{{ url_for('usuario_bp.lista_usuarios') }}">Perfis e Usuários</a></li>
+
+      <!-- Nova seção: Organização Administrativa -->
+      <li class="mt-2 text-muted small">Organização Administrativa</li>
+      <li><a class="nav-link" href="{{ url_for('nd_bp.lista_nd') }}">Natureza de Despesa</a></li>
+      <li><a class="nav-link" href="{{ url_for('grupo_bp.lista_grupos') }}">Grupos</a></li>
+      <li><a class="nav-link" href="{{ url_for('area_ul_bp.lista_locais') }}">Áreas</a></li>
+      <li><a class="nav-link" href="{{ url_for('area_ul_bp.lista_uls') }}">Unidades Locais</a></li>
+    </ul>
+  </div>
+</li>
+
+<!-- Botão Sair personalizado -->
+<li class="nav-item mt-3">
+  <a class="nav-link text-dark fw-bold btn btn-warning px-3 py-2 mx-3 d-block text-center"
+     href="{{ url_for('main.logout') }}">
+    <i class="bi bi-box-arrow-right me-2"></i> Sair
+  </a>
+</li>
+
 
     {# -------------------- LINK AUDITORIA SOMENTE PARA ADMIN -------------------- #}
     {% if usuario is defined and usuario.email == 'admin@admin.com' %}

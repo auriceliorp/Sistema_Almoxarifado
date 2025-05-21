@@ -3,30 +3,36 @@
 {% block title %}Almoxarifado - Sistema Integrado SPS{% endblock %}
 
 {% block content %}
-<!-- Estilo customizado com cores suaves -->
+
 <style>
+  .almox-container {
+    margin-top: 1rem;
+  }
+
   .almox-card {
     padding: 1.5rem;
     text-align: center;
-    font-size: 1.05rem;
+    font-size: 1.1rem;
     font-weight: 500;
     border-radius: 12px;
+    background-color: #eef7fc;
+    color: #004b5b;
     transition: all 0.2s ease-in-out;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-    background-color: #f1f8ff; /* cor suave de fundo */
-    color: #00394f;
-  }
-
-  .almox-card i {
-    font-size: 1.75rem;
-    margin-bottom: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    text-decoration: none;
     display: block;
   }
 
   .almox-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-    background-color: #e3f2fd;
+    background-color: #dff0f8;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  }
+
+  .almox-card i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    display: block;
   }
 
   h3, h5 {
@@ -34,22 +40,19 @@
   }
 </style>
 
-<div class="container py-4">
-  <!-- Título -->
+<div class="container almox-container">
   <h3 class="text-center fw-bold mb-2">Sistema de Gestão de Almoxarifado</h3>
-  <p class="text-center text-muted mb-4">Gerencie entradas, saídas e controle de materiais de forma eficiente.</p>
-
-  <!-- Sessão: Gerenciamento -->
+    <!-- Sessão: Gerenciamento -->
   <h5 class="fw-semibold mb-3">Gerenciamento</h5>
-  <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-3 mb-4">
+  <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4 mb-4">
     <div class="col">
-      <a href="{{ url_for('item_bp.lista_itens') }}" class="almox-card text-decoration-none">
+      <a href="{{ url_for('item_bp.lista_itens') }}" class="almox-card">
         <i class="bi bi-box"></i>
         Itens
       </a>
     </div>
     <div class="col">
-      <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="almox-card text-decoration-none">
+      <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="almox-card">
         <i class="bi bi-person-check"></i>
         Fornecedores
       </a>
@@ -58,15 +61,15 @@
 
   <!-- Sessão: Movimentações -->
   <h5 class="fw-semibold mb-3">Movimentações</h5>
-  <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+  <div class="row row-cols-1 row-cols-md-2 g-4 mb-4">
     <div class="col">
-      <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="almox-card text-decoration-none">
+      <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="almox-card">
         <i class="bi bi-box-arrow-in-down"></i>
         Entrada de Materiais
       </a>
     </div>
     <div class="col">
-      <a href="{{ url_for('saida_bp.lista_saidas') }}" class="almox-card text-decoration-none">
+      <a href="{{ url_for('saida_bp.lista_saidas') }}" class="almox-card">
         <i class="bi bi-box-arrow-up"></i>
         Saída de Materiais
       </a>
@@ -75,9 +78,9 @@
 
   <!-- Sessão: Relatórios -->
   <h5 class="fw-semibold mb-3">Relatórios</h5>
-  <div class="row row-cols-1 row-cols-md-2 g-3">
+  <div class="row row-cols-1 row-cols-md-2 g-4">
     <div class="col">
-      <a href="{{ url_for('relatorio_bp.mapa_fechamento') }}" class="almox-card text-decoration-none">
+      <a href="{{ url_for('relatorio_bp.mapa_fechamento') }}" class="almox-card">
         <i class="bi bi-bar-chart-line"></i>
         Mapa de Fechamento Mensal
       </a>

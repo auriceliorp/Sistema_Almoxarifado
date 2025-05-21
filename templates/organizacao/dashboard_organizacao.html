@@ -28,31 +28,31 @@
   <!-- Abas de navegação -->
   <ul class="nav nav-tabs mb-4" id="organizacaoTabs" role="tablist">
     <li class="nav-item" role="presentation">
-      <button class="nav-link active" id="nd-tab" data-bs-toggle="tab" data-bs-target="#nd" type="button" role="tab">Natureza de Despesa</button>
+      <button class="nav-link active" id="tab-nd" data-bs-toggle="tab" data-bs-target="#pane-nd" type="button" role="tab">Natureza de Despesa</button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link" id="grupo-tab" data-bs-toggle="tab" data-bs-target="#grupo" type="button" role="tab">Grupos</button>
+      <button class="nav-link" id="tab-grupo" data-bs-toggle="tab" data-bs-target="#pane-grupo" type="button" role="tab">Grupos</button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link" id="ul-tab" data-bs-toggle="tab" data-bs-target="#ul" type="button" role="tab">Unidades Locais</button>
+      <button class="nav-link" id="tab-ul" data-bs-toggle="tab" data-bs-target="#pane-ul" type="button" role="tab">Unidades Locais</button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link" id="area-tab" data-bs-toggle="tab" data-bs-target="#area" type="button" role="tab">Áreas</button>
+      <button class="nav-link" id="tab-area" data-bs-toggle="tab" data-bs-target="#pane-area" type="button" role="tab">Áreas</button>
     </li>
   </ul>
 
   <!-- Conteúdo das abas -->
   <div class="tab-content" id="organizacaoTabsContent">
-    <div class="tab-pane fade show active" id="nd" role="tabpanel" aria-labelledby="nd-tab">
+    <div class="tab-pane fade show active" id="pane-nd" role="tabpanel" aria-labelledby="tab-nd">
       {% include 'partials/nd/lista_nd.html' %}
     </div>
-    <div class="tab-pane fade" id="grupo" role="tabpanel" aria-labelledby="grupo-tab">
+    <div class="tab-pane fade" id="pane-grupo" role="tabpanel" aria-labelledby="tab-grupo">
       {% include 'partials/grupo/lista_grupo.html' %}
     </div>
-    <div class="tab-pane fade" id="ul" role="tabpanel" aria-labelledby="ul-tab">
+    <div class="tab-pane fade" id="pane-ul" role="tabpanel" aria-labelledby="tab-ul">
       {% include 'partials/ul/lista_ul.html' %}
     </div>
-    <div class="tab-pane fade" id="area" role="tabpanel" aria-labelledby="area-tab">
+    <div class="tab-pane fade" id="pane-area" role="tabpanel" aria-labelledby="tab-area">
       {% include 'partials/area/lista_area.html' %}
     </div>
   </div>

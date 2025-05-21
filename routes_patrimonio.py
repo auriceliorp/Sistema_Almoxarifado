@@ -5,8 +5,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from extensoes import db
-from models import BemPatrimonial, Usuario, GrupoPatrimonio  # Importa os modelos necessários
-from PIL import Image  # Biblioteca Pillow para manipulação de imagens
+from models import BemPatrimonial, Usuario, GrupoPatrimonio, UnidadeLocal
+from PIL import Image
 import os
 
 # Criação do blueprint para o módulo de patrimônio
@@ -52,6 +52,7 @@ def listar_bens():
 def novo_bem():
     usuarios = Usuario.query.order_by(Usuario.nome).all()
     grupos = GrupoPatrimonio.query.order_by(GrupoPatrimonio.codigo).all()
+    uls = UnidadeLocal.query.order_by(UnidadeLocal.descricao).all()
 
     if request.method == 'POST':
         nome = request.form.get('nome')
@@ -65,6 +66,7 @@ def novo_bem():
         status = request.form.get('situacao')
         data_aquisicao = request.form.get('data_aquisicao')
         valor_aquisicao = request.form.get('valor_aquisicao')
+        localizacao = request.form.get('localizacao')
         observacoes = request.form.get('observacoes')
 
         foto = request.files.get('foto')
@@ -97,6 +99,7 @@ def novo_bem():
             status=status,
             data_aquisicao=data_aquisicao or None,
             valor_aquisicao=valor_aquisicao or None,
+            localizacao=localizacao,
             foto=foto_path,
             observacoes=observacoes
         )
@@ -105,7 +108,7 @@ def novo_bem():
         flash('Bem cadastrado com sucesso!', 'success')
         return redirect(url_for('patrimonio_bp.listar_bens'))
 
-    return render_template('patrimonio/novo_bem.html', usuarios=usuarios, grupos=grupos, usuario=current_user)
+    return render_template('patrimonio/novo_bem.html', usuarios=usuarios, grupos=grupos, uls=uls, usuario=current_user)
 
 # ------------------------ ROTA: EDITAR BEM ------------------------ #
 @patrimonio_bp.route('/bens/editar/<int:id>', methods=['GET', 'POST'])
@@ -114,6 +117,7 @@ def editar_bem(id):
     bem = BemPatrimonial.query.get_or_404(id)
     usuarios = Usuario.query.order_by(Usuario.nome).all()
     grupos = GrupoPatrimonio.query.order_by(GrupoPatrimonio.codigo).all()
+    uls = UnidadeLocal.query.order_by(UnidadeLocal.descricao).all()
 
     if request.method == 'POST':
         bem.nome = request.form.get('nome')
@@ -127,6 +131,7 @@ def editar_bem(id):
         bem.status = request.form.get('situacao')
         bem.data_aquisicao = request.form.get('data_aquisicao') or None
         bem.valor_aquisicao = request.form.get('valor_aquisicao') or None
+        bem.localizacao = request.form.get('localizacao')
         bem.observacoes = request.form.get('observacoes')
 
         foto = request.files.get('foto')
@@ -151,7 +156,7 @@ def editar_bem(id):
         flash('Bem atualizado com sucesso!', 'success')
         return redirect(url_for('patrimonio_bp.listar_bens'))
 
-    return render_template('patrimonio/editar_bem.html', bem=bem, usuarios=usuarios, grupos=grupos, usuario=current_user)
+    return render_template('patrimonio/editar_bem.html', bem=bem, usuarios=usuarios, grupos=grupos, uls=uls, usuario=current_user)
 
 # ------------------------ ROTA: VISUALIZAR BEM ------------------------ #
 @patrimonio_bp.route('/bens/visualizar/<int:id>')
@@ -159,3 +164,4 @@ def editar_bem(id):
 def visualizar_bem(id):
     bem = BemPatrimonial.query.get_or_404(id)
     return render_template('patrimonio/visualizar_bem.html', bem=bem, usuario=current_user)
+

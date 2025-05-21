@@ -1,8 +1,9 @@
-<div class="mb-4">
+{% extends 'base_simplificada.html' %}
+{% block content %}
+<div class="container mt-4">
   <h5 class="text-primary">{{ 'Editar ND' if nd else 'Nova ND' }}</h5>
 
-  <form onsubmit="enviarFormularioND(event)"
-        action="{{ url_for('nd_bp.editar_nd', id=nd.id) if nd else url_for('nd_bp.novo_nd') }}">
+  <form method="post" action="{{ url_for('nd_bp.editar_nd', id=nd.id) if nd else url_for('nd_bp.novo_nd') }}">
     <div class="mb-3">
       <label for="codigo" class="form-label">Código *</label>
       <input type="text" class="form-control" id="codigo" name="codigo"
@@ -16,9 +17,7 @@
     </div>
 
     <div class="d-flex justify-content-end gap-2">
-      <a href="{{ url_for('nd_bp.lista_nd') }}"
-         class="btn btn-outline-secondary"
-         onclick="carregarConteudo(this.href); return false;">
+      <a href="{{ url_for('nd_bp.lista_nd') }}" class="btn btn-outline-secondary">
         <i class="bi bi-x-circle"></i> Cancelar
       </a>
       <button type="submit" class="btn btn-primary">
@@ -27,26 +26,5 @@
     </div>
   </form>
 </div>
+{% endblock %}
 
-<script>
-function enviarFormularioND(event) {
-  event.preventDefault();
-  const form = event.target;
-  const formData = new FormData(form);
-
-  fetch(form.action, {
-    method: 'POST',
-    body: formData
-  })
-  .then(response => response.text())
-  .then(html => {
-    document.getElementById('conteudo-dinamico').innerHTML = html;
-    document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-    document.querySelector('.nav-link[href$="/nd/"]').classList.add('active');
-  })
-  .catch(error => {
-    console.error('Erro ao enviar formulário ND:', error);
-    alert('Ocorreu um erro ao salvar a Natureza de Despesa.');
-  });
-}
-</script>

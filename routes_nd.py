@@ -36,11 +36,22 @@ def novo_nd():
             flash('Preencha todos os campos obrigatórios.')
             return redirect(url_for('nd_bp.novo_nd'))
 
-        nova_nd = NaturezaDespesa(codigo=codigo, nome=nome)
-        db.session.add(nova_nd)
-        db.session.commit()
-        flash('Natureza de Despesa cadastrada com sucesso!')
-        return redirect(url_for('nd_bp.lista_nd'))
+        # Verifica se já existe ND com mesmo código
+        existente = NaturezaDespesa.query.filter_by(codigo=codigo).first()
+        if existente:
+            flash('Já existe uma Natureza de Despesa com este código.')
+            return redirect(url_for('nd_bp.novo_nd'))
+
+        try:
+            nova_nd = NaturezaDespesa(codigo=codigo, nome=nome)
+            db.session.add(nova_nd)
+            db.session.commit()
+            flash('Natureza de Despesa cadastrada com sucesso!')
+            return redirect(url_for('nd_bp.lista_nd'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao cadastrar ND: {e}')
+            return redirect(url_for('nd_bp.novo_nd'))
 
     return render_template('partials/nd/form_nd.html')
 

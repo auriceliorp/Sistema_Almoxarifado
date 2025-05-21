@@ -97,3 +97,31 @@ def editar_ul(id):
         return redirect(url_for('area_ul_bp.lista_uls'))
     return render_template('partials/ul/form_ul.html', ul=ul, locais=locais)
 
+# ------------------------- EXCLUIR LOCAL (Área) ------------------------- #
+@area_ul_bp.route('/locais/excluir/<int:id>', methods=['POST'])
+@login_required
+def excluir_local(id):
+    local = Local.query.get_or_404(id)
+    try:
+        db.session.delete(local)
+        db.session.commit()
+        flash('Área excluída com sucesso!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Erro ao excluir Área: {e}', 'danger')
+    return redirect(url_for('area_ul_bp.lista_locais'))
+
+# ------------------------- EXCLUIR UNIDADE LOCAL ------------------------- #
+@area_ul_bp.route('/uls/excluir/<int:id>', methods=['POST'])
+@login_required
+def excluir_ul(id):
+    ul = UnidadeLocal.query.get_or_404(id)
+    try:
+        db.session.delete(ul)
+        db.session.commit()
+        flash('Unidade Local excluída com sucesso!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Erro ao excluir Unidade Local: {e}', 'danger')
+    return redirect(url_for('area_ul_bp.lista_uls'))
+

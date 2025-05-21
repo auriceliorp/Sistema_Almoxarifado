@@ -1,7 +1,8 @@
 <div class="mb-4">
   <h5 class="text-primary">{{ 'Editar ND' if nd else 'Nova ND' }}</h5>
 
-  <form method="post" action="{{ url_for('nd_bp.editar_nd', id=nd.id) if nd else url_for('nd_bp.novo_nd') }}">
+  <form onsubmit="enviarFormularioND(event)" 
+        action="{{ url_for('nd_bp.editar_nd', id=nd.id) if nd else url_for('nd_bp.novo_nd') }}">
     <div class="mb-3">
       <label for="codigo" class="form-label">Código *</label>
       <input type="text" class="form-control" id="codigo" name="codigo"
@@ -27,3 +28,21 @@
   </form>
 </div>
 
+<script>
+function enviarFormularioND(event) {
+  event.preventDefault();
+  const form = event.target;
+  const formData = new FormData(form);
+
+  fetch(form.action, {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.text())
+  .then(html => {
+    document.getElementById('conteudo-dinamico').innerHTML = html;
+    document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+    document.querySelector('.nav-link[href$="/nd/"]').classList.add('active');
+  });
+}
+</script>

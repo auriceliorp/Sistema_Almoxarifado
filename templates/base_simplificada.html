@@ -9,14 +9,12 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
-  <!-- CSS personalizado -->
   <style>
     body {
       margin: 0;
       background-color: #f8f9fa;
     }
 
-    /* Topbar */
     .topbar {
       background-color: #004b5b;
       color: white;
@@ -43,7 +41,6 @@
       color: white;
     }
 
-    /* Sidebar */
     #sidebarMenu {
       background-color: #004b5b;
       color: white;
@@ -96,26 +93,25 @@
 </head>
 <body>
 
-  <!-- Topbar com botão hambúrguer e botão Início -->
+  <!-- Topbar -->
   <div class="topbar">
     <div class="d-flex align-items-center">
       <button id="toggleSidebar" class="navbar-toggler d-md-none me-3">
         <i class="bi bi-list fs-3"></i>
       </button>
-      <a href="{{ url_for('main.home') }}" class="btn btn-sm btn-outline-light d-flex align-items-center">
+      <a href="{{ url_for('main.dashboard') }}" class="btn btn-sm btn-outline-light d-flex align-items-center">
         <i class="bi bi-house-door me-1"></i> Início
       </a>
     </div>
     <span class="navbar-brand">GestorSPS</span>
-    <a href="{{ url_for('main.logout') }}" class="nav-link text-danger"><i class="bi bi-box-arrow-right"></i> Sair</a>
+    <a href="{{ url_for('main.logout') }}" class="btn btn-sm btn-outline-warning d-flex align-items-center">
+      <i class="bi bi-box-arrow-right me-1"></i> Sair
+    </a>
   </div>
 
-  <!-- Sidebar -->
   {% include 'partials/sidebar.html' %}
 
-  <!-- Conteúdo principal -->
   <main>
-    <!-- Bloco para mensagens flash (sucesso, erro, alerta etc.) -->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         <div class="container mt-3">
@@ -129,7 +125,6 @@
       {% endif %}
     {% endwith %}
 
-    <!-- Conteúdo dinâmico carregado por AJAX -->
     <div id="conteudo-dinamico">
       {% block content %}{% endblock %}
     </div>
@@ -140,13 +135,11 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    // Controle da abertura e fechamento da sidebar no modo mobile
     document.getElementById('toggleSidebar').addEventListener('click', function () {
       const sidebar = document.getElementById('sidebarMenu');
       sidebar.classList.toggle('show');
     });
 
-    // Função para carregar conteúdo dinâmico via fetch/AJAX
     function carregarConteudo(url) {
       const container = document.getElementById('conteudo-dinamico');
       if (!container) return;
@@ -156,25 +149,22 @@
           <div class="spinner-border text-primary" role="status"></div>
         </div>`;
 
-      fetch(url, {
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-      })
-      .then(response => {
-        if (!response.ok) throw new Error('Erro ao carregar conteúdo');
-        return response.text();
-      })
-      .then(html => {
-        container.innerHTML = html;
-      })
-      .catch(error => {
-        container.innerHTML = `
-          <div class="alert alert-danger mt-3">
-            <strong>Erro:</strong> Não foi possível carregar o conteúdo.
-          </div>`;
-        console.error(error);
-      });
+      fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(response => {
+          if (!response.ok) throw new Error('Erro ao carregar conteúdo');
+          return response.text();
+        })
+        .then(html => {
+          container.innerHTML = html;
+        })
+        .catch(error => {
+          container.innerHTML = `
+            <div class="alert alert-danger mt-3">
+              <strong>Erro:</strong> Não foi possível carregar o conteúdo.
+            </div>`;
+          console.error(error);
+        });
     }
   </script>
-
 </body>
 </html>

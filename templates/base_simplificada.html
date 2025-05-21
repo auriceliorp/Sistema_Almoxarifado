@@ -5,184 +5,63 @@
   <title>{% block title %}GestorSPS{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- Bootstrap & Ícones -->
+  <!-- Bootstrap e Ícones -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-
-  <!-- CSS personalizado -->
-  <style>
-    body {
-      margin: 0;
-      background-color: #f8f9fa;
-    }
-
-    /* Topbar */
-    .topbar {
-      background-color: #004b5b;
-      color: white;
-      position: fixed;
-      top: 0;
-      width: 100%;
-      height: 56px;
-      z-index: 1050;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 1rem;
-    }
-
-    .topbar .navbar-brand {
-      color: white;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-    }
-
-    .topbar .navbar-toggler {
-      border: none;
-      color: white;
-    }
-
-    /* Sidebar */
-    #sidebarMenu {
-      background-color: #004b5b;
-      color: white;
-      position: fixed;
-      top: 56px;
-      left: 0;
-      width: 250px;
-      height: 100%;
-      padding-top: 1rem;
-      overflow-y: auto;
-      transition: transform 0.3s ease;
-      z-index: 1040;
-    }
-
-    #sidebarMenu a {
-      color: white;
-      text-decoration: none;
-      display: block;
-      padding: 8px 1rem;
-    }
-
-    #sidebarMenu a:hover {
-      background-color: #035f74;
-    }
-
-    #sidebarMenu.collapsed {
-      transform: translateX(-100%);
-    }
-
-    main {
-      margin-left: 250px;
-      padding: 1rem;
-      margin-top: 56px;
-    }
-
-    @media (max-width: 768px) {
-      #sidebarMenu {
-        transform: translateX(-100%);
-      }
-
-      #sidebarMenu.show {
-        transform: translateX(0);
-      }
-
-      main {
-        margin-left: 0;
-      }
-    }
-  </style>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body>
 
-  <!-- Topbar com botão hambúrguer e botão Início -->
-  <div class="topbar">
-    <div class="d-flex align-items-center">
-      <button id="toggleSidebar" class="navbar-toggler d-md-none me-3">
-        <i class="bi bi-list fs-3"></i>
+  <!-- Topbar Fixa -->
+  <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+    <div class="container-fluid">
+      <!-- Botão hambúrguer para mobile -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu">
+        <span class="navbar-toggler-icon"></span>
       </button>
-      <a href="{{ url_for('main.home') }}" class="btn btn-sm btn-outline-light d-flex align-items-center">
-        <i class="bi bi-house-door me-1"></i> Início
-      </a>
+
+      <!-- Logo / título -->
+      <a class="navbar-brand ms-2" href="{{ url_for('main.home') }}">GESTOR SPS</a>
+
+      <!-- Botão sair -->
+      <div class="d-none d-md-block">
+        <a href="{{ url_for('main.logout') }}" class="btn btn-sm btn-warning">
+          <i class="bi bi-box-arrow-right me-1"></i> Sair
+        </a>
+      </div>
     </div>
-    <span class="navbar-brand">GESTOR SPS</span>
+  </nav>
 
-
-  <!-- Botão Sair estilizado -->
-
-      <a href="{{ url_for('main.logout') }}" class="btn btn-sm btn-warning d-flex align-items-center">
-        <i class="bi bi-house-door me-1"></i> Sair</a>
-
-
-
+  <!-- Sidebar Offcanvas para Mobile e Fixa no Desktop -->
+  <div class="offcanvas offcanvas-start bg-dark text-white" tabindex="-1" id="sidebarMenu">
+    <div class="offcanvas-header border-bottom">
+      <h5 class="offcanvas-title">Menu</h5>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body p-0">
+      {% include 'partials/sidebar.html' %}
+    </div>
   </div>
 
-  <!-- Sidebar -->
-  {% include 'partials/sidebar.html' %}
-
   <!-- Conteúdo principal -->
-  <main>
-    <!-- Bloco para mensagens flash (sucesso, erro, alerta etc.) -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <div class="container mt-3">
+  <main class="pt-4" style="margin-top: 56px;">
+    <div class="container-fluid mt-3">
+      <!-- Flash messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
           {% for category, message in messages %}
             <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
               {{ message }}
               <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
             </div>
           {% endfor %}
-        </div>
-      {% endif %}
-    {% endwith %}
+        {% endif %}
+      {% endwith %}
 
-    <!-- Conteúdo dinâmico carregado por AJAX -->
-    <div id="conteudo-dinamico">
       {% block content %}{% endblock %}
     </div>
   </main>
 
   <!-- Scripts -->
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-  <script>
-    // Controle da abertura e fechamento da sidebar no modo mobile
-    document.getElementById('toggleSidebar').addEventListener('click', function () {
-      const sidebar = document.getElementById('sidebarMenu');
-      sidebar.classList.toggle('show');
-    });
-
-    // Função para carregar conteúdo dinâmico via fetch/AJAX
-    function carregarConteudo(url) {
-      const container = document.getElementById('conteudo-dinamico');
-      if (!container) return;
-
-      container.innerHTML = 
-        <div class="text-center p-5">
-          <div class="spinner-border text-primary" role="status"></div>
-        </div>;
-
-      fetch(url, {
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-      })
-      .then(response => {
-        if (!response.ok) throw new Error('Erro ao carregar conteúdo');
-        return response.text();
-      })
-      .then(html => {
-        container.innerHTML = html;
-      })
-      .catch(error => {
-        container.innerHTML = 
-          <div class="alert alert-danger mt-3">
-            <strong>Erro:</strong> Não foi possível carregar o conteúdo.
-          </div>;
-        console.error(error);
-      });
-    }
-  </script>
-
 </body>
 </html>

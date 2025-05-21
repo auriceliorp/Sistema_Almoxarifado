@@ -22,9 +22,33 @@
         <td>{{ nd.codigo }}</td>
         <td>{{ nd.nome }}</td>
         <td class="text-center">
-          <a href="{{ url_for('nd_bp.editar_nd', id=nd.id) }}" class="btn btn-sm btn-outline-primary">
+          <a href="{{ url_for('nd_bp.editar_nd', id=nd.id) }}" class="btn btn-sm btn-outline-primary me-1">
             <i class="bi bi-pencil"></i>
           </a>
+          <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalExcluirND{{ nd.id }}">
+            <i class="bi bi-trash"></i>
+          </button>
+
+          <div class="modal fade" id="modalExcluirND{{ nd.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                  <h5 class="modal-title">Confirmar Exclusão</h5>
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  Deseja excluir <strong>{{ nd.nome }}</strong>?
+                </div>
+                <div class="modal-footer">
+                  <form method="POST" action="{{ url_for('nd_bp.excluir_nd', id=nd.id) }}">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </td>
       </tr>
       {% endfor %}
@@ -32,4 +56,3 @@
   </table>
 </div>
 {% endblock %}
-

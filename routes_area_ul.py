@@ -1,133 +1,106 @@
 # routes_area_ul.py
-# Rotas para gerenciamento de Áreas e Unidades Locais
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
-from extensoes import db
-from models import UnidadeLocal, Local
+from database import db
+from models import Local, UnidadeLocal, NaturezaDespesa, Grupo
 
-area_ul_bp = Blueprint('area_ul_bp', __name__, url_prefix='/ul')
+# Criação do blueprint
+area_ul_bp = Blueprint('area_ul_bp', __name__, url_prefix='/organizacao')
 
-# ------------------------------ CRUD DE ÁREAS ------------------------------ #
-@area_ul_bp.route('/areas')
+# ------------------------- ROTA: LISTAR LOCAIS ------------------------- #
+@area_ul_bp.route('/locais')
 @login_required
-def lista_areas():
-    areas = Local.query.order_by(Local.descricao).all()
-    return render_template('partials/area/lista_area.html', areas=areas)
+def lista_locais():
+    locais = Local.query.all()
+    return render_template('lista_locais.html', locais=locais)
 
-@area_ul_bp.route('/areas/nova', methods=['GET', 'POST'])
+# ------------------------- ROTA: NOVO LOCAL ------------------------- #
+@area_ul_bp.route('/locais/novo', methods=['GET', 'POST'])
 @login_required
-def nova_area():
+def novo_local():
     if request.method == 'POST':
         descricao = request.form.get('descricao')
         if not descricao:
             flash('Descrição é obrigatória.')
-            return render_template('partials/area/form_area.html', area=None)
-
-        nova = Local(descricao=descricao)
-        db.session.add(nova)
+            return redirect(url_for('area_ul_bp.novo_local'))
+        db.session.add(Local(descricao=descricao))
         db.session.commit()
-        flash('Área cadastrada com sucesso!')
+        flash('Local cadastrado com sucesso!')
+        return redirect(url_for('area_ul_bp.lista_locais'))
+    return render_template('novo_local.html')
 
-        areas = Local.query.order_by(Local.descricao).all()
-        return render_template('partials/area/lista_area.html', areas=areas)
-
-    return render_template('partials/area/form_area.html', area=None)
-
-@area_ul_bp.route('/areas/editar/<int:id>', methods=['GET', 'POST'])
+# ------------------------- ROTA: EDITAR LOCAL ------------------------- #
+@area_ul_bp.route('/locais/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
-def editar_area(id):
-    area = Local.query.get_or_404(id)
+def editar_local(id):
+    local = Local.query.get_or_404(id)
     if request.method == 'POST':
-        descricao = request.form.get('descricao')
-        if not descricao:
-            flash('Descrição é obrigatória.')
-            return render_template('partials/area/form_area.html', area=area)
-
-        area.descricao = descricao
+        local.descricao = request.form.get('descricao')
         db.session.commit()
-        flash('Área atualizada com sucesso!')
+        flash('Local atualizado com sucesso!')
+        return redirect(url_for('area_ul_bp.lista_locais'))
+    return render_template('editar_local.html', local=local)
 
-        areas = Local.query.order_by(Local.descricao).all()
-        return render_template('partials/area/lista_area.html', areas=areas)
-
-    return render_template('partials/area/form_area.html', area=area)
-
-@area_ul_bp.route('/areas/excluir/<int:id>', methods=['POST'])
+# ------------------------- ROTA: LISTAR UNIDADES LOCAIS ------------------------- #
+@area_ul_bp.route('/uls')
 @login_required
-def excluir_area(id):
-    area = Local.query.get_or_404(id)
-    db.session.delete(area)
-    db.session.commit()
-    flash('Área excluída com sucesso!')
+def lista_uls():
+    uls = UnidadeLocal.query.all()
+    return render_template('lista_uls.html', uls=uls)
 
-    areas = Local.query.order_by(Local.descricao).all()
-    return render_template('partials/area/lista_area.html', areas=areas)
-
-# ------------------------------ CRUD DE UNIDADES LOCAIS ------------------------------ #
-@area_ul_bp.route('/')
+# ------------------------- ROTA: NOVA UNIDADE LOCAL ------------------------- #
+@area_ul_bp.route('/uls/novo', methods=['GET', 'POST'])
 @login_required
-def lista_ul():
-    uls = UnidadeLocal.query.order_by(UnidadeLocal.codigo).all()
-    return render_template('partials/ul/lista_ul.html', uls=uls)
-
-@area_ul_bp.route('/novo', methods=['GET', 'POST'])
-@login_required
-def nova_ul():
-    areas = Local.query.order_by(Local.descricao).all()
-
+def novo_ul():
+    locais = Local.query.all()
     if request.method == 'POST':
         codigo = request.form.get('codigo')
         descricao = request.form.get('descricao')
         local_id = request.form.get('local_id')
-
         if not codigo or not descricao or not local_id:
-            flash('Preencha todos os campos obrigatórios.')
-            return render_template('partials/ul/form_ul.html', ul=None, locais=areas)
-
-        nova = UnidadeLocal(codigo=codigo, descricao=descricao, local_id=local_id)
-        db.session.add(nova)
+            flash('Todos os campos são obrigatórios.')
+            return redirect(url_for('area_ul_bp.novo_ul'))
+        ul = UnidadeLocal(codigo=codigo, descricao=descricao, local_id=local_id)
+        db.session.add(ul)
         db.session.commit()
         flash('Unidade Local cadastrada com sucesso!')
+        return redirect(url_for('area_ul_bp.lista_uls'))
+    return render_template('novo_ul.html', locais=locais)
 
-        uls = UnidadeLocal.query.order_by(UnidadeLocal.codigo).all()
-        return render_template('partials/ul/lista_ul.html', uls=uls)
-
-    return render_template('partials/ul/form_ul.html', ul=None, locais=areas)
-
-@area_ul_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
+# ------------------------- ROTA: EDITAR UNIDADE LOCAL ------------------------- #
+@area_ul_bp.route('/uls/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
 def editar_ul(id):
     ul = UnidadeLocal.query.get_or_404(id)
-    areas = Local.query.order_by(Local.descricao).all()
-
+    locais = Local.query.all()
     if request.method == 'POST':
-        codigo = request.form.get('codigo')
-        descricao = request.form.get('descricao')
-        local_id = request.form.get('local_id')
-
-        if not codigo or not descricao or not local_id:
-            flash('Preencha todos os campos obrigatórios.')
-            return render_template('partials/ul/form_ul.html', ul=ul, locais=areas)
-
-        ul.codigo = codigo
-        ul.descricao = descricao
-        ul.local_id = local_id
+        ul.codigo = request.form.get('codigo')
+        ul.descricao = request.form.get('descricao')
+        ul.local_id = request.form.get('local_id')
         db.session.commit()
         flash('Unidade Local atualizada com sucesso!')
+        return redirect(url_for('area_ul_bp.lista_uls'))
+    return render_template('editar_ul.html', ul=ul, locais=locais)
 
-        uls = UnidadeLocal.query.order_by(UnidadeLocal.codigo).all()
-        return render_template('partials/ul/lista_ul.html', uls=uls)
-
-    return render_template('partials/ul/form_ul.html', ul=ul, locais=areas)
-
-@area_ul_bp.route('/excluir/<int:id>', methods=['POST'])
+# ------------------------- ROTA: DASHBOARD ORGANIZAÇÃO ------------------------- #
+@area_ul_bp.route('/')
 @login_required
-def excluir_ul(id):
-    ul = UnidadeLocal.query.get_or_404(id)
-    db.session.delete(ul)
-    db.session.commit()
-    flash('Unidade Local excluída com sucesso!')
+def dashboard_organizacao():
+    """
+    Rota principal para o dashboard de Organização Administrativa.
+    Carrega os dados necessários para exibição das abas:
+    - Naturezas de Despesa
+    - Grupos de Itens
+    - Unidades Locais
+    - Áreas (Locais)
+    """
+    nds = NaturezaDespesa.query.all()
+    grupos = Grupo.query.all()
+    uls = UnidadeLocal.query.all()
+    areas = Local.query.all()
+    return render_template(
+        'organizacao/dashboard_organizacao.html',
+        nds=nds, grupos=grupos, uls=uls, areas=areas
+    )
 
-    uls = UnidadeLocal.query.order_by(UnidadeLocal.codigo).all()
-    return render_template('partials/ul/lista_ul.html', uls=uls)

@@ -12,8 +12,8 @@ import os
 # Criação do blueprint para o módulo de patrimônio
 patrimonio_bp = Blueprint('patrimonio_bp', __name__, url_prefix='/patrimonio')
 
-# Caminho da pasta onde as fotos serão salvas
-UPLOAD_FOLDER = 'static/fotos_bens'
+# Caminho da pasta onde as fotos serão salvas (usando caminho absoluto para segurança)
+UPLOAD_FOLDER = os.path.join('static', 'fotos_bens')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 # Cria a pasta de upload caso ela não exista
@@ -87,6 +87,7 @@ def novo_bem():
                 img = Image.open(foto)
                 img.thumbnail((800, 600))
                 img.save(foto_path)
+                foto_path = os.path.join('static', 'fotos_bens', filename)
             except Exception as e:
                 flash(f'Erro ao processar imagem: {e}', 'danger')
                 return redirect(request.url)
@@ -151,7 +152,7 @@ def editar_bem(id):
                 img = Image.open(foto)
                 img.thumbnail((800, 600))
                 img.save(foto_path)
-                bem.foto = foto_path
+                bem.foto = os.path.join('static', 'fotos_bens', filename)
             except Exception as e:
                 flash(f'Erro ao processar imagem: {e}', 'danger')
                 return redirect(request.url)

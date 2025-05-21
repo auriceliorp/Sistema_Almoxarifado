@@ -1,14 +1,12 @@
 # routes_nd.py
-# Rotas para gerenciamento de Natureza de Despesa (ND)
+# Rotas para Natureza de Despesa (ND)
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
 from extensoes import db
 from models import NaturezaDespesa
 
-# Criação do blueprint
 nd_bp = Blueprint('nd_bp', __name__, url_prefix='/nd')
-
 
 # ------------------------------ LISTAGEM ------------------------------ #
 @nd_bp.route('/')
@@ -16,7 +14,6 @@ nd_bp = Blueprint('nd_bp', __name__, url_prefix='/nd')
 def lista_nd():
     nds = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
     return render_template('partials/nd/lista_nd.html', nds=nds)
-
 
 # ------------------------------ NOVA ND ------------------------------ #
 @nd_bp.route('/novo', methods=['GET', 'POST'])
@@ -28,16 +25,15 @@ def nova_nd():
 
         if not codigo or not nome:
             flash('Preencha todos os campos obrigatórios.')
-            return redirect(url_for('nd_bp.nova_nd'))
+            return render_template('partials/nd/form_nd.html', nd=None)
 
         nova = NaturezaDespesa(codigo=codigo, nome=nome)
         db.session.add(nova)
         db.session.commit()
         flash('Natureza de Despesa cadastrada com sucesso!')
-        return redirect(url_for('main.dashboard_organizacao'))
+        return redirect(url_for('nd_bp.lista_nd'))
 
     return render_template('partials/nd/form_nd.html', nd=None)
-
 
 # ------------------------------ EDITAR ND ------------------------------ #
 @nd_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
@@ -51,16 +47,15 @@ def editar_nd(id):
 
         if not codigo or not nome:
             flash('Preencha todos os campos obrigatórios.')
-            return redirect(url_for('nd_bp.editar_nd', id=id))
+            return render_template('partials/nd/form_nd.html', nd=nd)
 
         nd.codigo = codigo
         nd.nome = nome
         db.session.commit()
         flash('Natureza de Despesa atualizada com sucesso!')
-        return redirect(url_for('main.dashboard_organizacao'))
+        return redirect(url_for('nd_bp.lista_nd'))
 
     return render_template('partials/nd/form_nd.html', nd=nd)
-
 
 # ------------------------------ EXCLUIR ND ------------------------------ #
 @nd_bp.route('/excluir/<int:id>', methods=['POST'])
@@ -70,5 +65,5 @@ def excluir_nd(id):
     db.session.delete(nd)
     db.session.commit()
     flash('Natureza de Despesa excluída com sucesso!')
-    return redirect(url_for('main.dashboard_organizacao'))
+    return redirect(url_for('nd_bp.lista_nd'))
 

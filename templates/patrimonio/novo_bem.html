@@ -5,6 +5,7 @@
 
   <form method="POST" enctype="multipart/form-data">
     <div class="row g-3">
+
       <!-- Identificadores -->
       <div class="col-md-4">
         <label class="form-label">Patrimônio Unidade Local *</label>
@@ -19,7 +20,7 @@
         <input type="text" class="form-control" name="numero_siads">
       </div>
 
-      <!-- Nome e descrição -->
+      <!-- Nome e Descrição -->
       <div class="col-md-6">
         <label class="form-label">Nome do Bem *</label>
         <input type="text" class="form-control" name="nome" required>
@@ -41,18 +42,17 @@
       </div>
 
       <!-- Localização (Unidade Local) -->
-<div class="col-md-6">
-  <label class="form-label">Localização *</label>
-  <select class="form-select" name="localizacao" required>
-    <option selected disabled>Selecione</option>
-    {% for ul in uls %}
-      <option value="{{ ul.descricao }}">{{ ul.codigo }} - {{ ul.descricao }}</option>
-    {% endfor %}
-  </select>
-</div>
+      <div class="col-md-6">
+        <label class="form-label">Localização *</label>
+        <select class="form-select" name="localizacao" required>
+          <option selected disabled>Selecione</option>
+          {% for ul in uls %}
+            <option value="{{ ul.descricao }}">{{ ul.codigo }} - {{ ul.descricao }}</option>
+          {% endfor %}
+        </select>
+      </div>
 
-
-      <!-- Classificação Contábil (preenchida automaticamente com o código) -->
+      <!-- Classificação Contábil -->
       <div class="col-md-6">
         <label class="form-label">Classificação Contábil</label>
         <input type="text" class="form-control" name="classificacao_contabil" id="classificacaoContabil" readonly>
@@ -103,17 +103,20 @@
         <label class="form-label">Observações</label>
         <textarea class="form-control" name="observacoes" rows="3"></textarea>
       </div>
+
     </div>
 
     <!-- Botões -->
     <div class="mt-4">
-      <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Salvar</button>
+      <button type="submit" class="btn btn-primary">
+        <i class="bi bi-save me-1"></i>Salvar
+      </button>
       <a href="{{ url_for('patrimonio_bp.listar_bens') }}" class="btn btn-secondary">Cancelar</a>
     </div>
   </form>
 </div>
 
-<!-- Script para preenchimento automático do campo Classificação Contábil -->
+<!-- Script para Classificação Contábil -->
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const grupoSelect = document.getElementById("grupoSelect");

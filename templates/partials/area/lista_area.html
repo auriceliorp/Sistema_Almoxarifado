@@ -12,7 +12,7 @@
     <thead class="table-dark">
       <tr>
         <th>Descrição</th>
-        <th style="width: 10%;" class="text-center">Ações</th>
+        <th class="text-center">Ações</th>
       </tr>
     </thead>
     <tbody>
@@ -20,9 +20,33 @@
       <tr>
         <td>{{ area.descricao }}</td>
         <td class="text-center">
-          <a href="{{ url_for('area_ul_bp.editar_local', id=area.id) }}" class="btn btn-sm btn-outline-primary">
+          <a href="{{ url_for('area_ul_bp.editar_local', id=area.id) }}" class="btn btn-sm btn-outline-primary me-1">
             <i class="bi bi-pencil"></i>
           </a>
+          <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalExcluirArea{{ area.id }}">
+            <i class="bi bi-trash"></i>
+          </button>
+
+          <div class="modal fade" id="modalExcluirArea{{ area.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                  <h5 class="modal-title">Confirmar Exclusão</h5>
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  Deseja excluir <strong>{{ area.descricao }}</strong>?
+                </div>
+                <div class="modal-footer">
+                  <form method="POST" action="{{ url_for('area_ul_bp.excluir_local', id=area.id) }}">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </td>
       </tr>
       {% endfor %}
@@ -30,3 +54,4 @@
   </table>
 </div>
 {% endblock %}
+

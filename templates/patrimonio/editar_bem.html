@@ -4,57 +4,125 @@
   <h4 class="mb-4">Editar Bem Patrimonial</h4>
   <form method="POST" enctype="multipart/form-data">
     <div class="row g-3">
+      <!-- Identificadores -->
       <div class="col-md-4">
-        <label class="form-label">Nº Patrimônio (Unidade Local)</label>
-        <input type="text" class="form-control" name="patrimonio_ul" value="{{ bem.patrimonio_ul }}" required>
+        <label class="form-label">Patrimônio Unidade Local *</label>
+        <input type="text" class="form-control" name="numero_ul" value="{{ bem.numero_ul }}" required>
       </div>
       <div class="col-md-4">
-        <label class="form-label">Nº Patrimônio SAP</label>
-        <input type="text" class="form-control" name="patrimonio_sap" value="{{ bem.patrimonio_sap }}">
+        <label class="form-label">Número SAP</label>
+        <input type="text" class="form-control" name="numero_sap" value="{{ bem.numero_sap }}">
       </div>
       <div class="col-md-4">
-        <label class="form-label">Nº Patrimônio SIADS</label>
-        <input type="text" class="form-control" name="patrimonio_siads" value="{{ bem.patrimonio_siads }}">
+        <label class="form-label">Número SIADS</label>
+        <input type="text" class="form-control" name="numero_siads" value="{{ bem.numero_siads }}">
       </div>
-      <div class="col-md-8">
-        <label class="form-label">Nome do Bem</label>
+
+      <!-- Nome e descrição -->
+      <div class="col-md-6">
+        <label class="form-label">Nome do Bem *</label>
         <input type="text" class="form-control" name="nome" value="{{ bem.nome }}" required>
       </div>
-      <div class="col-md-4">
-        <label class="form-label">Grupo de Bens</label>
-        <input type="text" class="form-control" name="grupo_bem" value="{{ bem.grupo_bem }}">
-      </div>
-      <div class="col-md-12">
-        <label class="form-label">Classificação Contábil</label>
-        <input type="text" class="form-control" name="classificacao_contabil" value="{{ bem.classificacao_contabil }}">
-      </div>
-      <div class="col-md-12">
-        <label class="form-label">Descrição</label>
-        <textarea class="form-control" name="descricao" rows="3">{{ bem.descricao }}</textarea>
-      </div>
       <div class="col-md-6">
-        <label class="form-label">Detentor</label>
-        <select class="form-select" name="detentor_id">
-          <option value="">-- Selecione --</option>
+        <label class="form-label">Descrição do Bem *</label>
+        <input type="text" class="form-control" name="descricao" value="{{ bem.descricao }}" required>
+      </div>
+
+      <!-- Grupo de Bens -->
+      <div class="col-md-6">
+        <label class="form-label">Grupo de Bens *</label>
+        <select class="form-select" name="grupo_bem" id="grupoSelect" required>
+          <option disabled>Selecione</option>
+          {% for grupo in grupos %}
+            <option value="{{ grupo.codigo }}" {% if bem.grupo_bem == grupo.codigo %}selected{% endif %}>{{ grupo.codigo }} - {{ grupo.descricao }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Localização (Unidade Local) -->
+      <div class="col-md-6">
+        <label class="form-label">Localização *</label>
+        <select class="form-select" name="localizacao" required>
+          <option disabled>Selecione</option>
+          {% for ul in uls %}
+            <option value="{{ ul.descricao }}" {% if bem.localizacao == ul.descricao %}selected{% endif %}>{{ ul.codigo }} - {{ ul.descricao }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Classificação Contábil -->
+      <div class="col-md-6">
+        <label class="form-label">Classificação Contábil</label>
+        <input type="text" class="form-control" name="classificacao_contabil" id="classificacaoContabil" value="{{ bem.classificacao_contabil }}" readonly>
+      </div>
+
+      <!-- Detentor -->
+      <div class="col-md-6">
+        <label class="form-label">Detentor Atual *</label>
+        <select class="form-select" name="detentor_id" required>
+          <option disabled>Selecione</option>
           {% for u in usuarios %}
             <option value="{{ u.id }}" {% if bem.detentor_id == u.id %}selected{% endif %}>{{ u.nome }}</option>
           {% endfor %}
         </select>
       </div>
+
+      <!-- Situação -->
+      <div class="col-md-6">
+        <label class="form-label">Situação</label>
+        <select class="form-select" name="situacao">
+          {% for status in ['Ativo', 'Em uso', 'Transferido', 'Baixado', 'Em manutenção', 'Para doação'] %}
+            <option value="{{ status }}" {% if bem.status == status %}selected{% endif %}>{{ status }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Data e Valor de Aquisição -->
+      <div class="col-md-6">
+        <label class="form-label">Data de Aquisição</label>
+        <input type="date" class="form-control" name="data_aquisicao" value="{{ bem.data_aquisicao|date('Y-m-d') if bem.data_aquisicao else '' }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Valor de Aquisição</label>
+        <input type="number" step="0.01" class="form-control" name="valor_aquisicao" value="{{ bem.valor_aquisicao }}">
+      </div>
+
+      <!-- Foto -->
       <div class="col-md-6">
         <label class="form-label">Foto Atual</label><br>
         {% if bem.foto %}
-          <img src="{{ url_for('static', filename='fotos_bens/' ~ bem.foto) }}" alt="Foto" class="img-thumbnail" style="max-height: 120px;">
+          <img src="/{{ bem.foto }}" alt="Foto" class="img-thumbnail" style="max-height: 120px;">
         {% else %}
           <p class="text-muted">Sem foto</p>
         {% endif %}
-        <input type="file" class="form-control mt-2" name="foto">
+        <input type="file" class="form-control mt-2" name="foto" accept="image/*">
+      </div>
+
+      <!-- Observações -->
+      <div class="col-md-6">
+        <label class="form-label">Observações</label>
+        <textarea class="form-control" name="observacoes" rows="3">{{ bem.observacoes }}</textarea>
       </div>
     </div>
+
+    <!-- Botões -->
     <div class="mt-4">
       <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Salvar</button>
       <a href="{{ url_for('patrimonio_bp.listar_bens') }}" class="btn btn-secondary">Cancelar</a>
     </div>
   </form>
 </div>
+
+<!-- Script para preenchimento automático do campo Classificação Contábil -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const grupoSelect = document.getElementById("grupoSelect");
+    const classificacaoContabil = document.getElementById("classificacaoContabil");
+
+    grupoSelect.addEventListener("change", function () {
+      const codigoSelecionado = this.value;
+      classificacaoContabil.value = codigoSelecionado || '';
+    });
+  });
+</script>
 {% endblock %}

@@ -1,22 +1,23 @@
-<div class="mb-4">
-  <h5 class="text-primary">{{ 'Editar Área' if area else 'Nova Área' }}</h5>
+{% extends 'base_simplificada.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h5 class="text-primary">{{ 'Editar Área' if local else 'Nova Área' }}</h5>
 
-  <form method="POST">
+  <form method="post" action="{{ url_for('area_ul_bp.editar_local', id=local.id) if local else url_for('area_ul_bp.novo_local') }}">
     <div class="mb-3">
       <label for="descricao" class="form-label">Descrição *</label>
       <input type="text" class="form-control" id="descricao" name="descricao"
-             value="{{ area.descricao if area else '' }}" required>
+             value="{{ local.descricao if local else '' }}" required>
     </div>
 
     <div class="d-flex justify-content-end gap-2">
-      <a href="{{ url_for('area_ul_bp.lista_areas') }}"
-         class="btn btn-outline-secondary"
-         onclick="carregarConteudo(this.href); return false;">
+      <a href="{{ url_for('area_ul_bp.lista_locais') }}" class="btn btn-outline-secondary">
         <i class="bi bi-x-circle"></i> Cancelar
       </a>
       <button type="submit" class="btn btn-primary">
-        <i class="bi bi-check-circle"></i> {{ 'Salvar Alterações' if area else 'Salvar' }}
+        <i class="bi bi-check-circle"></i> {{ 'Salvar Alterações' if local else 'Salvar' }}
       </button>
     </div>
   </form>
 </div>
+{% endblock %}

@@ -1,27 +1,32 @@
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h5 class="mb-0 text-primary">Áreas (Locais)</h5>
-  <a href="{{ url_for('area_ul_bp.novo_local') }}" class="btn btn-outline-success btn-sm">
-    <i class="bi bi-plus-circle"></i> Nova Área
-  </a>
-</div>
+{% extends 'base_simplificada.html' %}
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="text-primary mb-0">Áreas (Locais)</h5>
+    <a href="{{ url_for('area_ul_bp.novo_local') }}" class="btn btn-outline-success btn-sm">
+      <i class="bi bi-plus-circle"></i> Nova Área
+    </a>
+  </div>
 
-<table class="table table-bordered table-striped table-sm">
-  <thead class="table-dark">
-    <tr>
-      <th style="width: 90%;">Descrição</th>
-      <th style="width: 10%;" class="text-center">Ações</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for area in areas %}
-    <tr>
-      <td>{{ area.descricao }}</td>
-      <td class="text-center">
-        <a href="{{ url_for('area_ul_bp.editar_local', id=area.id) }}" class="btn btn-sm btn-outline-primary">
-          <i class="bi bi-pencil"></i>
-        </a>
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+  <table class="table table-bordered table-striped table-sm">
+    <thead class="table-dark">
+      <tr>
+        <th>Descrição</th>
+        <th style="width: 10%;" class="text-center">Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for area in areas %}
+      <tr>
+        <td>{{ area.descricao }}</td>
+        <td class="text-center">
+          <a href="{{ url_for('area_ul_bp.editar_local', id=area.id) }}" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-pencil"></i>
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

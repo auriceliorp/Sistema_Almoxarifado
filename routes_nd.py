@@ -82,3 +82,18 @@ def editar_nd(id):
 
     return render_template('partials/nd/form_nd.html', nd=nd)
 
+# ------------------------- ROTA: EXCLUIR ND ------------------------- #
+@nd_bp.route('/excluir/<int:id>', methods=['POST'])
+@login_required
+def excluir_nd(id):
+    nd = NaturezaDespesa.query.get_or_404(id)
+    try:
+        db.session.delete(nd)
+        db.session.commit()
+        flash('Natureza de Despesa excluída com sucesso!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Erro ao excluir ND: {e}', 'danger')
+    return redirect(url_for('nd_bp.lista_nd'))
+
+

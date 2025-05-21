@@ -1,4 +1,5 @@
 {% extends 'base_simplificada.html' %}
+
 {% block content %}
 <div class="container mt-4">
   <h4 class="mb-4">Bens Patrimoniais</h4>
@@ -15,20 +16,30 @@
       <select name="grupo_bem" class="form-select">
         <option value="">Todos os Grupos</option>
         {% for grupo in grupos %}
-          <option value="{{ grupo.codigo }}" {% if request.args.get('grupo_bem') == grupo.codigo %}selected{% endif %}>{{ grupo.codigo }} - {{ grupo.descricao }}</option>
+          <option value="{{ grupo.codigo }}" {% if request.args.get('grupo_bem') == grupo.codigo %}selected{% endif %}>
+            {{ grupo.codigo }} - {{ grupo.descricao }}
+          </option>
         {% endfor %}
       </select>
     </div>
     <div class="col-md-3">
-      <input type="text" name="localizacao" class="form-control" placeholder="Localização" value="{{ request.args.get('localizacao', '') }}">
+      <select name="localizacao" class="form-select">
+        <option value="">Todas as Localizações</option>
+        {% for ul in uls %}
+          <option value="{{ ul.descricao }}" {% if request.args.get('localizacao') == ul.descricao %}selected{% endif %}>
+            {{ ul.codigo }} - {{ ul.descricao }}
+          </option>
+        {% endfor %}
+      </select>
     </div>
 
-    <div class="col-md-12 d-flex justify-content-between">
-      <div></div>
-      <div>
-        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Buscar</button>
-        <a href="{{ url_for('patrimonio_bp.novo_bem') }}" class="btn btn-success ms-2"><i class="bi bi-plus-circle"></i> Novo Bem</a>
-      </div>
+    <div class="col-md-12 d-flex justify-content-end gap-2">
+      <button type="submit" class="btn btn-primary">
+        <i class="bi bi-search"></i> Buscar
+      </button>
+      <a href="{{ url_for('patrimonio_bp.novo_bem') }}" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i> Novo Bem
+      </a>
     </div>
   </form>
 
@@ -41,10 +52,10 @@
           <th>Nº SAP</th>
           <th>Nome</th>
           <th>Grupo</th>
-          <th>Detentor</th>
           <th>Localização</th>
+          <th>Detentor</th>
           <th>Situação</th>
-          <th>Ações</th>
+          <th class="text-center">Ações</th>
         </tr>
       </thead>
       <tbody>
@@ -54,10 +65,10 @@
           <td>{{ bem.numero_sap }}</td>
           <td>{{ bem.nome[:30] }}{% if bem.nome|length > 30 %}...{% endif %}</td>
           <td>{{ bem.grupo_bem }}</td>
-          <td>{{ bem.detentor.nome if bem.detentor else '' }}</td>
           <td>{{ bem.localizacao }}</td>
+          <td>{{ bem.detentor.nome if bem.detentor else '' }}</td>
           <td>{{ bem.status }}</td>
-          <td>
+          <td class="text-center">
             <a href="{{ url_for('patrimonio_bp.visualizar_bem', id=bem.id) }}" class="btn btn-sm btn-outline-primary" title="Visualizar">
               <i class="bi bi-eye"></i>
             </a>

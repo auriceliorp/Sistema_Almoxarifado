@@ -16,7 +16,7 @@ def lista_nd():
     Lista todas as Naturezas de Despesa cadastradas.
     """
     nds = NaturezaDespesa.query.all()
-    return render_template('partials/nd/lista.html', nds=nds)
+    return render_template('partials/nd/lista_nd.html', nds=nds)
 
 # ------------------------- ROTA: NOVA ND ------------------------- #
 @nd_bp.route('/novo', methods=['GET', 'POST'])
@@ -36,7 +36,7 @@ def novo_nd():
         db.session.commit()
         flash('Natureza de Despesa cadastrada com sucesso!')
         return redirect(url_for('nd_bp.lista_nd'))
-    return render_template('partials/nd/form.html')
+    return render_template('partials/nd/form_nd.html')
 
 # ------------------------- ROTA: EDITAR ND ------------------------- #
 @nd_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
@@ -52,5 +52,5 @@ def editar_nd(id):
         db.session.commit()
         flash('Natureza de Despesa atualizada com sucesso!')
         return redirect(url_for('nd_bp.lista_nd'))
-    return render_template('partials/nd/form.html', nd=nd)
+    return render_template('partials/nd/form_nd.html', nd=nd)
 

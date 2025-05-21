@@ -3,109 +3,98 @@
 {% block title %}GestorSPS - Início{% endblock %}
 
 {% block content %}
-
-<!-- Estilos customizados para a tela inicial -->
 <style>
-  /* Container geral da home */
-  .home-container {
-    margin-top: 1rem;
+  .home-section {
+    padding: 2rem 0;
   }
 
-  /* Estilo dos botões tipo card */
+  .home-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+  }
+
   .home-card {
-    padding: 1.5rem;
+    border-radius: 1rem;
+    padding: 2rem 1rem;
     text-align: center;
-    font-size: 1.1rem;
-    font-weight: 500;
-    border-radius: 12px;
+    background: #ffffff;
+    color: #004b5b;
+    border: 2px solid #e0e0e0;
     transition: all 0.2s ease-in-out;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* sombra leve */
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
   }
 
-  /* Ícones acima do texto */
   .home-card i {
     font-size: 2rem;
     margin-bottom: 0.5rem;
-    display: block;
+    color: inherit;
   }
 
-  /* Efeito hover para dar leve elevação ao passar o mouse */
   .home-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+    border-color: #99c;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
   }
 
-  /* Botões desabilitados visualmente */
-  .btn-disabled {
+  .home-card.disabled {
     pointer-events: none;
-    opacity: 0.6;
+    background: #f0f0f0;
+    color: #aaa;
+    border: 2px dashed #ccc;
   }
+
+  .home-card.bg-dashboard { background-color: #d6f5f5; }
+  .home-card.bg-links     { background-color: #d1f2e6; }
+  .home-card.bg-relatorios{ background-color: #e6dcff; }
 </style>
 
-<!-- Container com layout responsivo: 1 coluna no celular, 2 em tablets, 3 em desktop -->
-<div class="container home-container">
-  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+<div class="container home-section">
+  <div class="home-grid">
 
-    <!-- Botão Almoxarifado (ativo) -->
-    <div class="col">
-      <a href="{{ url_for('main.almoxarifado') }}" class="btn btn-primary w-100 home-card">
-        <i class="bi bi-archive"></i>
-        Almoxarifado
-      </a>
+    <!-- Almoxarifado -->
+    <a href="{{ url_for('main.almoxarifado') }}" class="home-card">
+      <i class="bi bi-archive"></i>
+      Almoxarifado
+    </a>
+
+    <!-- Compras (agora ativo) -->
+    <a href="{{ url_for('painel_bp.lista_painel') }}" class="home-card">
+      <i class="bi bi-cart-check"></i>
+      Compras
+    </a>
+
+    <!-- Patrimônio -->
+    <a href="{{ url_for('patrimonio_bp.listar_bens') }}" class="home-card">
+      <i class="bi bi-building"></i>
+      Patrimônio
+    </a>
+
+    <!-- Publicações (desabilitado) -->
+    <div class="home-card disabled">
+      <i class="bi bi-journal-text"></i>
+      Publicações
     </div>
 
-    <!-- Botão Compras (desabilitado por enquanto) -->
-    <div class="col">
-      <div class="btn btn-secondary w-100 home-card btn-disabled">
-        <i class="bi bi-cart-check"></i>
-        Compras
-      </div>
-    </div>
+    <!-- Dashboard -->
+    <a href="{{ url_for('dashboard_bp.dashboard') }}" class="home-card bg-dashboard">
+      <i class="bi bi-graph-up"></i>
+      Dashboard
+    </a>
 
+    <!-- Links Úteis -->
+    <a href="https://linktr.ee/ctaa.sps" target="_blank" class="home-card bg-links">
+      <i class="bi bi-link-45deg"></i>
+      Links Úteis
+    </a>
 
-     <!-- Botão Patrimônio (ativo) -->
-    <div class="col">
-      <a href="{{ url_for('patrimonio_bp.listar_bens') }}" class="btn btn-primary w-100 home-card">
-        <i class="bi bi-archive"></i>
-        Patrimônio
-      </a>
-    </div>
-    
-   </div>
-
-    <!-- Botão Publicações (desabilitado) -->
-    <div class="col">
-      <div class="btn btn-secondary w-100 home-card btn-disabled">
-        <i class="bi bi-journal-text"></i>
-        Publicações
-      </div>
-    </div>
-
-    <!-- Botão Dashboard (ativo) -->
-    <div class="col">
-      <a href="{{ url_for('dashboard_bp.dashboard') }}" class="btn btn-info text-dark w-100 home-card">
-        <i class="bi bi-graph-up"></i>
-        Dashboard
-      </a>
-    </div>
-
-    <!-- Botão Links Úteis (link externo) -->
-    <div class="col">
-      <a href="https://linktr.ee/ctaa.sps" target="_blank" class="btn btn-success w-100 home-card">
-        <i class="bi bi-link-45deg"></i>
-        Links Úteis
-      </a>
-    </div>
-
-    <!-- Botão Relatórios (ativo com cor personalizada roxa) -->
-    <div class="col">
-      <a href="{{ url_for('main.relatorios') }}" class="btn w-100 home-card text-white" style="background-color: #6f42c1;">
-        <i class="bi bi-file-earmark-bar-graph"></i>
-        Relatórios
-      </a>
-    </div>
+    <!-- Relatórios -->
+    <a href="{{ url_for('main.relatorios') }}" class="home-card bg-relatorios">
+      <i class="bi bi-file-earmark-bar-graph"></i>
+      Relatórios
+    </a>
 
   </div>
 </div>
-
 {% endblock %}
+

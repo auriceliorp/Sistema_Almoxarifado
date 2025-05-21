@@ -3,7 +3,7 @@
 {% block title %}Almoxarifado - Sistema Integrado SPS{% endblock %}
 
 {% block content %}
-<!-- Estilo customizado semelhante ao home.html -->
+<!-- Estilo customizado com cores suaves -->
 <style>
   .almox-card {
     padding: 1.5rem;
@@ -12,16 +12,25 @@
     font-weight: 500;
     border-radius: 12px;
     transition: all 0.2s ease-in-out;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    background-color: #f1f8ff; /* cor suave de fundo */
+    color: #00394f;
   }
+
   .almox-card i {
     font-size: 1.75rem;
     margin-bottom: 0.5rem;
     display: block;
   }
+
   .almox-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    background-color: #e3f2fd;
+  }
+
+  h3, h5 {
+    color: #004b5b;
   }
 </style>
 
@@ -34,13 +43,15 @@
   <h5 class="fw-semibold mb-3">Gerenciamento</h5>
   <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-3 mb-4">
     <div class="col">
-      <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-light text-dark w-100 almox-card">
-        <i class="bi bi-box"></i> Itens
+      <a href="{{ url_for('item_bp.lista_itens') }}" class="almox-card text-decoration-none">
+        <i class="bi bi-box"></i>
+        Itens
       </a>
     </div>
     <div class="col">
-      <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="btn btn-light text-dark w-100 almox-card">
-        <i class="bi bi-person-check"></i> Fornecedores
+      <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="almox-card text-decoration-none">
+        <i class="bi bi-person-check"></i>
+        Fornecedores
       </a>
     </div>
   </div>
@@ -49,13 +60,15 @@
   <h5 class="fw-semibold mb-3">Movimentações</h5>
   <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
     <div class="col">
-      <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="btn btn-outline-dark w-100 almox-card">
-        <i class="bi bi-box-arrow-in-down"></i> Entrada de Materiais
+      <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="almox-card text-decoration-none">
+        <i class="bi bi-box-arrow-in-down"></i>
+        Entrada de Materiais
       </a>
     </div>
     <div class="col">
-      <a href="{{ url_for('saida_bp.lista_saidas') }}" class="btn btn-outline-danger w-100 almox-card">
-        <i class="bi bi-box-arrow-up"></i> Saída de Materiais
+      <a href="{{ url_for('saida_bp.lista_saidas') }}" class="almox-card text-decoration-none">
+        <i class="bi bi-box-arrow-up"></i>
+        Saída de Materiais
       </a>
     </div>
   </div>
@@ -64,8 +77,9 @@
   <h5 class="fw-semibold mb-3">Relatórios</h5>
   <div class="row row-cols-1 row-cols-md-2 g-3">
     <div class="col">
-      <a href="{{ url_for('relatorio_bp.mapa_fechamento') }}" class="btn btn-outline-dark w-100 almox-card">
-        <i class="bi bi-bar-chart-line"></i> Mapa de Fechamento Mensal
+      <a href="{{ url_for('relatorio_bp.mapa_fechamento') }}" class="almox-card text-decoration-none">
+        <i class="bi bi-bar-chart-line"></i>
+        Mapa de Fechamento Mensal
       </a>
     </div>
   </div>

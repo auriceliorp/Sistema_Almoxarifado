@@ -4,40 +4,40 @@
 <div class="container mt-4">
   <h4 class="mb-4">Áreas (Locais)</h4>
 
-  <!-- Filtro -->
-  <form method="GET" class="mb-3">
-    <div class="input-group">
-      <input type="text" name="filtro" class="form-control" placeholder="Buscar por descrição..." value="{{ request.args.get('filtro', '') }}">
-      <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Buscar</button>
-      <a href="{{ url_for('area_ul_bp.novo_local') }}" class="btn btn-success ms-2"><i class="bi bi-plus-circle"></i> Nova Área</a>
-    </div>
+  <!-- Formulário de busca -->
+  <form method="GET" class="d-flex mb-3">
+    <input type="text" name="busca" class="form-control me-2" placeholder="Buscar por descrição..." value="{{ request.args.get('busca', '') }}">
+    <button type="submit" class="btn btn-primary me-2"><i class="bi bi-search"></i> Buscar</button>
+    <a href="{{ url_for('area_ul_bp.novo_local') }}" class="btn btn-success"><i class="bi bi-plus-circle"></i> Nova Área</a>
   </form>
 
   <!-- Tabela -->
   <div class="table-responsive">
-    <table class="table table-sm table-bordered align-middle">
-      <thead class="table-light">
+    <table class="table table-bordered table-hover">
+      <thead class="table-dark">
         <tr>
-          <th style="width: 80%;">Descrição</th>
-          <th class="text-center" style="width: 20%;">Ações</th>
+          <th>Descrição</th>
+          <th style="width: 120px;" class="text-center">Ações</th>
         </tr>
       </thead>
       <tbody>
-        {% for local in locais %}
+        {% for area in areas %}
         <tr>
-          <td>{{ local.descricao }}</td>
+          <td>{{ area.descricao }}</td>
           <td class="text-center">
-            <a href="{{ url_for('area_ul_bp.editar_local', id=local.id) }}" class="btn btn-sm btn-outline-primary" title="Editar">
+            <a href="{{ url_for('area_ul_bp.editar_local', id=area.id) }}" class="btn btn-sm btn-outline-primary">
               <i class="bi bi-pencil"></i>
             </a>
-            <a href="{{ url_for('area_ul_bp.excluir_local', id=local.id) }}" class="btn btn-sm btn-outline-danger" title="Excluir" onclick="return confirm('Deseja realmente excluir esta área?');">
-              <i class="bi bi-trash"></i>
-            </a>
+            <form method="POST" action="{{ url_for('area_ul_bp.excluir_local', id=area.id) }}" class="d-inline" onsubmit="return confirm('Deseja excluir esta área?');">
+              <button type="submit" class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
           </td>
         </tr>
         {% else %}
         <tr>
-          <td colspan="2" class="text-center text-muted">Nenhuma área encontrada.</td>
+          <td colspan="2" class="text-center">Nenhuma área encontrada.</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -45,5 +45,6 @@
   </div>
 </div>
 {% endblock %}
+
 
 

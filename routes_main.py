@@ -37,10 +37,8 @@ def login():
             login_user(usuario)
             perfil = usuario.perfil.nome if usuario.perfil else ''
 
-            # Redirecionamento baseado no perfil
             if perfil == 'Administrador':
-                # Importante: direciona para o dashboard do blueprint correto
-                return redirect(url_for('dashboard_bp.dashboard'))
+                return redirect(url_for('main.home'))
             elif perfil == 'Solicitante':
                 return redirect(url_for('main.home_solicitante'))
             elif perfil == 'Consultor':
@@ -54,7 +52,7 @@ def login():
 
     return render_template('login.html')
 
-# --- Página principal para Administrador (não mais usada como página inicial) ---
+# --- Página principal para Administrador ---
 @main.route('/home')
 @login_required
 @perfil_required(['Administrador'])
@@ -93,12 +91,12 @@ def index():
 def almoxarifado():
     return render_template('almoxarifado.html', usuario=current_user)
 
-# --- Página ND / Grupos / UL (AJAX ou layout antigo) ---
+# --- Página ND / Grupos / UL ---
 @main.route('/nd_grupos_ul')
 @login_required
 def nd_grupos_ul():
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return '', 204
+        return '', 204  # Evita recarregamento da estrutura em requisições AJAX
     return render_template('nd_grupos_ul.html')
 
 # --- Página de instrução de troca de senha ---
@@ -106,13 +104,13 @@ def nd_grupos_ul():
 def esqueci_senha():
     return render_template('esqueci_senha.html')
 
-# --- Página de Relatórios ---
+# --- Página de Relatórios (botões desativados por padrão) ---
 @main.route('/relatorios')
 @login_required
 def relatorios():
     return render_template('relatorios.html', usuario=current_user)
 
-# --- Página Dashboard de Organização (Organização Administrativa) ---
+# --- Página Dashboard de Organização ---
 @main.route('/dashboard_organizacao')
 @login_required
 def dashboard_organizacao():

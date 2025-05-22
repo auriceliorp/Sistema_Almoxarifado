@@ -12,6 +12,7 @@ from utils.auditoria import registrar_auditoria
 # ------------------------- BLUEPRINT ------------------------- #
 entrada_bp = Blueprint('entrada_bp', __name__, template_folder='templates')
 
+
 # ------------------------- ROTA: NOVA ENTRADA ------------------------- #
 @entrada_bp.route('/entrada/nova', methods=['GET', 'POST'])
 @login_required
@@ -58,11 +59,13 @@ def nova_entrada():
                     )
                     db.session.add(entrada_item)
 
+                    # Atualiza o item no estoque
                     item.estoque_atual += quantidade
                     item.saldo_financeiro += quantidade * valor_unitario
                     if item.estoque_atual > 0:
                         item.valor_unitario = item.saldo_financeiro / item.estoque_atual
 
+                    # Atualiza o valor da natureza de despesa
                     if item.grupo and item.grupo.natureza_despesa:
                         item.grupo.natureza_despesa.valor += quantidade * valor_unitario
 
@@ -77,16 +80,21 @@ def nova_entrada():
 
     return render_template('nova_entrada.html', fornecedores=fornecedores, itens=itens)
 
+
 # ------------------------- ROTA: LISTA DE ENTRADAS ------------------------- #
 @entrada_bp.route('/entrada/lista')
 @login_required
 def lista_entradas():
+    # Parâmetros da URL
     page = request.args.get('page', 1, type=int)
     filtro = request.args.get('filtro', 'nota')
     busca = request.args.get('busca', '').strip().lower()
+    ordenar_por = request.args.get('ordenar_por', 'data_movimento')
+    direcao = request.args.get('direcao', 'desc')
 
     query = EntradaMaterial.query.join(Fornecedor)
 
+    # Filtro de busca
     if busca:
         if filtro == 'nota':
             query = query.filter(EntradaMaterial.numero_nota_fiscal.ilike(f'%{busca}%'))
@@ -99,8 +107,27 @@ def lista_entradas():
             except ValueError:
                 flash("Data inválida. Use o formato dd/mm/aaaa.", 'warning')
 
-    entradas = query.order_by(EntradaMaterial.data_movimento.desc()).paginate(page=page, per_page=10)
-    return render_template('lista_entrada.html', entradas=entradas, filtro=filtro, busca=busca)
+    # Ordenação dinâmica por campo e direção
+    if ordenar_por == 'nota_fiscal':
+        campo = EntradaMaterial.numero_nota_fiscal
+    elif ordenar_por == 'fornecedor':
+        campo = Fornecedor.nome
+    else:
+        campo = EntradaMaterial.data_movimento
+
+    query = query.order_by(campo.asc() if direcao == 'asc' else campo.desc())
+
+    entradas = query.paginate(page=page, per_page=10)
+
+    return render_template(
+        'lista_entrada.html',
+        entradas=entradas,
+        filtro=filtro,
+        busca=busca,
+        ordenar_por=ordenar_por,
+        direcao=direcao
+    )
+
 
 # ------------------------- ROTA: VISUALIZAR ENTRADA ------------------------- #
 @entrada_bp.route('/entrada/<int:entrada_id>')
@@ -109,6 +136,7 @@ def visualizar_entrada(entrada_id):
     entrada = EntradaMaterial.query.get_or_404(entrada_id)
     itens = EntradaItem.query.filter_by(entrada_id=entrada_id).all()
     return render_template('visualizar_entrada.html', entrada=entrada, itens=itens)
+
 
 # ------------------------- ROTA: ESTORNAR ENTRADA COM AUDITORIA ------------------------- #
 @entrada_bp.route('/entrada/estornar/<int:entrada_id>', methods=['POST'])
@@ -123,6 +151,7 @@ def estornar_entrada(entrada_id):
     itens = EntradaItem.query.filter_by(entrada_id=entrada_id).all()
 
     try:
+        # Dados para auditoria antes da alteração
         dados_antes = {
             'entrada': {
                 'id': entrada.id,
@@ -140,6 +169,7 @@ def estornar_entrada(entrada_id):
             ]
         }
 
+        # Reversão de estoque e valores
         for entrada_item in itens:
             item = Item.query.get(entrada_item.item_id)
             if item:
@@ -176,54 +206,4 @@ def estornar_entrada(entrada_id):
         print(e)
 
     return redirect(url_for('entrada_bp.lista_entradas'))
-
-# ------------------------- ROTA: LISTA DE ENTRADAS ------------------------- #
-@entrada_bp.route('/entrada/lista')
-@login_required
-def lista_entradas():
-    page = request.args.get('page', 1, type=int)
-    filtro = request.args.get('filtro', 'nota')
-    busca = request.args.get('busca', '').strip().lower()
-    ordenar_por = request.args.get('ordenar_por', 'data_movimento')  # <-- novo campo
-    direcao = request.args.get('direcao', 'desc')                    # <-- nova direção
-
-    query = EntradaMaterial.query.join(Fornecedor)
-
-    # Filtro por conteúdo
-    if busca:
-        if filtro == 'nota':
-            query = query.filter(EntradaMaterial.numero_nota_fiscal.ilike(f'%{busca}%'))
-        elif filtro == 'fornecedor':
-            query = query.filter(Fornecedor.nome.ilike(f'%{busca}%'))
-        elif filtro == 'data':
-            try:
-                data = datetime.strptime(busca, '%d/%m/%Y').date()
-                query = query.filter(EntradaMaterial.data_movimento == data)
-            except ValueError:
-                flash("Data inválida. Use o formato dd/mm/aaaa.", 'warning')
-
-    # Lógica de ordenação dinâmica
-    if ordenar_por == 'nota_fiscal':
-        campo = EntradaMaterial.numero_nota_fiscal
-    elif ordenar_por == 'fornecedor':
-        campo = Fornecedor.nome
-    else:
-        campo = EntradaMaterial.data_movimento
-
-    # Aplica asc ou desc conforme escolha
-    if direcao == 'asc':
-        query = query.order_by(campo.asc())
-    else:
-        query = query.order_by(campo.desc())
-
-    entradas = query.paginate(page=page, per_page=10)
-
-    return render_template(
-        'lista_entrada.html',
-        entradas=entradas,
-        filtro=filtro,
-        busca=busca,
-        ordenar_por=ordenar_por,
-        direcao=direcao  # <-- enviado ao template
-    )
 

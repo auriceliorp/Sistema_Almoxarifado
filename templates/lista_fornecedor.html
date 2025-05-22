@@ -1,45 +1,47 @@
 {% extends 'base_simplificada.html' %}
-
 {% block title %}Lista de Fornecedores{% endblock %}
 
 {% block content %}
 <div class="container py-4">
 
-  {# ------------------------ CABEÇALHO COM BOTÃO "NOVO" À ESQUERDA ------------------------ #}
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <a href="{{ url_for('fornecedor_bp.novo_fornecedor') }}" class="btn btn-success btn-lg">
-      <i class="bi bi-plus-circle fs-4 me-1"></i> Novo Fornecedor
+  <!-- Cabeçalho com botão Novo Fornecedor -->
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <h4 class="mb-0 text-uppercase">Fornecedores Cadastrados</h4>
+    <a href="{{ url_for('fornecedor_bp.novo_fornecedor') }}" class="btn btn-success">
+      <i class="bi bi-plus-circle me-1"></i> Novo Fornecedor
     </a>
-    <h4 class="mb-0 text-center flex-grow-1 text-uppercase">Fornecedores Cadastrados</h4>
-    <div></div>
   </div>
 
-  {# ------------------------ FORMULÁRIO DE BUSCA ------------------------ #}
-  <form method="GET" class="row g-2 mb-4 align-items-end" id="formBusca">
-    <div class="col-md-3">
-      <label for="tipo_busca" class="form-label">Buscar por:</label>
-      <select name="filtro" id="tipo_busca" class="form-select">
-        <option value="nome" {% if filtro == 'nome' %}selected{% endif %}>Nome</option>
-        <option value="cnpj" {% if filtro == 'cnpj' %}selected{% endif %}>CNPJ</option>
-        <option value="cidade" {% if filtro == 'cidade' %}selected{% endif %}>Cidade</option>
-        <option value="uf" {% if filtro == 'uf' %}selected{% endif %}>UF</option>
-      </select>
+  <!-- Card de filtros com sombra -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <form method="GET" class="row g-3 align-items-end">
+        <div class="col-md-3">
+          <label for="tipo_busca" class="form-label">Buscar por:</label>
+          <select name="filtro" id="tipo_busca" class="form-select">
+            <option value="nome" {% if filtro == 'nome' %}selected{% endif %}>Nome</option>
+            <option value="cnpj" {% if filtro == 'cnpj' %}selected{% endif %}>CNPJ</option>
+            <option value="cidade" {% if filtro == 'cidade' %}selected{% endif %}>Cidade</option>
+            <option value="uf" {% if filtro == 'uf' %}selected{% endif %}>UF</option>
+          </select>
+        </div>
+        <div class="col-md-7">
+          <label for="valor_busca" class="form-label">Valor:</label>
+          <input type="text" name="busca" value="{{ busca }}" class="form-control" id="valor_busca" placeholder="Digite a busca...">
+        </div>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="bi bi-search"></i> Buscar
+          </button>
+        </div>
+      </form>
     </div>
-    <div class="col-md-7">
-      <label for="valor_busca" class="form-label">Valor:</label>
-      <input type="text" name="busca" value="{{ busca }}" class="form-control" id="valor_busca" placeholder="Digite a busca...">
-    </div>
-    <div class="col-md-2">
-      <button type="submit" class="btn btn-primary w-100">
-        <i class="bi bi-search"></i> Buscar
-      </button>
-    </div>
-  </form>
+  </div>
 
-  {# ------------------------ TABELA DE RESULTADOS ------------------------ #}
-  <div class="table-responsive">
-    <table class="table table-striped table-bordered align-middle">
-      <thead class="table-light">
+  <!-- Tabela responsiva com cabeçalho fixo -->
+  <div class="table-responsive" style="max-height: 70vh;">
+    <table class="table table-striped table-bordered align-middle table-sm">
+      <thead class="table-dark sticky-top">
         <tr>
           <th>Nome</th>
           <th>CNPJ</th>
@@ -52,7 +54,7 @@
           <th>UF</th>
           <th>IE</th>
           <th>IM</th>
-          <th style="width: 160px;">Ações</th>
+          <th class="text-center">Ações</th>
         </tr>
       </thead>
       <tbody>
@@ -64,8 +66,7 @@
           <td>{{ fornecedor.telefone or '-' }}</td>
           <td>{{ fornecedor.celular or '-' }}</td>
           <td>
-            {{ fornecedor.endereco or '' }},
-            {{ fornecedor.numero or '' }}
+            {{ fornecedor.endereco or '' }}, {{ fornecedor.numero or '' }}
             {% if fornecedor.complemento %} - {{ fornecedor.complemento }}{% endif %}
           </td>
           <td>{{ fornecedor.cep or '-' }}</td>
@@ -73,11 +74,17 @@
           <td>{{ fornecedor.uf or '-' }}</td>
           <td>{{ fornecedor.inscricao_estadual or '-' }}</td>
           <td>{{ fornecedor.inscricao_municipal or '-' }}</td>
-          <td>
-            <a href="{{ url_for('fornecedor_bp.editar_fornecedor', id=fornecedor.id) }}" class="btn btn-sm btn-warning">Editar</a>
-            <form action="{{ url_for('fornecedor_bp.excluir_fornecedor', id=fornecedor.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Deseja realmente excluir?');">
-              <button type="submit" class="btn btn-sm btn-danger">Excluir</button>
-            </form>
+          <td class="text-center">
+            <div class="d-flex justify-content-center gap-2">
+              <a href="{{ url_for('fornecedor_bp.editar_fornecedor', id=fornecedor.id) }}" class="btn btn-sm btn-outline-warning" title="Editar">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <form action="{{ url_for('fornecedor_bp.excluir_fornecedor', id=fornecedor.id) }}" method="POST" onsubmit="return confirm('Deseja realmente excluir?');">
+                <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+            </div>
           </td>
         </tr>
         {% else %}
@@ -89,7 +96,7 @@
     </table>
   </div>
 
-  {# ------------------------ PAGINAÇÃO ------------------------ #}
+  <!-- Paginação -->
   {% if fornecedores.pages > 1 %}
   <nav aria-label="Paginação" class="mt-4">
     <ul class="pagination justify-content-center">
@@ -104,14 +111,12 @@
       {% for page_num in fornecedores.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
         {% if page_num %}
           {% if fornecedores.page == page_num %}
-          <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+            <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
           {% else %}
-          <li class="page-item">
-            <a class="page-link" href="{{ url_for('fornecedor_bp.lista_fornecedor', page=page_num, filtro=filtro, busca=busca) }}">{{ page_num }}</a>
-          </li>
+            <li class="page-item"><a class="page-link" href="{{ url_for('fornecedor_bp.lista_fornecedor', page=page_num, filtro=filtro, busca=busca) }}">{{ page_num }}</a></li>
           {% endif %}
         {% else %}
-        <li class="page-item disabled"><span class="page-link">…</span></li>
+          <li class="page-item disabled"><span class="page-link">…</span></li>
         {% endif %}
       {% endfor %}
 

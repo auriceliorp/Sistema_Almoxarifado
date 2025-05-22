@@ -2,53 +2,70 @@
 {% block title %}Painel de Contratações{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-  <h2 class="mb-4">Painel de Contratações</h2>
+<div class="container py-4">
 
-  {# -------------------- FILTROS -------------------- #}
-  <form method="get" class="row g-3 mb-4">
-    <div class="col-md-2">
-      <input type="text" name="ano" class="form-control" placeholder="Ano" value="{{ request.args.get('ano', '') }}">
-    </div>
-    <div class="col-md-3">
-      <input type="text" name="numero_sei" class="form-control" placeholder="Nº SEI" value="{{ request.args.get('numero_sei', '') }}">
-    </div>
-    <div class="col-md-3">
-      <input type="text" name="modalidade" class="form-control" placeholder="Modalidade" value="{{ request.args.get('modalidade', '') }}">
-    </div>
-    <div class="col-md-4">
-      <input type="text" name="objeto" class="form-control" placeholder="Objeto" value="{{ request.args.get('objeto', '') }}">
-    </div>
-    <div class="col-md-4">
-      <select name="solicitante_id" class="form-select">
-        <option value="">Solicitante</option>
-        {% for u in usuarios %}
-          <option value="{{ u.id }}" {% if request.args.get('solicitante_id') == u.id|string %}selected{% endif %}>{{ u.nome }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="col-md-3">
-      <select name="status" class="form-select">
-        <option value="">Status</option>
-        <option value="Processo Iniciado">Processo Iniciado</option>
-        <option value="Em andamento">Em andamento</option>
-        <option value="Concluido">Concluido</option>
-        <option value="Aguardando Definições">Aguardando Definições</option>
-        <option value="Cancelada">Cancelada</option>
-      </select>
-    </div>
-    <div class="col-md-2">
-      <button class="btn btn-primary w-100" type="submit">Filtrar</button>
-    </div>
-    <div class="col-md-3">
-      <a href="{{ url_for('painel_bp.novo_painel') }}" class="btn btn-success w-100">Novo Processo</a>
-    </div>
-  </form>
+  <!-- Cabeçalho e ação -->
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <h4 class="mb-0 text-uppercase">Painel de Contratações</h4>
+    <a href="{{ url_for('painel_bp.novo_painel') }}" class="btn btn-success btn-lg">
+      <i class="bi bi-plus-circle me-1 fs-4"></i> Novo Processo
+    </a>
+  </div>
 
-  {# -------------------- TABELA -------------------- #}
-  <div class="table-responsive">
-    <table class="table table-bordered table-hover">
-      <thead class="table-light">
+  <!-- Card com filtros -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-2">
+          <label class="form-label">Ano</label>
+          <input type="text" name="ano" class="form-control" value="{{ request.args.get('ano', '') }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Nº SEI</label>
+          <input type="text" name="numero_sei" class="form-control" value="{{ request.args.get('numero_sei', '') }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Modalidade</label>
+          <input type="text" name="modalidade" class="form-control" value="{{ request.args.get('modalidade', '') }}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Objeto</label>
+          <input type="text" name="objeto" class="form-control" value="{{ request.args.get('objeto', '') }}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Solicitante</label>
+          <select name="solicitante_id" class="form-select">
+            <option value="">Todos</option>
+            {% for u in usuarios %}
+              <option value="{{ u.id }}" {% if request.args.get('solicitante_id') == u.id|string %}selected{% endif %}>{{ u.nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Status</label>
+          <select name="status" class="form-select">
+            <option value="">Todos</option>
+            <option value="Processo Iniciado" {% if request.args.get('status') == 'Processo Iniciado' %}selected{% endif %}>Processo Iniciado</option>
+            <option value="Em andamento" {% if request.args.get('status') == 'Em andamento' %}selected{% endif %}>Em andamento</option>
+            <option value="Concluido" {% if request.args.get('status') == 'Concluido' %}selected{% endif %}>Concluído</option>
+            <option value="Aguardando Definições" {% if request.args.get('status') == 'Aguardando Definições' %}selected{% endif %}>Aguardando Definições</option>
+            <option value="Cancelada" {% if request.args.get('status') == 'Cancelada' %}selected{% endif %}>Cancelada</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label d-block">&nbsp;</label>
+          <button class="btn btn-primary w-100" type="submit">
+            <i class="bi bi-search"></i> Filtrar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tabela responsiva com sticky header -->
+  <div class="table-responsive" style="max-height: 70vh;">
+    <table class="table table-bordered table-hover align-middle table-sm">
+      <thead class="table-dark sticky-top">
         <tr>
           <th>Ano</th>
           <th>Nº SEI</th>
@@ -71,16 +88,23 @@
           <td>{{ processo.solicitante.nome if processo.solicitante else '-' }}</td>
           <td>{{ processo.status }}</td>
           <td class="text-center">
-            <a href="{{ url_for('painel_bp.visualizar_painel', id=processo.id) }}" class="btn btn-sm btn-info"><i class="bi bi-eye"></i></a>
-            <a href="{{ url_for('painel_bp.editar_painel', id=processo.id) }}" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i></a>
-            <a href="{{ url_for('painel_bp.excluir_painel', id=processo.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Deseja realmente excluir?')"><i class="bi bi-trash"></i></a>
-            </td>
+            <a href="{{ url_for('painel_bp.visualizar_painel', id=processo.id) }}" class="btn btn-sm btn-outline-info" title="Visualizar">
+              <i class="bi bi-eye"></i>
+            </a>
+            <a href="{{ url_for('painel_bp.editar_painel', id=processo.id) }}" class="btn btn-sm btn-outline-warning" title="Editar">
+              <i class="bi bi-pencil-square"></i>
+            </a>
+            <a href="{{ url_for('painel_bp.excluir_painel', id=processo.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Deseja realmente excluir?')" title="Excluir">
+              <i class="bi bi-trash"></i>
+            </a>
+          </td>
         </tr>
         {% else %}
-        <tr><td colspan="8" class="text-center">Nenhum processo encontrado.</td></tr>
+        <tr><td colspan="8" class="text-center text-muted">Nenhum processo encontrado.</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
+
 </div>
 {% endblock %}

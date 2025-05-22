@@ -167,6 +167,10 @@ class SaidaMaterial(db.Model):
     solicitante_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
     solicitante = db.relationship('Usuario', foreign_keys=[solicitante_id], backref='solicitacoes_saida')
 
+    # ✅ Campo correto: deve estar aqui
+    estornada = db.Column(db.Boolean, default=False)
+
+    # Relacionamento com itens da saída
     itens = db.relationship(
         'SaidaItem',
         backref='saida_material',
@@ -174,6 +178,8 @@ class SaidaMaterial(db.Model):
         overlaps="saida,itens_relacionados"
     )
 
+
+# ------------------- ITEM DA SAÍDA -------------------
 class SaidaItem(db.Model):
     __tablename__ = 'saida_item'
     id = db.Column(db.Integer, primary_key=True)
@@ -184,6 +190,8 @@ class SaidaItem(db.Model):
     saida_id = db.Column(db.Integer, db.ForeignKey('saida_material.id'), nullable=False)
 
     item = db.relationship('Item', backref='saidas')
+
+    # Evita conflito de relacionamento reverso com overlaps
     saida = db.relationship(
         'SaidaMaterial',
         backref='itens_relacionados',

@@ -3,18 +3,19 @@
 {% block title %}Entradas de Estoque{% endblock %}
 
 {% block content %}
-
-<div class="container py-4">{# ------------------------------ CABEÇALHO ------------------------------ #}
+<div class="container py-4">
 
   <div class="d-flex justify-content-between align-items-center mb-4">
     <a href="{{ url_for('entrada_bp.nova_entrada') }}" class="btn btn-success btn-lg">
       <i class="bi bi-plus-circle fs-4 me-1"></i> Nova Entrada
     </a>
     <h4 class="mb-0 text-center flex-grow-1 text-uppercase">Entradas de Estoque</h4>
-  </div>{# ------------------------------ FORMULÁRIO DE BUSCA ------------------------------ #}
+  </div>
 
+  <!-- ------------------------- FORMULÁRIO DE BUSCA ------------------------- -->
   <form method="GET" class="row g-2 mb-4 align-items-end" id="formBusca">
-    <div class="col-md-4">
+
+    <div class="col-md-3">
       <label for="tipo_busca" class="form-label">Buscar por:</label>
       <select name="filtro" id="tipo_busca" class="form-select">
         <option value="nota" {% if filtro == 'nota' %}selected{% endif %}>Nota Fiscal</option>
@@ -22,17 +23,37 @@
         <option value="data" {% if filtro == 'data' %}selected{% endif %}>Data de Movimento</option>
       </select>
     </div>
-    <div class="col-md-6">
+
+    <div class="col-md-3">
       <label for="valor_busca" class="form-label">Valor:</label>
       <input type="text" name="busca" value="{{ busca }}" class="form-control" id="valor_busca" placeholder="Digite a busca...">
     </div>
+
+    <div class="col-md-3">
+      <label for="ordenar_por" class="form-label">Ordenar por:</label>
+      <select name="ordenar_por" id="ordenar_por" class="form-select">
+        <option value="data_movimento" {% if ordenar_por == 'data_movimento' %}selected{% endif %}>Data de Movimento</option>
+        <option value="nota_fiscal" {% if ordenar_por == 'nota_fiscal' %}selected{% endif %}>Nota Fiscal</option>
+        <option value="fornecedor" {% if ordenar_por == 'fornecedor' %}selected{% endif %}>Fornecedor</option>
+      </select>
+    </div>
+
     <div class="col-md-2">
+      <label for="direcao" class="form-label">Direção:</label>
+      <select name="direcao" id="direcao" class="form-select">
+        <option value="asc" {% if direcao == 'asc' %}selected{% endif %}>Ascendente</option>
+        <option value="desc" {% if direcao == 'desc' %}selected{% endif %}>Descendente</option>
+      </select>
+    </div>
+
+    <div class="col-md-1">
       <button type="submit" class="btn btn-primary w-100">
-        <i class="bi bi-search"></i> Buscar
+        <i class="bi bi-search"></i>
       </button>
     </div>
-  </form>{# ------------------------------ TABELA DE ENTRADAS ------------------------------ #}
+  </form>
 
+  <!-- ------------------------- TABELA ------------------------- -->
   <div class="table-responsive">
     <table class="table table-striped table-hover align-middle w-100">
       <thead class="table-dark">
@@ -67,50 +88,56 @@
           </td>
         </tr>
         {% else %}
-        <tr>
-          <td colspan="6" class="text-center text-muted">Nenhuma entrada encontrada.</td>
-        </tr>
+        <tr><td colspan="6" class="text-center text-muted">Nenhuma entrada encontrada.</td></tr>
         {% endfor %}
       </tbody>
     </table>
-  </div>{# ------------------------------ PAGINAÇÃO ------------------------------ #} {% if entradas.pages > 1 %}
+  </div>
 
+  <!-- ------------------------- PAGINAÇÃO ------------------------- -->
+  {% if entradas.pages > 1 %}
   <nav aria-label="Paginação" class="mt-4">
     <ul class="pagination justify-content-center">
       {% if entradas.has_prev %}
       <li class="page-item">
-        <a class="page-link" href="{{ url_for('entrada_bp.lista_entradas', page=entradas.prev_num, filtro=filtro, busca=busca) }}">Anterior</a>
+        <a class="page-link" href="{{ url_for('entrada_bp.lista_entradas', page=entradas.prev_num, filtro=filtro, busca=busca, ordenar_por=ordenar_por, direcao=direcao) }}">Anterior</a>
       </li>
       {% else %}
       <li class="page-item disabled"><span class="page-link">Anterior</span></li>
-      {% endif %}{% for page_num in entradas.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
-    {% if page_num %}
-      {% if entradas.page == page_num %}
-      <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
-      {% else %}
-      <li class="page-item">
-        <a class="page-link" href="{{ url_for('entrada_bp.lista_entradas', page=page_num, filtro=filtro, busca=busca) }}">{{ page_num }}</a>
-      </li>
       {% endif %}
-    {% else %}
-    <li class="page-item disabled"><span class="page-link">…</span></li>
-    {% endif %}
-  {% endfor %}
 
-  {% if entradas.has_next %}
-  <li class="page-item">
-    <a class="page-link" href="{{ url_for('entrada_bp.lista_entradas', page=entradas.next_num, filtro=filtro, busca=busca) }}">Próxima</a>
-  </li>
-  {% else %}
-  <li class="page-item disabled"><span class="page-link">Próxima</span></li>
-  {% endif %}
-</ul>
+      {% for page_num in entradas.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+        {% if page_num %}
+          {% if entradas.page == page_num %}
+            <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+          {% else %}
+            <li class="page-item">
+              <a class="page-link" href="{{ url_for('entrada_bp.lista_entradas', page=page_num, filtro=filtro, busca=busca, ordenar_por=ordenar_por, direcao=direcao) }}">{{ page_num }}</a>
+            </li>
+          {% endif %}
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">…</span></li>
+        {% endif %}
+      {% endfor %}
 
+      {% if entradas.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="{{ url_for('entrada_bp.lista_entradas', page=entradas.next_num, filtro=filtro, busca=busca, ordenar_por=ordenar_por, direcao=direcao) }}">Próxima</a>
+      </li>
+      {% else %}
+      <li class="page-item disabled"><span class="page-link">Próxima</span></li>
+      {% endif %}
+    </ul>
   </nav>
-  {% endif %}</div>
-{% endblock %}{% block scripts %}
+  {% endif %}
 
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script><script>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+<script>
   function aplicarMascara() {
     $('#valor_busca').unmask();
     if ($('#tipo_busca').val() === 'nota') {
@@ -127,5 +154,5 @@
       aplicarMascara();
     });
   });
-</script>{% endblock %}
-
+</script>
+{% endblock %}

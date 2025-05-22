@@ -99,7 +99,7 @@
       <button id="toggleSidebar" class="navbar-toggler d-md-none me-3">
         <i class="bi bi-list fs-3"></i>
       </button>
-      <a href="{{ url_for('main.dashboard') }}" class="btn btn-sm btn-outline-light d-flex align-items-center">
+      <a href="{{ url_for('main.home') }}" class="btn btn-sm btn-outline-light d-flex align-items-center">
         <i class="bi bi-house-door me-1"></i> Início
       </a>
     </div>
@@ -141,7 +141,7 @@
       sidebar.classList.toggle('show');
     });
 
-    // Carregamento dinâmico de conteúdo
+    // Carregamento dinâmico de conteúdo (se usado)
     function carregarConteudo(url) {
       const container = document.getElementById('conteudo-dinamico');
       if (!container) return;
@@ -170,3 +170,4 @@
   </script>
 </body>
 </html>
+

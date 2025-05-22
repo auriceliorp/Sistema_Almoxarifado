@@ -1,36 +1,48 @@
 {% extends 'base_simplificada.html' %}
+{% block title %}Unidades Locais{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h5 class="text-primary mb-0">Unidades Locais</h5>
-    <a href="{{ url_for('area_ul_bp.novo_ul') }}" class="btn btn-outline-success btn-sm">
-      <i class="bi bi-plus-circle"></i> Nova UL
+<div class="container py-4">
+
+  <!-- Cabeçalho com botão Nova UL -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0 text-uppercase">Unidades Locais</h4>
+    <a href="{{ url_for('area_ul_bp.novo_ul') }}" class="btn btn-success">
+      <i class="bi bi-plus-circle me-1"></i> Nova UL
     </a>
   </div>
 
-  <table class="table table-bordered table-striped table-sm">
-    <thead class="table-dark">
-      <tr>
-        <th>Código</th>
-        <th>Descrição</th>
-        <th>Área (Local)</th>
-        <th style="width: 10%;" class="text-center">Ações</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for ul in uls %}
-      <tr>
-        <td>{{ ul.codigo }}</td>
-        <td>{{ ul.descricao }}</td>
-        <td>{{ ul.local.descricao }}</td>
-        <td class="text-center">
-          <a href="{{ url_for('area_ul_bp.editar_ul', id=ul.id) }}" class="btn btn-sm btn-outline-primary">
-            <i class="bi bi-pencil"></i>
-          </a>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <!-- Tabela responsiva com cabeçalho fixo -->
+  <div class="table-responsive" style="max-height: 70vh;">
+    <table class="table table-striped table-hover align-middle table-sm">
+      <thead class="table-dark sticky-top">
+        <tr>
+          <th style="width: 15%;">Código</th>
+          <th style="width: 45%;">Descrição</th>
+          <th style="width: 30%;">Área (Local)</th>
+          <th style="width: 10%;" class="text-center">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ul in uls %}
+        <tr>
+          <td>{{ ul.codigo }}</td>
+          <td>{{ ul.descricao }}</td>
+          <td>{{ ul.local.descricao }}</td>
+          <td class="text-center">
+            <a href="{{ url_for('area_ul_bp.editar_ul', id=ul.id) }}" class="btn btn-sm btn-outline-primary" title="Editar">
+              <i class="bi bi-pencil"></i>
+            </a>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="4" class="text-center text-muted">Nenhuma unidade local encontrada.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
 </div>
 {% endblock %}

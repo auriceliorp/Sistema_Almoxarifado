@@ -124,6 +124,72 @@ def nova_saida():
 
     return render_template('nova_saida.html', itens=itens, usuarios=usuarios, numero_documento=numero_documento)
 
+# -------------------- ESTORNAR SAÍDA DE MATERIAL -------------------- #
+@saida_bp.route('/saida/estornar/<int:saida_id>', methods=['POST'])
+@login_required
+def estornar_saida(saida_id):
+    from utils.auditoria import registrar_auditoria
+
+    saida = SaidaMaterial.query.get_or_404(saida_id)
+
+    if saida.estornada:
+        flash('Esta saída já foi estornada anteriormente.', 'warning')
+        return redirect(url_for('saida_bp.lista_saidas'))
+
+    itens = SaidaItem.query.filter_by(saida_id=saida_id).all()
+
+    try:
+        # Coletar dados para auditoria
+        dados_antes = {
+            'saida': {
+                'id': saida.id,
+                'numero_documento': saida.numero_documento,
+                'data_movimento': saida.data_movimento.strftime('%Y-%m-%d'),
+                'responsavel_id': saida.usuario_id,
+                'solicitante_id': saida.solicitante_id
+            },
+            'itens': [
+                {
+                    'item_id': item.item_id,
+                    'quantidade': item.quantidade,
+                    'valor_unitario': float(item.valor_unitario)
+                } for item in itens
+            ]
+        }
+
+        for item_saida in itens:
+            item = Item.query.get(item_saida.item_id)
+            if item:
+                # Recompõe o estoque
+                item.estoque_atual += item_saida.quantidade
+                item.saldo_financeiro += item_saida.quantidade * float(item_saida.valor_unitario)
+                item.valor_unitario = item.saldo_financeiro / item.estoque_atual if item.estoque_atual > 0 else 0.0
+
+                # Recompõe a natureza de despesa (se aplicável)
+                if item.grupo and item.grupo.natureza_despesa:
+                    item.grupo.natureza_despesa.valor += item_saida.quantidade * float(item_saida.valor_unitario)
+
+        saida.estornada = True
+
+        registrar_auditoria(
+            acao='estorno',
+            tabela='saida_material',
+            registro_id=saida.id,
+            dados_antes=dados_antes,
+            dados_depois=None
+        )
+
+        db.session.commit()
+        flash('Saída estornada com sucesso.', 'success')
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Erro ao estornar saída: {e}', 'danger')
+        print(e)
+
+    return redirect(url_for('saida_bp.lista_saidas'))
+
+
 
 # -------------------- REQUISIÇÃO (IMPRESSÃO) -------------------- #
 @saida_bp.route('/requisicao/<int:saida_id>')

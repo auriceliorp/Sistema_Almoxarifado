@@ -5,58 +5,63 @@
 {% block content %}
 <div class="container py-4">
 
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <a href="{{ url_for('entrada_bp.nova_entrada') }}" class="btn btn-success btn-lg">
-      <i class="bi bi-plus-circle fs-4 me-1"></i> Nova Entrada
+  <!-- Botão Nova Entrada -->
+  <div class="d-flex justify-content-end mb-3">
+    <a href="{{ url_for('entrada_bp.nova_entrada') }}" class="btn btn-success shadow-sm">
+      <i class="bi bi-plus-circle me-1"></i> Nova Entrada
     </a>
-    <h4 class="mb-0 text-center flex-grow-1 text-uppercase">Entradas de Estoque</h4>
   </div>
 
-  <!-- ------------------------- FORMULÁRIO DE BUSCA ------------------------- -->
-  <form method="GET" class="row g-2 mb-4 align-items-end" id="formBusca">
+  <!-- Card de Filtros -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <form method="GET" class="row g-3 align-items-end">
 
-    <div class="col-md-3">
-      <label for="tipo_busca" class="form-label">Buscar por:</label>
-      <select name="filtro" id="tipo_busca" class="form-select">
-        <option value="nota" {% if filtro == 'nota' %}selected{% endif %}>Nota Fiscal</option>
-        <option value="fornecedor" {% if filtro == 'fornecedor' %}selected{% endif %}>Fornecedor</option>
-        <option value="data" {% if filtro == 'data' %}selected{% endif %}>Data de Movimento</option>
-      </select>
+        <div class="col-md-3">
+          <label for="tipo_busca" class="form-label">Buscar por:</label>
+          <select name="filtro" id="tipo_busca" class="form-select">
+            <option value="nota" {% if filtro == 'nota' %}selected{% endif %}>Nota Fiscal</option>
+            <option value="fornecedor" {% if filtro == 'fornecedor' %}selected{% endif %}>Fornecedor</option>
+            <option value="data" {% if filtro == 'data' %}selected{% endif %}>Data de Movimento</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label for="valor_busca" class="form-label">Valor:</label>
+          <input type="text" name="busca" value="{{ busca }}" class="form-control" id="valor_busca" placeholder="Digite a busca...">
+        </div>
+
+        <div class="col-md-3">
+          <label for="ordenar_por" class="form-label">Ordenar por:</label>
+          <select name="ordenar_por" id="ordenar_por" class="form-select">
+            <option value="data_movimento" {% if ordenar_por == 'data_movimento' %}selected{% endif %}>Data de Movimento</option>
+            <option value="nota_fiscal" {% if ordenar_por == 'nota_fiscal' %}selected{% endif %}>Nota Fiscal</option>
+            <option value="fornecedor" {% if ordenar_por == 'fornecedor' %}selected{% endif %}>Fornecedor</option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label for="direcao" class="form-label">Direção:</label>
+          <select name="direcao" id="direcao" class="form-select">
+            <option value="asc" {% if direcao == 'asc' %}selected{% endif %}>Ascendente</option>
+            <option value="desc" {% if direcao == 'desc' %}selected{% endif %}>Descendente</option>
+          </select>
+        </div>
+
+        <div class="col-md-1">
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="bi bi-search"></i>
+          </button>
+        </div>
+
+      </form>
     </div>
+  </div>
 
-    <div class="col-md-3">
-      <label for="valor_busca" class="form-label">Valor:</label>
-      <input type="text" name="busca" value="{{ busca }}" class="form-control" id="valor_busca" placeholder="Digite a busca...">
-    </div>
-
-    <div class="col-md-3">
-      <label for="ordenar_por" class="form-label">Ordenar por:</label>
-      <select name="ordenar_por" id="ordenar_por" class="form-select">
-        <option value="data_movimento" {% if ordenar_por == 'data_movimento' %}selected{% endif %}>Data de Movimento</option>
-        <option value="nota_fiscal" {% if ordenar_por == 'nota_fiscal' %}selected{% endif %}>Nota Fiscal</option>
-        <option value="fornecedor" {% if ordenar_por == 'fornecedor' %}selected{% endif %}>Fornecedor</option>
-      </select>
-    </div>
-
-    <div class="col-md-2">
-      <label for="direcao" class="form-label">Direção:</label>
-      <select name="direcao" id="direcao" class="form-select">
-        <option value="asc" {% if direcao == 'asc' %}selected{% endif %}>Ascendente</option>
-        <option value="desc" {% if direcao == 'desc' %}selected{% endif %}>Descendente</option>
-      </select>
-    </div>
-
-    <div class="col-md-1">
-      <button type="submit" class="btn btn-primary w-100">
-        <i class="bi bi-search"></i>
-      </button>
-    </div>
-  </form>
-
-  <!-- ------------------------- TABELA ------------------------- -->
-  <div class="table-responsive">
-    <table class="table table-striped table-hover align-middle w-100">
-      <thead class="table-dark">
+  <!-- Tabela de Entradas -->
+  <div class="table-responsive" style="max-height: 60vh;">
+    <table class="table table-bordered table-hover align-middle text-nowrap">
+      <thead class="table-dark sticky-top">
         <tr>
           <th>ID</th>
           <th>Data Movimento</th>
@@ -73,28 +78,39 @@
           <td>{{ entrada.data_movimento.strftime('%d/%m/%Y') }}</td>
           <td>{{ entrada.data_nota_fiscal.strftime('%d/%m/%Y') }}</td>
           <td>{{ entrada.numero_nota_fiscal }}</td>
-          <td>{{ entrada.fornecedor.nome }}</td>
-          <td class="text-center">
-            <a href="{{ url_for('entrada_bp.visualizar_entrada', entrada_id=entrada.id) }}" class="btn btn-outline-secondary btn-sm">
-              <i class="bi bi-eye"></i> Visualizar
-            </a>
-            {% if not entrada.estornada %}
-            <form action="{{ url_for('entrada_bp.estornar_entrada', entrada_id=entrada.id) }}" method="POST" class="d-inline-block ms-1" onsubmit="return confirm('Deseja realmente estornar esta entrada?')">
-              <button type="submit" class="btn btn-outline-danger btn-sm">
-                <i class="bi bi-x-circle"></i> Estornar
-              </button>
-            </form>
+          <td>
+            {{ entrada.fornecedor.nome }}
+            {% if entrada.estornada %}
+              <span class="badge bg-danger ms-1">Estornada</span>
             {% endif %}
+          </td>
+          <td class="text-center">
+            <div class="d-flex justify-content-center gap-2">
+              <a href="{{ url_for('entrada_bp.visualizar_entrada', entrada_id=entrada.id) }}"
+                 class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1">
+                <i class="bi bi-eye"></i> <span>Visualizar</span>
+              </a>
+              {% if not entrada.estornada %}
+              <form action="{{ url_for('entrada_bp.estornar_entrada', entrada_id=entrada.id) }}"
+                    method="POST" onsubmit="return confirm('Deseja realmente estornar esta entrada?')">
+                <button type="submit" class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1">
+                  <i class="bi bi-x-circle"></i> <span>Estornar</span>
+                </button>
+              </form>
+              {% endif %}
+            </div>
           </td>
         </tr>
         {% else %}
-        <tr><td colspan="6" class="text-center text-muted">Nenhuma entrada encontrada.</td></tr>
+        <tr>
+          <td colspan="6" class="text-center text-muted">Nenhuma entrada encontrada.</td>
+        </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 
-  <!-- ------------------------- PAGINAÇÃO ------------------------- -->
+  <!-- Paginação -->
   {% if entradas.pages > 1 %}
   <nav aria-label="Paginação" class="mt-4">
     <ul class="pagination justify-content-center">

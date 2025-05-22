@@ -1,58 +1,71 @@
 {% extends 'base_simplificada.html' %}
+{% block title %}Naturezas de Despesa{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h5 class="text-primary mb-0">Naturezas de Despesa</h5>
-    <a href="{{ url_for('nd_bp.novo_nd') }}" class="btn btn-outline-success btn-sm">
-      <i class="bi bi-plus-circle"></i> Nova ND
+<div class="container py-4">
+
+  <!-- Cabeçalho com botão Nova ND -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0 text-uppercase">Naturezas de Despesa</h4>
+    <a href="{{ url_for('nd_bp.novo_nd') }}" class="btn btn-success">
+      <i class="bi bi-plus-circle me-1"></i> Nova ND
     </a>
   </div>
 
-  <table class="table table-bordered table-striped table-sm">
-    <thead class="table-dark">
-      <tr>
-        <th style="width: 20%;">Código</th>
-        <th style="width: 70%;">Nome</th>
-        <th style="width: 10%;" class="text-center">Ações</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for nd in nds %}
-      <tr>
-        <td>{{ nd.codigo }}</td>
-        <td>{{ nd.nome }}</td>
-        <td class="text-center">
-          <a href="{{ url_for('nd_bp.editar_nd', id=nd.id) }}" class="btn btn-sm btn-outline-primary me-1">
-            <i class="bi bi-pencil"></i>
-          </a>
-          <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalExcluirND{{ nd.id }}">
-            <i class="bi bi-trash"></i>
-          </button>
+  <!-- Tabela responsiva com cabeçalho fixo -->
+  <div class="table-responsive" style="max-height: 70vh;">
+    <table class="table table-striped table-hover align-middle table-sm">
+      <thead class="table-dark sticky-top">
+        <tr>
+          <th style="width: 20%;">Código</th>
+          <th style="width: 70%;">Nome</th>
+          <th style="width: 10%;" class="text-center">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for nd in nds %}
+        <tr>
+          <td>{{ nd.codigo }}</td>
+          <td>{{ nd.nome }}</td>
+          <td class="text-center">
+            <a href="{{ url_for('nd_bp.editar_nd', id=nd.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
+              <i class="bi bi-pencil"></i>
+            </a>
+            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalExcluirND{{ nd.id }}" title="Excluir">
+              <i class="bi bi-trash"></i>
+            </button>
 
-          <div class="modal fade" id="modalExcluirND{{ nd.id }}" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-              <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                  <h5 class="modal-title">Confirmar Exclusão</h5>
-                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                  Deseja excluir <strong>{{ nd.nome }}</strong>?
-                </div>
-                <div class="modal-footer">
-                  <form method="POST" action="{{ url_for('nd_bp.excluir_nd', id=nd.id) }}">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-danger">Excluir</button>
-                  </form>
+            <!-- Modal de confirmação de exclusão -->
+            <div class="modal fade" id="modalExcluirND{{ nd.id }}" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                  <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Confirmar Exclusão</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                  </div>
+                  <div class="modal-body">
+                    Deseja excluir <strong>{{ nd.nome }}</strong>?
+                  </div>
+                  <div class="modal-footer">
+                    <form method="POST" action="{{ url_for('nd_bp.excluir_nd', id=nd.id) }}">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                      <button type="submit" class="btn btn-danger">Excluir</button>
+                    </form>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="3" class="text-center text-muted">Nenhuma ND cadastrada.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
 </div>
 {% endblock %}

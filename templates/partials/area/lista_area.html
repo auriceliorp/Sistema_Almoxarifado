@@ -1,20 +1,39 @@
 {% extends 'base_simplificada.html' %}
 
+{% block title %}Áreas (Locais){% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-  <h4 class="mb-4">Áreas (Locais)</h4>
+<div class="container py-4">
 
-  <!-- Formulário de busca -->
-  <form method="GET" class="d-flex mb-3">
-    <input type="text" name="busca" class="form-control me-2" placeholder="Buscar por descrição..." value="{{ request.args.get('busca', '') }}">
-    <button type="submit" class="btn btn-primary me-2"><i class="bi bi-search"></i> Buscar</button>
-    <a href="{{ url_for('area_ul_bp.novo_local') }}" class="btn btn-success"><i class="bi bi-plus-circle"></i> Nova Área</a>
-  </form>
+  <!-- Cabeçalho com botão Nova Área -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0 text-uppercase">Áreas (Locais)</h4>
+    <a href="{{ url_for('area_ul_bp.novo_local') }}" class="btn btn-success">
+      <i class="bi bi-plus-circle me-1"></i> Nova Área
+    </a>
+  </div>
 
-  <!-- Tabela -->
-  <div class="table-responsive">
-    <table class="table table-bordered table-hover">
-      <thead class="table-dark">
+  <!-- Card de filtros -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <form method="GET" class="row g-3 align-items-end">
+        <div class="col-md-10">
+          <label class="form-label">Buscar por descrição:</label>
+          <input type="text" name="busca" class="form-control" placeholder="Digite para buscar..." value="{{ request.args.get('busca', '') }}">
+        </div>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="bi bi-search"></i> Buscar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tabela responsiva -->
+  <div class="table-responsive" style="max-height: 70vh;">
+    <table class="table table-striped table-hover align-middle table-sm">
+      <thead class="table-dark sticky-top">
         <tr>
           <th>Descrição</th>
           <th style="width: 120px;" class="text-center">Ações</th>
@@ -25,11 +44,11 @@
         <tr>
           <td>{{ area.descricao }}</td>
           <td class="text-center">
-            <a href="{{ url_for('area_ul_bp.editar_local', id=area.id) }}" class="btn btn-sm btn-outline-primary">
+            <a href="{{ url_for('area_ul_bp.editar_local', id=area.id) }}" class="btn btn-sm btn-outline-primary" title="Editar">
               <i class="bi bi-pencil"></i>
             </a>
             <form method="POST" action="{{ url_for('area_ul_bp.excluir_local', id=area.id) }}" class="d-inline" onsubmit="return confirm('Deseja excluir esta área?');">
-              <button type="submit" class="btn btn-sm btn-outline-danger">
+              <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir">
                 <i class="bi bi-trash"></i>
               </button>
             </form>
@@ -37,7 +56,7 @@
         </tr>
         {% else %}
         <tr>
-          <td colspan="2" class="text-center">Nenhuma área encontrada.</td>
+          <td colspan="2" class="text-center text-muted">Nenhuma área encontrada.</td>
         </tr>
         {% endfor %}
       </tbody>

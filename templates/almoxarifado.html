@@ -5,54 +5,61 @@
 {% block content %}
 <style>
   .almox-container {
-    margin-top: 1rem;
+    margin-top: 2rem;
+  }
+
+  .section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #004b5b;
+    border-left: 4px solid #004b5b;
+    padding-left: 0.75rem;
   }
 
   .almox-card {
     padding: 1.5rem;
     text-align: center;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 500;
-    border-radius: 12px;
-    transition: all 0.2s ease-in-out;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border-radius: 16px;
+    transition: all 0.3s ease;
     text-decoration: none;
-    display: block;
     color: #004b5b;
-  }
-
-  .almox-card i {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-    display: block;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
   }
 
   .almox-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+    transform: translateY(-6px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
   }
 
-  /* Cores suaves por seção */
-  .bg-gerenciamento { background-color: #e8f4fd; }
-  .bg-movimentacao { background-color: #fff9e6; }
-  .bg-relatorio { background-color: #e9f6f2; }
+  .almox-card i {
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+    color: #006b7e;
+  }
 
-  h3, h5 { color: #004b5b; }
+  .bg-gerenciamento { background-color: #f0f9ff; }
+  .bg-movimentacao { background-color: #fff7e6; }
+  .bg-relatorio { background-color: #e8f8f2; }
 </style>
 
 <div class="container almox-container">
-  <h3 class="text-center fw-bold mb-2">Sistema de Gestão de Almoxarifado</h3>
+  <h3 class="text-center fw-bold mb-4 text-uppercase">Sistema de Gestão de Almoxarifado</h3>
 
-  <!-- Sessão: Gerenciamento -->
-  <h5 class="fw-semibold mb-3">Gerenciamento</h5>
-  <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4 mb-4">
-    <div class="col">
+  <!-- Gerenciamento -->
+  <div class="section-title">Gerenciamento</div>
+  <div class="row g-4 mb-4">
+    <div class="col-6 col-md-4 col-lg-3">
       <a href="{{ url_for('item_bp.lista_itens') }}" class="almox-card bg-gerenciamento">
         <i class="bi bi-box"></i>
         Itens
       </a>
     </div>
-    <div class="col">
+    <div class="col-6 col-md-4 col-lg-3">
       <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="almox-card bg-gerenciamento">
         <i class="bi bi-person-check"></i>
         Fornecedores
@@ -60,16 +67,16 @@
     </div>
   </div>
 
-  <!-- Sessão: Movimentações -->
-  <h5 class="fw-semibold mb-3">Movimentações</h5>
-  <div class="row row-cols-1 row-cols-md-2 g-4 mb-4">
-    <div class="col">
+  <!-- Movimentações -->
+  <div class="section-title">Movimentações</div>
+  <div class="row g-4 mb-4">
+    <div class="col-6 col-md-4 col-lg-3">
       <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="almox-card bg-movimentacao">
         <i class="bi bi-box-arrow-in-down"></i>
         Entrada de Materiais
       </a>
     </div>
-    <div class="col">
+    <div class="col-6 col-md-4 col-lg-3">
       <a href="{{ url_for('saida_bp.lista_saidas') }}" class="almox-card bg-movimentacao">
         <i class="bi bi-box-arrow-up"></i>
         Saída de Materiais
@@ -77,10 +84,10 @@
     </div>
   </div>
 
-  <!-- Sessão: Relatórios -->
-  <h5 class="fw-semibold mb-3">Relatórios</h5>
-  <div class="row row-cols-1 row-cols-md-2 g-4">
-    <div class="col">
+  <!-- Relatórios -->
+  <div class="section-title">Relatórios</div>
+  <div class="row g-4">
+    <div class="col-6 col-md-4 col-lg-3">
       <a href="{{ url_for('relatorio_bp.mapa_fechamento') }}" class="almox-card bg-relatorio">
         <i class="bi bi-bar-chart-line"></i>
         Mapa de Fechamento Mensal

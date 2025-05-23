@@ -3,10 +3,9 @@
 
 {% block content %}
 <div class="container py-4">
-  <h4 class="text-center mb-4">Editar Fornecedor</h4>
-
   <div class="card shadow-sm">
     <div class="card-body">
+      <h4 class="mb-4 text-center">Editar Fornecedor</h4>
       <form method="POST">
         <div class="row g-3">
 
@@ -15,21 +14,21 @@
             <label for="tipo" class="form-label">Tipo de Pessoa *</label>
             <select class="form-select" id="tipo" name="tipo" required>
               <option value="">Selecione...</option>
-              <option value="juridica" {% if fornecedor.tipo == 'juridica' %}selected{% endif %}>Pessoa Jurídica</option>
               <option value="fisica" {% if fornecedor.tipo == 'fisica' %}selected{% endif %}>Pessoa Física</option>
+              <option value="juridica" {% if fornecedor.tipo == 'juridica' %}selected{% endif %}>Pessoa Jurídica</option>
             </select>
           </div>
 
           <!-- Nome -->
           <div class="col-md-8">
             <label for="nome" class="form-label">Nome ou Razão Social *</label>
-            <input type="text" class="form-control" id="nome" name="nome" required value="{{ fornecedor.nome }}">
+            <input type="text" class="form-control" id="nome" name="nome" value="{{ fornecedor.nome }}" required>
           </div>
 
           <!-- CNPJ/CPF -->
           <div class="col-md-4">
             <label for="cnpj" class="form-label">CNPJ ou CPF *</label>
-            <input type="text" class="form-control" id="cnpj" name="cnpj" required value="{{ fornecedor.cnpj_cpf }}">
+            <input type="text" class="form-control" id="cnpj" name="cnpj" value="{{ fornecedor.cnpj_cpf }}" required>
           </div>
 
           <!-- Email e Telefones -->
@@ -101,24 +100,29 @@
 </div>
 
 <!-- Máscaras -->
-<script src="https://cdn.jsdelivr.net/npm/inputmask@5.0.8/dist/inputmask.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/inputmask@5.0.8/dist/bindings/inputmask.binding.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/inputmask@5.0.8/dist/jquery.inputmask.min.js"></script>
 <script>
-  window.addEventListener("DOMContentLoaded", () => {
-    Inputmask({ mask: '(99) 9999-9999' }).mask('#telefone');
-    Inputmask({ mask: '(99) 99999-9999' }).mask('#celular');
-    Inputmask({ mask: '99999-999' }).mask('#cep');
+  document.addEventListener("DOMContentLoaded", function () {
+    const tipoSelect = document.getElementById("tipo");
+    const cnpjInput = document.getElementById("cnpj");
 
-    function aplicarMascaraDocumento() {
-      const tipo = document.getElementById('tipo').value;
-      const campo = document.getElementById('cnpj');
-      Inputmask.remove(campo);
-      if (tipo === 'fisica') {
-        Inputmask({ mask: '999.999.999-99' }).mask(campo);
-      } else if (tipo === 'juridica') {
-        Inputmask({ mask: '99.999.999/9999-99' }).mask(campo);
+    const aplicarMascara = () => {
+      const tipo = tipoSelect.value;
+      if (tipo === "fisica") {
+        Inputmask("999.999.999-99").mask(cnpjInput);
+      } else if (tipo === "juridica") {
+        Inputmask("99.999.999/9999-99").mask(cnpjInput);
+      } else {
+        Inputmask.remove(cnpjInput);
       }
-    }
+    };
 
-    document.getElementById('tipo').addEventListener('change', aplicarMascaraDocumento);
-    aplicarMascaraDocumento
+    tipoSelect.addEventListener("change", aplicarMascara);
+    aplicarMascara();
+
+    Inputmask("(99) 9999-9999").mask("#telefone");
+    Inputmask("(99) 99999-9999").mask("#celular");
+    Inputmask("99999-999").mask("#cep");
+  });
+</script>
+{% endblock %}

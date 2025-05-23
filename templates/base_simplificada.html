@@ -1,4 +1,4 @@
-<!-- base_simplificada.html --><!DOCTYPE html><html lang="pt-BR">
+<!DOCTYPE html><html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <title>{% block title %}GestorSPS{% endblock %}</title>
@@ -92,8 +92,7 @@
       border-radius: 4px;
     }
   </style></head>
-<body>
-  <div class="topbar no-print">
+<body>  <div class="topbar no-print">
     <div class="d-flex align-items-center">
       <button class="navbar-toggler d-md-none me-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas">
         <i class="bi bi-list fs-3"></i>
@@ -132,14 +131,16 @@
   {% block content %}{% endblock %}
 </div>
 
-  </main>  <!-- Scripts -->  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>  <script>
+  </main>  <!-- Scripts -->  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>  <script src="https://cdn.jsdelivr.net/npm/inputmask@5.0.8/dist/inputmask.min.js"></script>  <script src="https://cdn.jsdelivr.net/npm/inputmask@5.0.8/dist/jquery.inputmask.min.js"></script>  <script>
     function carregarConteudo(url) {
       const container = document.getElementById('conteudo-dinamico');
       if (!container) return;
+
       container.innerHTML = `
         <div class="text-center p-5">
           <div class="spinner-border text-primary" role="status"></div>
         </div>`;
+
       fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
         .then(response => {
           if (!response.ok) throw new Error('Erro ao carregar conteúdo');
@@ -156,7 +157,5 @@
           console.error(error);
         });
     }
-  </script>{% block scripts %}{% endblock %}
-
-</body>
+  </script></body>
 </html>

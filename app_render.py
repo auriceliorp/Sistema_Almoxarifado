@@ -88,6 +88,8 @@ def create_app():
     from routes_auditoria import auditoria_bp   # <-- já existente
     from routes_painel import painel_bp         # <-- já existente
     from routes_patrimonio import patrimonio_bp # <-- ADICIONADO AGORA
+    from routes_links import links_bp
+
 
     # Registro dos blueprints
     app.register_blueprint(main)
@@ -106,6 +108,7 @@ def create_app():
     app.register_blueprint(auditoria_bp)
     app.register_blueprint(painel_bp)
     app.register_blueprint(patrimonio_bp)       # <-- NOVO REGISTRO
+    app.register_blueprint(links_bp)
 
     return app
 

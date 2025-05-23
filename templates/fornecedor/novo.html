@@ -13,8 +13,8 @@
         <label for="tipo" class="form-label">Tipo de Pessoa *</label>
         <select class="form-select" id="tipo" name="tipo" required>
           <option value="">Selecione...</option>
-          <option value="juridica">Pessoa Jurídica</option>
           <option value="fisica">Pessoa Física</option>
+          <option value="juridica">Pessoa Jurídica</option>
         </select>
       </div>
 
@@ -95,32 +95,29 @@
     </div>
   </form>
 </div>
+{% endblock %}
 
-<!-- Scripts -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.8/jquery.inputmask.min.js"></script>
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/inputmask@5.0.8/dist/jquery.inputmask.min.js"></script>
 <script>
   $(document).ready(function () {
+    function aplicarMascara() {
+      const tipo = $('#tipo').val();
+      const $campo = $('#cnpj');
+      $campo.inputmask('remove');
+      if (tipo === 'fisica') {
+        $campo.inputmask('999.999.999-99');
+      } else if (tipo === 'juridica') {
+        $campo.inputmask('99.999.999/9999-99');
+      }
+    }
+
     $('#telefone').inputmask('(99) 9999-9999');
     $('#celular').inputmask('(99) 99999-9999');
     $('#cep').inputmask('99999-999');
 
-    function aplicarMascaraCNPJCPF() {
-      const tipo = $('#tipo').val();
-      const $cnpj = $('#cnpj');
-
-      $cnpj.inputmask('remove');
-
-      if (tipo === 'fisica') {
-        $cnpj.inputmask('999.999.999-99');
-      } else if (tipo === 'juridica') {
-        $cnpj.inputmask('99.999.999/9999-99');
-      }
-    }
-
-    aplicarMascaraCNPJCPF();
-
-    $('#tipo').on('change', aplicarMascaraCNPJCPF);
+    aplicarMascara(); // Inicial
+    $('#tipo').on('change', aplicarMascara); // Ao mudar tipo
   });
 </script>
 {% endblock %}

@@ -79,8 +79,9 @@ class Estoque(db.Model):
 class Fornecedor(db.Model):
     __tablename__ = 'fornecedores'
     id = db.Column(db.Integer, primary_key=True)
+    tipo = db.Column(db.String(20), nullable=False)  # 'Pessoa Física' ou 'Pessoa Jurídica'
     nome = db.Column(db.String(120), nullable=False)
-    cnpj = db.Column(db.String(20), nullable=False)
+    cnpj_cpf = db.Column(db.String(20), nullable=False, unique=True)
     email = db.Column(db.String(120), nullable=True)
     telefone = db.Column(db.String(20), nullable=True)
     celular = db.Column(db.String(20), nullable=True)
@@ -93,8 +94,13 @@ class Fornecedor(db.Model):
     inscricao_estadual = db.Column(db.String(50), nullable=True)
     inscricao_municipal = db.Column(db.String(50), nullable=True)
 
+    __table_args__ = (
+        db.UniqueConstraint('nome', 'cnpj_cpf', name='uq_nome_cnpjcpf'),
+    )
+
     def __repr__(self):
-        return f'<Fornecedor {self.nome}>'
+        return f'<Fornecedor {self.nome} - {self.cnpj_cpf}>'
+
 
 # ------------------- LOCAL E UNIDADE LOCAL -------------------
 class Local(db.Model):

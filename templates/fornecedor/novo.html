@@ -11,7 +11,7 @@
       <!-- Tipo de Pessoa -->
       <div class="col-md-4">
         <label for="tipo_pessoa" class="form-label">Tipo de Pessoa *</label>
-        <select class="form-select" id="tipo_pessoa" name="tipo_pessoa" required>
+        <select class="form-select" id="tipo" name="tipo" required>
           <option value="">Selecione...</option>
           <option value="juridica">Pessoa Jurídica</option>
           <option value="fisica">Pessoa Física</option>
@@ -107,7 +107,7 @@
     $('#cep').mask('00000-000');
 
     // Alternar entre CNPJ/CPF com base no tipo
-    $('#tipo_pessoa').change(function () {
+    $('#tipo').change(function () {
       const tipo = $(this).val();
       if (tipo === 'fisica') {
         $('#cnpj').unmask().mask('000.000.000-00', {reverse: true});

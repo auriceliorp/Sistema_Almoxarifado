@@ -1,5 +1,4 @@
 {% extends 'base_simplificada.html' %}
-
 {% block title %}GestorSPS - Início{% endblock %}
 
 {% block content %}
@@ -10,91 +9,113 @@
 
   .home-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1.5rem;
   }
 
   .home-card {
-    border-radius: 1rem;
-    padding: 2rem 1rem;
-    text-align: center;
     background: #ffffff;
-    color: #004b5b;
-    border: 2px solid #e0e0e0;
+    border-radius: 1rem;
+    padding: 2rem 1rem 1rem;
+    text-align: center;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
     transition: all 0.2s ease-in-out;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
 
   .home-card i {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-    color: inherit;
+    font-size: 2.2rem;
+    color: #004b5b;
+    margin-bottom: 0.75rem;
+  }
+
+  .home-card h6 {
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #004b5b;
   }
 
   .home-card:hover {
     transform: translateY(-4px);
-    border-color: #99c;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
   }
 
   .home-card.disabled {
     pointer-events: none;
     background: #f0f0f0;
-    color: #aaa;
     border: 2px dashed #ccc;
+    color: #999;
   }
 
-  .home-card.bg-dashboard { background-color: #d6f5f5; }
-  .home-card.bg-links     { background-color: #d1f2e6; }
-  .home-card.bg-relatorios{ background-color: #e6dcff; }
+  .home-card.disabled i,
+  .home-card.disabled h6 {
+    color: #aaa;
+  }
+
+  .home-card .btn {
+    margin-top: auto;
+  }
+
+  .bg-dashboard { background-color: #d6f5f5; }
+  .bg-links     { background-color: #d1f2e6; }
+  .bg-relatorios{ background-color: #e6dcff; }
 </style>
 
 <div class="container home-section">
   <div class="home-grid">
 
     <!-- Almoxarifado -->
-    <a href="{{ url_for('main.almoxarifado') }}" class="home-card">
+    <div class="home-card">
       <i class="bi bi-archive"></i>
-      Almoxarifado
-    </a>
+      <h6>Almoxarifado</h6>
+      <a href="{{ url_for('main.almoxarifado') }}" class="btn btn-outline-primary w-100">Acessar</a>
+    </div>
 
-    <!-- Compras (agora ativo) -->
-    <a href="{{ url_for('painel_bp.lista_painel') }}" class="home-card">
+    <!-- Compras -->
+    <div class="home-card">
       <i class="bi bi-cart-check"></i>
-      Compras
-    </a>
+      <h6>Compras</h6>
+      <a href="{{ url_for('painel_bp.lista_painel') }}" class="btn btn-outline-primary w-100">Acessar</a>
+    </div>
 
     <!-- Patrimônio -->
-    <a href="{{ url_for('patrimonio_bp.listar_bens') }}" class="home-card">
+    <div class="home-card">
       <i class="bi bi-building"></i>
-      Patrimônio
-    </a>
+      <h6>Patrimônio</h6>
+      <a href="{{ url_for('patrimonio_bp.listar_bens') }}" class="btn btn-outline-primary w-100">Acessar</a>
+    </div>
 
-    <!-- Publicações (desabilitado) -->
+    <!-- Publicações (desativado) -->
     <div class="home-card disabled">
       <i class="bi bi-journal-text"></i>
-      Publicações
+      <h6>Publicações</h6>
+      <button class="btn btn-outline-secondary w-100" disabled>Acessar</button>
     </div>
 
     <!-- Dashboard -->
-    <a href="{{ url_for('dashboard_bp.dashboard') }}" class="home-card bg-dashboard">
+    <div class="home-card bg-dashboard">
       <i class="bi bi-graph-up"></i>
-      Dashboard
-    </a>
+      <h6>Dashboard</h6>
+      <a href="{{ url_for('dashboard_bp.dashboard') }}" class="btn btn-outline-primary w-100">Acessar</a>
+    </div>
 
     <!-- Links Úteis -->
-    <a href="https://linktr.ee/ctaa.sps" target="_blank" class="home-card bg-links">
+    <div class="home-card bg-links">
       <i class="bi bi-link-45deg"></i>
-      Links Úteis
-    </a>
+      <h6>Links Úteis</h6>
+      <a href="https://linktr.ee/ctaa.sps" target="_blank" class="btn btn-outline-primary w-100">Acessar</a>
+    </div>
 
     <!-- Relatórios -->
-    <a href="{{ url_for('main.relatorios') }}" class="home-card bg-relatorios">
+    <div class="home-card bg-relatorios">
       <i class="bi bi-file-earmark-bar-graph"></i>
-      Relatórios
-    </a>
+      <h6>Relatórios</h6>
+      <a href="{{ url_for('main.relatorios') }}" class="btn btn-outline-primary w-100">Acessar</a>
+    </div>
 
   </div>
 </div>
 {% endblock %}
-

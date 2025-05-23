@@ -96,33 +96,32 @@
   </form>
 </div>
 
-<!-- JQuery e Inputmask CDN -->
+<!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.8/inputmask.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.8/jquery.inputmask.min.js"></script>
-
 <script>
-  $(function () {
+  $(document).ready(function () {
+    // Máscaras padrão
     $('#telefone').inputmask('(99) 9999-9999');
     $('#celular').inputmask('(99) 99999-9999');
     $('#cep').inputmask('99999-999');
 
-    function atualizarMascara() {
+    function aplicarMascaraDocumento() {
       const tipo = $('#tipo').val();
-      const $campo = $('#cnpj');
-      $campo.inputmask('remove');
+      const $cnpj = $('#cnpj');
 
       if (tipo === 'fisica') {
-        $campo.inputmask('999.999.999-99');
+        $cnpj.inputmask('999.999.999-99');
       } else if (tipo === 'juridica') {
-        $campo.inputmask('99.999.999/9999-99');
+        $cnpj.inputmask('99.999.999/9999-99');
+      } else {
+        $cnpj.inputmask('remove');
       }
     }
 
-    // aplica ao carregar
-    atualizarMascara();
-
-    // aplica ao mudar tipo
-    $('#tipo').on('change', atualizarMascara);
+    $('#tipo').on('change', aplicarMascaraDocumento);
+    aplicarMascaraDocumento(); // aplica ao carregar
   });
 </script>
 {% endblock %}

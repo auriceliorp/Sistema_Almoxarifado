@@ -10,7 +10,7 @@
 
       <!-- Tipo de Pessoa -->
       <div class="col-md-4">
-        <label for="tipo_pessoa" class="form-label">Tipo de Pessoa *</label>
+        <label for="tipo" class="form-label">Tipo de Pessoa *</label>
         <select class="form-select" id="tipo" name="tipo" required>
           <option value="">Selecione...</option>
           <option value="juridica">Pessoa Jurídica</option>
@@ -101,29 +101,26 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
 <script>
   $(document).ready(function () {
-    // Aplica máscaras padrão
     $('#telefone').mask('(00) 0000-0000');
     $('#celular').mask('(00) 00000-0000');
     $('#cep').mask('00000-000');
 
     function aplicarMascaraDocumento() {
       const tipo = $('#tipo').val();
-      const $cnpj = $('#cnpj');
-
-      $cnpj.unmask();
+      const $doc = $('#cnpj');
+      $doc.unmask();
       if (tipo === 'fisica') {
-        $cnpj.mask('000.000.000-00', { reverse: true });
+        $doc.mask('000.000.000-00', { reverse: true });
       } else if (tipo === 'juridica') {
-        $cnpj.mask('00.000.000/0000-00', { reverse: true });
+        $doc.mask('00.000.000/0000-00', { reverse: true });
       }
     }
 
-    // Aplica a máscara ao carregar a página (útil para edição)
-    aplicarMascaraDocumento();
+    // Aplica máscara ao trocar tipo
+    $('#tipo').change(aplicarMascaraDocumento);
 
-    // Atualiza a máscara ao trocar o tipo
-    $('#tipo').on('change', aplicarMascaraDocumento);
+    // Aplica máscara no carregamento se já houver valor
+    $('#tipo').trigger('change');
   });
 </script>
-
 {% endblock %}

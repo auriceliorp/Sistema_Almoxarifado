@@ -5,119 +5,120 @@
 <div class="container py-4">
   <h4 class="text-center mb-4">Editar Fornecedor</h4>
 
-  <form method="POST">
-    <div class="row g-3">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <form method="POST">
+        <div class="row g-3">
 
-      <!-- Tipo de Pessoa -->
-      <div class="col-md-4">
-        <label for="tipo" class="form-label">Tipo de Pessoa *</label>
-        <select class="form-select" id="tipo" name="tipo" required>
-          <option value="">Selecione...</option>
-          <option value="fisica" {% if fornecedor.tipo == 'fisica' %}selected{% endif %}>Pessoa Física</option>
-          <option value="juridica" {% if fornecedor.tipo == 'juridica' %}selected{% endif %}>Pessoa Jurídica</option>
-        </select>
-      </div>
+          <!-- Tipo de Pessoa -->
+          <div class="col-md-4">
+            <label for="tipo" class="form-label">Tipo de Pessoa *</label>
+            <select class="form-select" id="tipo" name="tipo" required>
+              <option value="">Selecione...</option>
+              <option value="juridica" {% if fornecedor.tipo == 'juridica' %}selected{% endif %}>Pessoa Jurídica</option>
+              <option value="fisica" {% if fornecedor.tipo == 'fisica' %}selected{% endif %}>Pessoa Física</option>
+            </select>
+          </div>
 
-      <!-- Nome -->
-      <div class="col-md-8">
-        <label for="nome" class="form-label">Nome ou Razão Social *</label>
-        <input type="text" class="form-control" id="nome" name="nome" value="{{ fornecedor.nome }}" required>
-      </div>
+          <!-- Nome -->
+          <div class="col-md-8">
+            <label for="nome" class="form-label">Nome ou Razão Social *</label>
+            <input type="text" class="form-control" id="nome" name="nome" required value="{{ fornecedor.nome }}">
+          </div>
 
-      <!-- CNPJ/CPF -->
-      <div class="col-md-4">
-        <label for="cnpj" class="form-label">CNPJ ou CPF *</label>
-        <input type="text" class="form-control" id="cnpj" name="cnpj" value="{{ fornecedor.cnpj_cpf }}" required>
-      </div>
+          <!-- CNPJ/CPF -->
+          <div class="col-md-4">
+            <label for="cnpj" class="form-label">CNPJ ou CPF *</label>
+            <input type="text" class="form-control" id="cnpj" name="cnpj" required value="{{ fornecedor.cnpj_cpf }}">
+          </div>
 
-      <!-- Email e Telefones -->
-      <div class="col-md-4">
-        <label for="email" class="form-label">E-mail</label>
-        <input type="email" class="form-control" id="email" name="email" value="{{ fornecedor.email }}">
-      </div>
-      <div class="col-md-2">
-        <label for="telefone" class="form-label">Telefone</label>
-        <input type="text" class="form-control" id="telefone" name="telefone" value="{{ fornecedor.telefone }}">
-      </div>
-      <div class="col-md-2">
-        <label for="celular" class="form-label">Celular</label>
-        <input type="text" class="form-control" id="celular" name="celular" value="{{ fornecedor.celular }}">
-      </div>
+          <!-- Email e Telefones -->
+          <div class="col-md-4">
+            <label for="email" class="form-label">E-mail</label>
+            <input type="email" class="form-control" id="email" name="email" value="{{ fornecedor.email }}">
+          </div>
+          <div class="col-md-2">
+            <label for="telefone" class="form-label">Telefone</label>
+            <input type="text" class="form-control" id="telefone" name="telefone" value="{{ fornecedor.telefone }}">
+          </div>
+          <div class="col-md-2">
+            <label for="celular" class="form-label">Celular</label>
+            <input type="text" class="form-control" id="celular" name="celular" value="{{ fornecedor.celular }}">
+          </div>
 
-      <!-- Endereço -->
-      <div class="col-md-8">
-        <label for="endereco" class="form-label">Endereço</label>
-        <input type="text" class="form-control" id="endereco" name="endereco" value="{{ fornecedor.endereco }}">
-      </div>
-      <div class="col-md-2">
-        <label for="numero" class="form-label">Número</label>
-        <input type="text" class="form-control" id="numero" name="numero" value="{{ fornecedor.numero }}">
-      </div>
-      <div class="col-md-2">
-        <label for="complemento" class="form-label">Complemento</label>
-        <input type="text" class="form-control" id="complemento" name="complemento" value="{{ fornecedor.complemento }}">
-      </div>
+          <!-- Endereço -->
+          <div class="col-md-8">
+            <label for="endereco" class="form-label">Endereço</label>
+            <input type="text" class="form-control" id="endereco" name="endereco" value="{{ fornecedor.endereco }}">
+          </div>
+          <div class="col-md-2">
+            <label for="numero" class="form-label">Número</label>
+            <input type="text" class="form-control" id="numero" name="numero" value="{{ fornecedor.numero }}">
+          </div>
+          <div class="col-md-2">
+            <label for="complemento" class="form-label">Complemento</label>
+            <input type="text" class="form-control" id="complemento" name="complemento" value="{{ fornecedor.complemento }}">
+          </div>
 
-      <!-- CEP, Cidade, UF -->
-      <div class="col-md-3">
-        <label for="cep" class="form-label">CEP</label>
-        <input type="text" class="form-control" id="cep" name="cep" value="{{ fornecedor.cep }}">
-      </div>
-      <div class="col-md-5">
-        <label for="cidade" class="form-label">Cidade</label>
-        <input type="text" class="form-control" id="cidade" name="cidade" value="{{ fornecedor.cidade }}">
-      </div>
-      <div class="col-md-2">
-        <label for="uf" class="form-label">UF</label>
-        <select class="form-select" name="uf" id="uf">
-          <option value="">--</option>
-          {% for sigla in ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'] %}
-          <option value="{{ sigla }}" {% if fornecedor.uf == sigla %}selected{% endif %}>{{ sigla }}</option>
-          {% endfor %}
-        </select>
-      </div>
+          <!-- CEP, Cidade, UF -->
+          <div class="col-md-3">
+            <label for="cep" class="form-label">CEP</label>
+            <input type="text" class="form-control" id="cep" name="cep" value="{{ fornecedor.cep }}">
+          </div>
+          <div class="col-md-5">
+            <label for="cidade" class="form-label">Cidade</label>
+            <input type="text" class="form-control" id="cidade" name="cidade" value="{{ fornecedor.cidade }}">
+          </div>
+          <div class="col-md-2">
+            <label for="uf" class="form-label">UF</label>
+            <select class="form-select" name="uf" id="uf">
+              <option value="">--</option>
+              {% for sigla in ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'] %}
+              <option value="{{ sigla }}" {% if fornecedor.uf == sigla %}selected{% endif %}>{{ sigla }}</option>
+              {% endfor %}
+            </select>
+          </div>
 
-      <!-- Inscrições -->
-      <div class="col-md-6">
-        <label for="inscricao_estadual" class="form-label">Inscrição Estadual</label>
-        <input type="text" class="form-control" id="inscricao_estadual" name="inscricao_estadual" value="{{ fornecedor.inscricao_estadual }}">
-      </div>
-      <div class="col-md-6">
-        <label for="inscricao_municipal" class="form-label">Inscrição Municipal</label>
-        <input type="text" class="form-control" id="inscricao_municipal" name="inscricao_municipal" value="{{ fornecedor.inscricao_municipal }}">
-      </div>
+          <!-- Inscrições -->
+          <div class="col-md-6">
+            <label for="inscricao_estadual" class="form-label">Inscrição Estadual</label>
+            <input type="text" class="form-control" id="inscricao_estadual" name="inscricao_estadual" value="{{ fornecedor.inscricao_estadual }}">
+          </div>
+          <div class="col-md-6">
+            <label for="inscricao_municipal" class="form-label">Inscrição Municipal</label>
+            <input type="text" class="form-control" id="inscricao_municipal" name="inscricao_municipal" value="{{ fornecedor.inscricao_municipal }}">
+          </div>
+        </div>
+
+        <!-- Botões -->
+        <div class="mt-4 d-flex justify-content-end gap-2">
+          <button type="submit" class="btn btn-success">Salvar</button>
+          <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="btn btn-secondary">Cancelar</a>
+        </div>
+      </form>
     </div>
-
-    <!-- Botões -->
-    <div class="mt-4 d-flex justify-content-end gap-2">
-      <button type="submit" class="btn btn-primary">Atualizar</button>
-      <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="btn btn-secondary">Cancelar</a>
-    </div>
-  </form>
+  </div>
 </div>
-{% endblock %}
 
-{% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/inputmask@5.0.8/dist/jquery.inputmask.min.js"></script>
+<!-- Máscaras -->
+<script src="https://cdn.jsdelivr.net/npm/inputmask@5.0.8/dist/inputmask.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/inputmask@5.0.8/dist/bindings/inputmask.binding.js"></script>
 <script>
-  $(document).ready(function () {
-    function aplicarMascara() {
-      const tipo = $('#tipo').val();
-      const $campo = $('#cnpj');
-      $campo.inputmask('remove');
+  window.addEventListener("DOMContentLoaded", () => {
+    Inputmask({ mask: '(99) 9999-9999' }).mask('#telefone');
+    Inputmask({ mask: '(99) 99999-9999' }).mask('#celular');
+    Inputmask({ mask: '99999-999' }).mask('#cep');
+
+    function aplicarMascaraDocumento() {
+      const tipo = document.getElementById('tipo').value;
+      const campo = document.getElementById('cnpj');
+      Inputmask.remove(campo);
       if (tipo === 'fisica') {
-        $campo.inputmask('999.999.999-99');
+        Inputmask({ mask: '999.999.999-99' }).mask(campo);
       } else if (tipo === 'juridica') {
-        $campo.inputmask('99.999.999/9999-99');
+        Inputmask({ mask: '99.999.999/9999-99' }).mask(campo);
       }
     }
 
-    $('#telefone').inputmask('(99) 9999-9999');
-    $('#celular').inputmask('(99) 99999-9999');
-    $('#cep').inputmask('99999-999');
-
-    aplicarMascara(); // Inicial
-    $('#tipo').on('change', aplicarMascara); // Ao mudar tipo
-  });
-</script>
-{% endblock %}
+    document.getElementById('tipo').addEventListener('change', aplicarMascaraDocumento);
+    aplicarMascaraDocumento

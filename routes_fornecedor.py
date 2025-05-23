@@ -32,7 +32,7 @@ def lista_fornecedor():
 
     fornecedores = query.order_by(Fornecedor.nome.asc()).paginate(page=page, per_page=10)
 
-    return render_template('lista_fornecedor.html', fornecedores=fornecedores, filtro=filtro, busca=busca)
+    return render_template('fornecedor/lista.html', fornecedores=fornecedores, filtro=filtro, busca=busca)
 
 
 # -------------------- CADASTRAR NOVO FORNECEDOR -------------------- #
@@ -41,7 +41,6 @@ def lista_fornecedor():
 def novo_fornecedor():
     if request.method == 'POST':
         try:
-            # Coleta os dados do formulário
             nome = request.form.get('nome', '').strip()
             cnpj = request.form.get('cnpj', '').strip()
             email = request.form.get('email', '').strip()
@@ -56,24 +55,23 @@ def novo_fornecedor():
             inscricao_estadual = request.form.get('inscricao_estadual', '').strip()
             inscricao_municipal = request.form.get('inscricao_municipal', '').strip()
 
-            # Debug: imprime os dados recebidos
-            print("[DEBUG] Dados recebidos para novo fornecedor:")
-            print(f"{nome=}, {cnpj=}, {email=}, {telefone=}, {celular=}")
-            print(f"{endereco=}, {numero=}, {complemento=}, {cep=}, {cidade=}, {uf=}")
-            print(f"{inscricao_estadual=}, {inscricao_municipal=}")
-
-            # Validação dos campos obrigatórios
             if not nome or not cnpj:
                 flash('Nome e CNPJ são obrigatórios.', 'danger')
                 return redirect(url_for('fornecedor_bp.novo_fornecedor'))
 
-            # Validação simples de CNPJ (formato/tamanho)
             cnpj_limpo = re.sub(r'\D', '', cnpj)
             if len(cnpj_limpo) != 14:
                 flash('CNPJ inválido.', 'danger')
                 return redirect(url_for('fornecedor_bp.novo_fornecedor'))
 
-            # Cria o fornecedor
+            # Verifica duplicidade por nome ou CNPJ
+            duplicado = Fornecedor.query.filter(
+                (Fornecedor.nome == nome) | (Fornecedor.cnpj == cnpj)
+            ).first()
+            if duplicado:
+                flash('Fornecedor já cadastrado com mesmo nome ou CNPJ.', 'warning')
+                return redirect(url_for('fornecedor_bp.novo_fornecedor'))
+
             fornecedor = Fornecedor(
                 nome=nome,
                 cnpj=cnpj,
@@ -101,7 +99,7 @@ def novo_fornecedor():
             print(f'[ERRO AO CADASTRAR FORNECEDOR] {e}')
             return redirect(url_for('fornecedor_bp.novo_fornecedor'))
 
-    return render_template('novo_fornecedor.html')
+    return render_template('fornecedor/novo.html')
 
 
 # -------------------- EDITAR FORNECEDOR -------------------- #
@@ -129,7 +127,7 @@ def editar_fornecedor(id):
         flash('Fornecedor atualizado com sucesso!', 'success')
         return redirect(url_for('fornecedor_bp.lista_fornecedor'))
 
-    return render_template('editar_fornecedor.html', fornecedor=fornecedor)
+    return render_template('fornecedor/editar.html', fornecedor=fornecedor)
 
 
 # -------------------- EXCLUIR FORNECEDOR -------------------- #

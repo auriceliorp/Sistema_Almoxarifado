@@ -31,7 +31,6 @@ def lista_fornecedor():
             query = query.filter(Fornecedor.uf.ilike(f'%{busca}%'))
 
     fornecedores = query.order_by(Fornecedor.nome.asc()).paginate(page=page, per_page=10)
-
     return render_template('fornecedor/lista.html', fornecedores=fornecedores, filtro=filtro, busca=busca)
 
 # -------------------- CADASTRAR NOVO FORNECEDOR -------------------- #
@@ -40,6 +39,7 @@ def lista_fornecedor():
 def novo_fornecedor():
     if request.method == 'POST':
         try:
+            tipo = request.form.get('tipo')
             nome = request.form.get('nome', '').strip()
             cnpj_cpf = request.form.get('cnpj', '').strip()
             email = request.form.get('email', '').strip()
@@ -54,8 +54,8 @@ def novo_fornecedor():
             inscricao_estadual = request.form.get('inscricao_estadual', '').strip()
             inscricao_municipal = request.form.get('inscricao_municipal', '').strip()
 
-            if not nome or not cnpj_cpf:
-                flash('Nome e CPF/CNPJ são obrigatórios.', 'danger')
+            if not tipo or not nome or not cnpj_cpf:
+                flash('Tipo, Nome e CPF/CNPJ são obrigatórios.', 'danger')
                 return redirect(url_for('fornecedor_bp.novo_fornecedor'))
 
             cnpj_cpf_limpo = re.sub(r'\D', '', cnpj_cpf)
@@ -72,6 +72,7 @@ def novo_fornecedor():
                 return redirect(url_for('fornecedor_bp.novo_fornecedor'))
 
             fornecedor = Fornecedor(
+                tipo=tipo,
                 nome=nome,
                 cnpj_cpf=cnpj_cpf,
                 email=email,
@@ -107,6 +108,7 @@ def editar_fornecedor(id):
     fornecedor = Fornecedor.query.get_or_404(id)
 
     if request.method == 'POST':
+        fornecedor.tipo = request.form.get('tipo')
         fornecedor.nome = request.form.get('nome', '').strip()
         fornecedor.cnpj_cpf = request.form.get('cnpj', '').strip()
         fornecedor.email = request.form.get('email', '').strip()

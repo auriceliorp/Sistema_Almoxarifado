@@ -96,8 +96,7 @@
   </form>
 </div>
 
-<!-- Máscaras -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Máscaras (jQuery já está no base_simplificada) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
 <script>
   $(document).ready(function () {
@@ -107,20 +106,18 @@
 
     function aplicarMascaraDocumento() {
       const tipo = $('#tipo').val();
-      const $doc = $('#cnpj');
-      $doc.unmask();
+      const $campo = $('#cnpj');
+      $campo.unmask();
+
       if (tipo === 'fisica') {
-        $doc.mask('000.000.000-00', { reverse: true });
+        $campo.mask('000.000.000-00', { reverse: true });
       } else if (tipo === 'juridica') {
-        $doc.mask('00.000.000/0000-00', { reverse: true });
+        $campo.mask('00.000.000/0000-00', { reverse: true });
       }
     }
 
-    // Aplica máscara ao trocar tipo
+    aplicarMascaraDocumento();
     $('#tipo').change(aplicarMascaraDocumento);
-
-    // Aplica máscara no carregamento se já houver valor
-    $('#tipo').trigger('change');
   });
 </script>
 {% endblock %}

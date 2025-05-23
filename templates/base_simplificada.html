@@ -9,7 +9,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
-    <style>
+  <style>
     body {
       margin: 0;
       background-color: #f8f9fa;
@@ -41,50 +41,13 @@
       color: white;
     }
 
-    #sidebarMenu {
-      background-color: #004b5b;
-      color: white;
-      position: fixed;
-      top: 56px;
-      left: 0;
-      width: 250px;
-      height: 100%;
-      padding-top: 1rem;
-      overflow-y: auto;
-      transition: transform 0.3s ease;
-      z-index: 1040;
-    }
-
-    #sidebarMenu a {
-      color: white;
-      text-decoration: none;
-      display: block;
-      padding: 8px 1rem;
-    }
-
-    #sidebarMenu a:hover {
-      background-color: #035f74;
-    }
-
-    #sidebarMenu.collapsed {
-      transform: translateX(-100%);
-    }
-
     main {
-      margin-left: 250px;
       padding: 1rem;
       margin-top: 56px;
+      margin-left: 250px;
     }
 
     @media (max-width: 768px) {
-      #sidebarMenu {
-        transform: translateX(-100%);
-      }
-
-      #sidebarMenu.show {
-        transform: translateX(0);
-      }
-
       main {
         margin-left: 0;
       }
@@ -123,7 +86,7 @@
   <!-- Topbar -->
   <div class="topbar no-print">
     <div class="d-flex align-items-center">
-      <button id="toggleSidebar" class="navbar-toggler d-md-none me-3">
+      <button class="navbar-toggler d-md-none me-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas">
         <i class="bi bi-list fs-3"></i>
       </button>
       <a href="{{ url_for('main.home') }}" class="btn btn-sm btn-outline-light d-flex align-items-center">
@@ -136,7 +99,16 @@
     </a>
   </div>
 
-  {% include 'partials/sidebar.html' %}
+  <!-- Sidebar com Offcanvas -->
+  <div class="offcanvas offcanvas-start text-bg-dark" tabindex="-1" id="sidebarOffcanvas" style="width: 250px;">
+    <div class="offcanvas-header border-bottom">
+      <h5 class="offcanvas-title">GestorSPS</h5>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body p-0">
+      {% include 'partials/sidebar.html' %}
+    </div>
+  </div>
 
   <main>
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -162,12 +134,6 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    // Alterna visibilidade da sidebar no mobile
-    document.getElementById('toggleSidebar').addEventListener('click', function () {
-      const sidebar = document.getElementById('sidebarMenu');
-      sidebar.classList.toggle('show');
-    });
-
     // Carregamento dinâmico de conteúdo (se usado)
     function carregarConteudo(url) {
       const container = document.getElementById('conteudo-dinamico');
@@ -197,4 +163,3 @@
   </script>
 </body>
 </html>
-

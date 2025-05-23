@@ -20,7 +20,7 @@
           <label for="tipo_busca" class="form-label">Buscar por:</label>
           <select name="filtro" id="tipo_busca" class="form-select">
             <option value="nome" {% if filtro == 'nome' %}selected{% endif %}>Nome</option>
-            <option value="cnpj" {% if filtro == 'cnpj' %}selected{% endif %}>CNPJ</option>
+            <option value="cnpj" {% if filtro == 'cnpj' %}selected{% endif %}>CPF/CNPJ</option>
             <option value="cidade" {% if filtro == 'cidade' %}selected{% endif %}>Cidade</option>
             <option value="uf" {% if filtro == 'uf' %}selected{% endif %}>UF</option>
           </select>
@@ -44,7 +44,7 @@
       <thead class="table-dark sticky-top">
         <tr>
           <th>Nome</th>
-          <th>CNPJ</th>
+          <th>CPF/CNPJ</th>
           <th>Email</th>
           <th>Telefone</th>
           <th>Celular</th>
@@ -61,7 +61,7 @@
         {% for fornecedor in fornecedores.items %}
         <tr>
           <td>{{ fornecedor.nome }}</td>
-          <td>{{ fornecedor.cnpj }}</td>
+          <td>{{ fornecedor.cnpj_cpf }}</td>
           <td>{{ fornecedor.email or '-' }}</td>
           <td>{{ fornecedor.telefone or '-' }}</td>
           <td>{{ fornecedor.celular or '-' }}</td>
@@ -133,3 +133,4 @@
 
 </div>
 {% endblock %}
+

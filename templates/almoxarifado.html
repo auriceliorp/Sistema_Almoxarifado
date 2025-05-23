@@ -4,95 +4,106 @@
 
 {% block content %}
 <style>
-  .almox-container {
-    margin-top: 2rem;
-  }
-
-  .section-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: #004b5b;
-    border-left: 4px solid #004b5b;
-    padding-left: 0.75rem;
-  }
-
-  .almox-card {
+  .dashboard-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     padding: 1.5rem;
     text-align: center;
-    font-size: 1rem;
-    font-weight: 500;
-    border-radius: 16px;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    color: #004b5b;
-    background: #ffffff;
-    border: 1px solid #e0e0e0;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease-in-out;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
 
-  .almox-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  .dashboard-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   }
 
-  .almox-card i {
+  .dashboard-card i {
     font-size: 2.2rem;
-    margin-bottom: 0.5rem;
-    color: #006b7e;
+    color: #004b5b;
+    margin-bottom: 1rem;
   }
 
-  .bg-gerenciamento { background-color: #f0f9ff; }
-  .bg-movimentacao { background-color: #fff7e6; }
-  .bg-relatorio { background-color: #e8f8f2; }
+  .dashboard-card h6 {
+    font-weight: 600;
+    color: #004b5b;
+    margin-bottom: 1rem;
+  }
+
+  .dashboard-card .btn {
+    margin-top: auto;
+  }
+
+  .card-grid {
+    margin-top: 2rem;
+  }
 </style>
 
-<div class="container almox-container">
-  <h3 class="text-center fw-bold mb-4 text-uppercase">Sistema de Gestão de Almoxarifado</h3>
+<div class="container py-4">
+  <h4 class="text-center fw-bold text-uppercase">Almoxarifado</h4>
 
-  <!-- Gerenciamento -->
-  <div class="section-title">Gerenciamento</div>
-  <div class="row g-4 mb-4">
-    <div class="col-6 col-md-4 col-lg-3">
-      <a href="{{ url_for('item_bp.lista_itens') }}" class="almox-card bg-gerenciamento">
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 card-grid">
+
+    <!-- Itens -->
+    <div class="col">
+      <div class="dashboard-card">
         <i class="bi bi-box"></i>
-        Itens
-      </a>
+        <h6>Itens</h6>
+        <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-outline-primary w-100">
+          Acessar
+        </a>
+      </div>
     </div>
-    <div class="col-6 col-md-4 col-lg-3">
-      <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="almox-card bg-gerenciamento">
+
+    <!-- Fornecedores -->
+    <div class="col">
+      <div class="dashboard-card">
         <i class="bi bi-person-check"></i>
-        Fornecedores
-      </a>
+        <h6>Fornecedores</h6>
+        <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="btn btn-outline-primary w-100">
+          Acessar
+        </a>
+      </div>
     </div>
-  </div>
 
-  <!-- Movimentações -->
-  <div class="section-title">Movimentações</div>
-  <div class="row g-4 mb-4">
-    <div class="col-6 col-md-4 col-lg-3">
-      <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="almox-card bg-movimentacao">
+    <!-- Entradas -->
+    <div class="col">
+      <div class="dashboard-card">
         <i class="bi bi-box-arrow-in-down"></i>
-        Entrada de Materiais
-      </a>
+        <h6>Entrada de Materiais</h6>
+        <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="btn btn-outline-primary w-100">
+          Acessar
+        </a>
+      </div>
     </div>
-    <div class="col-6 col-md-4 col-lg-3">
-      <a href="{{ url_for('saida_bp.lista_saidas') }}" class="almox-card bg-movimentacao">
-        <i class="bi bi-box-arrow-up"></i>
-        Saída de Materiais
-      </a>
-    </div>
-  </div>
 
-  <!-- Relatórios -->
-  <div class="section-title">Relatórios</div>
-  <div class="row g-4">
-    <div class="col-6 col-md-4 col-lg-3">
-      <a href="{{ url_for('relatorio_bp.mapa_fechamento') }}" class="almox-card bg-relatorio">
-        <i class="bi bi-bar-chart-line"></i>
-        Mapa de Fechamento Mensal
-      </a>
+    <!-- Saídas -->
+    <div class="col">
+      <div class="dashboard-card">
+        <i class="bi bi-box-arrow-up"></i>
+        <h6>Saída de Materiais</h6>
+        <a href="{{ url_for('saida_bp.lista_saidas') }}" class="btn btn-outline-primary w-100">
+          Acessar
+        </a>
+      </div>
     </div>
+
+    <!-- Relatório -->
+    <div class="col">
+      <div class="dashboard-card">
+        <i class="bi bi-bar-chart-line"></i>
+        <h6>Mapa de Fechamento</h6>
+        <a href="{{ url_for('relatorio_bp.mapa_fechamento') }}" class="btn btn-outline-primary w-100">
+          Acessar
+        </a>
+      </div>
+    </div>
+
   </div>
 </div>
 {% endblock %}
+

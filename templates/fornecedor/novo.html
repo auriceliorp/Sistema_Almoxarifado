@@ -96,28 +96,30 @@
   </form>
 </div>
 
-<!-- Máscaras (jQuery já está no base_simplificada) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+<!-- Inputmask CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.8/inputmask.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.8/jquery.inputmask.min.js"></script>
+
 <script>
   $(document).ready(function () {
-    $('#telefone').mask('(00) 0000-0000');
-    $('#celular').mask('(00) 00000-0000');
-    $('#cep').mask('00000-000');
+    $('#telefone').inputmask('(99) 9999-9999');
+    $('#celular').inputmask('(99) 99999-9999');
+    $('#cep').inputmask('99999-999');
 
     function aplicarMascaraDocumento() {
       const tipo = $('#tipo').val();
-      const $campo = $('#cnpj');
-      $campo.unmask();
+      const $doc = $('#cnpj');
+      $doc.inputmask('remove');
 
       if (tipo === 'fisica') {
-        $campo.mask('000.000.000-00', { reverse: true });
+        $doc.inputmask('999.999.999-99');
       } else if (tipo === 'juridica') {
-        $campo.mask('00.000.000/0000-00', { reverse: true });
+        $doc.inputmask('99.999.999/9999-99');
       }
     }
 
-    aplicarMascaraDocumento();
-    $('#tipo').change(aplicarMascaraDocumento);
+    aplicarMascaraDocumento(); // ao carregar
+    $('#tipo').on('change', aplicarMascaraDocumento);
   });
 </script>
 {% endblock %}

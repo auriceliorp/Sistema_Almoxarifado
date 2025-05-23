@@ -1,0 +1,79 @@
+{% extends 'base_simplificada.html' %}
+{% block title %}Links Úteis{% endblock %}
+
+{% block content %}
+<style>
+  .links-section {
+    padding: 2rem 0;
+  }
+
+  .links-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .link-card {
+    background-color: #ffffff;
+    border-radius: 1rem;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    transition: all 0.2s ease-in-out;
+  }
+
+  .link-card i {
+    font-size: 2rem;
+    color: #004b5b;
+    margin-bottom: 0.75rem;
+  }
+
+  .link-card h6 {
+    font-weight: 600;
+    color: #004b5b;
+    margin-bottom: 1rem;
+  }
+
+  .link-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  .link-card .btn {
+    margin-top: 1rem;
+  }
+</style>
+
+<div class="container links-section">
+  <h3 class="text-center mb-4 fw-bold text-primary">Links Úteis</h3>
+
+  <div class="links-grid">
+
+    <div class="link-card">
+      <i class="bi bi-youtube"></i>
+      <h6>YouTube - Ao Vivo</h6>
+      <a href="https://www.youtube.com/@IGoliveAgain/live" target="_blank" class="btn btn-outline-primary w-100">Acessar</a>
+    </div>
+
+    <div class="link-card">
+      <i class="bi bi-facebook"></i>
+      <h6>Facebook</h6>
+      <a href="https://www.facebook.com/goliveagain/" target="_blank" class="btn btn-outline-primary w-100">Acessar</a>
+    </div>
+
+    <div class="link-card">
+      <i class="bi bi-instagram"></i>
+      <h6>Instagram</h6>
+      <a href="https://www.instagram.com/goliveagain/" target="_blank" class="btn btn-outline-primary w-100">Acessar</a>
+    </div>
+
+    <div class="link-card">
+      <i class="bi bi-browser-chrome"></i>
+      <h6>Site Oficial</h6>
+      <a href="https://goliveagain.com.br/" target="_blank" class="btn btn-outline-primary w-100">Acessar</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

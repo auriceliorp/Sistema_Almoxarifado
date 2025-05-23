@@ -24,7 +24,7 @@ def lista_fornecedor():
         if filtro == 'nome':
             query = query.filter(Fornecedor.nome.ilike(f'%{busca}%'))
         elif filtro == 'cnpj':
-            query = query.filter(Fornecedor.cnpj.ilike(f'%{busca}%'))
+            query = query.filter(Fornecedor.cnpj_cpf.ilike(f'%{busca}%'))
         elif filtro == 'cidade':
             query = query.filter(Fornecedor.cidade.ilike(f'%{busca}%'))
         elif filtro == 'uf':
@@ -34,7 +34,6 @@ def lista_fornecedor():
 
     return render_template('fornecedor/lista.html', fornecedores=fornecedores, filtro=filtro, busca=busca)
 
-
 # -------------------- CADASTRAR NOVO FORNECEDOR -------------------- #
 @fornecedor_bp.route('/novo', methods=['GET', 'POST'])
 @login_required
@@ -42,7 +41,7 @@ def novo_fornecedor():
     if request.method == 'POST':
         try:
             nome = request.form.get('nome', '').strip()
-            cnpj = request.form.get('cnpj', '').strip()
+            cnpj_cpf = request.form.get('cnpj', '').strip()
             email = request.form.get('email', '').strip()
             telefone = request.form.get('telefone', '').strip()
             celular = request.form.get('celular', '').strip()
@@ -55,26 +54,26 @@ def novo_fornecedor():
             inscricao_estadual = request.form.get('inscricao_estadual', '').strip()
             inscricao_municipal = request.form.get('inscricao_municipal', '').strip()
 
-            if not nome or not cnpj:
-                flash('Nome e CNPJ são obrigatórios.', 'danger')
+            if not nome or not cnpj_cpf:
+                flash('Nome e CPF/CNPJ são obrigatórios.', 'danger')
                 return redirect(url_for('fornecedor_bp.novo_fornecedor'))
 
-            cnpj_limpo = re.sub(r'\D', '', cnpj)
-            if len(cnpj_limpo) != 14:
-                flash('CNPJ inválido.', 'danger')
+            cnpj_cpf_limpo = re.sub(r'\D', '', cnpj_cpf)
+            if len(cnpj_cpf_limpo) not in [11, 14]:
+                flash('CPF/CNPJ inválido.', 'danger')
                 return redirect(url_for('fornecedor_bp.novo_fornecedor'))
 
-            # Verifica duplicidade por nome ou CNPJ
+            # Verifica duplicidade por nome ou CPF/CNPJ
             duplicado = Fornecedor.query.filter(
-                (Fornecedor.nome == nome) | (Fornecedor.cnpj == cnpj)
+                (Fornecedor.nome == nome) | (Fornecedor.cnpj_cpf == cnpj_cpf)
             ).first()
             if duplicado:
-                flash('Fornecedor já cadastrado com mesmo nome ou CNPJ.', 'warning')
+                flash('Fornecedor já cadastrado com mesmo nome ou CPF/CNPJ.', 'warning')
                 return redirect(url_for('fornecedor_bp.novo_fornecedor'))
 
             fornecedor = Fornecedor(
                 nome=nome,
-                cnpj=cnpj,
+                cnpj_cpf=cnpj_cpf,
                 email=email,
                 telefone=telefone,
                 celular=celular,
@@ -101,7 +100,6 @@ def novo_fornecedor():
 
     return render_template('fornecedor/novo.html')
 
-
 # -------------------- EDITAR FORNECEDOR -------------------- #
 @fornecedor_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -110,7 +108,7 @@ def editar_fornecedor(id):
 
     if request.method == 'POST':
         fornecedor.nome = request.form.get('nome', '').strip()
-        fornecedor.cnpj = request.form.get('cnpj', '').strip()
+        fornecedor.cnpj_cpf = request.form.get('cnpj', '').strip()
         fornecedor.email = request.form.get('email', '').strip()
         fornecedor.telefone = request.form.get('telefone', '').strip()
         fornecedor.celular = request.form.get('celular', '').strip()
@@ -128,7 +126,6 @@ def editar_fornecedor(id):
         return redirect(url_for('fornecedor_bp.lista_fornecedor'))
 
     return render_template('fornecedor/editar.html', fornecedor=fornecedor)
-
 
 # -------------------- EXCLUIR FORNECEDOR -------------------- #
 @fornecedor_bp.route('/excluir/<int:id>', methods=['POST'])

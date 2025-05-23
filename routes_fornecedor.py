@@ -31,7 +31,9 @@ def lista_fornecedor():
             query = query.filter(Fornecedor.uf.ilike(f'%{busca}%'))
 
     fornecedores = query.order_by(Fornecedor.nome.asc()).paginate(page=page, per_page=10)
+
     return render_template('fornecedor/lista.html', fornecedores=fornecedores, filtro=filtro, busca=busca)
+
 
 # -------------------- CADASTRAR NOVO FORNECEDOR -------------------- #
 @fornecedor_bp.route('/novo', methods=['GET', 'POST'])
@@ -39,7 +41,7 @@ def lista_fornecedor():
 def novo_fornecedor():
     if request.method == 'POST':
         try:
-            tipo = request.form.get('tipo')
+            tipo = request.form.get('tipo', '').strip()
             nome = request.form.get('nome', '').strip()
             cnpj_cpf = request.form.get('cnpj', '').strip()
             email = request.form.get('email', '').strip()
@@ -54,6 +56,7 @@ def novo_fornecedor():
             inscricao_estadual = request.form.get('inscricao_estadual', '').strip()
             inscricao_municipal = request.form.get('inscricao_municipal', '').strip()
 
+            # Validação
             if not tipo or not nome or not cnpj_cpf:
                 flash('Tipo, Nome e CPF/CNPJ são obrigatórios.', 'danger')
                 return redirect(url_for('fornecedor_bp.novo_fornecedor'))
@@ -63,7 +66,7 @@ def novo_fornecedor():
                 flash('CPF/CNPJ inválido.', 'danger')
                 return redirect(url_for('fornecedor_bp.novo_fornecedor'))
 
-            # Verifica duplicidade por nome ou CPF/CNPJ
+            # Verifica duplicidade
             duplicado = Fornecedor.query.filter(
                 (Fornecedor.nome == nome) | (Fornecedor.cnpj_cpf == cnpj_cpf)
             ).first()
@@ -101,6 +104,7 @@ def novo_fornecedor():
 
     return render_template('fornecedor/novo.html')
 
+
 # -------------------- EDITAR FORNECEDOR -------------------- #
 @fornecedor_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -108,7 +112,7 @@ def editar_fornecedor(id):
     fornecedor = Fornecedor.query.get_or_404(id)
 
     if request.method == 'POST':
-        fornecedor.tipo = request.form.get('tipo')
+        fornecedor.tipo = request.form.get('tipo', '').strip()
         fornecedor.nome = request.form.get('nome', '').strip()
         fornecedor.cnpj_cpf = request.form.get('cnpj', '').strip()
         fornecedor.email = request.form.get('email', '').strip()
@@ -129,6 +133,7 @@ def editar_fornecedor(id):
 
     return render_template('fornecedor/editar.html', fornecedor=fornecedor)
 
+
 # -------------------- EXCLUIR FORNECEDOR -------------------- #
 @fornecedor_bp.route('/excluir/<int:id>', methods=['POST'])
 @login_required
@@ -138,3 +143,4 @@ def excluir_fornecedor(id):
     db.session.commit()
     flash('Fornecedor excluído com sucesso!', 'success')
     return redirect(url_for('fornecedor_bp.lista_fornecedor'))
+

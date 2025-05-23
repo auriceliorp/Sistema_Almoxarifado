@@ -101,20 +101,29 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
 <script>
   $(document).ready(function () {
-    $('#cnpj').mask('00.000.000/0000-00', {reverse: true});
+    // Aplica máscaras padrão
     $('#telefone').mask('(00) 0000-0000');
     $('#celular').mask('(00) 00000-0000');
     $('#cep').mask('00000-000');
 
-    // Alternar entre CNPJ/CPF com base no tipo
-    $('#tipo').change(function () {
-      const tipo = $(this).val();
+    function aplicarMascaraDocumento() {
+      const tipo = $('#tipo').val();
+      const $cnpj = $('#cnpj');
+
+      $cnpj.unmask();
       if (tipo === 'fisica') {
-        $('#cnpj').unmask().mask('000.000.000-00', {reverse: true});
-      } else {
-        $('#cnpj').unmask().mask('00.000.000/0000-00', {reverse: true});
+        $cnpj.mask('000.000.000-00', { reverse: true });
+      } else if (tipo === 'juridica') {
+        $cnpj.mask('00.000.000/0000-00', { reverse: true });
       }
-    });
+    }
+
+    // Aplica a máscara ao carregar a página (útil para edição)
+    aplicarMascaraDocumento();
+
+    // Atualiza a máscara ao trocar o tipo
+    $('#tipo').on('change', aplicarMascaraDocumento);
   });
 </script>
+
 {% endblock %}

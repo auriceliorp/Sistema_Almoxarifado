@@ -160,6 +160,22 @@
           console.error(error);
         });
     }
+
+    // Exibe o offcanvas fixo em telas largas (desktop)
+    function ajustarSidebarDesktop() {
+      const sidebar = document.getElementById('sidebarOffcanvas');
+      if (window.innerWidth >= 768) {
+        sidebar.classList.add('show');
+        sidebar.style.visibility = 'visible';
+      } else {
+        sidebar.classList.remove('show');
+        sidebar.style.visibility = '';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', ajustarSidebarDesktop);
+    window.addEventListener('resize', ajustarSidebarDesktop);
   </script>
 </body>
 </html>
+

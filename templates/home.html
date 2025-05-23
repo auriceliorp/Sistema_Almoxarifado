@@ -96,25 +96,22 @@
     </div>
 
     <!-- Dashboard -->
-    <div class="home-card">
-      <i class="bi bi-cart-check"></i>
+    <div class="home-card bg-dashboard">
+      <i class="bi bi-graph-up"></i>
       <h6>Dashboard</h6>
       <a href="{{ url_for('dashboard_bp.dashboard') }}" class="btn btn-outline-primary w-100">Acessar</a>
     </div>
 
     <!-- Links Úteis -->
-    <div class="home-card">
-      <i class="bi bi-cart-check"></i>
+    <div class="home-card bg-links">
+      <i class="bi bi-link-45deg"></i>
       <h6>Links Úteis</h6>
-      <a href="{{ url_for('links_bp.lista_links') }}" class="home-card bg-links">
-  <i class="bi bi-link-45deg"></i>
-  Acessar
-</a>
+      <a href="{{ url_for('links_bp.lista_links') }}" class="btn btn-outline-primary w-100">Acessar</a>
     </div>
 
     <!-- Relatórios -->
-    <div class="home-card">
-      <i class="bi bi-cart-check"></i>
+    <div class="home-card bg-relatorios">
+      <i class="bi bi-file-earmark-bar-graph"></i>
       <h6>Relatórios</h6>
       <a href="{{ url_for('main.relatorios') }}" class="btn btn-outline-primary w-100">Acessar</a>
     </div>

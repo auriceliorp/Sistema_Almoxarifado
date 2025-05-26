@@ -13,19 +13,48 @@
         font-size: 0.85em;
         color: #6c757d;
     }
-    /* Estilo para o container de busca do Select2 */
-    .select2-search__field {
-        width: 100% !important;
-        padding: 6px !important;
+    /* Estilos para o autocomplete */
+    .select2-container--bootstrap-5 .select2-dropdown {
+        border-color: #dee2e6;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
     }
-    /* Estilo para as opções do Select2 */
-    .select2-results__option {
-        padding: 8px 12px !important;
+
+    .select2-container--bootstrap-5 .select2-search__field {
+        padding: 0.5rem !important;
+        border: 1px solid #dee2e6 !important;
+        border-radius: 0.25rem;
     }
-    /* Estilo para os itens selecionados */
-    .select2-selection__choice {
-        margin: 2px !important;
-        padding: 2px 8px !important;
+
+    .select2-container--bootstrap-5 .select2-results__option {
+        padding: 0.5rem 1rem !important;
+    }
+
+    .select2-container--bootstrap-5 .select2-results__option--highlighted {
+        background-color: #f8f9fa !important;
+        color: #212529 !important;
+    }
+
+    .select2-container--bootstrap-5 .select2-results__option--selected {
+        background-color: #e9ecef !important;
+    }
+
+    .select2-result-item {
+        display: flex;
+        align-items: center;
+        padding: 4px 0;
+    }
+
+    .select2-result-item strong {
+        color: #0d6efd;
+        font-weight: 600;
+    }
+
+    .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
+        background-color: #e9ecef;
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+        padding: 2px 8px;
+        margin: 2px;
     }
 </style>
 {% endblock %}
@@ -196,52 +225,88 @@ $(document).ready(function() {
     $('.select2-multiple').select2({
         theme: 'bootstrap-5',
         width: '100%',
-        placeholder: 'Digite ou selecione...',
+        placeholder: 'Digite para buscar...',
         allowClear: true,
-        tags: false, // Não permite criar novos itens
+        tags: false,
         language: {
             noResults: function() {
                 return "Nenhum resultado encontrado";
             },
             searching: function() {
                 return "Buscando...";
-            },
-            inputTooShort: function() {
-                return "Digite para buscar...";
-            },
-            loadingMore: function() {
-                return "Carregando mais resultados...";
             }
         },
-        minimumInputLength: 1, // Requer pelo menos 1 caractere para iniciar a busca
-        maximumSelectionLength: 10, // Limite máximo de itens selecionados
-        selectOnClose: false, // Não seleciona automaticamente ao fechar
-        closeOnSelect: false, // Não fecha ao selecionar
-        scrollAfterSelect: false, // Não rola após selecionar
+        minimumInputLength: 1,
+        minimumResultsForSearch: 0,
+        maximumSelectionLength: 10,
+        matcher: function(params, data) {
+            // Se não houver termo de busca, retorna todos os dados
+            if ($.trim(params.term) === '') {
+                return data;
+            }
+
+            // Não retorna nada se não houver dados
+            if (typeof data.text === 'undefined') {
+                return null;
+            }
+
+            // Busca case-insensitive e com acentos
+            var termNormalized = params.term.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            var textNormalized = data.text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+            // Verifica se o texto contém o termo de busca
+            if (textNormalized.indexOf(termNormalized) > -1) {
+                return data;
+            }
+
+            // Se não encontrou, retorna null
+            return null;
+        },
         templateResult: formatResult,
-        templateSelection: formatSelection
+        templateSelection: formatSelection,
+        escapeMarkup: function(markup) {
+            return markup;
+        }
     });
 
-    // Função para formatar os resultados da busca
+    // Função para formatar os resultados da busca com highlight
     function formatResult(result) {
-        if (!result.id) return result.text;
-        return $('<span><i class="bi bi-person me-2"></i>' + result.text + '</span>');
+        if (!result.id || !result.text) return result.text;
+
+        var searchTerm = $('.select2-search__field').val();
+        if (!searchTerm) return result.text;
+
+        var text = result.text;
+        // Destaca o termo buscado no resultado
+        if (searchTerm) {
+            var pattern = '(' + $.fn.select2.escapeMarkup(searchTerm) + ')';
+            text = result.text.replace(new RegExp(pattern, 'gi'), '<strong>$1</strong>');
+        }
+
+        return '<div class="select2-result-item">' +
+               '<i class="bi bi-person me-2"></i>' + text +
+               '</div>';
     }
 
     // Função para formatar os itens selecionados
     function formatSelection(selection) {
         if (!selection.id) return selection.text;
-        return $('<span><i class="bi bi-check2 me-1"></i>' + selection.text + '</span>');
+        return '<i class="bi bi-check2 me-1"></i>' + selection.text;
     }
 
-    // Adiciona comportamento de busca em tempo real
-    $('.select2-multiple').on('keyup', function() {
-        $(this).data('select2').open();
+    // Abre o dropdown ao focar no campo
+    $('.select2-multiple').on('focus', function() {
+        $(this).select2('open');
     });
 
     // Mantém o dropdown aberto após seleção
     $('.select2-multiple').on('select2:select select2:unselect', function(e) {
-        $(this).data('select2').open();
+        $(this).select2('open');
+    });
+
+    // Adiciona classe para estilização do dropdown
+    $('.select2-multiple').on('select2:open', function() {
+        $('.select2-results__options').addClass('select2-results__options--with-search');
     });
 });
 </script>

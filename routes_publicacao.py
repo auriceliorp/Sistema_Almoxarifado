@@ -1,31 +1,35 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_login import login_required, current_user
+from flask_login import login_required
 from models import db, Publicacao, Usuario, Fornecedor
 from datetime import datetime
 
-bp = Blueprint('publicacoes', __name__)
+bp = Blueprint('publicacao_bp', __name__)
 
 @bp.route('/publicacoes')
 @login_required
 def listar():
     page = request.args.get('page', 1, type=int)
+    per_page = 10
+
+    # Obtém parâmetros de filtro
     filtro = request.args.get('filtro', '')
     busca = request.args.get('busca', '')
 
-    query = Publicacao.query.filter_by(excluido=False)
+    # Query base
+    query = Publicacao.query
 
-    # Aplicar filtros de busca
-    if busca and filtro:
+    # Aplica filtros se fornecidos
+    if busca:
         if filtro == 'especie':
             query = query.filter(Publicacao.especie.ilike(f'%{busca}%'))
+        elif filtro == 'objeto':
+            query = query.filter(Publicacao.objeto.ilike(f'%{busca}%'))
         elif filtro == 'contrato':
             query = query.filter(Publicacao.contrato_saic.ilike(f'%{busca}%'))
-        elif filtro == 'modalidade':
-            query = query.filter(Publicacao.modalidade_licitacao.ilike(f'%{busca}%'))
 
-    # Ordenação e paginação
+    # Executa a query paginada
     publicacoes = query.order_by(Publicacao.data_assinatura.desc()).paginate(
-        page=page, per_page=10, error_out=False
+        page=page, per_page=per_page, error_out=False
     )
 
     return render_template('publicacao/listar.html', 
@@ -33,148 +37,126 @@ def listar():
                          filtro=filtro,
                          busca=busca)
 
-@bp.route('/publicacoes/nova', methods=['GET', 'POST'])
+@bp.route('/publicacao/nova', methods=['GET', 'POST'])
 @login_required
-def nova():
+def nova_publicacao():
     if request.method == 'POST':
+        # Processa os dados do formulário
+        especie = request.form.get('especie')
+        objeto = request.form.get('objeto')
+        contrato_saic = request.form.get('contrato_saic') or "Não Aplicável"
+        modalidade_licitacao = request.form.get('modalidade_licitacao') or "Não se Aplica"
+        fonte_recursos = request.form.get('fonte_recursos') or "Não se Aplica"
+        valor_global = request.form.get('valor_global') or "Não Aplicável"
+        
+        # Processa datas
+        data_assinatura = request.form.get('data_assinatura')
+        vigencia_inicio = request.form.get('vigencia_inicio')
+        vigencia_fim = request.form.get('vigencia_fim')
+
+        # Se ambas as datas de vigência estiverem vazias, usa "A partir da Assinatura"
+        if not vigencia_inicio and not vigencia_fim:
+            vigencia = "A partir da Assinatura"
+        else:
+            vigencia = f"{vigencia_inicio} a {vigencia_fim}"
+
+        # Processa seleções múltiplas
+        partes_embrapa = request.form.getlist('partes_embrapa')
+        partes_fornecedor = request.form.getlist('partes_fornecedor')
+        signatarios_embrapa = request.form.getlist('signatarios_embrapa')
+        signatarios_externos = request.form.getlist('signatarios_externos')
+
+        # Cria nova publicação
+        publicacao = Publicacao(
+            especie=especie,
+            objeto=objeto,
+            contrato_saic=contrato_saic,
+            modalidade_licitacao=modalidade_licitacao,
+            fonte_recursos=fonte_recursos,
+            valor_global=valor_global,
+            data_assinatura=datetime.strptime(data_assinatura, '%Y-%m-%d').date(),
+            vigencia=vigencia,
+            partes_embrapa=partes_embrapa,
+            partes_fornecedor=partes_fornecedor,
+            signatarios_embrapa=signatarios_embrapa,
+            signatarios_externos=signatarios_externos
+        )
+
         try:
-            # Dados básicos
-            publicacao = Publicacao(
-                especie=request.form['especie'],
-                contrato_saic=request.form.get('contrato_saic') or 'Não Aplicável',
-                objeto=request.form['objeto'],
-                modalidade_licitacao=request.form.get('modalidade_licitacao') or 'Não se Aplica',
-                fonte_recursos=request.form.get('fonte_recursos') or 'Não se Aplica',
-                valor_global=request.form.get('valor_global') or 'Não Aplicável',
-                data_assinatura=datetime.strptime(request.form['data_assinatura'], '%Y-%m-%d')
-            )
-            
-            # Vigência
-            if request.form.get('vigencia_inicio'):
-                publicacao.vigencia_inicio = datetime.strptime(request.form['vigencia_inicio'], '%Y-%m-%d')
-            if request.form.get('vigencia_fim'):
-                publicacao.vigencia_fim = datetime.strptime(request.form['vigencia_fim'], '%Y-%m-%d')
-            
-            # Partes e Signatários
-            partes_embrapa = request.form.getlist('partes_embrapa')
-            partes_fornecedor = request.form.getlist('partes_fornecedor')
-            signatarios_embrapa = request.form.getlist('signatarios_embrapa')
-            signatarios_externos = request.form.getlist('signatarios_externos')
-            
-            # Adiciona as partes
-            for parte_id in partes_embrapa:
-                usuario = Usuario.query.get(parte_id)
-                if usuario:
-                    publicacao.partes_embrapa.append(usuario)
-                    
-            for parte_id in partes_fornecedor:
-                fornecedor = Fornecedor.query.get(parte_id)
-                if fornecedor:
-                    publicacao.partes_fornecedor.append(fornecedor)
-            
-            # Adiciona os signatários
-            for sig_id in signatarios_embrapa:
-                usuario = Usuario.query.get(sig_id)
-                if usuario:
-                    publicacao.signatarios_embrapa.append(usuario)
-                    
-            for sig_id in signatarios_externos:
-                fornecedor = Fornecedor.query.get(sig_id)
-                if fornecedor:
-                    publicacao.signatarios_externos.append(fornecedor)
-            
             db.session.add(publicacao)
             db.session.commit()
-            
             flash('Publicação cadastrada com sucesso!', 'success')
-            return redirect(url_for('publicacoes.listar'))
-            
+            return redirect(url_for('publicacao_bp.listar'))
         except Exception as e:
             db.session.rollback()
-            flash(f'Erro ao cadastrar publicação: {str(e)}', 'error')
-    
+            flash('Erro ao cadastrar publicação. Por favor, tente novamente.', 'danger')
+            print(f"Erro: {str(e)}")
+
+    # GET: Renderiza o formulário
     usuarios = Usuario.query.all()
     fornecedores = Fornecedor.query.all()
-    return render_template('publicacao/form.html', 
-                         usuarios=usuarios, 
+    return render_template('publicacao/form.html',
+                         usuarios=usuarios,
                          fornecedores=fornecedores)
 
-@bp.route('/publicacoes/editar/<int:id>', methods=['GET', 'POST'])
+@bp.route('/publicacao/<int:id>/editar', methods=['GET', 'POST'])
 @login_required
-def editar(id):
+def editar_publicacao(id):
     publicacao = Publicacao.query.get_or_404(id)
     
     if request.method == 'POST':
+        # Atualiza os dados da publicação
+        publicacao.especie = request.form.get('especie')
+        publicacao.objeto = request.form.get('objeto')
+        publicacao.contrato_saic = request.form.get('contrato_saic') or "Não Aplicável"
+        publicacao.modalidade_licitacao = request.form.get('modalidade_licitacao') or "Não se Aplica"
+        publicacao.fonte_recursos = request.form.get('fonte_recursos') or "Não se Aplica"
+        publicacao.valor_global = request.form.get('valor_global') or "Não Aplicável"
+        
+        # Processa datas
+        publicacao.data_assinatura = datetime.strptime(request.form.get('data_assinatura'), '%Y-%m-%d').date()
+        vigencia_inicio = request.form.get('vigencia_inicio')
+        vigencia_fim = request.form.get('vigencia_fim')
+
+        if not vigencia_inicio and not vigencia_fim:
+            publicacao.vigencia = "A partir da Assinatura"
+        else:
+            publicacao.vigencia = f"{vigencia_inicio} a {vigencia_fim}"
+
+        # Atualiza seleções múltiplas
+        publicacao.partes_embrapa = request.form.getlist('partes_embrapa')
+        publicacao.partes_fornecedor = request.form.getlist('partes_fornecedor')
+        publicacao.signatarios_embrapa = request.form.getlist('signatarios_embrapa')
+        publicacao.signatarios_externos = request.form.getlist('signatarios_externos')
+
         try:
-            # Atualiza dados básicos
-            publicacao.especie = request.form['especie']
-            publicacao.contrato_saic = request.form.get('contrato_saic') or 'Não Aplicável'
-            publicacao.objeto = request.form['objeto']
-            publicacao.modalidade_licitacao = request.form.get('modalidade_licitacao') or 'Não se Aplica'
-            publicacao.fonte_recursos = request.form.get('fonte_recursos') or 'Não se Aplica'
-            publicacao.valor_global = request.form.get('valor_global') or 'Não Aplicável'
-            publicacao.data_assinatura = datetime.strptime(request.form['data_assinatura'], '%Y-%m-%d')
-            
-            # Atualiza vigência
-            publicacao.vigencia_inicio = None
-            publicacao.vigencia_fim = None
-            if request.form.get('vigencia_inicio'):
-                publicacao.vigencia_inicio = datetime.strptime(request.form['vigencia_inicio'], '%Y-%m-%d')
-            if request.form.get('vigencia_fim'):
-                publicacao.vigencia_fim = datetime.strptime(request.form['vigencia_fim'], '%Y-%m-%d')
-            
-            # Limpa relacionamentos existentes
-            publicacao.partes_embrapa.clear()
-            publicacao.partes_fornecedor.clear()
-            publicacao.signatarios_embrapa.clear()
-            publicacao.signatarios_externos.clear()
-            
-            # Atualiza partes e signatários
-            for parte_id in request.form.getlist('partes_embrapa'):
-                usuario = Usuario.query.get(parte_id)
-                if usuario:
-                    publicacao.partes_embrapa.append(usuario)
-                    
-            for parte_id in request.form.getlist('partes_fornecedor'):
-                fornecedor = Fornecedor.query.get(parte_id)
-                if fornecedor:
-                    publicacao.partes_fornecedor.append(fornecedor)
-            
-            for sig_id in request.form.getlist('signatarios_embrapa'):
-                usuario = Usuario.query.get(sig_id)
-                if usuario:
-                    publicacao.signatarios_embrapa.append(usuario)
-                    
-            for sig_id in request.form.getlist('signatarios_externos'):
-                fornecedor = Fornecedor.query.get(sig_id)
-                if fornecedor:
-                    publicacao.signatarios_externos.append(fornecedor)
-            
             db.session.commit()
             flash('Publicação atualizada com sucesso!', 'success')
-            return redirect(url_for('publicacoes.listar'))
-            
+            return redirect(url_for('publicacao_bp.listar'))
         except Exception as e:
             db.session.rollback()
-            flash(f'Erro ao atualizar publicação: {str(e)}', 'error')
-    
+            flash('Erro ao atualizar publicação. Por favor, tente novamente.', 'danger')
+            print(f"Erro: {str(e)}")
+
+    # GET: Renderiza o formulário com os dados atuais
     usuarios = Usuario.query.all()
     fornecedores = Fornecedor.query.all()
-    return render_template('publicacao/form.html', 
+    return render_template('publicacao/form.html',
                          publicacao=publicacao,
-                         usuarios=usuarios, 
+                         usuarios=usuarios,
                          fornecedores=fornecedores)
 
-@bp.route('/publicacoes/excluir/<int:id>', methods=['POST'])
+@bp.route('/publicacao/<int:id>/excluir', methods=['POST'])
 @login_required
-def excluir(id):
+def excluir_publicacao(id):
     publicacao = Publicacao.query.get_or_404(id)
     try:
-        publicacao.excluido = True
+        db.session.delete(publicacao)
         db.session.commit()
         flash('Publicação excluída com sucesso!', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Erro ao excluir publicação: {str(e)}', 'error')
+        flash('Erro ao excluir publicação. Por favor, tente novamente.', 'danger')
+        print(f"Erro: {str(e)}")
     
-    return redirect(url_for('publicacoes.listar'))
+    return redirect(url_for('publicacao_bp.listar'))

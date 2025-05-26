@@ -1,1 +1,1 @@
-web: gunicorn "<arquivo_python>:<função_factory>()"
+web: gunicorn arquivo_python:funcao_factory

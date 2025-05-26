@@ -1,0 +1,226 @@
+{% extends 'base_simplificada.html' %}
+{% block title %}Visualizar Publicação{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <!-- Cabeçalho com botões -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="card-title mb-0">Detalhes da Publicação</h4>
+                <div class="btn-group">
+                    <a href="{{ url_for('publicacao_bp.editar_publicacao', id=publicacao.id) }}" class="btn btn-primary">
+                        <i class="bi bi-pencil-square me-1"></i>Editar
+                    </a>
+                    <button type="button" class="btn btn-danger" onclick="confirmarExclusao('{{ publicacao.id }}')">
+                        <i class="bi bi-trash me-1"></i>Excluir
+                    </button>
+                    <a href="{{ url_for('publicacao_bp.listar') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>Voltar
+                    </a>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Informações Principais -->
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-info-circle me-2"></i>Informações Principais
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row mb-0">
+                                <dt class="col-sm-4">Espécie</dt>
+                                <dd class="col-sm-8">{{ publicacao.especie }}</dd>
+
+                                <dt class="col-sm-4">Contrato SAIC</dt>
+                                <dd class="col-sm-8">{{ publicacao.contrato_saic }}</dd>
+
+                                <dt class="col-sm-4">Data da Assinatura</dt>
+                                <dd class="col-sm-8">{{ publicacao.data_assinatura.strftime('%d/%m/%Y') }}</dd>
+
+                                <dt class="col-sm-4">Vigência</dt>
+                                <dd class="col-sm-8">
+                                    {% if publicacao.vigencia_inicio and publicacao.vigencia_fim %}
+                                        De {{ publicacao.vigencia_inicio.strftime('%d/%m/%Y') }} até {{ publicacao.vigencia_fim.strftime('%d/%m/%Y') }}
+                                    {% elif publicacao.vigencia_inicio %}
+                                        A partir de {{ publicacao.vigencia_inicio.strftime('%d/%m/%Y') }}
+                                    {% else %}
+                                        A partir da Assinatura
+                                    {% endif %}
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informações Complementares -->
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-card-list me-2"></i>Informações Complementares
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row mb-0">
+                                <dt class="col-sm-4">Modalidade</dt>
+                                <dd class="col-sm-8">{{ publicacao.modalidade_licitacao }}</dd>
+
+                                <dt class="col-sm-4">Fonte de Recursos</dt>
+                                <dd class="col-sm-8">{{ publicacao.fonte_recursos }}</dd>
+
+                                <dt class="col-sm-4">Valor Global</dt>
+                                <dd class="col-sm-8">{{ publicacao.valor_global }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Objeto -->
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-file-text me-2"></i>Objeto
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-0">{{ publicacao.objeto }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Partes -->
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-warning">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-people me-2"></i>Partes Embrapa
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-group list-group-flush">
+                                {% for parte in publicacao.partes_embrapa %}
+                                <div class="list-group-item">
+                                    <i class="bi bi-person me-2"></i>{{ parte.nome }}
+                                </div>
+                                {% else %}
+                                <div class="list-group-item text-muted">
+                                    <i class="bi bi-info-circle me-2"></i>Nenhuma parte Embrapa cadastrada
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-warning">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-building me-2"></i>Partes Fornecedor
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-group list-group-flush">
+                                {% for parte in publicacao.partes_fornecedor %}
+                                <div class="list-group-item">
+                                    <i class="bi bi-building me-2"></i>{{ parte.nome }}
+                                </div>
+                                {% else %}
+                                <div class="list-group-item text-muted">
+                                    <i class="bi bi-info-circle me-2"></i>Nenhuma parte fornecedor cadastrada
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Signatários -->
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-pen me-2"></i>Signatários Embrapa
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-group list-group-flush">
+                                {% for signatario in publicacao.signatarios_embrapa %}
+                                <div class="list-group-item">
+                                    <i class="bi bi-person me-2"></i>{{ signatario.nome }}
+                                </div>
+                                {% else %}
+                                <div class="list-group-item text-muted">
+                                    <i class="bi bi-info-circle me-2"></i>Nenhum signatário Embrapa cadastrado
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-pen me-2"></i>Signatários Externos
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-group list-group-flush">
+                                {% for signatario in publicacao.signatarios_externos %}
+                                <div class="list-group-item">
+                                    <i class="bi bi-building me-2"></i>{{ signatario.nome }}
+                                </div>
+                                {% else %}
+                                <div class="list-group-item text-muted">
+                                    <i class="bi bi-info-circle me-2"></i>Nenhum signatário externo cadastrado
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div class="modal fade" id="modalConfirmacao" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Tem certeza que deseja excluir esta publicação?</p>
+            </div>
+            <div class="modal-footer">
+                <form id="formExclusao" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmarExclusao(id) {
+    const modal = new bootstrap.Modal(document.getElementById('modalConfirmacao'));
+    const form = document.getElementById('formExclusao');
+    form.action = "{{ url_for('publicacao_bp.excluir_publicacao', id=0) }}".replace('0', id);
+    modal.show();
+}
+</script>
+{% endblock %}

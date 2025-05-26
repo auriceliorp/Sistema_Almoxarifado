@@ -2,173 +2,315 @@
 
 {% block title %}Entradas de Estoque{% endblock %}
 
+{% block extra_css %}
+<style>
+    .table th {
+        background-color: #2c3e50 !important;
+        color: white !important;
+    }
+    .card-stats {
+        transition: all 0.3s ease;
+    }
+    .card-stats:hover {
+        transform: translateY(-5px);
+    }
+    .table-container {
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container py-4">
-
-  <!-- Botão Nova Entrada -->
-  <div class="d-flex justify-content-end mb-3">
-    <a href="{{ url_for('entrada_bp.nova_entrada') }}" class="btn btn-success shadow-sm">
-      <i class="bi bi-plus-circle me-1"></i> Nova Entrada
-    </a>
-  </div>
-
-  <!-- Card de Filtros -->
-  <div class="card shadow-sm mb-4">
-    <div class="card-body">
-      <form method="GET" class="row g-3 align-items-end">
-
+<div class="container-fluid py-4">
+    <!-- Cards de Estatísticas -->
+    <div class="row g-4 mb-4">
         <div class="col-md-3">
-          <label for="tipo_busca" class="form-label">Buscar por:</label>
-          <select name="filtro" id="tipo_busca" class="form-select">
-            <option value="nota" {% if filtro == 'nota' %}selected{% endif %}>Nota Fiscal</option>
-            <option value="fornecedor" {% if filtro == 'fornecedor' %}selected{% endif %}>Fornecedor</option>
-            <option value="data" {% if filtro == 'data' %}selected{% endif %}>Data de Movimento</option>
-          </select>
-        </div>
-
-        <div class="col-md-3">
-          <label for="valor_busca" class="form-label">Valor:</label>
-          <input type="text" name="busca" value="{{ busca }}" class="form-control" id="valor_busca" placeholder="Digite a busca...">
-        </div>
-
-        <div class="col-md-3">
-          <label for="ordenar_por" class="form-label">Ordenar por:</label>
-          <select name="ordenar_por" id="ordenar_por" class="form-select">
-            <option value="data_movimento" {% if ordenar_por == 'data_movimento' %}selected{% endif %}>Data de Movimento</option>
-            <option value="nota_fiscal" {% if ordenar_por == 'nota_fiscal' %}selected{% endif %}>Nota Fiscal</option>
-            <option value="fornecedor" {% if ordenar_por == 'fornecedor' %}selected{% endif %}>Fornecedor</option>
-          </select>
-        </div>
-
-        <div class="col-md-2">
-          <label for="direcao" class="form-label">Direção:</label>
-          <select name="direcao" id="direcao" class="form-select">
-            <option value="asc" {% if direcao == 'asc' %}selected{% endif %}>Ascendente</option>
-            <option value="desc" {% if direcao == 'desc' %}selected{% endif %}>Descendente</option>
-          </select>
-        </div>
-
-        <div class="col-md-1">
-          <button type="submit" class="btn btn-primary w-100">
-            <i class="bi bi-search"></i>
-          </button>
-        </div>
-
-      </form>
-    </div>
-  </div>
-
-  <!-- Tabela de Entradas -->
-  <div class="table-responsive" style="max-height: 60vh;">
-    <table class="table table-bordered table-hover align-middle text-nowrap">
-      <thead class="table-dark sticky-top">
-        <tr>
-          <th>ID</th>
-          <th>Data Movimento</th>
-          <th>Data Nota Fiscal</th>
-          <th>Nº Nota Fiscal</th>
-          <th>Fornecedor</th>
-          <th class="text-center">Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for entrada in entradas.items %}
-        <tr class="{% if entrada.estornada %}table-danger{% endif %}">
-          <td>{{ entrada.id }}</td>
-          <td>{{ entrada.data_movimento.strftime('%d/%m/%Y') }}</td>
-          <td>{{ entrada.data_nota_fiscal.strftime('%d/%m/%Y') }}</td>
-          <td>{{ entrada.numero_nota_fiscal }}</td>
-          <td>
-            {{ entrada.fornecedor.nome }}
-            {% if entrada.estornada %}
-              <span class="badge bg-danger ms-1">Estornada</span>
-            {% endif %}
-          </td>
-          <td class="text-center">
-            <div class="d-flex justify-content-center gap-2">
-              <a href="{{ url_for('entrada_bp.visualizar_entrada', entrada_id=entrada.id) }}"
-                 class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1">
-                <i class="bi bi-eye"></i> <span>Visualizar</span>
-              </a>
-              {% if not entrada.estornada %}
-              <form action="{{ url_for('entrada_bp.estornar_entrada', entrada_id=entrada.id) }}"
-                    method="POST" onsubmit="return confirm('Deseja realmente estornar esta entrada?')">
-                <button type="submit" class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1">
-                  <i class="bi bi-x-circle"></i> <span>Estornar</span>
-                </button>
-              </form>
-              {% endif %}
+            <div class="card card-stats bg-primary bg-gradient text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="card-title mb-0">Total de Entradas</h6>
+                            <h2 class="my-2">{{ entradas.total }}</h2>
+                        </div>
+                        <div class="rounded-circle bg-white p-2">
+                            <i class="bi bi-box-arrow-in-down text-primary fs-4"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </td>
-        </tr>
-        {% else %}
-        <tr>
-          <td colspan="6" class="text-center text-muted">Nenhuma entrada encontrada.</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-stats bg-success bg-gradient text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="card-title mb-0">Entradas Ativas</h6>
+                            <h2 class="my-2">{{ entradas.items|selectattr('estornada', 'equalto', false)|list|length }}</h2>
+                        </div>
+                        <div class="rounded-circle bg-white p-2">
+                            <i class="bi bi-check-circle text-success fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-stats bg-danger bg-gradient text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="card-title mb-0">Entradas Estornadas</h6>
+                            <h2 class="my-2">{{ entradas.items|selectattr('estornada', 'equalto', true)|list|length }}</h2>
+                        </div>
+                        <div class="rounded-circle bg-white p-2">
+                            <i class="bi bi-x-circle text-danger fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-stats bg-info bg-gradient text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="card-title mb-0">Página Atual</h6>
+                            <h2 class="my-2">{{ entradas.page }} de {{ entradas.pages }}</h2>
+                        </div>
+                        <div class="rounded-circle bg-white p-2">
+                            <i class="bi bi-file-text text-info fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-  <!-- Paginação -->
-  {% if entradas.pages > 1 %}
-  <nav aria-label="Paginação" class="mt-4">
-    <ul class="pagination justify-content-center">
-      {% if entradas.has_prev %}
-      <li class="page-item">
-        <a class="page-link" href="{{ url_for('entrada_bp.lista_entradas', page=entradas.prev_num, filtro=filtro, busca=busca, ordenar_por=ordenar_por, direcao=direcao) }}">Anterior</a>
-      </li>
-      {% else %}
-      <li class="page-item disabled"><span class="page-link">Anterior</span></li>
-      {% endif %}
+    <!-- Cabeçalho e Ações -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="card-title mb-0">
+                    <i class="bi bi-box-arrow-in-down me-2"></i>
+                    Entradas de Estoque
+                </h4>
+                <a href="{{ url_for('entrada_bp.nova_entrada') }}" class="btn btn-success">
+                    <i class="bi bi-plus-circle me-1"></i>Nova Entrada
+                </a>
+            </div>
 
-      {% for page_num in entradas.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
-        {% if page_num %}
-          {% if entradas.page == page_num %}
-            <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
-          {% else %}
-            <li class="page-item">
-              <a class="page-link" href="{{ url_for('entrada_bp.lista_entradas', page=page_num, filtro=filtro, busca=busca, ordenar_por=ordenar_por, direcao=direcao) }}">{{ page_num }}</a>
+            <!-- Filtros -->
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <select name="filtro" id="tipo_busca" class="form-select">
+                            <option value="nota" {% if filtro == 'nota' %}selected{% endif %}>Nota Fiscal</option>
+                            <option value="fornecedor" {% if filtro == 'fornecedor' %}selected{% endif %}>Fornecedor</option>
+                            <option value="data" {% if filtro == 'data' %}selected{% endif %}>Data de Movimento</option>
+                        </select>
+                        <label for="tipo_busca">Buscar por</label>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <input type="text" name="busca" value="{{ busca }}" class="form-control" id="valor_busca" placeholder="Digite a busca...">
+                        <label for="valor_busca">Valor da busca</label>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <select name="ordenar_por" id="ordenar_por" class="form-select">
+                            <option value="data_movimento" {% if ordenar_por == 'data_movimento' %}selected{% endif %}>Data de Movimento</option>
+                            <option value="nota_fiscal" {% if ordenar_por == 'nota_fiscal' %}selected{% endif %}>Nota Fiscal</option>
+                            <option value="fornecedor" {% if ordenar_por == 'fornecedor' %}selected{% endif %}>Fornecedor</option>
+                        </select>
+                        <label for="ordenar_por">Ordenar por</label>
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <div class="form-floating">
+                        <select name="direcao" id="direcao" class="form-select">
+                            <option value="asc" {% if direcao == 'asc' %}selected{% endif %}>Ascendente</option>
+                            <option value="desc" {% if direcao == 'desc' %}selected{% endif %}>Descendente</option>
+                        </select>
+                        <label for="direcao">Direção</label>
+                    </div>
+                </div>
+
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary w-100 h-100">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabela -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive" style="max-height: 70vh;">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="sticky-top">
+                        <tr>
+                            <th>ID</th>
+                            <th>Data Movimento</th>
+                            <th>Data Nota Fiscal</th>
+                            <th>Nº Nota Fiscal</th>
+                            <th>Fornecedor</th>
+                            <th class="text-center" style="width: 150px;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entrada in entradas.items %}
+                        <tr class="{% if entrada.estornada %}table-danger{% endif %}">
+                            <td>{{ entrada.id }}</td>
+                            <td>{{ entrada.data_movimento.strftime('%d/%m/%Y') }}</td>
+                            <td>{{ entrada.data_nota_fiscal.strftime('%d/%m/%Y') }}</td>
+                            <td>{{ entrada.numero_nota_fiscal }}</td>
+                            <td>
+                                {{ entrada.fornecedor.nome }}
+                                {% if entrada.estornada %}
+                                    <span class="badge bg-danger ms-1">Estornada</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="d-flex justify-content-center gap-1">
+                                    <a href="{{ url_for('entrada_bp.visualizar_entrada', entrada_id=entrada.id) }}" 
+                                       class="btn btn-sm btn-info" 
+                                       data-bs-toggle="tooltip" 
+                                       title="Visualizar detalhes">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    {% if not entrada.estornada %}
+                                    <button type="button" 
+                                            class="btn btn-sm btn-danger"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalEstornar"
+                                            data-entrada-id="{{ entrada.id }}"
+                                            data-bs-tooltip="tooltip"
+                                            title="Estornar entrada">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                <i class="bi bi-inbox fs-1 text-muted"></i>
+                                <p class="mb-0 mt-2">Nenhuma entrada encontrada.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Paginação -->
+    {% if entradas.pages > 1 %}
+    <nav class="mt-4" aria-label="Paginação">
+        <ul class="pagination justify-content-center">
+            <li class="page-item {{ 'disabled' if not entradas.has_prev }}">
+                <a class="page-link" href="{{ url_for('entrada_bp.lista_entradas', page=entradas.prev_num, filtro=filtro, busca=busca, ordenar_por=ordenar_por, direcao=direcao) if entradas.has_prev else '#' }}">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
             </li>
-          {% endif %}
-        {% else %}
-        <li class="page-item disabled"><span class="page-link">…</span></li>
-        {% endif %}
-      {% endfor %}
 
-      {% if entradas.has_next %}
-      <li class="page-item">
-        <a class="page-link" href="{{ url_for('entrada_bp.lista_entradas', page=entradas.next_num, filtro=filtro, busca=busca, ordenar_por=ordenar_por, direcao=direcao) }}">Próxima</a>
-      </li>
-      {% else %}
-      <li class="page-item disabled"><span class="page-link">Próxima</span></li>
-      {% endif %}
-    </ul>
-  </nav>
-  {% endif %}
+            {% for page_num in entradas.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    <li class="page-item {{ 'active' if entradas.page == page_num }}">
+                        <a class="page-link" href="{{ url_for('entrada_bp.lista_entradas', page=page_num, filtro=filtro, busca=busca, ordenar_por=ordenar_por, direcao=direcao) }}">
+                            {{ page_num }}
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                {% endif %}
+            {% endfor %}
 
+            <li class="page-item {{ 'disabled' if not entradas.has_next }}">
+                <a class="page-link" href="{{ url_for('entrada_bp.lista_entradas', page=entradas.next_num, filtro=filtro, busca=busca, ordenar_por=ordenar_por, direcao=direcao) if entradas.has_next else '#' }}">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<!-- Modal de Confirmação de Estorno -->
+<div class="modal fade" id="modalEstornar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Confirmar Estorno
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Tem certeza que deseja estornar esta entrada? Esta ação não poderá ser desfeita.</p>
+            </div>
+            <div class="modal-footer">
+                <form id="formEstorno" method="POST">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i>Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-check-circle me-1"></i>Confirmar Estorno
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
-{% block scripts %}
+{% block extra_js %}
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
 <script>
-  function aplicarMascara() {
-    $('#valor_busca').unmask();
-    if ($('#tipo_busca').val() === 'nota') {
-      $('#valor_busca').mask('000.000.000');
-    } else if ($('#tipo_busca').val() === 'data') {
-      $('#valor_busca').mask('00/00/0000');
-    }
-  }
-
-  $(document).ready(function () {
-    aplicarMascara();
-    $('#tipo_busca').on('change', function () {
-      $('#valor_busca').val('');
-      aplicarMascara();
+$(document).ready(function() {
+    // Inicializa tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
     });
-  });
+
+    // Configura o modal de estorno
+    var modalEstornar = document.getElementById('modalEstornar')
+    modalEstornar.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget
+        var entradaId = button.getAttribute('data-entrada-id')
+        var form = document.getElementById('formEstorno')
+        form.action = "{{ url_for('entrada_bp.estornar_entrada', entrada_id=0) }}".replace('0', entradaId)
+    });
+
+    // Função para aplicar máscara
+    function aplicarMascara() {
+        $('#valor_busca').unmask();
+        if ($('#tipo_busca').val() === 'nota') {
+            $('#valor_busca').mask('000.000.000');
+        } else if ($('#tipo_busca').val() === 'data') {
+            $('#valor_busca').mask('00/00/0000');
+        }
+    }
+
+    // Aplica máscara inicial e configura evento de mudança
+    aplicarMascara();
+    $('#tipo_busca').on('change', function() {
+        $('#valor_busca').val('');
+        aplicarMascara();
+    });
+});
 </script>
 {% endblock %}

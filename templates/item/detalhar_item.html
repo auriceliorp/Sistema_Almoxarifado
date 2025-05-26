@@ -1,78 +1,166 @@
-{# ------------------------------ DETALHES DO ITEM ------------------------------ #}
 {% extends 'base_simplificada.html' %}
-
 {% block title %}Detalhes do Item{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-
-    {# ------------------------------ CABEÇALHO ------------------------------ #}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-outline-primary">
-            <i class="bi bi-arrow-left-circle"></i> Voltar
-        </a>
-        <h4 class="mb-0 text-center flex-grow-1">Detalhes do Item</h4>
-        <div class="d-flex gap-2">
-            <a href="{{ url_for('item_bp.editar_item', id=item.id) }}" class="btn btn-outline-primary">
-                <i class="bi bi-pencil-square"></i> Editar
-            </a>
-            <button onclick="window.print()" class="btn btn-outline-secondary">
-                <i class="bi bi-printer"></i> Imprimir
-            </button>
+<div class="container-fluid py-4">
+    <!-- Cabeçalho -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0">
+                    <i class="bi bi-box-seam me-2"></i>
+                    Detalhes do Item
+                </h4>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>
+                        Voltar para Lista
+                    </a>
+                    <a href="{{ url_for('item_bp.editar_item', id=item.id) }}" class="btn btn-outline-primary">
+                        <i class="bi bi-pencil-square me-1"></i>
+                        Editar
+                    </a>
+                    <button onclick="window.print()" class="btn btn-outline-secondary">
+                        <i class="bi bi-printer me-1"></i>
+                        Imprimir
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
-    {# ------------------------------ DADOS DO ITEM ------------------------------ #}
-    <div class="card shadow rounded-4">
+    <!-- Informações Básicas -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary bg-gradient text-white py-3">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-info-circle me-2"></i>
+                Informações Básicas
+            </h5>
+        </div>
         <div class="card-body">
-            <dl class="row mb-0">
-                <dt class="col-sm-4">Código SAP:</dt>
-                <dd class="col-sm-8">{{ item.codigo_sap }}</dd>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="border-start border-4 border-primary ps-3">
+                        <p class="text-muted mb-1">Código SAP</p>
+                        <h6 class="mb-0">{{ item.codigo_sap }}</h6>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="border-start border-4 border-primary ps-3">
+                        <p class="text-muted mb-1">Código SIADS</p>
+                        <h6 class="mb-0">{{ item.codigo_siads }}</h6>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="border-start border-4 border-primary ps-3">
+                        <p class="text-muted mb-1">Nome</p>
+                        <h6 class="mb-0">{{ item.nome }}</h6>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="border-start border-4 border-primary ps-3">
+                        <p class="text-muted mb-1">Descrição</p>
+                        <h6 class="mb-0">{{ item.descricao or 'Sem descrição' }}</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                <dt class="col-sm-4">Código SIADS:</dt>
-                <dd class="col-sm-8">{{ item.codigo_siads }}</dd>
+    <!-- Estoque e Valores -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-success bg-gradient text-white py-3">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-graph-up me-2"></i>
+                Estoque e Valores
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="border-start border-4 border-success ps-3">
+                        <p class="text-muted mb-1">Unidade de Medida</p>
+                        <h6 class="mb-0">{{ item.unidade_medida }}</h6>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="border-start border-4 border-success ps-3">
+                        <p class="text-muted mb-1">Quantidade em Estoque</p>
+                        <h6 class="mb-0">{{ item.estoque_atual }}</h6>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="border-start border-4 border-success ps-3">
+                        <p class="text-muted mb-1">Valor Unitário (R$)</p>
+                        <h6 class="mb-0">{{ "{:,.2f}".format(item.valor or 0) }}</h6>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="border-start border-4 border-success ps-3">
+                        <p class="text-muted mb-1">Saldo Financeiro (R$)</p>
+                        <h6 class="mb-0">{{ "{:,.2f}".format(item.saldo_financeiro or 0) }}</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                <dt class="col-sm-4">Nome:</dt>
-                <dd class="col-sm-8">{{ item.nome }}</dd>
+    <!-- Classificação -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-info bg-gradient text-white py-3">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-diagram-3 me-2"></i>
+                Classificação
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="border-start border-4 border-info ps-3">
+                        <p class="text-muted mb-1">Grupo</p>
+                        <h6 class="mb-0">{{ item.grupo.nome if item.grupo }}</h6>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="border-start border-4 border-info ps-3">
+                        <p class="text-muted mb-1">Natureza de Despesa</p>
+                        <h6 class="mb-0">
+                            {{ item.grupo.natureza_despesa.codigo if item.grupo and item.grupo.natureza_despesa }}
+                            - 
+                            {{ item.grupo.natureza_despesa.nome if item.grupo and item.grupo.natureza_despesa }}
+                        </h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                <dt class="col-sm-4">Unidade de Medida:</dt>
-                <dd class="col-sm-8">{{ item.unidade_medida }}</dd>
-
-                <dt class="col-sm-4">Quantidade em Estoque:</dt>
-                <dd class="col-sm-8">{{ item.estoque_atual }}</dd>
-
-                <dt class="col-sm-4">Estoque Mínimo:</dt>
-                <dd class="col-sm-8">{{ item.estoque_minimo }}</dd>
-
-                <dt class="col-sm-4">Valor Unitário (R$):</dt>
-                <dd class="col-sm-8">{{ "{:,.2f}".format(item.valor or 0) }}</dd>
-
-                <dt class="col-sm-4">Saldo Financeiro (R$):</dt>
-                <dd class="col-sm-8">{{ "{:,.2f}".format(item.saldo_financeiro or 0) }}</dd>
-
-                <dt class="col-sm-4">Grupo:</dt>
-                <dd class="col-sm-8">{{ item.grupo.nome if item.grupo }}</dd>
-
-                <dt class="col-sm-4">Natureza de Despesa:</dt>
-                <dd class="col-sm-8">
-                    {{ item.grupo.natureza_despesa.codigo if item.grupo and item.grupo.natureza_despesa }}
-                    - 
-                    {{ item.grupo.natureza_despesa.nome if item.grupo and item.grupo.natureza_despesa }}
-                </dd>
-
-                <dt class="col-sm-4">Localização:</dt>
-                <dd class="col-sm-8">{{ item.localizacao }}</dd>
-
-                <dt class="col-sm-4">Data de Validade:</dt>
-                <dd class="col-sm-8">
-                    {{ item.data_validade.strftime('%d/%m/%Y') if item.data_validade else 'Não informado' }}
-                </dd>
-
-                <dt class="col-sm-4">Descrição:</dt>
-                <dd class="col-sm-8">{{ item.descricao or 'Sem descrição' }}</dd>
-            </dl>
+    <!-- Informações Complementares -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-secondary bg-gradient text-white py-3">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-card-text me-2"></i>
+                Informações Complementares
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="border-start border-4 border-secondary ps-3">
+                        <p class="text-muted mb-1">Localização</p>
+                        <h6 class="mb-0">{{ item.localizacao or 'Não informado' }}</h6>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="border-start border-4 border-secondary ps-3">
+                        <p class="text-muted mb-1">Data de Validade</p>
+                        <h6 class="mb-0">
+                            {{ item.data_validade.strftime('%d/%m/%Y') if item.data_validade else 'Não informado' }}
+                        </h6>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 {% endblock %}
-

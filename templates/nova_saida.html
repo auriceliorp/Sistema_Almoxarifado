@@ -1,102 +1,270 @@
 {% extends 'base_simplificada.html' %}
 {% block title %}Nova Saída de Materiais{% endblock %}
 
+{% block extra_css %}
+<style>
+    .table th {
+        background-color: #2c3e50 !important;
+        color: white !important;
+    }
+    .card {
+        transition: all 0.3s ease;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    .required-field::after {
+        content: " *";
+        color: red;
+    }
+    .table-container {
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    .form-floating > .form-control:focus ~ label,
+    .form-floating > .form-control:not(:placeholder-shown) ~ label {
+        color: #2c3e50;
+    }
+    .valor-total-nota {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #2c3e50;
+    }
+    .select2-container .select2-selection--single {
+        height: 58px;
+        padding: 15px 5px;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 56px;
+    }
+    .invalid-feedback {
+        display: none;
+        color: #dc3545;
+        font-size: 0.875em;
+    }
+    .is-invalid ~ .invalid-feedback {
+        display: block;
+    }
+</style>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
+
 {% block content %}
-<div class="container py-4">
-  <h4 class="mb-4">Registrar Nova Saída de Material</h4>
+<div class="container-fluid py-4">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <!-- Cabeçalho -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="card-title mb-0">
+                    <i class="bi bi-box-arrow-up me-2"></i>
+                    Registrar Nova Saída de Material
+                </h4>
+                <a href="{{ url_for('saida_bp.lista_saidas') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Voltar
+                </a>
+            </div>
 
-  <form method="POST">
-    <!-- Dados do Documento -->
-    <div class="row mb-3">
-      <div class="col-md-3">
-        <label for="data_movimento" class="form-label">Data do Movimento *</label>
-        <input type="date" class="form-control" name="data_movimento" required>
-      </div>
-      <div class="col-md-3">
-        <label for="numero_documento" class="form-label">Nº Documento</label>
-        <input type="text" class="form-control" name="numero_documento" value="{{ numero_documento }}" readonly>
-      </div>
-      <div class="col-md-6">
-        <label for="solicitante" class="form-label">Solicitante *</label>
-        <select name="solicitante" class="form-select" required>
-          <option value="" disabled selected>Selecione o solicitante...</option>
-          {% for usuario in usuarios %}
-            <option value="{{ usuario.id }}">{{ usuario.nome }}</option>
-          {% endfor %}
-        </select>
-      </div>
-    </div>
+            <form method="POST" id="formSaida">
+                <!-- Dados do Documento -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-file-text me-2"></i>Dados do Documento
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <input type="date" class="form-control" id="data_movimento" name="data_movimento" required>
+                                    <label for="data_movimento" class="required-field">Data do Movimento</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="numero_documento" name="numero_documento" 
+                                           value="{{ numero_documento }}" readonly>
+                                    <label for="numero_documento">Nº Documento</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select name="solicitante" class="form-select select2" id="solicitante" required>
+                                        <option value="" disabled selected>Selecione o solicitante...</option>
+                                        {% for usuario in usuarios %}
+                                        <option value="{{ usuario.id }}">{{ usuario.nome }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <label for="solicitante" class="required-field">Solicitante</label>
+                                </div>
+                            </div>
+                        </div>
 
-    <!-- Observação -->
-    <div class="mb-3">
-      <label for="observacao" class="form-label">Observação</label>
-      <textarea class="form-control" name="observacao"></textarea>
-    </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    <textarea class="form-control" name="observacao" id="observacao" style="height: 100px"></textarea>
+                                    <label for="observacao">Observação</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-    <!-- Tabela de Itens -->
-    <div class="table-responsive">
-      <table class="table table-bordered align-middle" id="tabela-itens">
-        <thead class="table-light">
-          <tr>
-            <th>Item</th>
-            <th>Quantidade</th>
-            <th>Valor Unitário (R$)</th>
-            <th>Valor Total (R$)</th>
-            <th>Ação</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              <select name="item_id[]" class="form-select" required onchange="atualizarValor(this)">
-                <option value="" disabled selected>Selecione...</option>
-                {% for item in itens %}
-                <option value="{{ item.id }}" data-valor="{{ item.valor_unitario }}" data-estoque="{{ item.estoque_atual }}">
-                  {{ item.nome }} (Estoque: {{ item.estoque_atual }})
-                </option>
-                {% endfor %}
-              </select>
-            </td>
-            <td><input type="number" name="quantidade[]" class="form-control" min="1" required oninput="atualizarTotais(this)"></td>
-            <td><input type="number" name="valor_unitario[]" class="form-control" step="0.01" readonly></td>
-            <td class="valor_total">0.00</td>
-            <td>
-              <button type="button" class="btn btn-outline-danger btn-sm" onclick="removerLinha(this)">
-                <i class="bi bi-trash"></i>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+                <!-- Itens da Saída -->
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-list-check me-2"></i>Itens da Saída
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0" id="tabela-itens">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th style="width: 150px;">Quantidade</th>
+                                        <th style="width: 200px;">Valor Unitário (R$)</th>
+                                        <th style="width: 200px;">Valor Total (R$)</th>
+                                        <th style="width: 80px;">Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <select name="item_id[]" class="form-select select2-item" required onchange="atualizarValor(this)">
+                                                <option value="" disabled selected>Selecione...</option>
+                                                {% for item in itens %}
+                                                <option value="{{ item.id }}" data-valor="{{ item.valor_unitario }}" data-estoque="{{ item.estoque_atual }}">
+                                                    {{ item.nome }} (Estoque: {{ item.estoque_atual }})
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                            <div class="invalid-feedback">
+                                                Estoque indisponível para este item!
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <input type="number" name="quantidade[]" class="form-control" min="1" required 
+                                                   placeholder="Qtd" oninput="atualizarTotais(this)">
+                                        </td>
+                                        <td>
+                                            <div class="input-group">
+                                                <span class="input-group-text">R$</span>
+                                                <input type="number" name="valor_unitario[]" class="form-control" step="0.01" readonly>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="input-group">
+                                                <span class="input-group-text">R$</span>
+                                                <input type="text" class="form-control valor_total" readonly value="0,00">
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <button type="button" class="btn btn-sm btn-danger" onclick="removerLinha(this)"
+                                                    data-bs-toggle="tooltip" title="Remover item">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
 
-    <div class="mb-3">
-      <button type="button" class="btn btn-outline-secondary" onclick="adicionarLinha()">
-        <i class="bi bi-plus-circle"></i> Adicionar Item
-      </button>
-    </div>
+                        <div class="mt-3">
+                            <button type="button" class="btn btn-outline-primary" onclick="adicionarLinha()">
+                                <i class="bi bi-plus-circle me-1"></i>Adicionar Item
+                            </button>
+                        </div>
 
-    <!-- Total da Nota -->
-    <div class="mb-4 text-end">
-      <strong>Total da Saída (R$):</strong>
-      <span id="totalNota">0.00</span>
-    </div>
+                        <!-- Total da Nota -->
+                        <div class="d-flex justify-content-end mt-4">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5 class="card-title mb-2">Total da Saída</h5>
+                                    <div class="valor-total-nota">
+                                        R$ <span id="totalNota">0,00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-    <!-- Botões -->
-    <div class="d-flex justify-content-end gap-2">
-      <button type="submit" class="btn btn-success">
-        <i class="bi bi-check-circle"></i> Salvar Saída
-      </button>
-      <a href="{{ url_for('saida_bp.lista_saidas') }}" class="btn btn-outline-secondary">
-        <i class="bi bi-x-circle"></i> Cancelar
-      </a>
+                <!-- Botões de Ação -->
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle me-1"></i>Salvar Saída
+                    </button>
+                    <a href="{{ url_for('saida_bp.lista_saidas') }}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle me-1"></i>Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
-  </form>
 </div>
+{% endblock %}
 
-<!-- Scripts -->
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-  function atualizarValor(select) {
+$(document).ready(function() {
+    // Inicializa Select2
+    $('.select2').select2({
+        theme: 'bootstrap-5',
+        width: '100%'
+    });
+    
+    inicializarSelect2Items();
+    
+    // Inicializa tooltips
+    inicializarTooltips();
+
+    // Validação do formulário
+    $('#formSaida').on('submit', function(e) {
+        if (!validarFormulario()) {
+            e.preventDefault();
+        }
+    });
+});
+
+function inicializarSelect2Items() {
+    $('.select2-item').select2({
+        theme: 'bootstrap-5',
+        width: '100%',
+        placeholder: 'Selecione um item...',
+        language: {
+            noResults: function() {
+                return "Nenhum item encontrado";
+            }
+        }
+    });
+}
+
+function inicializarTooltips() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+}
+
+function formatarMoeda(valor) {
+    return valor.toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+function parseMoeda(valor) {
+    if (typeof valor === 'string') {
+        return parseFloat(valor.replace(/\./g, '').replace(',', '.')) || 0;
+    }
+    return parseFloat(valor) || 0;
+}
+
+function atualizarValor(select) {
     const option = select.options[select.selectedIndex];
     const valor = option.getAttribute('data-valor');
     const estoque = parseFloat(option.getAttribute('data-estoque'));
@@ -107,56 +275,155 @@
     inputValor.value = valor || 0;
 
     if (estoque <= 0) {
-      alert("Atenção: Estoque indisponível para esse item!");
-      select.classList.add('is-invalid');
+        select.classList.add('is-invalid');
+        quantidade.disabled = true;
+        quantidade.value = '';
     } else {
-      select.classList.remove('is-invalid');
+        select.classList.remove('is-invalid');
+        quantidade.disabled = false;
+        quantidade.max = estoque;
     }
 
     atualizarTotais(quantidade);
-  }
+}
 
-  function atualizarTotais(input) {
+function atualizarTotais(input) {
     const linha = input.closest('tr');
     const qtd = parseFloat(linha.querySelector('input[name="quantidade[]"]').value) || 0;
     const valor = parseFloat(linha.querySelector('input[name="valor_unitario[]"]').value) || 0;
     const total = qtd * valor;
-    linha.querySelector('.valor_total').innerText = total.toFixed(2);
+    
+    linha.querySelector('.valor_total').value = formatarMoeda(total);
+    
     atualizarTotalNota();
-  }
+}
 
-  function atualizarTotalNota() {
+function atualizarTotalNota() {
     let totalNota = 0;
-    document.querySelectorAll('.valor_total').forEach(td => {
-      totalNota += parseFloat(td.innerText) || 0;
+    document.querySelectorAll('.valor_total').forEach(input => {
+        totalNota += parseMoeda(input.value);
     });
-    document.getElementById('totalNota').innerText = totalNota.toFixed(2);
-  }
+    document.getElementById('totalNota').innerText = formatarMoeda(totalNota);
+}
 
-  function adicionarLinha() {
+function adicionarLinha() {
     const tbody = document.querySelector('#tabela-itens tbody');
-    const novaLinha = tbody.rows[0].cloneNode(true);
+    const primeiraLinha = tbody.querySelector('tr');
+    const novaLinha = primeiraLinha.cloneNode(true);
 
-    novaLinha.querySelectorAll('input').forEach(input => {
-      input.value = '';
-      input.setAttribute('required', true);
+    // Limpa os valores dos inputs
+    novaLinha.querySelectorAll('input, select').forEach(elemento => {
+        if (elemento.tagName === 'SELECT') {
+            elemento.selectedIndex = 0;
+            elemento.classList.remove('is-invalid');
+        } else if (elemento.classList.contains('valor_total')) {
+            elemento.value = '0,00';
+        } else {
+            elemento.value = '';
+            elemento.disabled = false;
+        }
     });
 
-    novaLinha.querySelector('select').selectedIndex = 0;
-    novaLinha.querySelector('.valor_total').innerText = '0.00';
+    // Remove qualquer tooltip e select2 existente
+    novaLinha.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+        const tooltip = bootstrap.Tooltip.getInstance(el);
+        if (tooltip) {
+            tooltip.dispose();
+        }
+    });
+    
+    novaLinha.querySelectorAll('.select2-item').forEach(el => {
+        $(el).select2('destroy');
+    });
 
+    // Adiciona a nova linha
     tbody.appendChild(novaLinha);
-  }
 
-  function removerLinha(botao) {
+    // Reinicializa os componentes na nova linha
+    novaLinha.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+        new bootstrap.Tooltip(el);
+    });
+    
+    novaLinha.querySelectorAll('.select2-item').forEach(el => {
+        $(el).select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: 'Selecione um item...',
+            language: {
+                noResults: function() {
+                    return "Nenhum item encontrado";
+                }
+            }
+        });
+    });
+}
+
+function removerLinha(botao) {
     const linha = botao.closest('tr');
     const tbody = linha.parentElement;
     if (tbody.rows.length > 1) {
-      linha.remove();
-      atualizarTotalNota();
+        // Destrói o tooltip antes de remover a linha
+        const tooltip = bootstrap.Tooltip.getInstance(botao);
+        if (tooltip) {
+            tooltip.dispose();
+        }
+        
+        // Destrói o select2 antes de remover a linha
+        linha.querySelectorAll('.select2-item').forEach(el => {
+            $(el).select2('destroy');
+        });
+        
+        linha.remove();
+        // Atualiza o total da nota após remover a linha
+        atualizarTotalNota();
     } else {
-      alert('A saída deve conter pelo menos um item.');
+        alert('A saída deve conter pelo menos um item.');
     }
-  }
+}
+
+function validarFormulario() {
+    let valido = true;
+    const mensagens = [];
+
+    // Valida data do movimento
+    if (!$('#data_movimento').val()) {
+        mensagens.push('Data do movimento é obrigatória');
+        valido = false;
+    }
+
+    // Valida solicitante
+    if (!$('#solicitante').val()) {
+        mensagens.push('Solicitante é obrigatório');
+        valido = false;
+    }
+
+    // Valida itens
+    const linhas = document.querySelectorAll('#tabela-itens tbody tr');
+    linhas.forEach((linha, index) => {
+        const item = linha.querySelector('select[name="item_id[]"]');
+        const quantidade = linha.querySelector('input[name="quantidade[]"]');
+        
+        if (!item.value) {
+            mensagens.push(`Selecione um item na linha ${index + 1}`);
+            valido = false;
+        }
+        
+        if (!quantidade.value || quantidade.value <= 0) {
+            mensagens.push(`Quantidade inválida na linha ${index + 1}`);
+            valido = false;
+        }
+        
+        if (item.classList.contains('is-invalid')) {
+            mensagens.push(`Item sem estoque na linha ${index + 1}`);
+            valido = false;
+        }
+    });
+
+    if (!valido) {
+        alert('Por favor, corrija os seguintes erros:\n' + mensagens.join('\n'));
+    }
+
+    return valido;
+}
 </script>
 {% endblock %}

@@ -1,161 +1,269 @@
 {% extends 'base_simplificada.html' %}
 {% block title %}Lista de Publicações{% endblock %}
 
+{% block extra_css %}
+<style>
+    .table th {
+        background-color: #2c3e50 !important;
+        color: white !important;
+    }
+    .btn-group .btn {
+        margin: 0 2px;
+    }
+    .card-stats {
+        transition: all 0.3s ease;
+    }
+    .card-stats:hover {
+        transform: translateY(-5px);
+    }
+    .table-container {
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-4">
-  <!-- Cabeçalho com botão Nova Publicação -->
-  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-    <h4 class="mb-0 text-uppercase">Publicações Cadastradas</h4>
-    <a href="{{ url_for('publicacao_bp.nova_publicacao') }}" class="btn btn-success">
-      <i class="bi bi-plus-circle me-1"></i> Nova Publicação
-    </a>
-  </div>
-
-  <!-- Card de filtros com sombra -->
-  <div class="card shadow-sm mb-4">
-    <div class="card-body">
-      <form method="GET" class="row g-3 align-items-end">
-        <div class="col-md-3">
-          <label for="tipo_busca" class="form-label">Buscar por:</label>
-          <select name="filtro" id="tipo_busca" class="form-select">
-            <option value="especie" {% if filtro == 'especie' %}selected{% endif %}>Espécie</option>
-            <option value="objeto" {% if filtro == 'objeto' %}selected{% endif %}>Objeto</option>
-            <option value="contrato" {% if filtro == 'contrato' %}selected{% endif %}>Contrato SAIC</option>
-          </select>
-        </div>
-        <div class="col-md-7">
-          <label for="valor_busca" class="form-label">Valor:</label>
-          <input type="text" name="busca" value="{{ busca }}" class="form-control" id="valor_busca" placeholder="Digite a busca...">
-        </div>
-        <div class="col-md-2">
-          <button type="submit" class="btn btn-primary w-100">
-            <i class="bi bi-search"></i> Buscar
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Tabela responsiva com cabeçalho fixo -->
-  <div class="table-responsive" style="max-height: 70vh;">
-    <table class="table table-striped table-bordered align-middle table-sm">
-      <thead class="table-dark sticky-top">
-        <tr>
-          <th>Espécie</th>
-          <th>Contrato SAIC</th>
-          <th>Objeto</th>
-          <th>Modalidade</th>
-          <th>Valor Global</th>
-          <th>Data Assinatura</th>
-          <th>Vigência</th>
-          <th class="text-center">Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for publicacao in publicacoes.items %}
-        <tr>
-          <td>{{ publicacao.especie }}</td>
-          <td>{{ publicacao.contrato_saic }}</td>
-          <td>{{ publicacao.objeto[:100] }}{% if publicacao.objeto|length > 100 %}...{% endif %}</td>
-          <td>{{ publicacao.modalidade_licitacao }}</td>
-          <td>{{ publicacao.valor_global }}</td>
-          <td>{{ publicacao.data_assinatura.strftime('%d/%m/%Y') }}</td>
-          <td>
-            {% if publicacao.vigencia_inicio and publicacao.vigencia_fim %}
-              {{ publicacao.vigencia_inicio.strftime('%d/%m/%Y') }} a {{ publicacao.vigencia_fim.strftime('%d/%m/%Y') }}
-            {% elif publicacao.vigencia_inicio %}
-              A partir de {{ publicacao.vigencia_inicio.strftime('%d/%m/%Y') }}
-            {% else %}
-              A partir da Assinatura
-            {% endif %}
-          </td>
-          <td class="text-center">
-            <div class="btn-group">
-              <a href="{{ url_for('publicacao_bp.visualizar_publicacao', id=publicacao.id) }}" 
-                 class="btn btn-sm btn-info" title="Visualizar">
-                <i class="bi bi-eye"></i>
-              </a>
-              <a href="{{ url_for('publicacao_bp.editar_publicacao', id=publicacao.id) }}" 
-                 class="btn btn-sm btn-primary" title="Editar">
-                <i class="bi bi-pencil-square"></i>
-              </a>
-              <button type="button" class="btn btn-sm btn-danger" 
-                      onclick="confirmarExclusao('{{ publicacao.id }}')" title="Excluir">
-                <i class="bi bi-trash"></i>
-              </button>
+    <!-- Cabeçalho com estatísticas -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <i class="bi bi-file-text me-2"></i>Publicações Cadastradas
+                </h4>
+                <a href="{{ url_for('publicacao_bp.nova_publicacao') }}" class="btn btn-success">
+                    <i class="bi bi-plus-circle me-1"></i>Nova Publicação
+                </a>
             </div>
-          </td>
-        </tr>
-        {% else %}
-        <tr>
-          <td colspan="8" class="text-center">Nenhuma publicação encontrada.</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+        </div>
+        
+        <!-- Cards de Estatísticas -->
+        <div class="col-md-4">
+            <div class="card card-stats bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">Total de Publicações</h6>
+                            <h2 class="mb-0">{{ publicacoes.total }}</h2>
+                        </div>
+                        <i class="bi bi-file-text fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card card-stats bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">Página Atual</h6>
+                            <h2 class="mb-0">{{ publicacoes.page }} de {{ publicacoes.pages }}</h2>
+                        </div>
+                        <i class="bi bi-book fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card card-stats bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">Itens por Página</h6>
+                            <h2 class="mb-0">{{ publicacoes.per_page }}</h2>
+                        </div>
+                        <i class="bi bi-grid fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-  <!-- Paginação -->
-  {% if publicacoes.pages > 1 %}
-  <nav aria-label="Navegação de páginas" class="mt-4">
-    <ul class="pagination justify-content-center">
-      <li class="page-item {% if not publicacoes.has_prev %}disabled{% endif %}">
-        <a class="page-link" href="{{ url_for('publicacao_bp.listar', page=publicacoes.prev_num, filtro=filtro, busca=busca) if publicacoes.has_prev else '#' }}">
-          Anterior
-        </a>
-      </li>
-      
-      {% for page in publicacoes.iter_pages() %}
-        {% if page %}
-          <li class="page-item {% if page == publicacoes.page %}active{% endif %}">
-            <a class="page-link" href="{{ url_for('publicacao_bp.listar', page=page, filtro=filtro, busca=busca) }}">{{ page }}</a>
-          </li>
-        {% else %}
-          <li class="page-item disabled"><span class="page-link">...</span></li>
-        {% endif %}
-      {% endfor %}
-      
-      <li class="page-item {% if not publicacoes.has_next %}disabled{% endif %}">
-        <a class="page-link" href="{{ url_for('publicacao_bp.listar', page=publicacoes.next_num, filtro=filtro, busca=busca) if publicacoes.has_next else '#' }}">
-          Próximo
-        </a>
-      </li>
-    </ul>
-  </nav>
-  {% endif %}
+    <!-- Card de Filtros -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-funnel me-2"></i>Filtros de Busca
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label for="tipo_busca" class="form-label">Buscar por:</label>
+                    <select name="filtro" id="tipo_busca" class="form-select">
+                        <option value="especie" {% if filtro == 'especie' %}selected{% endif %}>Espécie</option>
+                        <option value="objeto" {% if filtro == 'objeto' %}selected{% endif %}>Objeto</option>
+                        <option value="contrato" {% if filtro == 'contrato' %}selected{% endif %}>Contrato SAIC</option>
+                    </select>
+                </div>
+                <div class="col-md-7">
+                    <label for="valor_busca" class="form-label">Valor:</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" name="busca" value="{{ busca }}" class="form-control" 
+                               id="valor_busca" placeholder="Digite sua busca...">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search me-1"></i>Buscar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabela de Resultados -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-table me-2"></i>Resultados
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive" style="max-height: 70vh;">
+                <table class="table table-hover table-striped align-middle mb-0">
+                    <thead class="sticky-top">
+                        <tr>
+                            <th>Espécie</th>
+                            <th>Contrato SAIC</th>
+                            <th>Objeto</th>
+                            <th>Modalidade</th>
+                            <th>Valor Global</th>
+                            <th>Data Assinatura</th>
+                            <th>Vigência</th>
+                            <th class="text-center" style="width: 150px;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for publicacao in publicacoes.items %}
+                        <tr>
+                            <td>{{ publicacao.especie }}</td>
+                            <td>{{ publicacao.contrato_saic }}</td>
+                            <td>
+                                <div class="text-truncate" style="max-width: 300px;" title="{{ publicacao.objeto }}">
+                                    {{ publicacao.objeto }}
+                                </div>
+                            </td>
+                            <td>{{ publicacao.modalidade_licitacao }}</td>
+                            <td>{{ publicacao.valor_global }}</td>
+                            <td>{{ publicacao.data_assinatura.strftime('%d/%m/%Y') }}</td>
+                            <td>
+                                {% if publicacao.vigencia_inicio and publicacao.vigencia_fim %}
+                                    {{ publicacao.vigencia_inicio.strftime('%d/%m/%Y') }} a {{ publicacao.vigencia_fim.strftime('%d/%m/%Y') }}
+                                {% elif publicacao.vigencia_inicio %}
+                                    A partir de {{ publicacao.vigencia_inicio.strftime('%d/%m/%Y') }}
+                                {% else %}
+                                    A partir da Assinatura
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group">
+                                    <a href="{{ url_for('publicacao_bp.visualizar_publicacao', id=publicacao.id) }}" 
+                                       class="btn btn-sm btn-info" title="Visualizar">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('publicacao_bp.editar_publicacao', id=publicacao.id) }}" 
+                                       class="btn btn-sm btn-primary" title="Editar">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-danger" 
+                                            onclick="confirmarExclusao('{{ publicacao.id }}')" title="Excluir">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center py-4">
+                                <i class="bi bi-inbox fs-1 text-muted"></i>
+                                <p class="mb-0 mt-2">Nenhuma publicação encontrada.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Paginação -->
+    {% if publicacoes.pages > 1 %}
+    <div class="card shadow-sm mt-4">
+        <div class="card-body">
+            <nav aria-label="Navegação de páginas">
+                <ul class="pagination justify-content-center mb-0">
+                    <li class="page-item {% if not publicacoes.has_prev %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('publicacao_bp.listar', page=publicacoes.prev_num, filtro=filtro, busca=busca) if publicacoes.has_prev else '#' }}">
+                            <i class="bi bi-chevron-left"></i> Anterior
+                        </a>
+                    </li>
+                    
+                    {% for page in publicacoes.iter_pages() %}
+                        {% if page %}
+                            <li class="page-item {% if page == publicacoes.page %}active{% endif %}">
+                                <a class="page-link" href="{{ url_for('publicacao_bp.listar', page=page, filtro=filtro, busca=busca) }}">{{ page }}</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <li class="page-item {% if not publicacoes.has_next %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('publicacao_bp.listar', page=publicacoes.next_num, filtro=filtro, busca=busca) if publicacoes.has_next else '#' }}">
+                            Próximo <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
 </div>
 
 <!-- Modal de Confirmação de Exclusão -->
 <div class="modal fade" id="modalConfirmacao" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Confirmar Exclusão</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        Tem certeza que deseja excluir esta publicação?
-      </div>
-      <div class="modal-footer">
-        <form id="formExclusao" method="POST">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
-        </form>
-      </div>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Confirmar Exclusão
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Tem certeza que deseja excluir esta publicação? Esta ação não poderá ser desfeita.</p>
+            </div>
+            <div class="modal-footer">
+                <form id="formExclusao" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i>Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>Confirmar Exclusão
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
-
 {% endblock %}
 
 {% block extra_js %}
 <script>
 function confirmarExclusao(id) {
-  const modal = new bootstrap.Modal(document.getElementById('modalConfirmacao'));
-  const form = document.getElementById('formExclusao');
-  form.action = "{{ url_for('publicacao_bp.excluir_publicacao', id=0) }}".replace('0', id);
-  modal.show();
+    const modal = new bootstrap.Modal(document.getElementById('modalConfirmacao'));
+    const form = document.getElementById('formExclusao');
+    form.action = "{{ url_for('publicacao_bp.excluir_publicacao', id=0) }}".replace('0', id);
+    modal.show();
 }
 </script>
 {% endblock %}

@@ -39,9 +39,11 @@ def create_app():
 
     # -------------------- Importa modelos após init_app para evitar import circular --------------------
     from models import (
-        Usuario, Perfil, UnidadeLocal, NaturezaDespesa, Grupo, Item,
-        Fornecedor, EntradaMaterial, EntradaItem, SaidaMaterial, SaidaItem, BemPatrimonial
-    )
+    Usuario, Perfil, UnidadeLocal, NaturezaDespesa, Grupo, Item,
+    Fornecedor, EntradaMaterial, EntradaItem, SaidaMaterial, SaidaItem, 
+    BemPatrimonial, Publicacao, PublicacaoPartesEmbrapa, PublicacaoPartesFornecedor,
+    PublicacaoSignatariosEmbrapa, PublicacaoSignatariosExternos
+)
 
     # -------------------- Define função de carregamento do usuário --------------------
     @login_manager.user_loader

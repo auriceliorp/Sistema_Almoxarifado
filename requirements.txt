@@ -40,4 +40,8 @@ flask-migrate==4.0.5
 # faker: geração de dados falsos para testes
 Faker==19.13.0
 
+# Pillow: processamento de imagens
 Pillow>=9.0.0
+
+# Flask-WTF: proteção CSRF e formulários
+Flask-WTF==1.2.1

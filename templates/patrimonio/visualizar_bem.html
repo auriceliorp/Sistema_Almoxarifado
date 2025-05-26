@@ -1,72 +1,191 @@
 {% extends 'base_simplificada.html' %}
+{% block title %}Visualizar Bem Patrimonial{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4>Visualizar Bem Patrimonial</h4>
-    <a href="{{ url_for('patrimonio_bp.editar_bem', id=bem.id) }}" class="btn btn-primary">
-      <i class="bi bi-pencil-square"></i> Editar
-    </a>
-  </div>
-
-  <div class="row g-4">
-    <div class="col-md-4">
-      {% if bem.foto %}
-        <img src="{{ url_for('static', filename=bem.foto[7:] if bem.foto.startswith('static/') else bem.foto) }}"
-             class="img-fluid rounded shadow-sm" alt="Foto do Bem">
-      {% else %}
-        <div class="text-muted fst-italic">Sem foto disponível</div>
-      {% endif %}
+<div class="container-fluid py-4">
+    <!-- Cabeçalho -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0">
+                    <i class="bi bi-eye me-2"></i>
+                    Visualizar Bem Patrimonial
+                </h4>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('patrimonio_bp.listar_bens') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>
+                        Voltar para Lista
+                    </a>
+                    <a href="{{ url_for('patrimonio_bp.editar_bem', id=bem.id) }}" class="btn btn-primary">
+                        <i class="bi bi-pencil-square me-1"></i>
+                        Editar
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="col-md-8">
-      <dl class="row">
-        <dt class="col-sm-4">Nº Patrimônio UL</dt>
-        <dd class="col-sm-8">{{ bem.numero_ul }}</dd>
+    <div class="row g-4">
+        <!-- Foto do Bem -->
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary bg-gradient text-white py-3">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-camera me-2"></i>
+                        Foto do Bem
+                    </h5>
+                </div>
+                <div class="card-body d-flex align-items-center justify-content-center">
+                    {% if bem.foto %}
+                        <img src="{{ url_for('static', filename=bem.foto[7:] if bem.foto.startswith('static/') else bem.foto) }}"
+                             class="img-fluid rounded" alt="Foto do Bem">
+                    {% else %}
+                        <div class="text-center text-muted">
+                            <i class="bi bi-image fs-1 d-block mb-2"></i>
+                            <span class="fst-italic">Sem foto disponível</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
 
-        <dt class="col-sm-4">Nº Patrimônio SAP</dt>
-        <dd class="col-sm-8">{{ bem.numero_sap or 'Não informado' }}</dd>
+        <div class="col-md-8">
+            <!-- Identificação -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary bg-gradient text-white py-3">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-upc-scan me-2"></i>
+                        Identificação do Bem
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="border-start border-4 border-primary ps-3">
+                                <p class="text-muted mb-1">Nº Patrimônio UL</p>
+                                <h6 class="mb-0">{{ bem.numero_ul }}</h6>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border-start border-4 border-primary ps-3">
+                                <p class="text-muted mb-1">Nº Patrimônio SAP</p>
+                                <h6 class="mb-0">{{ bem.numero_sap or 'Não informado' }}</h6>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border-start border-4 border-primary ps-3">
+                                <p class="text-muted mb-1">Nº Patrimônio SIADS</p>
+                                <h6 class="mb-0">{{ bem.numero_siads or 'Não informado' }}</h6>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="border-start border-4 border-primary ps-3">
+                                <p class="text-muted mb-1">Nome</p>
+                                <h6 class="mb-0">{{ bem.nome }}</h6>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="border-start border-4 border-primary ps-3">
+                                <p class="text-muted mb-1">Descrição</p>
+                                <h6 class="mb-0">{{ bem.descricao }}</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <dt class="col-sm-4">Nº Patrimônio SIADS</dt>
-        <dd class="col-sm-8">{{ bem.numero_siads or 'Não informado' }}</dd>
+            <!-- Classificação -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success bg-gradient text-white py-3">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-diagram-3 me-2"></i>
+                        Classificação e Localização
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="border-start border-4 border-success ps-3">
+                                <p class="text-muted mb-1">Grupo</p>
+                                <h6 class="mb-0">{{ bem.grupo_bem }}</h6>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="border-start border-4 border-success ps-3">
+                                <p class="text-muted mb-1">Classificação Contábil</p>
+                                <h6 class="mb-0">{{ bem.classificacao_contabil or 'Não informada' }}</h6>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="border-start border-4 border-success ps-3">
+                                <p class="text-muted mb-1">Localização</p>
+                                <h6 class="mb-0">{{ bem.localizacao or 'Não informada' }}</h6>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="border-start border-4 border-success ps-3">
+                                <p class="text-muted mb-1">Detentor</p>
+                                <h6 class="mb-0">{{ bem.detentor.nome if bem.detentor else 'Não informado' }}</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <dt class="col-sm-4">Nome</dt>
-        <dd class="col-sm-8">{{ bem.nome }}</dd>
+            <!-- Situação e Valores -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info bg-gradient text-white py-3">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Situação e Valores
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="border-start border-4 border-info ps-3">
+                                <p class="text-muted mb-1">Situação</p>
+                                <h6 class="mb-0">
+                                    <span class="badge rounded-pill bg-{{ 'success' if bem.status == 'Ativo' else 'secondary' }}">
+                                        {{ bem.status or 'Não definida' }}
+                                    </span>
+                                </h6>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="border-start border-4 border-info ps-3">
+                                <p class="text-muted mb-1">Data de Aquisição</p>
+                                <h6 class="mb-0">{{ bem.data_aquisicao.strftime('%d/%m/%Y') if bem.data_aquisicao else 'Não informada' }}</h6>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="border-start border-4 border-info ps-3">
+                                <p class="text-muted mb-1">Valor de Aquisição</p>
+                                <h6 class="mb-0">R$ {{ '%.2f'|format(bem.valor_aquisicao) if bem.valor_aquisicao else 'Não informado' }}</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <dt class="col-sm-4">Descrição</dt>
-        <dd class="col-sm-8">{{ bem.descricao }}</dd>
-
-        <dt class="col-sm-4">Grupo</dt>
-        <dd class="col-sm-8">{{ bem.grupo_bem }}</dd>
-
-        <dt class="col-sm-4">Classificação Contábil</dt>
-        <dd class="col-sm-8">{{ bem.classificacao_contabil or 'Não informada' }}</dd>
-
-        <dt class="col-sm-4">Detentor</dt>
-        <dd class="col-sm-8">{{ bem.detentor.nome if bem.detentor else 'Não informado' }}</dd>
-
-        <dt class="col-sm-4">Localização</dt>
-        <dd class="col-sm-8">{{ bem.localizacao or 'Não informada' }}</dd>
-
-        <dt class="col-sm-4">Situação</dt>
-        <dd class="col-sm-8">{{ bem.status or 'Não definida' }}</dd>
-
-        <dt class="col-sm-4">Data de Aquisição</dt>
-        <dd class="col-sm-8">{{ bem.data_aquisicao.strftime('%d/%m/%Y') if bem.data_aquisicao else 'Não informada' }}</dd>
-
-        <dt class="col-sm-4">Valor de Aquisição</dt>
-        <dd class="col-sm-8">R$ {{ '%.2f'|format(bem.valor_aquisicao) if bem.valor_aquisicao else 'Não informado' }}</dd>
-
-        <dt class="col-sm-4">Observações</dt>
-        <dd class="col-sm-8">{{ bem.observacoes or 'Nenhuma' }}</dd>
-      </dl>
+            <!-- Observações -->
+            {% if bem.observacoes %}
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary bg-gradient text-white py-3">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-card-text me-2"></i>
+                        Observações
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="border-start border-4 border-secondary ps-3">
+                        <p class="mb-0">{{ bem.observacoes }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
     </div>
-  </div>
-
-  <div class="mt-4">
-    <a href="{{ url_for('patrimonio_bp.listar_bens') }}" class="btn btn-secondary">
-      <i class="bi bi-arrow-left"></i> Voltar à Lista
-    </a>
-  </div>
 </div>
 {% endblock %}
 

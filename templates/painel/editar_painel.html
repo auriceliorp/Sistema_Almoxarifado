@@ -1,228 +1,439 @@
 {% extends 'base_simplificada.html' %}
 
+{% block title %}Editar Processo de Contratação{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Estilos gerais */
+    .form-container {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        padding: 2rem;
+    }
+    
+    /* Form floating */
+    .form-floating > .form-control,
+    .form-floating > .form-select {
+        height: calc(3.5rem + 2px);
+        line-height: 1.25;
+        padding: 1rem 0.75rem;
+    }
+    .form-floating > label {
+        padding: 1rem 0.75rem;
+    }
+    
+    /* Select2 customização */
+    .select2-container .select2-selection--single {
+        height: calc(3.5rem + 2px);
+        padding: 1rem 0.75rem;
+        font-size: 1rem;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 1.5;
+        padding: 0;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: calc(3.5rem + 2px);
+    }
+    
+    /* Campos calculados */
+    .calculated-field {
+        background-color: #f8f9fa;
+        cursor: not-allowed;
+    }
+    
+    /* Seções do formulário */
+    .form-section {
+        border-bottom: 1px solid #eee;
+        padding-bottom: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .form-section:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+        margin-bottom: 0;
+    }
+    .form-section-title {
+        color: #2c3e50;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Campos monetários */
+    .money-field {
+        position: relative;
+    }
+    .money-field::before {
+        content: 'R$';
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        z-index: 4;
+    }
+    .money-field .form-control {
+        padding-left: 2.5rem;
+    }
+    
+    /* Botões de ação */
+    .btn-action {
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+    }
+    .btn-action:hover {
+        transform: translateY(-2px);
+    }
+</style>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-  <h4 class="mb-4">Editar Processo de Contratação</h4>
-
-  <form method="POST">
-    <div class="row g-3">
-
-      <!-- Ano, Abertura, Homologação, Período -->
-      <div class="col-md-2">
-        <label class="form-label">Ano</label>
-        <input type="text" class="form-control" name="ano" value="{{ processo.ano }}" required>
-      </div>
-      <div class="col-md-3">
-        <label class="form-label">Data de Abertura</label>
-        <input type="date" class="form-control" name="data_abertura" value="{{ processo.data_abertura }}">
-      </div>
-      <div class="col-md-3">
-        <label class="form-label">Data de Homologação</label>
-        <input type="date" class="form-control" name="data_homologacao" value="{{ processo.data_homologacao }}">
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">Período (dias)</label>
-        <input type="text" class="form-control" name="periodo_dias" id="periodo_dias" value="{{ processo.periodo_dias }}" readonly>
-      </div>
-
-      <!-- Processo SEI -->
-      <div class="col-md-4">
-        <label class="form-label">Nº Processo SEI</label>
-        <input type="text" class="form-control" name="numero_sei" value="{{ processo.numero_sei }}" required>
-      </div>
-
-      <!-- Modalidade, Registro de Preços, Órgãos Participantes -->
-      <div class="col-md-4">
-        <label class="form-label">Modalidade de Licitação</label>
-        <select class="form-select" name="modalidade">
-          <option selected disabled>Selecione</option>
-          {% for opt in ['Dispensa de Licitação', 'Dispensa de Licitação Eletrônica', 'Inexigibilidade de Licitação', 'Pregão Eletrônico', 'Licitação Embrapa'] %}
-            <option {% if processo.modalidade == opt %}selected{% endif %}>{{ opt }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Registro de Preços</label>
-        <select class="form-select" name="registro_precos">
-          {% for opt in ['Sim', 'Não', 'Não se aplica'] %}
-            <option {% if processo.registro_precos == opt %}selected{% endif %}>{{ opt }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Órgãos Participantes</label>
-        <select class="form-select" name="orgaos_participantes">
-          {% for opt in ['Sim', 'Não', 'Não se aplica'] %}
-            <option {% if processo.orgaos_participantes == opt %}selected{% endif %}>{{ opt }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <!-- Número da Licitação, Parecer, Fundamentação -->
-      <div class="col-md-4">
-        <label class="form-label">Número da Licitação</label>
-        <input type="text" class="form-control" name="numero_licitacao" value="{{ processo.numero_licitacao }}">
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Parecer Jurídico</label>
-        <input type="text" class="form-control" name="parecer_juridico" value="{{ processo.parecer_juridico }}">
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Fundamentação Legal</label>
-        <select class="form-select" name="fundamentacao_legal">
-          {% for opt in [
-            "Art. 17, I (RLCC) c/c Art. 6º, XVI (Lei 14.133/2021) - Pregão",
-            "Art. 29, I (Lei 13.303/2016) c/c Art. 98, Art. 100 e Art. 103, §3º - Dispensa",
-            "Art. 29, II - Dispensa",
-            "Art. 29, X - Prestadoras de Serviço Público",
-            "Art. 29, XV - Contratação Emergencial",
-            "Art. 30, I - Inexigibilidade",
-            "Art. 30, II - Inexigibilidade",
-            "Art. 108, IV - Congressos, Feiras e Exposições",
-            "Art. 75, IV, “c” - P&D",
-            "Art. 17, II - Licitação Embrapa"
-          ] %}
-            <option {% if processo.fundamentacao_legal == opt %}selected{% endif %}>{{ opt }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <!-- Objeto -->
-      <div class="col-md-12">
-        <label class="form-label">Objeto</label>
-        <textarea class="form-control" name="objeto" rows="3" required>{{ processo.objeto }}</textarea>
-      </div>
-
-      <!-- Natureza, Estimado, Homologado, Economia -->
-      <div class="col-md-4">
-        <label class="form-label">Natureza da Despesa</label>
-        <select class="form-select" name="natureza_despesa">
-          {% for opt in ['Consumo', 'Serviço', 'Obras/Serviço de engenharia', 'Investimento'] %}
-            <option {% if processo.natureza_despesa == opt %}selected{% endif %}>{{ opt }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">Valor Estimado (R$)</label>
-        <input type="text" class="form-control" id="valor_estimado" name="valor_estimado" value="{{ processo.valor_estimado }}">
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">Valor Homologado (R$)</label>
-        <input type="text" class="form-control" id="valor_homologado" name="valor_homologado" value="{{ processo.valor_homologado }}">
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">% Economia</label>
-        <input type="text" class="form-control" id="percentual_economia" name="percentual_economia" value="{{ processo.percentual_economia }}" readonly>
-      </div>
-
-      <!-- Impugnação, Recurso, Desertos -->
-      <div class="col-md-2">
-        <label class="form-label">Impugnação</label>
-        <select class="form-select" name="impugnacao">
-          {% for opt in ['Sim', 'Não', 'Não se aplica'] %}
-            <option {% if processo.impugnacao == opt %}selected{% endif %}>{{ opt }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">Recurso</label>
-        <select class="form-select" name="recurso">
-          {% for opt in ['Sim', 'Não', 'Não se aplica'] %}
-            <option {% if processo.recurso == opt %}selected{% endif %}>{{ opt }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">Itens Desertos</label>
-        <select class="form-select" name="itens_desertos">
-          {% for opt in ['Sim', 'Não', 'Não se aplica'] %}
-            <option {% if processo.itens_desertos == opt %}selected{% endif %}>{{ opt }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <!-- Responsável, Solicitante, Setor, Status -->
-      <div class="col-md-4">
-        <label class="form-label">Responsável pela Condução</label>
-        <select name="responsavel_conducao" class="form-select">
-          {% for u in usuarios %}
-            <option value="{{ u.nome }}" {% if processo.responsavel_conducao == u.nome %}selected{% endif %}>{{ u.nome }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Solicitante</label>
-        <select name="solicitante_id" class="form-select">
-          <option value="">Selecione</option>
-          {% for u in usuarios %}
-            <option value="{{ u.id }}" {% if processo.solicitante_id == u.id %}selected{% endif %}>{{ u.nome }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Setor Responsável</label>
-        <select name="setor_responsavel" class="form-select">
-          {% for opt in ['SPS', 'SOF', 'SCC', 'CHAA'] %}
-            <option {% if processo.setor_responsavel == opt %}selected{% endif %}>{{ opt }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Status</label>
-        <select name="status" class="form-select">
-          {% for opt in ['Processo Iniciado', 'Em andamento', 'Concluído', 'Aguardando Definições', 'Cancelada'] %}
-            <option {% if processo.status == opt %}selected{% endif %}>{{ opt }}</option>
-          {% endfor %}
-        </select>
-      </div>
+<div class="container-fluid py-4">
+    <!-- Cabeçalho -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">
+            <i class="bi bi-pencil-square me-2"></i>Editar Processo de Contratação
+        </h4>
+        <a href="{{ url_for('painel_bp.lista_painel') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Voltar
+        </a>
     </div>
 
-    <div class="mt-4">
-      <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Salvar Alterações</button>
-      <a href="{{ url_for('painel_bp.lista_painel') }}" class="btn btn-secondary">Voltar</a>
+    <!-- Formulário -->
+    <div class="form-container">
+        <form method="POST" class="needs-validation" novalidate>
+            <!-- Seção: Informações Básicas -->
+            <div class="form-section">
+                <h5 class="form-section-title">
+                    <i class="bi bi-info-circle me-2"></i>Informações Básicas
+                </h5>
+                <div class="row g-3">
+                    <div class="col-md-2">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" name="ano" id="ano" value="{{ processo.ano }}" required>
+                            <label for="ano">Ano</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                            <input type="date" class="form-control" name="data_abertura" id="data_abertura" value="{{ processo.data_abertura }}">
+                            <label for="data_abertura">Data de Abertura</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                            <input type="date" class="form-control" name="data_homologacao" id="data_homologacao" value="{{ processo.data_homologacao }}">
+                            <label for="data_homologacao">Data de Homologação</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-floating">
+                            <input type="text" class="form-control calculated-field" name="periodo_dias" id="periodo_dias" value="{{ processo.periodo_dias }}" readonly>
+                            <label for="periodo_dias">Período (dias)</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" name="numero_sei" id="numero_sei" value="{{ processo.numero_sei }}" required>
+                            <label for="numero_sei">Nº Processo SEI</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção: Modalidade e Características -->
+            <div class="form-section">
+                <h5 class="form-section-title">
+                    <i class="bi bi-card-list me-2"></i>Modalidade e Características
+                </h5>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <select class="form-select" name="modalidade" id="modalidade">
+                                <option selected disabled>Selecione</option>
+                                {% for opt in ['Dispensa de Licitação', 'Dispensa de Licitação Eletrônica', 'Inexigibilidade de Licitação', 'Pregão Eletrônico', 'Licitação Embrapa'] %}
+                                    <option {% if processo.modalidade == opt %}selected{% endif %}>{{ opt }}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="modalidade">Modalidade de Licitação</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <select class="form-select" name="registro_precos" id="registro_precos">
+                                {% for opt in ['Sim', 'Não', 'Não se aplica'] %}
+                                    <option {% if processo.registro_precos == opt %}selected{% endif %}>{{ opt }}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="registro_precos">Registro de Preços</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <select class="form-select" name="orgaos_participantes" id="orgaos_participantes">
+                                {% for opt in ['Sim', 'Não', 'Não se aplica'] %}
+                                    <option {% if processo.orgaos_participantes == opt %}selected{% endif %}>{{ opt }}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="orgaos_participantes">Órgãos Participantes</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" name="numero_licitacao" id="numero_licitacao" value="{{ processo.numero_licitacao }}">
+                            <label for="numero_licitacao">Número da Licitação</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" name="parecer_juridico" id="parecer_juridico" value="{{ processo.parecer_juridico }}">
+                            <label for="parecer_juridico">Parecer Jurídico</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <select class="form-select select2" name="fundamentacao_legal" id="fundamentacao_legal">
+                                {% for opt in [
+                                    "Art. 17, I (RLCC) c/c Art. 6º, XVI (Lei 14.133/2021) - Pregão",
+                                    "Art. 29, I (Lei 13.303/2016) c/c Art. 98, Art. 100 e Art. 103, §3º - Dispensa",
+                                    "Art. 29, II - Dispensa",
+                                    "Art. 29, X - Prestadoras de Serviço Público",
+                                    "Art. 29, XV - Contratação Emergencial",
+                                    "Art. 30, I - Inexigibilidade",
+                                    "Art. 30, II - Inexigibilidade",
+                                    "Art. 108, IV - Congressos, Feiras e Exposições",
+                                    "Art. 75, IV, "c" - P&D",
+                                    "Art. 17, II - Licitação Embrapa"
+                                ] %}
+                                    <option {% if processo.fundamentacao_legal == opt %}selected{% endif %}>{{ opt }}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="fundamentacao_legal">Fundamentação Legal</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção: Objeto e Valores -->
+            <div class="form-section">
+                <h5 class="form-section-title">
+                    <i class="bi bi-currency-dollar me-2"></i>Objeto e Valores
+                </h5>
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <div class="form-floating">
+                            <textarea class="form-control" name="objeto" id="objeto" style="height: 100px" required>{{ processo.objeto }}</textarea>
+                            <label for="objeto">Objeto</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <select class="form-select" name="natureza_despesa" id="natureza_despesa">
+                                {% for opt in ['Consumo', 'Serviço', 'Obras/Serviço de engenharia', 'Investimento'] %}
+                                    <option {% if processo.natureza_despesa == opt %}selected{% endif %}>{{ opt }}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="natureza_despesa">Natureza da Despesa</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-floating money-field">
+                            <input type="text" class="form-control" id="valor_estimado" name="valor_estimado" value="{{ processo.valor_estimado }}">
+                            <label for="valor_estimado">Valor Estimado</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-floating money-field">
+                            <input type="text" class="form-control" id="valor_homologado" name="valor_homologado" value="{{ processo.valor_homologado }}">
+                            <label for="valor_homologado">Valor Homologado</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-floating">
+                            <input type="text" class="form-control calculated-field" id="percentual_economia" name="percentual_economia" value="{{ processo.percentual_economia }}" readonly>
+                            <label for="percentual_economia">% Economia</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção: Status e Ocorrências -->
+            <div class="form-section">
+                <h5 class="form-section-title">
+                    <i class="bi bi-flag me-2"></i>Status e Ocorrências
+                </h5>
+                <div class="row g-3">
+                    <div class="col-md-2">
+                        <div class="form-floating">
+                            <select class="form-select" name="impugnacao" id="impugnacao">
+                                {% for opt in ['Sim', 'Não', 'Não se aplica'] %}
+                                    <option {% if processo.impugnacao == opt %}selected{% endif %}>{{ opt }}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="impugnacao">Impugnação</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-floating">
+                            <select class="form-select" name="recurso" id="recurso">
+                                {% for opt in ['Sim', 'Não', 'Não se aplica'] %}
+                                    <option {% if processo.recurso == opt %}selected{% endif %}>{{ opt }}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="recurso">Recurso</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-floating">
+                            <select class="form-select" name="itens_desertos" id="itens_desertos">
+                                {% for opt in ['Sim', 'Não', 'Não se aplica'] %}
+                                    <option {% if processo.itens_desertos == opt %}selected{% endif %}>{{ opt }}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="itens_desertos">Itens Desertos</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção: Responsáveis -->
+            <div class="form-section">
+                <h5 class="form-section-title">
+                    <i class="bi bi-people me-2"></i>Responsáveis
+                </h5>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <select name="responsavel_conducao" id="responsavel_conducao" class="form-select select2">
+                                {% for u in usuarios %}
+                                    <option value="{{ u.nome }}" {% if processo.responsavel_conducao == u.nome %}selected{% endif %}>{{ u.nome }}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="responsavel_conducao">Responsável pela Condução</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <select name="solicitante_id" id="solicitante_id" class="form-select select2">
+                                <option value="">Selecione</option>
+                                {% for u in usuarios %}
+                                    <option value="{{ u.id }}" {% if processo.solicitante_id == u.id %}selected{% endif %}>{{ u.nome }}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="solicitante_id">Solicitante</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <select name="setor_responsavel" id="setor_responsavel" class="form-select">
+                                {% for opt in ['SPS', 'SOF', 'SCC', 'CHAA'] %}
+                                    <option {% if processo.setor_responsavel == opt %}selected{% endif %}>{{ opt }}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="setor_responsavel">Setor Responsável</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <select name="status" id="status" class="form-select">
+                                {% for opt in ['Processo Iniciado', 'Em andamento', 'Concluído', 'Aguardando Definições', 'Cancelada'] %}
+                                    <option {% if processo.status == opt %}selected{% endif %}>{{ opt }}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="status">Status</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botões de Ação -->
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <a href="{{ url_for('painel_bp.lista_painel') }}" class="btn btn-outline-secondary btn-action">
+                    <i class="bi bi-x-circle me-2"></i>Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary btn-action">
+                    <i class="bi bi-save me-2"></i>Salvar Alterações
+                </button>
+            </div>
+        </form>
     </div>
-  </form>
 </div>
+{% endblock %}
 
-<!-- Scripts para cálculo -->
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
 <script>
-  const inputEstimado = document.getElementById('valor_estimado');
-  const inputHomologado = document.getElementById('valor_homologado');
-  const campoEconomia = document.getElementById('percentual_economia');
+$(document).ready(function() {
+    // Inicializa Select2
+    $('.select2').select2({
+        theme: 'bootstrap-5',
+        width: '100%'
+    });
 
-  function calcularEconomia() {
-    const estimado = parseFloat(inputEstimado.value.replace(',', '.')) || 0;
-    const homologado = parseFloat(inputHomologado.value.replace(',', '.')) || 0;
+    // Máscaras para campos monetários
+    $('#valor_estimado, #valor_homologado').mask('#.##0,00', {reverse: true});
+});
+
+// Função para calcular economia
+function calcularEconomia() {
+    const estimado = parseFloat($('#valor_estimado').val().replace('.', '').replace(',', '.')) || 0;
+    const homologado = parseFloat($('#valor_homologado').val().replace('.', '').replace(',', '.')) || 0;
 
     if (estimado > 0) {
-      const economia = ((estimado - homologado) / estimado * 100).toFixed(2);
-      campoEconomia.value = `${economia}%`;
+        const economia = ((estimado - homologado) / estimado * 100).toFixed(2);
+        $('#percentual_economia').val(`${economia}%`);
     } else {
-      campoEconomia.value = '';
+        $('#percentual_economia').val('');
     }
-  }
+}
 
-  function calcularPeriodo() {
-    const dtAbertura = document.querySelector('input[name="data_abertura"]').value;
-    const dtHomolog = document.querySelector('input[name="data_homologacao"]').value;
+// Função para calcular período
+function calcularPeriodo() {
+    const dtAbertura = $('#data_abertura').val();
+    const dtHomolog = $('#data_homologacao').val();
 
     if (dtAbertura && dtHomolog) {
-      const d1 = new Date(dtAbertura);
-      const d2 = new Date(dtHomolog);
-      const diff = Math.floor((d2 - d1) / (1000 * 60 * 60 * 24));
-      document.getElementById('periodo_dias').value = diff >= 0 ? diff : '';
+        const d1 = new Date(dtAbertura);
+        const d2 = new Date(dtHomolog);
+        const diff = Math.floor((d2 - d1) / (1000 * 60 * 60 * 24));
+        $('#periodo_dias').val(diff >= 0 ? diff : '');
     }
-  }
+}
 
-  window.addEventListener('DOMContentLoaded', () => {
+// Event listeners
+$('#valor_estimado, #valor_homologado').on('input', calcularEconomia);
+$('#data_abertura, #data_homologacao').on('input', calcularPeriodo);
+
+// Validação do formulário
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+
+// Inicialização
+$(document).ready(function() {
     calcularEconomia();
     calcularPeriodo();
-  });
-
-  inputEstimado.addEventListener('input', calcularEconomia);
-  inputHomologado.addEventListener('input', calcularEconomia);
-  document.querySelector('input[name="data_abertura"]').addEventListener('input', calcularPeriodo);
-  document.querySelector('input[name="data_homologacao"]').addEventListener('input', calcularPeriodo);
+});
 </script>
 {% endblock %}
 

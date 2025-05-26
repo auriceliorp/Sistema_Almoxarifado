@@ -7,56 +7,79 @@
     /* Estilos gerais */
     .detail-container {
         background: white;
-        border-radius: 8px;
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border-radius: 12px;
+        box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
         padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
     }
     
     /* Seções */
     .detail-section {
-        border-bottom: 1px solid #eee;
-        padding-bottom: 1.5rem;
-        margin-bottom: 1.5rem;
+        border-radius: 8px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+    }
+    .detail-section:nth-child(even) {
+        background-color: #fff;
     }
     .detail-section:last-child {
-        border-bottom: none;
-        padding-bottom: 0;
-        margin-bottom: 0;
+        margin-bottom: 1rem;
     }
     .detail-section-title {
-        color: #2c3e50;
-        font-size: 1.1rem;
+        color: #1a237e;
+        font-size: 1.25rem;
         font-weight: 600;
         margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #e3e6f0;
     }
     
     /* Campos */
     .detail-field {
+        background: rgba(255, 255, 255, 0.7);
+        padding: 1rem;
+        border-radius: 6px;
         margin-bottom: 1rem;
+        border: 1px solid rgba(0,0,0,0.05);
+        transition: all 0.2s ease;
+    }
+    .detail-field:hover {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        border-color: rgba(0,0,0,0.1);
     }
     .detail-label {
         font-weight: 600;
-        color: #495057;
+        color: #344767;
         font-size: 0.875rem;
-        margin-bottom: 0.25rem;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
     .detail-value {
         color: #2c3e50;
         font-size: 1rem;
+        padding: 0.25rem 0;
     }
     
     /* Valores monetários */
     .money-value {
         color: #198754;
-        font-weight: 500;
+        font-weight: 600;
+        font-size: 1.1rem;
     }
     
     /* Status badges */
     .status-badge {
-        padding: 0.35rem 0.65rem;
-        border-radius: 0.25rem;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
         font-size: 0.875rem;
-        font-weight: 500;
+        font-weight: 600;
+        display: inline-block;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
     .status-iniciado { background-color: #cff4fc; color: #055160; }
     .status-andamento { background-color: #fff3cd; color: #664d03; }
@@ -67,13 +90,38 @@
     /* Botões de ação */
     .btn-action {
         padding: 0.75rem 1.5rem;
-        font-weight: 500;
+        font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         transition: all 0.3s ease;
+        border-radius: 6px;
     }
     .btn-action:hover {
         transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    /* Cabeçalho da página */
+    .page-header {
+        background: linear-gradient(45deg, #1a237e, #283593);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .page-header h4 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+    .page-header .btn {
+        color: white;
+        border-color: rgba(255,255,255,0.5);
+    }
+    .page-header .btn:hover {
+        background: rgba(255,255,255,0.1);
+        border-color: white;
     }
 </style>
 {% endblock %}
@@ -81,11 +129,11 @@
 {% block content %}
 <div class="container-fluid py-4">
     <!-- Cabeçalho -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="page-header d-flex justify-content-between align-items-center">
         <h4 class="mb-0">
             <i class="bi bi-file-text me-2"></i>Detalhes do Processo de Contratação
         </h4>
-        <a href="{{ url_for('painel_bp.lista_painel') }}" class="btn btn-outline-secondary">
+        <a href="{{ url_for('painel_bp.lista_painel') }}" class="btn btn-outline-light">
             <i class="bi bi-arrow-left me-2"></i>Voltar
         </a>
     </div>
@@ -98,35 +146,29 @@
                 <i class="bi bi-info-circle me-2"></i>Informações Básicas
             </h5>
             <div class="row g-3">
-                <div class="col-md-2">
-                    <div class="detail-field">
-                        <div class="detail-label">Ano</div>
-                        <div class="detail-value">{{ processo.ano }}</div>
-                    </div>
+                <div class="col-md-6">
+                    <label class="detail-label">Número do Processo</label>
+                    <input type="text" class="form-control detail-field" value="{{ processo.numero_processo }}" readonly>
                 </div>
-                <div class="col-md-3">
-                    <div class="detail-field">
-                        <div class="detail-label">Data de Abertura</div>
-                        <div class="detail-value">{{ processo.data_abertura.strftime('%d/%m/%Y') if processo.data_abertura else '-' }}</div>
-                    </div>
+                <div class="col-md-6">
+                    <label class="detail-label">Data de Abertura</label>
+                    <input type="text" class="form-control detail-field" value="{{ processo.data_abertura.strftime('%d/%m/%Y') }}" readonly>
                 </div>
-                <div class="col-md-3">
-                    <div class="detail-field">
-                        <div class="detail-label">Data de Homologação</div>
-                        <div class="detail-value">{{ processo.data_homologacao.strftime('%d/%m/%Y') if processo.data_homologacao else '-' }}</div>
-                    </div>
+                <div class="col-md-6">
+                    <label class="detail-label">Data de Conclusão</label>
+                    <input type="text" class="form-control detail-field" value="{{ processo.data_conclusao.strftime('%d/%m/%Y') }}" readonly>
                 </div>
-                <div class="col-md-2">
-                    <div class="detail-field">
-                        <div class="detail-label">Período (dias)</div>
-                        <div class="detail-value">{{ processo.periodo_dias if processo.periodo_dias else '-' }}</div>
-                    </div>
+                <div class="col-md-6">
+                    <label class="detail-label">Valor Total</label>
+                    <input type="text" class="form-control detail-field" value="{{ 'R$ {:,.2f}'.format(processo.valor_total) }}" readonly>
                 </div>
-                <div class="col-md-4">
-                    <div class="detail-field">
-                        <div class="detail-label">Nº Processo SEI</div>
-                        <div class="detail-value">{{ processo.numero_sei }}</div>
-                    </div>
+                <div class="col-md-6">
+                    <label class="detail-label">Status</label>
+                    <input type="text" class="form-control detail-field" value="{{ processo.status }}" readonly>
+                </div>
+                <div class="col-md-6">
+                    <label class="detail-label">Objeto</label>
+                    <input type="text" class="form-control detail-field" value="{{ processo.objeto }}" readonly>
                 </div>
             </div>
         </div>
@@ -137,41 +179,13 @@
                 <i class="bi bi-card-list me-2"></i>Modalidade e Características
             </h5>
             <div class="row g-3">
-                <div class="col-md-4">
-                    <div class="detail-field">
-                        <div class="detail-label">Modalidade</div>
-                        <div class="detail-value">{{ processo.modalidade }}</div>
-                    </div>
+                <div class="col-md-6">
+                    <label class="detail-label">Modalidade</label>
+                    <input type="text" class="form-control detail-field" value="{{ processo.modalidade }}" readonly>
                 </div>
-                <div class="col-md-4">
-                    <div class="detail-field">
-                        <div class="detail-label">Registro de Preços</div>
-                        <div class="detail-value">{{ processo.registro_precos }}</div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="detail-field">
-                        <div class="detail-label">Órgãos Participantes</div>
-                        <div class="detail-value">{{ processo.orgaos_participantes }}</div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="detail-field">
-                        <div class="detail-label">Número da Licitação</div>
-                        <div class="detail-value">{{ processo.numero_licitacao if processo.numero_licitacao else '-' }}</div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="detail-field">
-                        <div class="detail-label">Parecer Jurídico</div>
-                        <div class="detail-value">{{ processo.parecer_juridico if processo.parecer_juridico else '-' }}</div>
-                    </div>
-                </div>
-                <div class="col-md-12">
-                    <div class="detail-field">
-                        <div class="detail-label">Fundamentação Legal</div>
-                        <div class="detail-value">{{ processo.fundamentacao_legal }}</div>
-                    </div>
+                <div class="col-md-6">
+                    <label class="detail-label">Características</label>
+                    <input type="text" class="form-control detail-field" value="{{ processo.caracteristicas }}" readonly>
                 </div>
             </div>
         </div>
@@ -182,35 +196,13 @@
                 <i class="bi bi-currency-dollar me-2"></i>Objeto e Valores
             </h5>
             <div class="row g-3">
-                <div class="col-md-12">
-                    <div class="detail-field">
-                        <div class="detail-label">Objeto</div>
-                        <div class="detail-value">{{ processo.objeto }}</div>
-                    </div>
+                <div class="col-md-6">
+                    <label class="detail-label">Objeto</label>
+                    <input type="text" class="form-control detail-field" value="{{ processo.objeto }}" readonly>
                 </div>
-                <div class="col-md-4">
-                    <div class="detail-field">
-                        <div class="detail-label">Natureza da Despesa</div>
-                        <div class="detail-value">{{ processo.natureza_despesa }}</div>
-                    </div>
-                </div>
-                <div class="col-md-2">
-                    <div class="detail-field">
-                        <div class="detail-label">Valor Estimado</div>
-                        <div class="detail-value money-value">R$ {{ '%.2f'|format(processo.valor_estimado|float) }}</div>
-                    </div>
-                </div>
-                <div class="col-md-2">
-                    <div class="detail-field">
-                        <div class="detail-label">Valor Homologado</div>
-                        <div class="detail-value money-value">R$ {{ '%.2f'|format(processo.valor_homologado|float) }}</div>
-                    </div>
-                </div>
-                <div class="col-md-2">
-                    <div class="detail-field">
-                        <div class="detail-label">% Economia</div>
-                        <div class="detail-value money-value">{{ processo.percentual_economia }}</div>
-                    </div>
+                <div class="col-md-6">
+                    <label class="detail-label">Valor Total</label>
+                    <input type="text" class="form-control detail-field" value="{{ 'R$ {:,.2f}'.format(processo.valor_total) }}" readonly>
                 </div>
             </div>
         </div>
@@ -221,39 +213,13 @@
                 <i class="bi bi-flag me-2"></i>Status e Ocorrências
             </h5>
             <div class="row g-3">
-                <div class="col-md-2">
-                    <div class="detail-field">
-                        <div class="detail-label">Impugnação</div>
-                        <div class="detail-value">{{ processo.impugnacao }}</div>
-                    </div>
+                <div class="col-md-6">
+                    <label class="detail-label">Status</label>
+                    <input type="text" class="form-control detail-field" value="{{ processo.status }}" readonly>
                 </div>
-                <div class="col-md-2">
-                    <div class="detail-field">
-                        <div class="detail-label">Recurso</div>
-                        <div class="detail-value">{{ processo.recurso }}</div>
-                    </div>
-                </div>
-                <div class="col-md-2">
-                    <div class="detail-field">
-                        <div class="detail-label">Itens Desertos</div>
-                        <div class="detail-value">{{ processo.itens_desertos }}</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="detail-field">
-                        <div class="detail-label">Status</div>
-                        <div class="detail-value">
-                            <span class="status-badge 
-                                {% if processo.status == 'Processo Iniciado' %}status-iniciado
-                                {% elif processo.status == 'Em andamento' %}status-andamento
-                                {% elif processo.status == 'Concluído' %}status-concluido
-                                {% elif processo.status == 'Aguardando Definições' %}status-aguardando
-                                {% elif processo.status == 'Cancelada' %}status-cancelado
-                                {% endif %}">
-                                {{ processo.status }}
-                            </span>
-                        </div>
-                    </div>
+                <div class="col-md-6">
+                    <label class="detail-label">Data de Conclusão</label>
+                    <input type="text" class="form-control detail-field" value="{{ processo.data_conclusao.strftime('%d/%m/%Y') }}" readonly>
                 </div>
             </div>
         </div>
@@ -264,36 +230,23 @@
                 <i class="bi bi-people me-2"></i>Responsáveis
             </h5>
             <div class="row g-3">
-                <div class="col-md-4">
-                    <div class="detail-field">
-                        <div class="detail-label">Responsável pela Condução</div>
-                        <div class="detail-value">{{ processo.responsavel_conducao }}</div>
-                    </div>
+                <div class="col-md-6">
+                    <label class="detail-label">Responsável</label>
+                    <input type="text" class="form-control detail-field" value="{{ processo.responsavel }}" readonly>
                 </div>
-                <div class="col-md-4">
-                    <div class="detail-field">
-                        <div class="detail-label">Solicitante</div>
-                        <div class="detail-value">{{ processo.solicitante.nome if processo.solicitante else '-' }}</div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="detail-field">
-                        <div class="detail-label">Setor Responsável</div>
-                        <div class="detail-value">{{ processo.setor_responsavel }}</div>
-                    </div>
+                <div class="col-md-6">
+                    <label class="detail-label">Código</label>
+                    <input type="text" class="form-control detail-field" value="{{ processo.codigo }}" readonly>
                 </div>
             </div>
         </div>
 
         <!-- Botões de Ação -->
         <div class="d-flex justify-content-end gap-2 mt-4">
-            <a href="{{ url_for('painel_bp.lista_painel') }}" class="btn btn-outline-secondary btn-action">
-                <i class="bi bi-arrow-left me-2"></i>Voltar
-            </a>
             <a href="{{ url_for('painel_bp.editar_painel', id=processo.id) }}" class="btn btn-primary btn-action">
                 <i class="bi bi-pencil-square me-2"></i>Editar
             </a>
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock %} 

@@ -58,19 +58,19 @@
 <li class="nav-item mt-3">
   <a class="nav-link text-white fw-bold d-flex justify-content-between align-items-center"
      data-bs-toggle="collapse" href="#submenuPublicacoes" role="button"
-     aria-expanded="{% if request.endpoint.startswith('publicacoes') %}true{% else %}false{% endif %}">
+     aria-expanded="{% if request.endpoint.startswith('publicacao_bp') %}true{% else %}false{% endif %}">
     <span><i class="bi bi-journal-text me-1"></i> Publicações</span><i class="bi bi-chevron-down"></i>
   </a>
-  <ul class="collapse nav flex-column ms-3 {% if request.endpoint.startswith('publicacoes') %}show{% endif %}" id="submenuPublicacoes">
+  <ul class="collapse nav flex-column ms-3 {% if request.endpoint.startswith('publicacao_bp') %}show{% endif %}" id="submenuPublicacoes">
     <li class="nav-item">
-      <a href="{{ url_for('publicacoes_bp.listar') }}" 
-         class="nav-link {% if request.endpoint == 'publicacoes.listar' %}active{% endif %} text-white">
+      <a href="{{ url_for('publicacao_bp.listar') }}" 
+         class="nav-link {% if request.endpoint == 'publicacao_bp.listar' %}active{% endif %} text-white">
         Lista de Publicações
       </a>
     </li>
     <li class="nav-item">
-      <a href="{{ url_for('publicacoes.nova') }}" 
-         class="nav-link {% if request.endpoint == 'publicacoes.nova' %}active{% endif %} text-white">
+      <a href="{{ url_for('publicacao_bp.nova_publicacao') }}" 
+         class="nav-link {% if request.endpoint == 'publicacao_bp.nova_publicacao' %}active{% endif %} text-white">
         Nova Publicação
       </a>
     </li>

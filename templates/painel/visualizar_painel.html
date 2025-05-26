@@ -1,87 +1,302 @@
 {% extends 'base_simplificada.html' %}
 
+{% block title %}Visualizar Processo de Contratação{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Estilos gerais */
+    .detail-container {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        padding: 2rem;
+    }
+    
+    /* Seções */
+    .detail-section {
+        border-bottom: 1px solid #eee;
+        padding-bottom: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .detail-section:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+        margin-bottom: 0;
+    }
+    .detail-section-title {
+        color: #2c3e50;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Campos */
+    .detail-field {
+        margin-bottom: 1rem;
+    }
+    .detail-label {
+        font-weight: 600;
+        color: #495057;
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+    }
+    .detail-value {
+        color: #2c3e50;
+        font-size: 1rem;
+    }
+    
+    /* Valores monetários */
+    .money-value {
+        color: #198754;
+        font-weight: 500;
+    }
+    
+    /* Status badges */
+    .status-badge {
+        padding: 0.35rem 0.65rem;
+        border-radius: 0.25rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    .status-iniciado { background-color: #cff4fc; color: #055160; }
+    .status-andamento { background-color: #fff3cd; color: #664d03; }
+    .status-concluido { background-color: #d1e7dd; color: #0f5132; }
+    .status-aguardando { background-color: #e2e3e5; color: #41464b; }
+    .status-cancelado { background-color: #f8d7da; color: #842029; }
+    
+    /* Botões de ação */
+    .btn-action {
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+    }
+    .btn-action:hover {
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-  <h4 class="mb-4">Detalhes do Processo de Contratação</h4>
-  <div class="row g-3">
-    <div class="col-md-2">
-      <strong>Ano:</strong> {{ processo.ano }}
-    </div>
-    <div class="col-md-3">
-      <strong>Data de Abertura:</strong> {{ processo.data_abertura.strftime('%d/%m/%Y') if processo.data_abertura else '' }}
-    </div>
-    <div class="col-md-3">
-      <strong>Data de Homologação:</strong> {{ processo.data_homologacao.strftime('%d/%m/%Y') if processo.data_homologacao else '' }}
-    </div>
-    <div class="col-md-2">
-      <strong>Período (dias):</strong> {{ processo.periodo_dias }}
+<div class="container-fluid py-4">
+    <!-- Cabeçalho -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">
+            <i class="bi bi-file-text me-2"></i>Detalhes do Processo de Contratação
+        </h4>
+        <a href="{{ url_for('painel_bp.lista_painel') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Voltar
+        </a>
     </div>
 
-    <div class="col-md-4">
-      <strong>Nº Processo SEI:</strong> {{ processo.numero_sei }}
-    </div>
+    <!-- Conteúdo -->
+    <div class="detail-container">
+        <!-- Seção: Informações Básicas -->
+        <div class="detail-section">
+            <h5 class="detail-section-title">
+                <i class="bi bi-info-circle me-2"></i>Informações Básicas
+            </h5>
+            <div class="row g-3">
+                <div class="col-md-2">
+                    <div class="detail-field">
+                        <div class="detail-label">Ano</div>
+                        <div class="detail-value">{{ processo.ano }}</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="detail-field">
+                        <div class="detail-label">Data de Abertura</div>
+                        <div class="detail-value">{{ processo.data_abertura.strftime('%d/%m/%Y') if processo.data_abertura else '-' }}</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="detail-field">
+                        <div class="detail-label">Data de Homologação</div>
+                        <div class="detail-value">{{ processo.data_homologacao.strftime('%d/%m/%Y') if processo.data_homologacao else '-' }}</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="detail-field">
+                        <div class="detail-label">Período (dias)</div>
+                        <div class="detail-value">{{ processo.periodo_dias if processo.periodo_dias else '-' }}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="detail-field">
+                        <div class="detail-label">Nº Processo SEI</div>
+                        <div class="detail-value">{{ processo.numero_sei }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <div class="col-md-4">
-      <strong>Modalidade:</strong> {{ processo.modalidade }}
-    </div>
-    <div class="col-md-4">
-      <strong>Registro de Preços:</strong> {{ processo.registro_precos }}
-    </div>
-    <div class="col-md-4">
-      <strong>Órgãos Participantes:</strong> {{ processo.orgaos_participantes }}
-    </div>
-    <div class="col-md-4">
-      <strong>Nº Licitação:</strong> {{ processo.numero_licitacao }}
-    </div>
-    <div class="col-md-4">
-      <strong>Parecer Jurídico:</strong> {{ processo.parecer_juridico }}
-    </div>
-    <div class="col-md-4">
-      <strong>Fundamentação Legal:</strong> {{ processo.fundamentacao_legal }}
-    </div>
+        <!-- Seção: Modalidade e Características -->
+        <div class="detail-section">
+            <h5 class="detail-section-title">
+                <i class="bi bi-card-list me-2"></i>Modalidade e Características
+            </h5>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="detail-field">
+                        <div class="detail-label">Modalidade</div>
+                        <div class="detail-value">{{ processo.modalidade }}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="detail-field">
+                        <div class="detail-label">Registro de Preços</div>
+                        <div class="detail-value">{{ processo.registro_precos }}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="detail-field">
+                        <div class="detail-label">Órgãos Participantes</div>
+                        <div class="detail-value">{{ processo.orgaos_participantes }}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="detail-field">
+                        <div class="detail-label">Número da Licitação</div>
+                        <div class="detail-value">{{ processo.numero_licitacao if processo.numero_licitacao else '-' }}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="detail-field">
+                        <div class="detail-label">Parecer Jurídico</div>
+                        <div class="detail-value">{{ processo.parecer_juridico if processo.parecer_juridico else '-' }}</div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="detail-field">
+                        <div class="detail-label">Fundamentação Legal</div>
+                        <div class="detail-value">{{ processo.fundamentacao_legal }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <div class="col-md-12">
-      <strong>Objeto:</strong><br>
-      <p>{{ processo.objeto }}</p>
-    </div>
+        <!-- Seção: Objeto e Valores -->
+        <div class="detail-section">
+            <h5 class="detail-section-title">
+                <i class="bi bi-currency-dollar me-2"></i>Objeto e Valores
+            </h5>
+            <div class="row g-3">
+                <div class="col-md-12">
+                    <div class="detail-field">
+                        <div class="detail-label">Objeto</div>
+                        <div class="detail-value">{{ processo.objeto }}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="detail-field">
+                        <div class="detail-label">Natureza da Despesa</div>
+                        <div class="detail-value">{{ processo.natureza_despesa }}</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="detail-field">
+                        <div class="detail-label">Valor Estimado</div>
+                        <div class="detail-value money-value">R$ {{ '%.2f'|format(processo.valor_estimado|float) }}</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="detail-field">
+                        <div class="detail-label">Valor Homologado</div>
+                        <div class="detail-value money-value">R$ {{ '%.2f'|format(processo.valor_homologado|float) }}</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="detail-field">
+                        <div class="detail-label">% Economia</div>
+                        <div class="detail-value money-value">{{ processo.percentual_economia }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <div class="col-md-4">
-      <strong>Natureza da Despesa:</strong> {{ processo.natureza_despesa }}
-    </div>
-    <div class="col-md-2">
-      <strong>Valor Estimado:</strong> R$ {{ '%.2f'|format(processo.valor_estimado|float) }}
-    </div>
-    <div class="col-md-2">
-      <strong>Valor Homologado:</strong> R$ {{ '%.2f'|format(processo.valor_homologado|float) }}
-    </div>
-    <div class="col-md-2">
-      <strong>% Economia:</strong> {{ processo.percentual_economia }}
-    </div>
+        <!-- Seção: Status e Ocorrências -->
+        <div class="detail-section">
+            <h5 class="detail-section-title">
+                <i class="bi bi-flag me-2"></i>Status e Ocorrências
+            </h5>
+            <div class="row g-3">
+                <div class="col-md-2">
+                    <div class="detail-field">
+                        <div class="detail-label">Impugnação</div>
+                        <div class="detail-value">{{ processo.impugnacao }}</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="detail-field">
+                        <div class="detail-label">Recurso</div>
+                        <div class="detail-value">{{ processo.recurso }}</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="detail-field">
+                        <div class="detail-label">Itens Desertos</div>
+                        <div class="detail-value">{{ processo.itens_desertos }}</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="detail-field">
+                        <div class="detail-label">Status</div>
+                        <div class="detail-value">
+                            <span class="status-badge 
+                                {% if processo.status == 'Processo Iniciado' %}status-iniciado
+                                {% elif processo.status == 'Em andamento' %}status-andamento
+                                {% elif processo.status == 'Concluído' %}status-concluido
+                                {% elif processo.status == 'Aguardando Definições' %}status-aguardando
+                                {% elif processo.status == 'Cancelada' %}status-cancelado
+                                {% endif %}">
+                                {{ processo.status }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <div class="col-md-2">
-      <strong>Impugnação:</strong> {{ processo.impugnacao }}
-    </div>
-    <div class="col-md-2">
-      <strong>Recurso:</strong> {{ processo.recurso }}
-    </div>
-    <div class="col-md-2">
-      <strong>Itens Desertos:</strong> {{ processo.itens_desertos }}
-    </div>
+        <!-- Seção: Responsáveis -->
+        <div class="detail-section">
+            <h5 class="detail-section-title">
+                <i class="bi bi-people me-2"></i>Responsáveis
+            </h5>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="detail-field">
+                        <div class="detail-label">Responsável pela Condução</div>
+                        <div class="detail-value">{{ processo.responsavel_conducao }}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="detail-field">
+                        <div class="detail-label">Solicitante</div>
+                        <div class="detail-value">{{ processo.solicitante.nome if processo.solicitante else '-' }}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="detail-field">
+                        <div class="detail-label">Setor Responsável</div>
+                        <div class="detail-value">{{ processo.setor_responsavel }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <div class="col-md-4">
-      <strong>Responsável pela Condução:</strong> {{ processo.responsavel_conducao }}
+        <!-- Botões de Ação -->
+        <div class="d-flex justify-content-end gap-2 mt-4">
+            <a href="{{ url_for('painel_bp.lista_painel') }}" class="btn btn-outline-secondary btn-action">
+                <i class="bi bi-arrow-left me-2"></i>Voltar
+            </a>
+            <a href="{{ url_for('painel_bp.editar_painel', id=processo.id) }}" class="btn btn-primary btn-action">
+                <i class="bi bi-pencil-square me-2"></i>Editar
+            </a>
+        </div>
     </div>
-    <div class="col-md-4">
-      <strong>Solicitante:</strong> {{ processo.solicitante.nome if processo.solicitante else '' }}
-    </div>
-    <div class="col-md-4">
-      <strong>Setor Responsável:</strong> {{ processo.setor_responsavel }}
-    </div>
-    <div class="col-md-4">
-      <strong>Status:</strong> {{ processo.status }}
-    </div>
-  </div>
-
+</div>
+{% endblock %}
   <div class="mt-4">
     <a href="{{ url_for('painel_bp.lista_painel') }}" class="btn btn-secondary">Voltar</a>
   </div>

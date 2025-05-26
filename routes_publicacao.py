@@ -97,7 +97,8 @@ def nova_publicacao():
                 valor_global=valor_global,
                 data_assinatura=data_assinatura,
                 vigencia_inicio=vigencia_inicio,
-                vigencia_fim=vigencia_fim
+                vigencia_fim=vigencia_fim,
+                excluido=False
             )
 
             # Atribui os relacionamentos
@@ -194,4 +195,4 @@ def excluir_publicacao(id):
         flash('Erro ao excluir publicação. Por favor, tente novamente.', 'danger')
         print(f"Erro: {str(e)}")
     
-    return redirect(url_for('publicacao_bp.listar'))
+    return redirect(url_for('publicacao_bp.listar')) 

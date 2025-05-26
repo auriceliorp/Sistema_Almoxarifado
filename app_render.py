@@ -2,12 +2,16 @@
 # Arquivo principal do sistema Flask para o Almoxarifado e Patrimônio
 
 import os
-from flask import Flask
+from flask import Flask, render_template
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
+from flask_wtf.csrf import CSRFProtect, CSRFError
 
 # Importa extensões globais (db, login_manager, migrate)
 from extensoes import db, login_manager, migrate
+
+# Cria instância do CSRFProtect
+csrf = CSRFProtect()
 
 # -------------------- Carrega variáveis de ambiente do arquivo .env (para uso local) --------------------
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -23,6 +27,7 @@ def create_app():
 
     # -------------------- Configurações principais --------------------
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'chave-secreta-padrao'
+    app.config['WTF_CSRF_SECRET_KEY'] = os.environ.get('WTF_CSRF_SECRET_KEY') or 'csrf-chave-secreta-padrao'
 
     # Corrige URL de banco de dados caso venha com prefixo postgres:// (incompatível com SQLAlchemy)
     database_url = os.getenv('DATABASE_URL')
@@ -36,14 +41,21 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
     migrate.init_app(app, db)
+    csrf.init_app(app)  # Inicializa o CSRF
+
+    # -------------------- Handler para erros de CSRF --------------------
+    @app.errorhandler(CSRFError)
+    def handle_csrf_error(e):
+        return render_template('error.html', 
+                             message="Token de segurança expirado. Por favor, tente novamente."), 400
 
     # -------------------- Importa modelos após init_app para evitar import circular --------------------
     from models import (
-    Usuario, Perfil, UnidadeLocal, NaturezaDespesa, Grupo, Item,
-    Fornecedor, EntradaMaterial, EntradaItem, SaidaMaterial, SaidaItem, 
-    BemPatrimonial, Publicacao, PublicacaoPartesEmbrapa, PublicacaoPartesFornecedor,
-    PublicacaoSignatariosEmbrapa, PublicacaoSignatariosExternos
-)
+        Usuario, Perfil, UnidadeLocal, NaturezaDespesa, Grupo, Item,
+        Fornecedor, EntradaMaterial, EntradaItem, SaidaMaterial, SaidaItem, 
+        BemPatrimonial, Publicacao, PublicacaoPartesEmbrapa, PublicacaoPartesFornecedor,
+        PublicacaoSignatariosEmbrapa, PublicacaoSignatariosExternos
+    )
 
     # -------------------- Define função de carregamento do usuário --------------------
     @login_manager.user_loader
@@ -92,7 +104,6 @@ def create_app():
     from routes_patrimonio import patrimonio_bp # <-- ADICIONADO AGORA
     from routes_links import links_bp
     from routes_publicacao import bp as publicacoes_bp
-
 
     # Registro dos blueprints
     app.register_blueprint(main)

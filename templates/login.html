@@ -6,7 +6,7 @@
 {% block content %}
 <div class="container mt-5" style="max-width: 420px;">
 
-      {# ------------------------------ MENSAGEM DE ERRO (FLASH) ------------------------------ #}
+    {# ------------------------------ MENSAGEM DE ERRO (FLASH) ------------------------------ #}
     {% with messages = get_flashed_messages() %}
         {% if messages %}
             <div class="alert alert-danger text-center">{{ messages[0] }}</div>
@@ -15,14 +15,14 @@
 
     {# ------------------------------ FORMULÁRIO DE LOGIN ------------------------------ #}
     <form method="POST" action="{{ url_for('main.login') }}">
-        {{ csrf_token() }}
+        {{ form.csrf_token }}
         <div class="mb-3 input-group">
             <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-            <input type="email" name="email" class="form-control" placeholder="E-mail" required>
+            {{ form.email(class="form-control", placeholder="E-mail", required=true) }}
         </div>
         <div class="mb-3 input-group">
             <span class="input-group-text"><i class="bi bi-lock"></i></span>
-            <input type="password" name="senha" class="form-control" placeholder="Senha" required>
+            {{ form.senha(class="form-control", placeholder="Senha", required=true) }}
         </div>
         <button type="submit" class="btn btn-success w-100">
             <i class="bi bi-box-arrow-in-right"></i> Entrar

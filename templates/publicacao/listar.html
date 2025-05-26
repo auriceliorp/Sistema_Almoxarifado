@@ -56,13 +56,25 @@
         <tr>
           <td>{{ publicacao.especie }}</td>
           <td>{{ publicacao.contrato_saic }}</td>
-          <td>{{ publicacao.objeto }}</td>
+          <td>{{ publicacao.objeto[:100] }}{% if publicacao.objeto|length > 100 %}...{% endif %}</td>
           <td>{{ publicacao.modalidade_licitacao }}</td>
           <td>{{ publicacao.valor_global }}</td>
           <td>{{ publicacao.data_assinatura.strftime('%d/%m/%Y') }}</td>
-          <td>{{ publicacao.vigencia }}</td>
+          <td>
+            {% if publicacao.vigencia_inicio and publicacao.vigencia_fim %}
+              {{ publicacao.vigencia_inicio.strftime('%d/%m/%Y') }} a {{ publicacao.vigencia_fim.strftime('%d/%m/%Y') }}
+            {% elif publicacao.vigencia_inicio %}
+              A partir de {{ publicacao.vigencia_inicio.strftime('%d/%m/%Y') }}
+            {% else %}
+              A partir da Assinatura
+            {% endif %}
+          </td>
           <td class="text-center">
             <div class="btn-group">
+              <a href="{{ url_for('publicacao_bp.visualizar_publicacao', id=publicacao.id) }}" 
+                 class="btn btn-sm btn-info" title="Visualizar">
+                <i class="bi bi-eye"></i>
+              </a>
               <a href="{{ url_for('publicacao_bp.editar_publicacao', id=publicacao.id) }}" 
                  class="btn btn-sm btn-primary" title="Editar">
                 <i class="bi bi-pencil-square"></i>
@@ -88,7 +100,7 @@
   <nav aria-label="Navegação de páginas" class="mt-4">
     <ul class="pagination justify-content-center">
       <li class="page-item {% if not publicacoes.has_prev %}disabled{% endif %}">
-        <a class="page-link" href="{{ url_for('publicacao_bp.listar', page=publicacoes.prev_num) if publicacoes.has_prev else '#' }}">
+        <a class="page-link" href="{{ url_for('publicacao_bp.listar', page=publicacoes.prev_num, filtro=filtro, busca=busca) if publicacoes.has_prev else '#' }}">
           Anterior
         </a>
       </li>
@@ -96,7 +108,7 @@
       {% for page in publicacoes.iter_pages() %}
         {% if page %}
           <li class="page-item {% if page == publicacoes.page %}active{% endif %}">
-            <a class="page-link" href="{{ url_for('publicacao_bp.listar', page=page) }}">{{ page }}</a>
+            <a class="page-link" href="{{ url_for('publicacao_bp.listar', page=page, filtro=filtro, busca=busca) }}">{{ page }}</a>
           </li>
         {% else %}
           <li class="page-item disabled"><span class="page-link">...</span></li>
@@ -104,7 +116,7 @@
       {% endfor %}
       
       <li class="page-item {% if not publicacoes.has_next %}disabled{% endif %}">
-        <a class="page-link" href="{{ url_for('publicacao_bp.listar', page=publicacoes.next_num) if publicacoes.has_next else '#' }}">
+        <a class="page-link" href="{{ url_for('publicacao_bp.listar', page=publicacoes.next_num, filtro=filtro, busca=busca) if publicacoes.has_next else '#' }}">
           Próximo
         </a>
       </li>

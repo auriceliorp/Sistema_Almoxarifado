@@ -1,133 +1,259 @@
 {% extends 'base_simplificada.html' %}
+{% block title %}Novo Bem Patrimonial{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-  <h4 class="mb-4">Cadastrar Bem Patrimonial</h4>
-
-  <form method="POST" enctype="multipart/form-data">
-    <div class="row g-3">
-
-      <!-- Identificadores -->
-      <div class="col-md-4">
-        <label class="form-label">Patrimônio Unidade Local *</label>
-        <input type="text" class="form-control" name="numero_ul" required>
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Número SAP</label>
-        <input type="text" class="form-control" name="numero_sap">
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Número SIADS</label>
-        <input type="text" class="form-control" name="numero_siads">
-      </div>
-
-      <!-- Nome e Descrição -->
-      <div class="col-md-6">
-        <label class="form-label">Nome do Bem *</label>
-        <input type="text" class="form-control" name="nome" required>
-      </div>
-      <div class="col-md-6">
-        <label class="form-label">Descrição do Bem *</label>
-        <input type="text" class="form-control" name="descricao" required>
-      </div>
-
-      <!-- Grupo de Bens -->
-      <div class="col-md-6">
-        <label class="form-label">Grupo de Bens *</label>
-        <select class="form-select" name="grupo_bem" id="grupoSelect" required>
-          <option selected disabled>Selecione</option>
-          {% for grupo in grupos %}
-            <option value="{{ grupo.codigo }}">{{ grupo.codigo }} - {{ grupo.descricao }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <!-- Localização (Unidade Local) -->
-      <div class="col-md-6">
-        <label class="form-label">Localização *</label>
-        <select class="form-select" name="localizacao" required>
-          <option selected disabled>Selecione</option>
-          {% for ul in uls %}
-            <option value="{{ ul.descricao }}">{{ ul.codigo }} - {{ ul.descricao }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <!-- Classificação Contábil -->
-      <div class="col-md-6">
-        <label class="form-label">Classificação Contábil</label>
-        <input type="text" class="form-control" name="classificacao_contabil" id="classificacaoContabil" readonly>
-      </div>
-
-      <!-- Detentor -->
-      <div class="col-md-6">
-        <label class="form-label">Detentor Atual *</label>
-        <select class="form-select" name="detentor_id" required>
-          <option selected disabled>Selecione</option>
-          {% for u in usuarios %}
-            <option value="{{ u.id }}">{{ u.nome }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <!-- Situação -->
-      <div class="col-md-6">
-        <label class="form-label">Situação</label>
-        <select class="form-select" name="situacao">
-          <option>Ativo</option>
-          <option>Em uso</option>
-          <option>Transferido</option>
-          <option>Baixado</option>
-          <option>Em manutenção</option>
-          <option>Para doação</option>
-        </select>
-      </div>
-
-      <!-- Data e Valor de Aquisição -->
-      <div class="col-md-6">
-        <label class="form-label">Data de Aquisição</label>
-        <input type="date" class="form-control" name="data_aquisicao">
-      </div>
-      <div class="col-md-6">
-        <label class="form-label">Valor de Aquisição</label>
-        <input type="number" step="0.01" class="form-control" name="valor_aquisicao">
-      </div>
-
-      <!-- Upload de Foto com preview -->
-      <div class="col-md-6">
-        <label class="form-label">Foto do Bem</label>
-        <input type="file" class="form-control" name="foto" id="fotoInput" accept="image/*">
-        <div class="mt-2">
-          <img id="previewImagem" src="#" alt="Pré-visualização da imagem" style="display: none; max-height: 150px;" class="img-thumbnail">
+<div class="container-fluid py-4">
+    <!-- Cabeçalho -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Novo Bem Patrimonial
+                </h4>
+                <a href="{{ url_for('patrimonio_bp.listar_bens') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Voltar para Lista
+                </a>
+            </div>
         </div>
-      </div>
-
-      <!-- Observações -->
-      <div class="col-md-6">
-        <label class="form-label">Observações</label>
-        <textarea class="form-control" name="observacoes" rows="3"></textarea>
-      </div>
-
     </div>
 
-    <!-- Botões -->
-    <div class="mt-4">
-      <button type="submit" class="btn btn-primary">
-        <i class="bi bi-save me-1"></i>Salvar
-      </button>
-      <a href="{{ url_for('patrimonio_bp.listar_bens') }}" class="btn btn-secondary">Cancelar</a>
-    </div>
-  </form>
+    <form method="POST" enctype="multipart/form-data">
+        <!-- Identificação -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary bg-gradient text-white py-3">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-upc-scan me-2"></i>
+                    Identificação do Bem
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" name="numero_ul" id="numero_ul" required>
+                            <label for="numero_ul">
+                                <i class="bi bi-upc me-1"></i>
+                                Patrimônio Unidade Local *
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" name="numero_sap" id="numero_sap">
+                            <label for="numero_sap">
+                                <i class="bi bi-hash me-1"></i>
+                                Número SAP
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" name="numero_siads" id="numero_siads">
+                            <label for="numero_siads">
+                                <i class="bi bi-hash me-1"></i>
+                                Número SIADS
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" name="nome" id="nome" required>
+                            <label for="nome">
+                                <i class="bi bi-tag me-1"></i>
+                                Nome do Bem *
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" name="descricao" id="descricao" required>
+                            <label for="descricao">
+                                <i class="bi bi-card-text me-1"></i>
+                                Descrição do Bem *
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Classificação -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-success bg-gradient text-white py-3">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-diagram-3 me-2"></i>
+                    Classificação e Localização
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <select class="form-select" name="grupo_bem" id="grupoSelect" required>
+                                <option selected disabled value="">Selecione</option>
+                                {% for grupo in grupos %}
+                                    <option value="{{ grupo.codigo }}">{{ grupo.codigo }} - {{ grupo.descricao }}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="grupoSelect">
+                                <i class="bi bi-collection me-1"></i>
+                                Grupo de Bens *
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <select class="form-select" name="localizacao" id="localizacao" required>
+                                <option selected disabled value="">Selecione</option>
+                                {% for ul in uls %}
+                                    <option value="{{ ul.descricao }}">{{ ul.codigo }} - {{ ul.descricao }}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="localizacao">
+                                <i class="bi bi-geo-alt me-1"></i>
+                                Localização *
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" name="classificacao_contabil" id="classificacaoContabil" readonly>
+                            <label for="classificacaoContabil">
+                                <i class="bi bi-calculator me-1"></i>
+                                Classificação Contábil
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <select class="form-select" name="detentor_id" id="detentor_id" required>
+                                <option selected disabled value="">Selecione</option>
+                                {% for u in usuarios %}
+                                    <option value="{{ u.id }}">{{ u.nome }}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="detentor_id">
+                                <i class="bi bi-person me-1"></i>
+                                Detentor Atual *
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Situação e Valores -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-info bg-gradient text-white py-3">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Situação e Valores
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <select class="form-select" name="situacao" id="situacao">
+                                <option>Ativo</option>
+                                <option>Em uso</option>
+                                <option>Transferido</option>
+                                <option>Baixado</option>
+                                <option>Em manutenção</option>
+                                <option>Para doação</option>
+                            </select>
+                            <label for="situacao">
+                                <i class="bi bi-flag me-1"></i>
+                                Situação
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <input type="date" class="form-control" name="data_aquisicao" id="data_aquisicao">
+                            <label for="data_aquisicao">
+                                <i class="bi bi-calendar me-1"></i>
+                                Data de Aquisição
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <input type="number" step="0.01" class="form-control" name="valor_aquisicao" id="valor_aquisicao">
+                            <label for="valor_aquisicao">
+                                <i class="bi bi-currency-dollar me-1"></i>
+                                Valor de Aquisição
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informações Complementares -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-secondary bg-gradient text-white py-3">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-card-text me-2"></i>
+                    Informações Complementares
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">
+                            <i class="bi bi-camera me-1"></i>
+                            Foto do Bem
+                        </label>
+                        <input type="file" class="form-control" name="foto" id="fotoInput" accept="image/*">
+                        <div class="mt-2">
+                            <img id="previewImagem" src="#" alt="Pré-visualização da imagem" 
+                                 style="display: none; max-height: 150px;" 
+                                 class="img-thumbnail">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <textarea class="form-control" name="observacoes" id="observacoes" style="height: 100px"></textarea>
+                            <label for="observacoes">
+                                <i class="bi bi-pencil me-1"></i>
+                                Observações
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{{ url_for('patrimonio_bp.listar_bens') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle me-1"></i>
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-1"></i>
+                        Salvar Bem
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
 </div>
 
-<!-- Scripts adicionais -->
+{% block extra_js %}
 <script>
-  // Preenchimento automático da classificação contábil com base no grupo
-  document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
+    // Preenchimento automático da classificação contábil
     const grupoSelect = document.getElementById("grupoSelect");
     const classificacaoContabil = document.getElementById("classificacaoContabil");
 
     grupoSelect.addEventListener("change", function () {
-      classificacaoContabil.value = this.value || '';
+        classificacaoContabil.value = this.value || '';
     });
 
     // Preview de imagem
@@ -135,20 +261,40 @@
     const previewImagem = document.getElementById("previewImagem");
 
     fotoInput.addEventListener("change", function () {
-      const file = this.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          previewImagem.src = e.target.result;
-          previewImagem.style.display = 'block';
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                previewImagem.src = e.target.result;
+                previewImagem.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        } else {
+            previewImagem.src = '#';
+            previewImagem.style.display = 'none';
         }
-        reader.readAsDataURL(file);
-      } else {
-        previewImagem.src = '#';
-        previewImagem.style.display = 'none';
-      }
     });
-  });
+
+    // Validação de campos obrigatórios
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const requiredFields = form.querySelectorAll('[required]');
+        requiredFields.forEach(field => {
+            if (!field.value) {
+                field.classList.add('is-invalid');
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+    });
+
+    // Remove classe is-invalid ao digitar
+    document.querySelectorAll('.form-control, .form-select').forEach(field => {
+        field.addEventListener('input', function() {
+            this.classList.remove('is-invalid');
+        });
+    });
+});
 </script>
 {% endblock %}
-
+{% endblock %}

@@ -1,124 +1,204 @@
 {% extends 'base_simplificada.html' %}
+{% block title %}Mapa de Fechamento Mensal{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  <h2 class="mb-4">Mapa de Fechamento Mensal</h2>
-
-  <!-- Filtros -->
-  <form method="get" class="row g-3 align-items-end mb-4">
-    <div class="col-md-3">
-      <label for="mes" class="form-label">Mês</label>
-      <select name="mes" id="mes" class="form-select" required>
-        {% for i in range(1, 13) %}
-        <option value="{{ i }}" {% if i == mes %}selected{% endif %}>{{ '{:02d}'.format(i) }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="col-md-3">
-      <label for="ano" class="form-label">Ano</label>
-      <select name="ano" id="ano" class="form-select" required>
-        {% for a in anos_disponiveis %}
-        <option value="{{ a }}" {% if a == ano %}selected{% endif %}>{{ a }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="col-md-3">
-      <button type="submit" class="btn btn-primary btn-lg shadow-sm w-100">
-        <i class="bi bi-search"></i> Filtrar
-      </button>
-    </div>
-  </form>
-
-  <!-- Cards de Totais -->
-  <div class="row mb-4 text-center g-3">
-    <div class="col-md-3 col-6">
-      <div class="card border-secondary shadow-sm rounded-4 bg-light">
+<div class="container-fluid py-4">
+    <!-- Cabeçalho -->
+    <div class="card shadow-sm mb-4">
         <div class="card-body">
-          <h6 class="card-title">
-            <i class="bi bi-wallet2 me-1 text-secondary"></i> Saldo Inicial
-          </h6>
-          <p class="card-text fw-bold">R$ {{ '%.2f' | format(total_saldo_inicial) }}</p>
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0">
+                    <i class="bi bi-calendar-check me-2"></i>
+                    Mapa de Fechamento Mensal
+                </h4>
+            </div>
         </div>
-      </div>
     </div>
-    <div class="col-md-3 col-6">
-      <div class="card border-success shadow-sm rounded-4 bg-light">
+
+    <!-- Filtros -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary bg-gradient text-white py-3">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-funnel me-2"></i>
+                Filtros
+            </h5>
+        </div>
         <div class="card-body">
-          <h6 class="card-title">
-            <i class="bi bi-arrow-down-circle me-1 text-success"></i> Entradas
-          </h6>
-          <p class="card-text fw-bold text-success">R$ {{ '%.2f' | format(total_entradas) }}</p>
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <div class="form-floating">
+                        <select name="mes" id="mes" class="form-select" required>
+                            {% for i in range(1, 13) %}
+                            <option value="{{ i }}" {% if i == mes %}selected{% endif %}>{{ '{:02d}'.format(i) }}</option>
+                            {% endfor %}
+                        </select>
+                        <label for="mes">
+                            <i class="bi bi-calendar-month me-1"></i>
+                            Mês
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-floating">
+                        <select name="ano" id="ano" class="form-select" required>
+                            {% for a in anos_disponiveis %}
+                            <option value="{{ a }}" {% if a == ano %}selected{% endif %}>{{ a }}</option>
+                            {% endfor %}
+                        </select>
+                        <label for="ano">
+                            <i class="bi bi-calendar me-1"></i>
+                            Ano
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100 h-100">
+                        <i class="bi bi-search me-2"></i>
+                        Filtrar Dados
+                    </button>
+                </div>
+            </form>
         </div>
-      </div>
     </div>
-    <div class="col-md-3 col-6">
-      <div class="card border-danger shadow-sm rounded-4 bg-light">
+
+    <!-- Cards de Totais -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="rounded-circle p-3 bg-secondary bg-opacity-10">
+                                <i class="bi bi-wallet2 text-secondary fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-secondary mb-1">Saldo Inicial</h6>
+                            <h4 class="mb-0">R$ {{ '%.2f' | format(total_saldo_inicial) }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="rounded-circle p-3 bg-success bg-opacity-10">
+                                <i class="bi bi-arrow-down-circle text-success fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-success mb-1">Entradas</h6>
+                            <h4 class="mb-0 text-success">R$ {{ '%.2f' | format(total_entradas) }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="rounded-circle p-3 bg-danger bg-opacity-10">
+                                <i class="bi bi-arrow-up-circle text-danger fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-danger mb-1">Saídas</h6>
+                            <h4 class="mb-0 text-danger">R$ {{ '%.2f' | format(total_saidas) }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="rounded-circle p-3 bg-dark bg-opacity-10">
+                                <i class="bi bi-graph-down text-dark fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-dark mb-1">Saldo Final</h6>
+                            <h4 class="mb-0 {% if total_saldo_final < 0 %}text-danger{% else %}text-dark{% endif %}">
+                                R$ {{ '%.2f' | format(total_saldo_final) }}
+                            </h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de Dados -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light py-3">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-table me-2"></i>
+                Detalhamento por Natureza de Despesa
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive" style="max-height: 60vh;">
+                <table class="table table-hover table-striped mb-0">
+                    <thead class="table-light sticky-top">
+                        <tr>
+                            <th class="px-3">Natureza de Despesa</th>
+                            <th class="text-end px-3">Saldo Inicial</th>
+                            <th class="text-end px-3">Entradas</th>
+                            <th class="text-end px-3">Saídas</th>
+                            <th class="text-end px-3">Saldo Final</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for linha in relatorio %}
+                        <tr>
+                            <td class="px-3">
+                                <span class="badge bg-secondary me-2">{{ linha.nd.codigo }}</span>
+                                {{ linha.nd.nome }}
+                            </td>
+                            <td class="text-end px-3">R$ {{ '%.2f'|format(linha.inicial) }}</td>
+                            <td class="text-end px-3 text-success">R$ {{ '%.2f'|format(linha.entrada) }}</td>
+                            <td class="text-end px-3 text-danger">R$ {{ '%.2f'|format(linha.saida) }}</td>
+                            <td class="text-end px-3 {% if linha.final < 0 %}text-danger fw-bold{% endif %}">
+                                R$ {{ '%.2f'|format(linha.final) }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botões de Ação -->
+    <div class="card shadow-sm">
         <div class="card-body">
-          <h6 class="card-title">
-            <i class="bi bi-arrow-up-circle me-1 text-danger"></i> Saídas
-          </h6>
-          <p class="card-text fw-bold text-danger">R$ {{ '%.2f' | format(total_saidas) }}</p>
+            <div class="d-flex flex-wrap justify-content-end gap-3">
+                <a href="{{ url_for('relatorio_bp.exportar_mapa_excel', mes=mes, ano=ano) }}"
+                   class="btn btn-success">
+                    <i class="bi bi-file-earmark-excel me-2"></i>
+                    Exportar Excel
+                </a>
+
+                <a href="{{ url_for('relatorio_bp.exportar_mapa_pdf', mes=mes, ano=ano) }}"
+                   class="btn btn-danger">
+                    <i class="bi bi-file-earmark-pdf me-2"></i>
+                    Exportar PDF
+                </a>
+
+                <a href="{{ url_for('relatorio_bp.imprimir_mapa_fechamento', mes=mes, ano=ano) }}"
+                   class="btn btn-secondary">
+                    <i class="bi bi-printer me-2"></i>
+                    Versão para Impressão
+                </a>
+            </div>
         </div>
-      </div>
     </div>
-    <div class="col-md-3 col-6">
-      <div class="card border-dark shadow-sm rounded-4 bg-light">
-        <div class="card-body">
-          <h6 class="card-title">
-            <i class="bi bi-graph-down me-1 text-dark"></i> Saldo Final
-          </h6>
-          <p class="card-text fw-bold {% if total_saldo_final < 0 %}text-danger{% else %}text-dark{% endif %}">
-            R$ {{ '%.2f' | format(total_saldo_final) }}
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tabela -->
-  <div class="table-responsive" style="max-height: 70vh;">
-    <table class="table table-bordered table-hover align-middle shadow-sm table-sm">
-      <thead class="table-light sticky-top">
-        <tr>
-          <th>Natureza de Despesa</th>
-          <th>Saldo Inicial (R$)</th>
-          <th>Entradas (R$)</th>
-          <th>Saídas (R$)</th>
-          <th>Saldo Final (R$)</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for linha in relatorio %}
-        <tr>
-          <td>{{ linha.nd.codigo }} - {{ linha.nd.nome }}</td>
-          <td>R$ {{ '%.2f'|format(linha.inicial) }}</td>
-          <td>R$ {{ '%.2f'|format(linha.entrada) }}</td>
-          <td>R$ {{ '%.2f'|format(linha.saida) }}</td>
-          <td class="{% if linha.final < 0 %}text-danger fw-bold{% endif %}">
-            R$ {{ '%.2f'|format(linha.final) }}
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Botões de ação -->
-  <div class="d-flex flex-wrap justify-content-end gap-2 my-4">
-    <a href="{{ url_for('relatorio_bp.exportar_mapa_excel', mes=mes, ano=ano) }}"
-       class="btn btn-outline-success btn-lg shadow-sm d-flex align-items-center">
-      <i class="bi bi-file-earmark-excel me-2"></i> Exportar Excel
-    </a>
-
-    <a href="{{ url_for('relatorio_bp.exportar_mapa_pdf', mes=mes, ano=ano) }}"
-       class="btn btn-outline-danger btn-lg shadow-sm d-flex align-items-center">
-      <i class="bi bi-file-earmark-pdf me-2"></i> Exportar PDF
-    </a>
-
-    <a href="{{ url_for('relatorio_bp.imprimir_mapa_fechamento', mes=mes, ano=ano) }}"
-       class="btn btn-outline-secondary btn-lg shadow-sm d-flex align-items-center">
-      <i class="bi bi-printer me-2"></i> Versão para Impressão
-    </a>
-  </div>
 </div>
 {% endblock %}

@@ -8,8 +8,30 @@ bp = Blueprint('publicacoes', __name__)
 @bp.route('/publicacoes')
 @login_required
 def listar():
-    publicacoes = Publicacao.query.filter_by(excluido=False).order_by(Publicacao.data_assinatura.desc()).all()
-    return render_template('publicacao/listar.html', publicacoes=publicacoes)
+    page = request.args.get('page', 1, type=int)
+    filtro = request.args.get('filtro', '')
+    busca = request.args.get('busca', '')
+
+    query = Publicacao.query.filter_by(excluido=False)
+
+    # Aplicar filtros de busca
+    if busca and filtro:
+        if filtro == 'especie':
+            query = query.filter(Publicacao.especie.ilike(f'%{busca}%'))
+        elif filtro == 'contrato':
+            query = query.filter(Publicacao.contrato_saic.ilike(f'%{busca}%'))
+        elif filtro == 'modalidade':
+            query = query.filter(Publicacao.modalidade_licitacao.ilike(f'%{busca}%'))
+
+    # Ordenação e paginação
+    publicacoes = query.order_by(Publicacao.data_assinatura.desc()).paginate(
+        page=page, per_page=10, error_out=False
+    )
+
+    return render_template('publicacao/listar.html', 
+                         publicacoes=publicacoes,
+                         filtro=filtro,
+                         busca=busca)
 
 @bp.route('/publicacoes/nova', methods=['GET', 'POST'])
 @login_required
@@ -19,11 +41,11 @@ def nova():
             # Dados básicos
             publicacao = Publicacao(
                 especie=request.form['especie'],
-                contrato_saic=request.form.get('contrato_saic', 'Não Aplicável'),
+                contrato_saic=request.form.get('contrato_saic') or 'Não Aplicável',
                 objeto=request.form['objeto'],
-                modalidade_licitacao=request.form.get('modalidade_licitacao', 'Não se Aplica'),
-                fonte_recursos=request.form.get('fonte_recursos', 'Não se Aplica'),
-                valor_global=request.form.get('valor_global', 'Não Aplicável'),
+                modalidade_licitacao=request.form.get('modalidade_licitacao') or 'Não se Aplica',
+                fonte_recursos=request.form.get('fonte_recursos') or 'Não se Aplica',
+                valor_global=request.form.get('valor_global') or 'Não Aplicável',
                 data_assinatura=datetime.strptime(request.form['data_assinatura'], '%Y-%m-%d')
             )
             
@@ -86,14 +108,16 @@ def editar(id):
         try:
             # Atualiza dados básicos
             publicacao.especie = request.form['especie']
-            publicacao.contrato_saic = request.form.get('contrato_saic', 'Não Aplicável')
+            publicacao.contrato_saic = request.form.get('contrato_saic') or 'Não Aplicável'
             publicacao.objeto = request.form['objeto']
-            publicacao.modalidade_licitacao = request.form.get('modalidade_licitacao', 'Não se Aplica')
-            publicacao.fonte_recursos = request.form.get('fonte_recursos', 'Não se Aplica')
-            publicacao.valor_global = request.form.get('valor_global', 'Não Aplicável')
+            publicacao.modalidade_licitacao = request.form.get('modalidade_licitacao') or 'Não se Aplica'
+            publicacao.fonte_recursos = request.form.get('fonte_recursos') or 'Não se Aplica'
+            publicacao.valor_global = request.form.get('valor_global') or 'Não Aplicável'
             publicacao.data_assinatura = datetime.strptime(request.form['data_assinatura'], '%Y-%m-%d')
             
             # Atualiza vigência
+            publicacao.vigencia_inicio = None
+            publicacao.vigencia_fim = None
             if request.form.get('vigencia_inicio'):
                 publicacao.vigencia_inicio = datetime.strptime(request.form['vigencia_inicio'], '%Y-%m-%d')
             if request.form.get('vigencia_fim'):
@@ -141,7 +165,7 @@ def editar(id):
                          usuarios=usuarios, 
                          fornecedores=fornecedores)
 
-@bp.route('/publicacoes/excluir/<int:id>')
+@bp.route('/publicacoes/excluir/<int:id>', methods=['POST'])
 @login_required
 def excluir(id):
     publicacao = Publicacao.query.get_or_404(id)

@@ -15,6 +15,7 @@
 
     {# ------------------------------ FORMULÁRIO DE LOGIN ------------------------------ #}
     <form method="POST" action="{{ url_for('main.login') }}">
+        {{ csrf_token() }}
         <div class="mb-3 input-group">
             <span class="input-group-text"><i class="bi bi-envelope"></i></span>
             <input type="email" name="email" class="form-control" placeholder="E-mail" required>

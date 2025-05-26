@@ -4,249 +4,145 @@
 
 {% block extra_css %}
 <style>
-    /* Estilos gerais */
-    .detail-container {
+    .page-header {
         background: white;
-        border-radius: 12px;
-        box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
-        padding: 2rem;
-        max-width: 1400px;
-        margin: 0 auto;
-    }
-    
-    /* Seções */
-    .detail-section {
-        border-radius: 8px;
-        padding: 2rem;
+        padding: 1rem;
+        border-bottom: 1px solid #e9ecef;
         margin-bottom: 2rem;
-        background-color: #f8f9fa;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .section-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+
+    .section-header {
+        background: #0d6efd;
+        color: white;
+        padding: 1rem 1.5rem;
+        font-size: 1.1rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .section-header i {
+        font-size: 1.25rem;
+    }
+
+    .section-content {
+        padding: 1.5rem;
+    }
+
+    .info-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .info-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-bottom: 0.25rem;
+        font-weight: 500;
+    }
+
+    .info-value {
+        font-size: 1rem;
+        color: #212529;
+        padding: 0.5rem;
+        background: #f8f9fa;
+        border-radius: 4px;
         border: 1px solid #e9ecef;
     }
-    .detail-section:nth-child(even) {
-        background-color: #fff;
-    }
-    .detail-section:last-child {
-        margin-bottom: 1rem;
-    }
-    .detail-section-title {
-        color: #1a237e;
-        font-size: 1.25rem;
-        font-weight: 600;
-        margin-bottom: 1.5rem;
-        padding-bottom: 0.75rem;
-        border-bottom: 2px solid #e3e6f0;
-    }
-    
-    /* Campos */
-    .detail-field {
-        background: rgba(255, 255, 255, 0.7);
-        padding: 1rem;
-        border-radius: 6px;
-        margin-bottom: 1rem;
-        border: 1px solid rgba(0,0,0,0.05);
-        transition: all 0.2s ease;
-    }
-    .detail-field:hover {
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        border-color: rgba(0,0,0,0.1);
-    }
-    .detail-label {
-        font-weight: 600;
-        color: #344767;
-        font-size: 0.875rem;
-        margin-bottom: 0.5rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    .detail-value {
-        color: #2c3e50;
-        font-size: 1rem;
-        padding: 0.25rem 0;
-    }
-    
-    /* Valores monetários */
+
     .money-value {
         color: #198754;
         font-weight: 600;
-        font-size: 1.1rem;
     }
-    
-    /* Status badges */
+
     .status-badge {
+        display: inline-block;
         padding: 0.5rem 1rem;
         border-radius: 6px;
         font-size: 0.875rem;
         font-weight: 600;
-        display: inline-block;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
     }
+
     .status-iniciado { background-color: #cff4fc; color: #055160; }
     .status-andamento { background-color: #fff3cd; color: #664d03; }
     .status-concluido { background-color: #d1e7dd; color: #0f5132; }
     .status-aguardando { background-color: #e2e3e5; color: #41464b; }
     .status-cancelado { background-color: #f8d7da; color: #842029; }
-    
-    /* Botões de ação */
+
     .btn-action {
-        padding: 0.75rem 1.5rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        transition: all 0.3s ease;
-        border-radius: 6px;
-    }
-    .btn-action:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        transition: all 0.2s;
     }
 
-    /* Cabeçalho da página */
-    .page-header {
-        background: linear-gradient(45deg, #1a237e, #283593);
-        color: white;
-        padding: 2rem;
-        border-radius: 12px;
-        margin-bottom: 2rem;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    .page-header h4 {
-        margin: 0;
-        font-size: 1.5rem;
-        font-weight: 600;
-    }
-    .page-header .btn {
-        color: white;
-        border-color: rgba(255,255,255,0.5);
-    }
-    .page-header .btn:hover {
-        background: rgba(255,255,255,0.1);
-        border-color: white;
+    .btn-action:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <!-- Cabeçalho -->
-    <div class="page-header d-flex justify-content-between align-items-center">
-        <h4 class="mb-0">
-            <i class="bi bi-file-text me-2"></i>Detalhes do Processo de Contratação
-        </h4>
-        <a href="{{ url_for('painel_bp.lista_painel') }}" class="btn btn-outline-light">
-            <i class="bi bi-arrow-left me-2"></i>Voltar
+<!-- Cabeçalho com ações -->
+<div class="page-header d-flex justify-content-between align-items-center">
+    <h4 class="mb-0">Processo de Contratação</h4>
+    <div class="header-actions">
+        <a href="{{ url_for('painel_bp.lista_painel') }}" class="btn btn-outline-secondary btn-action">
+            <i class="bi bi-arrow-left"></i>
+            Voltar para Lista
+        </a>
+        <a href="{{ url_for('painel_bp.editar_painel', id=processo.id) }}" class="btn btn-primary btn-action">
+            <i class="bi bi-pencil-square"></i>
+            Editar
         </a>
     </div>
+</div>
 
-    <!-- Conteúdo -->
-    <div class="detail-container">
-        <!-- Seção: Informações Básicas -->
-        <div class="detail-section">
-            <h5 class="detail-section-title">
-                <i class="bi bi-info-circle me-2"></i>Informações Básicas
-            </h5>
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <div class="detail-field">
-                        <div class="detail-label">Número do Processo</div>
-                        <div class="detail-value">{{ processo.numero_processo if processo.numero_processo else '-' }}</div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="detail-field">
-                        <div class="detail-label">Data de Abertura</div>
-                        <div class="detail-value">{{ processo.data_abertura.strftime('%d/%m/%Y') if processo.data_abertura else '-' }}</div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="detail-field">
-                        <div class="detail-label">Data de Conclusão</div>
-                        <div class="detail-value">{{ processo.data_conclusao.strftime('%d/%m/%Y') if processo.data_conclusao else '-' }}</div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="detail-field">
-                        <div class="detail-label">Valor Total</div>
-                        <div class="detail-value money-value">{{ 'R$ {:,.2f}'.format(processo.valor_total) if processo.valor_total else '-' }}</div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="detail-field">
-                        <div class="detail-label">Status</div>
-                        <div class="detail-value">
-                            <span class="status-badge 
-                                {% if processo.status == 'Processo Iniciado' %}status-iniciado
-                                {% elif processo.status == 'Em andamento' %}status-andamento
-                                {% elif processo.status == 'Concluído' %}status-concluido
-                                {% elif processo.status == 'Aguardando Definições' %}status-aguardando
-                                {% elif processo.status == 'Cancelada' %}status-cancelado
-                                {% endif %}">
-                                {{ processo.status if processo.status else '-' }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="detail-field">
-                        <div class="detail-label">Objeto</div>
-                        <div class="detail-value">{{ processo.objeto if processo.objeto else '-' }}</div>
-                    </div>
-                </div>
-            </div>
+<div class="container-fluid px-4">
+    <!-- Identificação do Processo -->
+    <div class="section-card">
+        <div class="section-header">
+            <i class="bi bi-file-text"></i>
+            Identificação do Processo
         </div>
-
-        <!-- Seção: Modalidade e Características -->
-        <div class="detail-section">
-            <h5 class="detail-section-title">
-                <i class="bi bi-card-list me-2"></i>Modalidade e Características
-            </h5>
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <div class="detail-field">
-                        <div class="detail-label">Modalidade</div>
-                        <div class="detail-value">{{ processo.modalidade if processo.modalidade else '-' }}</div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="detail-field">
-                        <div class="detail-label">Características</div>
-                        <div class="detail-value">{{ processo.caracteristicas if processo.caracteristicas else '-' }}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Seção: Objeto e Valores -->
-        <div class="detail-section">
-            <h5 class="detail-section-title">
-                <i class="bi bi-currency-dollar me-2"></i>Objeto e Valores
-            </h5>
-            <div class="row g-3">
-                <div class="col-md-12">
-                    <div class="detail-field">
-                        <div class="detail-label">Objeto</div>
-                        <div class="detail-value">{{ processo.objeto if processo.objeto else '-' }}</div>
+        <div class="section-content">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="info-group">
+                        <div class="info-label">Número do Processo</div>
+                        <div class="info-value">{{ processo.numero_processo if processo.numero_processo else 'Não informado' }}</div>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="detail-field">
-                        <div class="detail-label">Valor Total</div>
-                        <div class="detail-value money-value">{{ 'R$ {:,.2f}'.format(processo.valor_total) if processo.valor_total else '-' }}</div>
+                    <div class="info-group">
+                        <div class="info-label">Data de Abertura</div>
+                        <div class="info-value">{{ processo.data_abertura.strftime('%d/%m/%Y') if processo.data_abertura else 'Não informada' }}</div>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Seção: Status e Ocorrências -->
-        <div class="detail-section">
-            <h5 class="detail-section-title">
-                <i class="bi bi-flag me-2"></i>Status e Ocorrências
-            </h5>
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <div class="detail-field">
-                        <div class="detail-label">Status</div>
-                        <div class="detail-value">
+                <div class="col-md-4">
+                    <div class="info-group">
+                        <div class="info-label">Status</div>
+                        <div class="info-value">
                             <span class="status-badge 
                                 {% if processo.status == 'Processo Iniciado' %}status-iniciado
                                 {% elif processo.status == 'Em andamento' %}status-andamento
@@ -254,46 +150,138 @@
                                 {% elif processo.status == 'Aguardando Definições' %}status-aguardando
                                 {% elif processo.status == 'Cancelada' %}status-cancelado
                                 {% endif %}">
-                                {{ processo.status if processo.status else '-' }}
+                                {{ processo.status if processo.status else 'Não informado' }}
                             </span>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modalidade e Características -->
+    <div class="section-card">
+        <div class="section-header">
+            <i class="bi bi-card-list"></i>
+            Modalidade e Características
+        </div>
+        <div class="section-content">
+            <div class="row">
                 <div class="col-md-6">
-                    <div class="detail-field">
-                        <div class="detail-label">Data de Conclusão</div>
-                        <div class="detail-value">{{ processo.data_conclusao.strftime('%d/%m/%Y') if processo.data_conclusao else '-' }}</div>
+                    <div class="info-group">
+                        <div class="info-label">Modalidade</div>
+                        <div class="info-value">{{ processo.modalidade if processo.modalidade else 'Não informada' }}</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-group">
+                        <div class="info-label">Registro de Preços</div>
+                        <div class="info-value">{{ processo.registro_precos if processo.registro_precos else 'Não informado' }}</div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="info-group">
+                        <div class="info-label">Fundamentação Legal</div>
+                        <div class="info-value">{{ processo.fundamentacao_legal if processo.fundamentacao_legal else 'Não informada' }}</div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Seção: Responsáveis -->
-        <div class="detail-section">
-            <h5 class="detail-section-title">
-                <i class="bi bi-people me-2"></i>Responsáveis
-            </h5>
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <div class="detail-field">
-                        <div class="detail-label">Responsável</div>
-                        <div class="detail-value">{{ processo.responsavel if processo.responsavel else '-' }}</div>
+    <!-- Objeto e Valores -->
+    <div class="section-card">
+        <div class="section-header">
+            <i class="bi bi-currency-dollar"></i>
+            Objeto e Valores
+        </div>
+        <div class="section-content">
+            <div class="row">
+                <div class="col-12">
+                    <div class="info-group">
+                        <div class="info-label">Objeto</div>
+                        <div class="info-value">{{ processo.objeto if processo.objeto else 'Não informado' }}</div>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="detail-field">
-                        <div class="detail-label">Código</div>
-                        <div class="detail-value">{{ processo.codigo if processo.codigo else '-' }}</div>
+                <div class="col-md-4">
+                    <div class="info-group">
+                        <div class="info-label">Valor Estimado</div>
+                        <div class="info-value money-value">{{ 'R$ {:,.2f}'.format(processo.valor_estimado|float) if processo.valor_estimado else 'Não informado' }}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-group">
+                        <div class="info-label">Valor Homologado</div>
+                        <div class="info-value money-value">{{ 'R$ {:,.2f}'.format(processo.valor_homologado|float) if processo.valor_homologado else 'Não informado' }}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-group">
+                        <div class="info-label">Economia</div>
+                        <div class="info-value money-value">{{ processo.percentual_economia + '%' if processo.percentual_economia else 'Não informado' }}</div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Botões de Ação -->
-        <div class="d-flex justify-content-end gap-2 mt-4">
-            <a href="{{ url_for('painel_bp.editar_painel', id=processo.id) }}" class="btn btn-primary btn-action">
-                <i class="bi bi-pencil-square me-2"></i>Editar
-            </a>
+    <!-- Ocorrências -->
+    <div class="section-card">
+        <div class="section-header">
+            <i class="bi bi-exclamation-circle"></i>
+            Ocorrências
+        </div>
+        <div class="section-content">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="info-group">
+                        <div class="info-label">Impugnação</div>
+                        <div class="info-value">{{ processo.impugnacao if processo.impugnacao else 'Não' }}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-group">
+                        <div class="info-label">Recurso</div>
+                        <div class="info-value">{{ processo.recurso if processo.recurso else 'Não' }}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-group">
+                        <div class="info-label">Itens Desertos</div>
+                        <div class="info-value">{{ processo.itens_desertos if processo.itens_desertos else 'Não' }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Responsáveis -->
+    <div class="section-card">
+        <div class="section-header">
+            <i class="bi bi-people"></i>
+            Responsáveis
+        </div>
+        <div class="section-content">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="info-group">
+                        <div class="info-label">Responsável pela Condução</div>
+                        <div class="info-value">{{ processo.responsavel_conducao if processo.responsavel_conducao else 'Não informado' }}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-group">
+                        <div class="info-label">Solicitante</div>
+                        <div class="info-value">{{ processo.solicitante.nome if processo.solicitante else 'Não informado' }}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-group">
+                        <div class="info-label">Setor Responsável</div>
+                        <div class="info-value">{{ processo.setor_responsavel if processo.setor_responsavel else 'Não informado' }}</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

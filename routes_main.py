@@ -6,6 +6,14 @@ from flask_login import login_required, logout_user, current_user, login_user
 from werkzeug.security import check_password_hash
 from models import Usuario
 from functools import wraps
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField
+from wtforms.validators import DataRequired, Email
+
+# --- Definição do formulário de login ---
+class LoginForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    senha = PasswordField('Senha', validators=[DataRequired()])
 
 # --- Definição do blueprint principal com nome 'main' ---
 main = Blueprint('main', __name__)
@@ -27,9 +35,10 @@ def perfil_required(perfis_autorizados):
 # --- Tela de login e redirecionamento baseado no perfil ---
 @main.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST':
-        email = request.form['email']
-        senha = request.form['senha']
+    form = LoginForm()
+    if form.validate_on_submit():
+        email = form.email.data
+        senha = form.senha.data
 
         usuario = Usuario.query.filter_by(email=email).first()
 
@@ -50,7 +59,7 @@ def login():
         flash('E-mail ou senha inválidos.', 'danger')
         return redirect(url_for('main.login'))
 
-    return render_template('login.html')
+    return render_template('login.html', form=form)
 
 # --- Página principal para Administrador ---
 @main.route('/home')

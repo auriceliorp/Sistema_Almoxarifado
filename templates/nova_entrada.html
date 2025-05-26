@@ -2,142 +2,253 @@
 
 {% block title %}Nova Entrada de Material{% endblock %}
 
+{% block extra_css %}
+<style>
+    .table th {
+        background-color: #2c3e50 !important;
+        color: white !important;
+    }
+    .card {
+        transition: all 0.3s ease;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    .required-field::after {
+        content: " *";
+        color: red;
+    }
+    .table-container {
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    .form-floating > .form-control:focus ~ label,
+    .form-floating > .form-control:not(:placeholder-shown) ~ label {
+        color: #2c3e50;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container py-4">
-  <h4 class="mb-4">Registrar Nova Entrada de Material</h4>
+<div class="container-fluid py-4">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <!-- Cabeçalho -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="card-title mb-0">
+                    <i class="bi bi-box-arrow-in-down me-2"></i>
+                    Registrar Nova Entrada de Material
+                </h4>
+                <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Voltar
+                </a>
+            </div>
 
-  <form method="POST">
-    <!-- Dados da Nota Fiscal -->
-    <div class="row mb-3">
-      <div class="col-md-3">
-        <label for="data_movimento" class="form-label">Data do Movimento *</label>
-        <input type="date" class="form-control" name="data_movimento" required>
-      </div>
-      <div class="col-md-3">
-        <label for="data_nota_fiscal" class="form-label">Data da Nota Fiscal *</label>
-        <input type="date" class="form-control" name="data_nota_fiscal" required>
-      </div>
-      <div class="col-md-3">
-        <label for="numero_nota_fiscal" class="form-label">Número da Nota Fiscal *</label>
-        <input type="text" class="form-control" name="numero_nota_fiscal" id="numero_nota_fiscal" required>
-      </div>
-      <div class="col-md-3">
-        <label for="fornecedor" class="form-label">Fornecedor *</label>
-        <select name="fornecedor" class="form-select" required>
-          <option value="" selected disabled>Selecione...</option>
-          {% for fornecedor in fornecedores %}
-          <option value="{{ fornecedor.id }}">{{ fornecedor.nome }}</option>
-          {% endfor %}
-        </select>
-      </div>
-    </div>
+            <form method="POST">
+                <!-- Dados da Nota Fiscal -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-receipt me-2"></i>Dados da Nota Fiscal
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <input type="date" class="form-control" id="data_movimento" name="data_movimento" required>
+                                    <label for="data_movimento" class="required-field">Data do Movimento</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <input type="date" class="form-control" id="data_nota_fiscal" name="data_nota_fiscal" required>
+                                    <label for="data_nota_fiscal" class="required-field">Data da Nota Fiscal</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="numero_nota_fiscal" name="numero_nota_fiscal" required placeholder="Número">
+                                    <label for="numero_nota_fiscal" class="required-field">Número da Nota Fiscal</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <select name="fornecedor" class="form-select" id="fornecedor" required>
+                                        <option value="" selected disabled>Selecione...</option>
+                                        {% for fornecedor in fornecedores %}
+                                        <option value="{{ fornecedor.id }}">{{ fornecedor.nome }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <label for="fornecedor" class="required-field">Fornecedor</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-    <!-- Tabela de Itens -->
-    <div class="table-responsive">
-      <table class="table table-bordered align-middle" id="tabela-itens">
-        <thead class="table-light">
-          <tr>
-            <th>Item</th>
-            <th>Quantidade</th>
-            <th>Valor Unitário (R$)</th>
-            <th>Valor Total (R$)</th>
-            <th>Ação</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              <select name="item_id[]" class="form-select" required>
-                <option value="" disabled selected>Selecione...</option>
-                {% for item in itens %}
-                <option value="{{ item.id }}">{{ item.nome }}</option>
-                {% endfor %}
-              </select>
-            </td>
-            <td><input type="number" name="quantidade[]" class="form-control" min="1" required oninput="atualizarTotais(this)"></td>
-            <td><input type="number" name="valor_unitario[]" class="form-control" min="0" step="0.01" required oninput="atualizarTotais(this)"></td>
-            <td class="valor_total">0.00</td>
-            <td>
-              <button type="button" class="btn btn-outline-danger btn-sm" onclick="removerLinha(this)">
-                <i class="bi bi-trash"></i>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+                <!-- Itens da Nota -->
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-list-check me-2"></i>Itens da Nota
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0" id="tabela-itens">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th style="width: 150px;">Quantidade</th>
+                                        <th style="width: 200px;">Valor Unitário (R$)</th>
+                                        <th style="width: 200px;">Valor Total (R$)</th>
+                                        <th style="width: 80px;">Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <select name="item_id[]" class="form-select" required>
+                                                <option value="" disabled selected>Selecione...</option>
+                                                {% for item in itens %}
+                                                <option value="{{ item.id }}">{{ item.nome }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input type="number" name="quantidade[]" class="form-control" min="1" required 
+                                                   oninput="atualizarTotais(this)" placeholder="Qtd">
+                                        </td>
+                                        <td>
+                                            <div class="input-group">
+                                                <span class="input-group-text">R$</span>
+                                                <input type="number" name="valor_unitario[]" class="form-control" min="0" 
+                                                       step="0.01" required oninput="atualizarTotais(this)" placeholder="0,00">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="input-group">
+                                                <span class="input-group-text">R$</span>
+                                                <input type="text" class="form-control valor_total" readonly value="0,00">
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <button type="button" class="btn btn-sm btn-danger" onclick="removerLinha(this)"
+                                                    data-bs-toggle="tooltip" title="Remover item">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
 
-    <div class="mb-3">
-      <button type="button" class="btn btn-outline-secondary" onclick="adicionarLinha()">
-        <i class="bi bi-plus-circle"></i> Adicionar Item
-      </button>
-    </div>
+                        <div class="mt-3">
+                            <button type="button" class="btn btn-outline-primary" onclick="adicionarLinha()">
+                                <i class="bi bi-plus-circle me-1"></i>Adicionar Item
+                            </button>
+                        </div>
 
-    <!-- Total da Nota -->
-    <div class="mb-4 text-end">
-      <strong>Total da Nota Fiscal (R$):</strong>
-      <span id="totalNota">0.00</span>
-    </div>
+                        <!-- Total da Nota -->
+                        <div class="d-flex justify-content-end mt-4">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5 class="card-title mb-0">Total da Nota Fiscal</h5>
+                                    <h3 class="text-primary mb-0">R$ <span id="totalNota">0,00</span></h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-    <!-- Botões -->
-    <div class="d-flex justify-content-end gap-2">
-      <button type="submit" class="btn btn-success">
-        <i class="bi bi-check-circle"></i> Salvar Entrada
-      </button>
-      <a href="{{ url_for('main.home') }}" class="btn btn-outline-secondary">
-        <i class="bi bi-x-circle"></i> Cancelar
-      </a>
+                <!-- Botões de Ação -->
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle me-1"></i>Salvar Entrada
+                    </button>
+                    <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle me-1"></i>Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
-  </form>
 </div>
+{% endblock %}
 
-<!-- Scripts -->
+{% block extra_js %}
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
 <script>
-  $('#numero_nota_fiscal').mask('000.000.000');
+$(document).ready(function() {
+    // Inicializa tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
 
-  function atualizarTotais(input) {
+    // Aplica máscara ao número da nota fiscal
+    $('#numero_nota_fiscal').mask('000.000.000');
+});
+
+function formatarMoeda(valor) {
+    return valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function atualizarTotais(input) {
     const linha = input.closest('tr');
     const qtd = parseFloat(linha.querySelector('input[name="quantidade[]"]').value) || 0;
     const valor = parseFloat(linha.querySelector('input[name="valor_unitario[]"]').value) || 0;
     const total = qtd * valor;
-    linha.querySelector('.valor_total').innerText = total.toFixed(2);
+    linha.querySelector('.valor_total').value = formatarMoeda(total);
     atualizarTotalNota();
-  }
+}
 
-  function atualizarTotalNota() {
+function atualizarTotalNota() {
     let totalNota = 0;
-    document.querySelectorAll('.valor_total').forEach(td => {
-      totalNota += parseFloat(td.innerText) || 0;
+    document.querySelectorAll('.valor_total').forEach(input => {
+        totalNota += parseFloat(input.value.replace(/\./g, '').replace(',', '.')) || 0;
     });
-    document.getElementById('totalNota').innerText = totalNota.toFixed(2);
-  }
+    document.getElementById('totalNota').innerText = formatarMoeda(totalNota);
+}
 
-  function adicionarLinha() {
+function adicionarLinha() {
     const tbody = document.querySelector('#tabela-itens tbody');
     const novaLinha = tbody.rows[0].cloneNode(true);
 
+    // Limpa os valores
     novaLinha.querySelectorAll('input').forEach(input => {
-      input.value = '';
-      input.setAttribute('required', true);
+        input.value = input.type === 'text' ? '0,00' : '';
+        input.setAttribute('required', true);
     });
-
     novaLinha.querySelector('select').selectedIndex = 0;
-    novaLinha.querySelector('.valor_total').innerText = '0.00';
 
+    // Reinicializa tooltip
+    novaLinha.querySelector('[data-bs-toggle="tooltip"]').title = 'Remover item';
+    
     tbody.appendChild(novaLinha);
-  }
+    
+    // Reinicializa os tooltips na nova linha
+    var tooltips = [].slice.call(novaLinha.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltips.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+}
 
-  function removerLinha(botao) {
+function removerLinha(botao) {
     const linha = botao.closest('tr');
     const tbody = linha.parentElement;
     if (tbody.rows.length > 1) {
-      linha.remove();
-      atualizarTotalNota();
+        // Destrói o tooltip antes de remover a linha
+        const tooltip = bootstrap.Tooltip.getInstance(botao);
+        if (tooltip) {
+            tooltip.dispose();
+        }
+        linha.remove();
+        atualizarTotalNota();
     } else {
-      alert('A entrada deve conter pelo menos um item.');
+        alert('A entrada deve conter pelo menos um item.');
     }
-  }
+}
 </script>
 {% endblock %}

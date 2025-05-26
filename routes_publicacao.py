@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
 from models import db, Publicacao, Usuario, Fornecedor
 from datetime import datetime
+from flask_wtf.csrf import csrf_protect
 
 bp = Blueprint('publicacao_bp', __name__)
 
@@ -39,6 +40,7 @@ def listar():
 
 @bp.route('/publicacao/nova', methods=['GET', 'POST'])
 @login_required
+@csrf_protect()
 def nova_publicacao():
     if request.method == 'POST':
         # Processa os dados do formulário
@@ -65,6 +67,11 @@ def nova_publicacao():
         partes_fornecedor = request.form.getlist('partes_fornecedor')
         signatarios_embrapa = request.form.getlist('signatarios_embrapa')
         signatarios_externos = request.form.getlist('signatarios_externos')
+
+        # Validações básicas
+        if not especie or not objeto or not data_assinatura:
+            flash('Por favor, preencha todos os campos obrigatórios.', 'danger')
+            return redirect(url_for('publicacao_bp.nova_publicacao'))
 
         # Cria nova publicação
         publicacao = Publicacao(
@@ -101,6 +108,7 @@ def nova_publicacao():
 
 @bp.route('/publicacao/<int:id>/editar', methods=['GET', 'POST'])
 @login_required
+@csrf_protect()
 def editar_publicacao(id):
     publicacao = Publicacao.query.get_or_404(id)
     
@@ -114,7 +122,12 @@ def editar_publicacao(id):
         publicacao.valor_global = request.form.get('valor_global') or "Não Aplicável"
         
         # Processa datas
-        publicacao.data_assinatura = datetime.strptime(request.form.get('data_assinatura'), '%Y-%m-%d').date()
+        data_assinatura = request.form.get('data_assinatura')
+        if not data_assinatura:
+            flash('A data de assinatura é obrigatória.', 'danger')
+            return redirect(url_for('publicacao_bp.editar_publicacao', id=id))
+
+        publicacao.data_assinatura = datetime.strptime(data_assinatura, '%Y-%m-%d').date()
         vigencia_inicio = request.form.get('vigencia_inicio')
         vigencia_fim = request.form.get('vigencia_fim')
 
@@ -148,6 +161,7 @@ def editar_publicacao(id):
 
 @bp.route('/publicacao/<int:id>/excluir', methods=['POST'])
 @login_required
+@csrf_protect()
 def excluir_publicacao(id):
     publicacao = Publicacao.query.get_or_404(id)
     try:

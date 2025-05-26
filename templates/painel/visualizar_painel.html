@@ -147,28 +147,50 @@
             </h5>
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="detail-label">Número do Processo</label>
-                    <input type="text" class="form-control detail-field" value="{{ processo.numero_processo }}" readonly>
+                    <div class="detail-field">
+                        <div class="detail-label">Número do Processo</div>
+                        <div class="detail-value">{{ processo.numero_processo if processo.numero_processo else '-' }}</div>
+                    </div>
                 </div>
                 <div class="col-md-6">
-                    <label class="detail-label">Data de Abertura</label>
-                    <input type="text" class="form-control detail-field" value="{{ processo.data_abertura.strftime('%d/%m/%Y') }}" readonly>
+                    <div class="detail-field">
+                        <div class="detail-label">Data de Abertura</div>
+                        <div class="detail-value">{{ processo.data_abertura.strftime('%d/%m/%Y') if processo.data_abertura else '-' }}</div>
+                    </div>
                 </div>
                 <div class="col-md-6">
-                    <label class="detail-label">Data de Conclusão</label>
-                    <input type="text" class="form-control detail-field" value="{{ processo.data_conclusao.strftime('%d/%m/%Y') }}" readonly>
+                    <div class="detail-field">
+                        <div class="detail-label">Data de Conclusão</div>
+                        <div class="detail-value">{{ processo.data_conclusao.strftime('%d/%m/%Y') if processo.data_conclusao else '-' }}</div>
+                    </div>
                 </div>
                 <div class="col-md-6">
-                    <label class="detail-label">Valor Total</label>
-                    <input type="text" class="form-control detail-field" value="{{ 'R$ {:,.2f}'.format(processo.valor_total) }}" readonly>
+                    <div class="detail-field">
+                        <div class="detail-label">Valor Total</div>
+                        <div class="detail-value money-value">{{ 'R$ {:,.2f}'.format(processo.valor_total) if processo.valor_total else '-' }}</div>
+                    </div>
                 </div>
                 <div class="col-md-6">
-                    <label class="detail-label">Status</label>
-                    <input type="text" class="form-control detail-field" value="{{ processo.status }}" readonly>
+                    <div class="detail-field">
+                        <div class="detail-label">Status</div>
+                        <div class="detail-value">
+                            <span class="status-badge 
+                                {% if processo.status == 'Processo Iniciado' %}status-iniciado
+                                {% elif processo.status == 'Em andamento' %}status-andamento
+                                {% elif processo.status == 'Concluído' %}status-concluido
+                                {% elif processo.status == 'Aguardando Definições' %}status-aguardando
+                                {% elif processo.status == 'Cancelada' %}status-cancelado
+                                {% endif %}">
+                                {{ processo.status if processo.status else '-' }}
+                            </span>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-md-6">
-                    <label class="detail-label">Objeto</label>
-                    <input type="text" class="form-control detail-field" value="{{ processo.objeto }}" readonly>
+                    <div class="detail-field">
+                        <div class="detail-label">Objeto</div>
+                        <div class="detail-value">{{ processo.objeto if processo.objeto else '-' }}</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -180,12 +202,16 @@
             </h5>
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="detail-label">Modalidade</label>
-                    <input type="text" class="form-control detail-field" value="{{ processo.modalidade }}" readonly>
+                    <div class="detail-field">
+                        <div class="detail-label">Modalidade</div>
+                        <div class="detail-value">{{ processo.modalidade if processo.modalidade else '-' }}</div>
+                    </div>
                 </div>
                 <div class="col-md-6">
-                    <label class="detail-label">Características</label>
-                    <input type="text" class="form-control detail-field" value="{{ processo.caracteristicas }}" readonly>
+                    <div class="detail-field">
+                        <div class="detail-label">Características</div>
+                        <div class="detail-value">{{ processo.caracteristicas if processo.caracteristicas else '-' }}</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -196,13 +222,17 @@
                 <i class="bi bi-currency-dollar me-2"></i>Objeto e Valores
             </h5>
             <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="detail-label">Objeto</label>
-                    <input type="text" class="form-control detail-field" value="{{ processo.objeto }}" readonly>
+                <div class="col-md-12">
+                    <div class="detail-field">
+                        <div class="detail-label">Objeto</div>
+                        <div class="detail-value">{{ processo.objeto if processo.objeto else '-' }}</div>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <label class="detail-label">Valor Total</label>
-                    <input type="text" class="form-control detail-field" value="{{ 'R$ {:,.2f}'.format(processo.valor_total) }}" readonly>
+                <div class="col-md-4">
+                    <div class="detail-field">
+                        <div class="detail-label">Valor Total</div>
+                        <div class="detail-value money-value">{{ 'R$ {:,.2f}'.format(processo.valor_total) if processo.valor_total else '-' }}</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -214,12 +244,26 @@
             </h5>
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="detail-label">Status</label>
-                    <input type="text" class="form-control detail-field" value="{{ processo.status }}" readonly>
+                    <div class="detail-field">
+                        <div class="detail-label">Status</div>
+                        <div class="detail-value">
+                            <span class="status-badge 
+                                {% if processo.status == 'Processo Iniciado' %}status-iniciado
+                                {% elif processo.status == 'Em andamento' %}status-andamento
+                                {% elif processo.status == 'Concluído' %}status-concluido
+                                {% elif processo.status == 'Aguardando Definições' %}status-aguardando
+                                {% elif processo.status == 'Cancelada' %}status-cancelado
+                                {% endif %}">
+                                {{ processo.status if processo.status else '-' }}
+                            </span>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-md-6">
-                    <label class="detail-label">Data de Conclusão</label>
-                    <input type="text" class="form-control detail-field" value="{{ processo.data_conclusao.strftime('%d/%m/%Y') }}" readonly>
+                    <div class="detail-field">
+                        <div class="detail-label">Data de Conclusão</div>
+                        <div class="detail-value">{{ processo.data_conclusao.strftime('%d/%m/%Y') if processo.data_conclusao else '-' }}</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -231,12 +275,16 @@
             </h5>
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="detail-label">Responsável</label>
-                    <input type="text" class="form-control detail-field" value="{{ processo.responsavel }}" readonly>
+                    <div class="detail-field">
+                        <div class="detail-label">Responsável</div>
+                        <div class="detail-value">{{ processo.responsavel if processo.responsavel else '-' }}</div>
+                    </div>
                 </div>
                 <div class="col-md-6">
-                    <label class="detail-label">Código</label>
-                    <input type="text" class="form-control detail-field" value="{{ processo.codigo }}" readonly>
+                    <div class="detail-field">
+                        <div class="detail-label">Código</div>
+                        <div class="detail-value">{{ processo.codigo if processo.codigo else '-' }}</div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -12,6 +12,13 @@
         font-size: 0.875em;
         color: #6c757d;
     }
+    .card-header {
+        padding: 0.75rem 1.25rem;
+    }
+    .required-field::after {
+        content: " *";
+        color: red;
+    }
 </style>
 {% endblock %}
 
@@ -19,148 +26,215 @@
 <div class="container py-4">
     <div class="card shadow-sm">
         <div class="card-body">
-            <h4 class="card-title mb-4">{% if publicacao %}Editar{% else %}Nova{% endif %} Publicação</h4>
+            <!-- Cabeçalho com botões -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="card-title mb-0">
+                    <i class="bi bi-file-earmark-text me-2"></i>
+                    {% if publicacao %}Editar{% else %}Nova{% endif %} Publicação
+                </h4>
+                <a href="{{ url_for('publicacao_bp.listar') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Voltar
+                </a>
+            </div>
             
             <form method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 
-                <div class="row g-3">
-                    <!-- Espécie -->
-                    <div class="col-md-6">
-                        <label class="form-label">Espécie *</label>
-                        <input type="text" name="especie" class="form-control" required
-                               value="{{ publicacao.especie if publicacao else '' }}">
-                    </div>
-
-                    <!-- Contrato SAIC -->
-                    <div class="col-md-6">
-                        <label class="form-label">Contrato SAIC</label>
-                        <input type="text" name="contrato_saic" class="form-control" 
-                               placeholder="Digite o contrato SAIC (deixe em branco para 'Não Aplicável')"
-                               value="{{ publicacao.contrato_saic if publicacao else '' }}">
-                        <div class="form-text">
-                            <i class="bi bi-info-circle"></i> Se deixado em branco, será registrado como "Não Aplicável"
-                        </div>
-                    </div>
-
-                    <!-- Objeto -->
+                <div class="row g-4">
+                    <!-- Informações Principais -->
                     <div class="col-12">
-                        <label class="form-label">Objeto *</label>
-                        <textarea name="objeto" class="form-control" rows="3" required>{{ publicacao.objeto if publicacao else '' }}</textarea>
-                    </div>
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-info-circle me-2"></i>Informações Principais
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label required-field">Espécie</label>
+                                        <input type="text" name="especie" class="form-control" required
+                                               value="{{ publicacao.especie if publicacao else '' }}">
+                                    </div>
 
-                    <!-- Modalidade de Licitação -->
-                    <div class="col-md-6">
-                        <label class="form-label">Modalidade de Licitação</label>
-                        <select name="modalidade_licitacao" class="form-select">
-                            <option value="">Selecione a modalidade (ou deixe em branco para 'Não se Aplica')</option>
-                            <option value="Pregão Eletrônico" {% if publicacao and publicacao.modalidade_licitacao == 'Pregão Eletrônico' %}selected{% endif %}>Pregão Eletrônico</option>
-                            <option value="Dispensa de Licitação" {% if publicacao and publicacao.modalidade_licitacao == 'Dispensa de Licitação' %}selected{% endif %}>Dispensa de Licitação</option>
-                            <option value="Inexigibilidade" {% if publicacao and publicacao.modalidade_licitacao == 'Inexigibilidade' %}selected{% endif %}>Inexigibilidade</option>
-                            <option value="Licitação Embrapa" {% if publicacao and publicacao.modalidade_licitacao == 'Licitação Embrapa' %}selected{% endif %}>Licitação Embrapa</option>
-                        </select>
-                        <div class="form-text">
-                            <i class="bi bi-info-circle"></i> Se nenhuma opção for selecionada, será registrado como "Não se Aplica"
+                                    <div class="col-md-6">
+                                        <label class="form-label">Contrato SAIC</label>
+                                        <input type="text" name="contrato_saic" class="form-control" 
+                                               placeholder="Digite o contrato SAIC"
+                                               value="{{ publicacao.contrato_saic if publicacao else '' }}">
+                                        <div class="form-text">
+                                            <i class="bi bi-info-circle"></i> Se deixado em branco, será registrado como "Não Aplicável"
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label required-field">Objeto</label>
+                                        <textarea name="objeto" class="form-control" rows="3" required>{{ publicacao.objeto if publicacao else '' }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Fonte de Recursos -->
-                    <div class="col-md-6">
-                        <label class="form-label">Fonte de Recursos</label>
-                        <input type="text" name="fonte_recursos" class="form-control" 
-                               placeholder="Digite a fonte de recursos (deixe em branco para 'Não se Aplica')"
-                               value="{{ publicacao.fonte_recursos if publicacao else '' }}">
-                        <div class="form-text">
-                            <i class="bi bi-info-circle"></i> Se deixado em branco, será registrado como "Não se Aplica"
+                    <!-- Informações Complementares -->
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-card-list me-2"></i>Informações Complementares
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Modalidade de Licitação</label>
+                                        <select name="modalidade_licitacao" class="form-select">
+                                            <option value="">Selecione a modalidade</option>
+                                            <option value="Pregão Eletrônico" {% if publicacao and publicacao.modalidade_licitacao == 'Pregão Eletrônico' %}selected{% endif %}>Pregão Eletrônico</option>
+                                            <option value="Dispensa de Licitação" {% if publicacao and publicacao.modalidade_licitacao == 'Dispensa de Licitação' %}selected{% endif %}>Dispensa de Licitação</option>
+                                            <option value="Inexigibilidade" {% if publicacao and publicacao.modalidade_licitacao == 'Inexigibilidade' %}selected{% endif %}>Inexigibilidade</option>
+                                            <option value="Licitação Embrapa" {% if publicacao and publicacao.modalidade_licitacao == 'Licitação Embrapa' %}selected{% endif %}>Licitação Embrapa</option>
+                                        </select>
+                                        <div class="form-text">
+                                            <i class="bi bi-info-circle"></i> Se nenhuma opção for selecionada, será registrado como "Não se Aplica"
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Fonte de Recursos</label>
+                                        <input type="text" name="fonte_recursos" class="form-control" 
+                                               placeholder="Digite a fonte de recursos"
+                                               value="{{ publicacao.fonte_recursos if publicacao else '' }}">
+                                        <div class="form-text">
+                                            <i class="bi bi-info-circle"></i> Se deixado em branco, será registrado como "Não se Aplica"
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Valor Global</label>
+                                        <input type="text" name="valor_global" class="form-control" 
+                                               placeholder="Digite o valor global"
+                                               value="{{ publicacao.valor_global if publicacao else '' }}">
+                                        <div class="form-text">
+                                            <i class="bi bi-info-circle"></i> Se deixado em branco, será registrado como "Não Aplicável"
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Valor Global -->
-                    <div class="col-md-6">
-                        <label class="form-label">Valor Global</label>
-                        <input type="text" name="valor_global" class="form-control" 
-                               placeholder="Digite o valor global (deixe em branco para 'Não Aplicável')"
-                               value="{{ publicacao.valor_global if publicacao else '' }}">
-                        <div class="form-text">
-                            <i class="bi bi-info-circle"></i> Se deixado em branco, será registrado como "Não Aplicável"
+                    <!-- Datas -->
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-calendar me-2"></i>Datas
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label required-field">Data da Assinatura</label>
+                                        <input type="date" name="data_assinatura" class="form-control" required
+                                               value="{{ publicacao.data_assinatura.strftime('%Y-%m-%d') if publicacao and publicacao.data_assinatura else '' }}">
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Vigência Início</label>
+                                        <input type="date" name="vigencia_inicio" class="form-control"
+                                               value="{{ publicacao.vigencia_inicio if publicacao else '' }}">
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Vigência Fim</label>
+                                        <input type="date" name="vigencia_fim" class="form-control"
+                                               value="{{ publicacao.vigencia_fim if publicacao else '' }}">
+                                        <div class="form-text">
+                                            <i class="bi bi-info-circle"></i> Se as datas de vigência forem deixadas em branco, será registrado como "A partir da Assinatura"
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Data da Assinatura -->
-                    <div class="col-md-6">
-                        <label class="form-label">Data da Assinatura *</label>
-                        <input type="date" name="data_assinatura" class="form-control" required
-                               value="{{ publicacao.data_assinatura.strftime('%Y-%m-%d') if publicacao and publicacao.data_assinatura else '' }}">
-                    </div>
+                    <!-- Partes -->
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header bg-warning">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-people me-2"></i>Partes
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label required-field">Partes Embrapa</label>
+                                        <select class="form-select select2-multiple" name="partes_embrapa" multiple required>
+                                            {% for usuario in usuarios %}
+                                                <option value="{{ usuario.id }}" {% if publicacao and usuario.id in publicacao.partes_embrapa %}selected{% endif %}>
+                                                    {{ usuario.nome }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
 
-                    <!-- Vigência -->
-                    <div class="col-md-6">
-                        <label class="form-label">Vigência Início</label>
-                        <input type="date" name="vigencia_inicio" class="form-control"
-                               value="{{ publicacao.vigencia_inicio if publicacao else '' }}">
-                        <div class="form-text">
-                            <i class="bi bi-info-circle"></i> Se as datas de vigência forem deixadas em branco, será registrado como "A partir da Assinatura"
+                                    <div class="col-md-6">
+                                        <label class="form-label required-field">Partes Fornecedor</label>
+                                        <select class="form-select select2-multiple" name="partes_fornecedor" multiple required>
+                                            {% for fornecedor in fornecedores %}
+                                                <option value="{{ fornecedor.id }}" {% if publicacao and fornecedor.id in publicacao.partes_fornecedor %}selected{% endif %}>
+                                                    {{ fornecedor.nome }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="col-md-6">
-                        <label class="form-label">Vigência Fim</label>
-                        <input type="date" name="vigencia_fim" class="form-control"
-                               value="{{ publicacao.vigencia_fim if publicacao else '' }}">
-                    </div>
+                    <!-- Signatários -->
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-pen me-2"></i>Signatários
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label required-field">Signatários Embrapa</label>
+                                        <select class="form-select select2-multiple" name="signatarios_embrapa" multiple required>
+                                            {% for usuario in usuarios %}
+                                                <option value="{{ usuario.id }}" {% if publicacao and usuario.id in publicacao.signatarios_embrapa %}selected{% endif %}>
+                                                    {{ usuario.nome }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
 
-                    <!-- Partes Embrapa -->
-                    <div class="col-md-6">
-                        <label class="form-label">Partes Embrapa *</label>
-                        <select class="form-select select2-multiple" name="partes_embrapa" multiple required>
-                            {% for usuario in usuarios %}
-                                <option value="{{ usuario.id }}" {% if publicacao and usuario.id in publicacao.partes_embrapa %}selected{% endif %}>
-                                    {{ usuario.nome }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <!-- Partes Fornecedor -->
-                    <div class="col-md-6">
-                        <label class="form-label">Partes Fornecedor *</label>
-                        <select class="form-select select2-multiple" name="partes_fornecedor" multiple required>
-                            {% for fornecedor in fornecedores %}
-                                <option value="{{ fornecedor.id }}" {% if publicacao and fornecedor.id in publicacao.partes_fornecedor %}selected{% endif %}>
-                                    {{ fornecedor.nome }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <!-- Signatários Embrapa -->
-                    <div class="col-md-6">
-                        <label class="form-label">Signatários Embrapa *</label>
-                        <select class="form-select select2-multiple" name="signatarios_embrapa" multiple required>
-                            {% for usuario in usuarios %}
-                                <option value="{{ usuario.id }}" {% if publicacao and usuario.id in publicacao.signatarios_embrapa %}selected{% endif %}>
-                                    {{ usuario.nome }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <!-- Signatários Externos -->
-                    <div class="col-md-6">
-                        <label class="form-label">Signatários Externos *</label>
-                        <select class="form-select select2-multiple" name="signatarios_externos" multiple required>
-                            {% for fornecedor in fornecedores %}
-                                <option value="{{ fornecedor.id }}" {% if publicacao and fornecedor.id in publicacao.signatarios_externos %}selected{% endif %}>
-                                    {{ fornecedor.nome }}
-                                </option>
-                            {% endfor %}
-                        </select>
+                                    <div class="col-md-6">
+                                        <label class="form-label required-field">Signatários Externos</label>
+                                        <select class="form-select select2-multiple" name="signatarios_externos" multiple required>
+                                            {% for fornecedor in fornecedores %}
+                                                <option value="{{ fornecedor.id }}" {% if publicacao and fornecedor.id in publicacao.signatarios_externos %}selected{% endif %}>
+                                                    {{ fornecedor.nome }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Botões -->
-                <div class="mt-4">
-                    <button type="submit" class="btn btn-primary">
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="submit" class="btn btn-primary me-2">
                         <i class="bi bi-check-circle me-1"></i>Salvar
                     </button>
                     <a href="{{ url_for('publicacao_bp.listar') }}" class="btn btn-secondary">

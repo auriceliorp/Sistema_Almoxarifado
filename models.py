@@ -317,3 +317,67 @@ class GrupoPatrimonio(db.Model):
     def __repr__(self):
         return f"<GrupoPatrimonio {self.codigo} - {self.descricao}>"
 
+# ------------------- PUBLICAÇÃO -------------------
+class Publicacao(db.Model):
+    __tablename__ = 'publicacoes'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    especie = db.Column(db.String(200), nullable=False)
+    contrato_saic = db.Column(db.String(100), default='Não Aplicável')
+    objeto = db.Column(db.Text, nullable=False)
+    modalidade_licitacao = db.Column(db.String(50), default='Não se Aplica')
+    fonte_recursos = db.Column(db.String(200), default='Não se Aplica')
+    valor_global = db.Column(db.String(100), default='Não Aplicável')
+    vigencia_inicio = db.Column(db.Date, nullable=True)
+    vigencia_fim = db.Column(db.Date, nullable=True)
+    data_assinatura = db.Column(db.Date, nullable=False)
+    excluido = db.Column(db.Boolean, default=False)
+    
+    # Relacionamentos
+    partes_embrapa = db.relationship(
+        'Usuario',
+        secondary='publicacao_partes_embrapa',
+        backref=db.backref('publicacoes_partes', lazy='dynamic')
+    )
+    
+    partes_fornecedor = db.relationship(
+        'Fornecedor',
+        secondary='publicacao_partes_fornecedor',
+        backref=db.backref('publicacoes_partes', lazy='dynamic')
+    )
+    
+    signatarios_embrapa = db.relationship(
+        'Usuario',
+        secondary='publicacao_signatarios_embrapa',
+        backref=db.backref('publicacoes_assinadas_embrapa', lazy='dynamic')
+    )
+    
+    signatarios_externos = db.relationship(
+        'Fornecedor',
+        secondary='publicacao_signatarios_externos',
+        backref=db.backref('publicacoes_assinadas_fornecedor', lazy='dynamic')
+    )
+
+    def __repr__(self):
+        return f"<Publicacao {self.especie} - {self.contrato_saic}>"
+
+# Tabelas de relacionamento many-to-many para Publicações
+class PublicacaoPartesEmbrapa(db.Model):
+    __tablename__ = 'publicacao_partes_embrapa'
+    publicacao_id = db.Column(db.Integer, db.ForeignKey('publicacoes.id'), primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), primary_key=True)
+
+class PublicacaoPartesFornecedor(db.Model):
+    __tablename__ = 'publicacao_partes_fornecedor'
+    publicacao_id = db.Column(db.Integer, db.ForeignKey('publicacoes.id'), primary_key=True)
+    fornecedor_id = db.Column(db.Integer, db.ForeignKey('fornecedores.id'), primary_key=True)
+
+class PublicacaoSignatariosEmbrapa(db.Model):
+    __tablename__ = 'publicacao_signatarios_embrapa'
+    publicacao_id = db.Column(db.Integer, db.ForeignKey('publicacoes.id'), primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), primary_key=True)
+
+class PublicacaoSignatariosExternos(db.Model):
+    __tablename__ = 'publicacao_signatarios_externos'
+    publicacao_id = db.Column(db.Integer, db.ForeignKey('publicacoes.id'), primary_key=True)
+    fornecedor_id = db.Column(db.Integer, db.ForeignKey('fornecedores.id'), primary_key=True)

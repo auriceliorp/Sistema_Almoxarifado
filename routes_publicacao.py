@@ -37,6 +37,22 @@ def listar():
                          filtro=filtro,
                          busca=busca)
 
+@bp.route('/publicacao/<int:id>/visualizar')
+@login_required
+def visualizar_publicacao(id):
+    publicacao = Publicacao.query.get_or_404(id)
+    
+    # Formata o texto da vigência para exibição
+    texto_vigencia = "A partir da Assinatura"
+    if publicacao.vigencia_inicio and publicacao.vigencia_fim:
+        texto_vigencia = f"De {publicacao.vigencia_inicio.strftime('%d/%m/%Y')} até {publicacao.vigencia_fim.strftime('%d/%m/%Y')}"
+    elif publicacao.vigencia_inicio:
+        texto_vigencia = f"A partir de {publicacao.vigencia_inicio.strftime('%d/%m/%Y')}"
+    
+    return render_template('publicacao/visualizar.html',
+                         publicacao=publicacao,
+                         texto_vigencia=texto_vigencia)
+
 @bp.route('/publicacao/nova', methods=['GET', 'POST'])
 @login_required
 def nova_publicacao():
@@ -101,7 +117,7 @@ def nova_publicacao():
             return redirect(url_for('publicacao_bp.nova_publicacao'))
 
     # GET: Renderiza o formulário
-    usuarios = Usuario.query.all()  # Removido o filtro ativo=True
+    usuarios = Usuario.query.all()
     fornecedores = Fornecedor.query.all()
     return render_template('publicacao/form.html',
                          usuarios=usuarios,
@@ -157,7 +173,7 @@ def editar_publicacao(id):
             return redirect(url_for('publicacao_bp.editar_publicacao', id=id))
 
     # GET: Renderiza o formulário com os dados atuais
-    usuarios = Usuario.query.all()  # Removido o filtro ativo=True
+    usuarios = Usuario.query.all()
     fornecedores = Fornecedor.query.all()
     return render_template('publicacao/form.html',
                          publicacao=publicacao,

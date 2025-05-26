@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
 from models import db, Publicacao, Usuario, Fornecedor
 from datetime import datetime
-from flask_wtf.csrf import csrf_protect
+from flask_wtf.csrf import CSRFProtect
 
 bp = Blueprint('publicacao_bp', __name__)
 

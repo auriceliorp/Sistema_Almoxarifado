@@ -22,7 +22,7 @@
         <div class="card-body">
             <h4 class="card-title mb-4">{% if publicacao %}Editar{% else %}Nova{% endif %} Publicação</h4>
             <form method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 
                 <div class="row g-3">
                     <!-- Espécie -->

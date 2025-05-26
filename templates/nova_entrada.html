@@ -25,7 +25,20 @@
     .form-floating > .form-control:not(:placeholder-shown) ~ label {
         color: #2c3e50;
     }
+    .valor-total-nota {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #2c3e50;
+    }
+    .select2-container .select2-selection--single {
+        height: 58px;
+        padding: 15px 5px;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 56px;
+    }
 </style>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 {% endblock %}
 
 {% block content %}
@@ -43,7 +56,7 @@
                 </a>
             </div>
 
-            <form method="POST">
+            <form method="POST" id="formEntrada">
                 <!-- Dados da Nota Fiscal -->
                 <div class="card mb-4">
                     <div class="card-header bg-primary text-white">
@@ -73,7 +86,7 @@
                             </div>
                             <div class="col-md-3">
                                 <div class="form-floating">
-                                    <select name="fornecedor" class="form-select" id="fornecedor" required>
+                                    <select name="fornecedor" class="form-select select2" id="fornecedor" required>
                                         <option value="" selected disabled>Selecione...</option>
                                         {% for fornecedor in fornecedores %}
                                         <option value="{{ fornecedor.id }}">{{ fornecedor.nome }}</option>
@@ -108,7 +121,7 @@
                                 <tbody>
                                     <tr>
                                         <td>
-                                            <select name="item_id[]" class="form-select" required>
+                                            <select name="item_id[]" class="form-select select2-item" required>
                                                 <option value="" disabled selected>Selecione...</option>
                                                 {% for item in itens %}
                                                 <option value="{{ item.id }}">{{ item.nome }}</option>
@@ -117,13 +130,13 @@
                                         </td>
                                         <td>
                                             <input type="number" name="quantidade[]" class="form-control" min="1" required 
-                                                   oninput="atualizarTotais(this)" placeholder="Qtd">
+                                                   placeholder="Qtd">
                                         </td>
                                         <td>
                                             <div class="input-group">
                                                 <span class="input-group-text">R$</span>
                                                 <input type="number" name="valor_unitario[]" class="form-control" min="0" 
-                                                       step="0.01" required oninput="atualizarTotais(this)" placeholder="0,00">
+                                                       step="0.01" required placeholder="0,00">
                                             </div>
                                         </td>
                                         <td>
@@ -153,8 +166,10 @@
                         <div class="d-flex justify-content-end mt-4">
                             <div class="card bg-light">
                                 <div class="card-body">
-                                    <h5 class="card-title mb-0">Total da Nota Fiscal</h5>
-                                    <h3 class="text-primary mb-0">R$ <span id="totalNota">0,00</span></h3>
+                                    <h5 class="card-title mb-2">Total da Nota Fiscal</h5>
+                                    <div class="valor-total-nota">
+                                        R$ <span id="totalNota">0,00</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -178,60 +193,144 @@
 
 {% block extra_js %}
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
 <script>
 $(document).ready(function() {
-    // Inicializa tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
+    // Inicializa Select2
+    $('.select2').select2({
+        theme: 'bootstrap-5',
+        width: '100%'
     });
+    
+    inicializarSelect2Items();
+    
+    // Inicializa tooltips
+    inicializarTooltips();
 
     // Aplica máscara ao número da nota fiscal
     $('#numero_nota_fiscal').mask('000.000.000');
+
+    // Adiciona listeners para os campos de quantidade e valor unitário
+    $('#tabela-itens').on('input', 'input[name="quantidade[]"], input[name="valor_unitario[]"]', function() {
+        atualizarTotais(this);
+    });
+
+    // Validação do formulário
+    $('#formEntrada').on('submit', function(e) {
+        if (!validarFormulario()) {
+            e.preventDefault();
+        }
+    });
 });
 
+function inicializarSelect2Items() {
+    $('.select2-item').select2({
+        theme: 'bootstrap-5',
+        width: '100%',
+        placeholder: 'Selecione um item...',
+        language: {
+            noResults: function() {
+                return "Nenhum item encontrado";
+            }
+        }
+    });
+}
+
+function inicializarTooltips() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+}
+
 function formatarMoeda(valor) {
-    return valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return valor.toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+function parseMoeda(valor) {
+    if (typeof valor === 'string') {
+        return parseFloat(valor.replace(/\./g, '').replace(',', '.')) || 0;
+    }
+    return parseFloat(valor) || 0;
 }
 
 function atualizarTotais(input) {
     const linha = input.closest('tr');
-    const qtd = parseFloat(linha.querySelector('input[name="quantidade[]"]').value) || 0;
-    const valor = parseFloat(linha.querySelector('input[name="valor_unitario[]"]').value) || 0;
-    const total = qtd * valor;
+    const quantidade = parseMoeda(linha.querySelector('input[name="quantidade[]"]').value);
+    const valorUnitario = parseMoeda(linha.querySelector('input[name="valor_unitario[]"]').value);
+    const total = quantidade * valorUnitario;
+    
+    // Atualiza o valor total da linha
     linha.querySelector('.valor_total').value = formatarMoeda(total);
+    
+    // Atualiza o total da nota
     atualizarTotalNota();
 }
 
 function atualizarTotalNota() {
     let totalNota = 0;
+    
+    // Soma todos os valores totais
     document.querySelectorAll('.valor_total').forEach(input => {
-        totalNota += parseFloat(input.value.replace(/\./g, '').replace(',', '.')) || 0;
+        totalNota += parseMoeda(input.value);
     });
+    
+    // Atualiza o display do total
     document.getElementById('totalNota').innerText = formatarMoeda(totalNota);
 }
 
 function adicionarLinha() {
+    // Encontra a tabela e clona a primeira linha
     const tbody = document.querySelector('#tabela-itens tbody');
-    const novaLinha = tbody.rows[0].cloneNode(true);
+    const primeiraLinha = tbody.querySelector('tr');
+    const novaLinha = primeiraLinha.cloneNode(true);
 
-    // Limpa os valores
-    novaLinha.querySelectorAll('input').forEach(input => {
-        input.value = input.type === 'text' ? '0,00' : '';
-        input.setAttribute('required', true);
+    // Limpa os valores dos inputs
+    novaLinha.querySelectorAll('input, select').forEach(elemento => {
+        if (elemento.tagName === 'SELECT') {
+            elemento.selectedIndex = 0;
+        } else if (elemento.classList.contains('valor_total')) {
+            elemento.value = '0,00';
+        } else {
+            elemento.value = '';
+        }
     });
-    novaLinha.querySelector('select').selectedIndex = 0;
 
-    // Reinicializa tooltip
-    novaLinha.querySelector('[data-bs-toggle="tooltip"]').title = 'Remover item';
+    // Remove qualquer tooltip e select2 existente
+    novaLinha.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+        const tooltip = bootstrap.Tooltip.getInstance(el);
+        if (tooltip) {
+            tooltip.dispose();
+        }
+    });
     
+    novaLinha.querySelectorAll('.select2-item').forEach(el => {
+        $(el).select2('destroy');
+    });
+
+    // Adiciona a nova linha
     tbody.appendChild(novaLinha);
+
+    // Reinicializa os componentes na nova linha
+    novaLinha.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+        new bootstrap.Tooltip(el);
+    });
     
-    // Reinicializa os tooltips na nova linha
-    var tooltips = [].slice.call(novaLinha.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    tooltips.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
+    novaLinha.querySelectorAll('.select2-item').forEach(el => {
+        $(el).select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: 'Selecione um item...',
+            language: {
+                noResults: function() {
+                    return "Nenhum item encontrado";
+                }
+            }
+        });
     });
 }
 
@@ -244,11 +343,66 @@ function removerLinha(botao) {
         if (tooltip) {
             tooltip.dispose();
         }
+        
+        // Destrói o select2 antes de remover a linha
+        linha.querySelectorAll('.select2-item').forEach(el => {
+            $(el).select2('destroy');
+        });
+        
         linha.remove();
+        // Atualiza o total da nota após remover a linha
         atualizarTotalNota();
     } else {
         alert('A entrada deve conter pelo menos um item.');
     }
 }
+
+function validarFormulario() {
+    let valido = true;
+    const mensagens = [];
+
+    // Valida data do movimento
+    if (!$('#data_movimento').val()) {
+        mensagens.push('Data do movimento é obrigatória');
+        valido = false;
+    }
+
+    // Valida data da nota fiscal
+    if (!$('#data_nota_fiscal').val()) {
+        mensagens.push('Data da nota fiscal é obrigatória');
+        valido = false;
+    }
+
+    // Valida número da nota fiscal
+    if (!$('#numero_nota_fiscal').val()) {
+        mensagens.push('Número da nota fiscal é obrigatório');
+        valido = false;
+    }
+
+    // Valida fornecedor
+    if (!$('#fornecedor').val()) {
+        mensagens.push('Fornecedor é obrigatório');
+        valido = false;
+    }
+
+    // Valida itens
+    const linhas = document.querySelectorAll('#tabela-itens tbody tr');
+    linhas.forEach((linha, index) => {
+        const item = linha.querySelector('select[name="item_id[]"]').value;
+        const quantidade = linha.querySelector('input[name="quantidade[]"]').value;
+        const valor = linha.querySelector('input[name="valor_unitario[]"]').value;
+
+        if (!item || !quantidade || !valor) {
+            mensagens.push(`Preencha todos os campos do item ${index + 1}`);
+            valido = false;
+        }
+    });
+
+    if (!valido) {
+        alert('Por favor, corrija os seguintes erros:\n' + mensagens.join('\n'));
+    }
+
+    return valido;
+}
 </script>
-{% endblock %}
+{% endblock %} 

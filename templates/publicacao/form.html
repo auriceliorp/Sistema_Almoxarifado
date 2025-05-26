@@ -13,6 +13,20 @@
         font-size: 0.85em;
         color: #6c757d;
     }
+    /* Estilo para o container de busca do Select2 */
+    .select2-search__field {
+        width: 100% !important;
+        padding: 6px !important;
+    }
+    /* Estilo para as opções do Select2 */
+    .select2-results__option {
+        padding: 8px 12px !important;
+    }
+    /* Estilo para os itens selecionados */
+    .select2-selection__choice {
+        margin: 2px !important;
+        padding: 2px 8px !important;
+    }
 </style>
 {% endblock %}
 
@@ -182,13 +196,52 @@ $(document).ready(function() {
     $('.select2-multiple').select2({
         theme: 'bootstrap-5',
         width: '100%',
-        placeholder: 'Selecione...',
+        placeholder: 'Digite ou selecione...',
         allowClear: true,
+        tags: false, // Não permite criar novos itens
         language: {
             noResults: function() {
                 return "Nenhum resultado encontrado";
+            },
+            searching: function() {
+                return "Buscando...";
+            },
+            inputTooShort: function() {
+                return "Digite para buscar...";
+            },
+            loadingMore: function() {
+                return "Carregando mais resultados...";
             }
-        }
+        },
+        minimumInputLength: 1, // Requer pelo menos 1 caractere para iniciar a busca
+        maximumSelectionLength: 10, // Limite máximo de itens selecionados
+        selectOnClose: false, // Não seleciona automaticamente ao fechar
+        closeOnSelect: false, // Não fecha ao selecionar
+        scrollAfterSelect: false, // Não rola após selecionar
+        templateResult: formatResult,
+        templateSelection: formatSelection
+    });
+
+    // Função para formatar os resultados da busca
+    function formatResult(result) {
+        if (!result.id) return result.text;
+        return $('<span><i class="bi bi-person me-2"></i>' + result.text + '</span>');
+    }
+
+    // Função para formatar os itens selecionados
+    function formatSelection(selection) {
+        if (!selection.id) return selection.text;
+        return $('<span><i class="bi bi-check2 me-1"></i>' + selection.text + '</span>');
+    }
+
+    // Adiciona comportamento de busca em tempo real
+    $('.select2-multiple').on('keyup', function() {
+        $(this).data('select2').open();
+    });
+
+    // Mantém o dropdown aberto após seleção
+    $('.select2-multiple').on('select2:select select2:unselect', function(e) {
+        $(this).data('select2').open();
     });
 });
 </script>

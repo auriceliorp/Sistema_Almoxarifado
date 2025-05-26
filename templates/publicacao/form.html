@@ -3,78 +3,87 @@
 
 {% block extra_css %}
 <!-- Adiciona CSS do Select2 -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
 <style>
-    .select2-container--bootstrap-5 {
+    .select2-container {
         width: 100% !important;
     }
-    .form-text {
-        font-size: 0.85em;
-        color: #6c757d;
-    }
 
-    .select2-container--bootstrap-5 .select2-dropdown {
+    .select2-container .select2-selection--multiple {
+        min-height: 38px;
         border: 1px solid #dee2e6;
         border-radius: 4px;
-        margin-top: 4px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    .select2-container--bootstrap-5 .select2-search--dropdown {
-        padding: 0;
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background-color: #e9ecef;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        margin: 3px;
+        padding: 3px 8px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+    }
+
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+        margin-right: 5px;
+        color: #6c757d;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+        color: #dc3545;
+    }
+
+    .select2-dropdown {
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
     .select2-search__field {
         border: none !important;
         border-bottom: 1px solid #dee2e6 !important;
-        border-radius: 0 !important;
-        padding: 8px 12px !important;
+        padding: 8px !important;
         margin: 0 !important;
     }
 
-    .select2-container--bootstrap-5 .select2-results__options {
-        max-height: 200px;
-        overflow-y: auto;
-    }
-
-    .select2-container--bootstrap-5 .select2-results__option {
+    .select2-results__option {
         padding: 8px 12px;
-        margin: 0;
         font-size: 14px;
         border-bottom: 1px solid #f8f9fa;
     }
 
-    .select2-container--bootstrap-5 .select2-results__option--highlighted[aria-selected] {
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
         background-color: #0d6efd;
         color: white;
     }
 
-    .select2-container--bootstrap-5 .select2-selection {
-        border: 1px solid #dee2e6;
-        min-height: 38px;
+    .select2-container--default .select2-selection--multiple .select2-selection__rendered {
+        padding: 0 8px;
     }
 
-    .select2-container--bootstrap-5 .select2-selection--multiple {
-        padding: 2px 6px;
-    }
-
-    .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
-        background-color: #e9ecef;
-        border: 1px solid #dee2e6;
-        border-radius: 4px;
-        padding: 2px 8px;
-        margin: 2px 4px 2px 0;
-    }
-
-    .select2-container--bootstrap-5 .select2-selection__choice__remove {
-        margin-right: 4px;
-        color: #6c757d;
+    .select2-container--default.select2-container--focus .select2-selection--multiple {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
     }
 
     /* Remove a seta do dropdown */
     .select2-selection__arrow {
         display: none !important;
+    }
+
+    /* Estilo para itens selecionados */
+    .select2-selection__choice {
+        background-color: #f8f9fa !important;
+        color: #212529 !important;
+    }
+
+    /* Estilo para o placeholder */
+    .select2-container--default .select2-selection--multiple .select2-selection__placeholder {
+        color: #6c757d;
     }
 </style>
 {% endblock %}
@@ -237,12 +246,12 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- Adiciona JavaScript do Select2 -->
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
 <script>
 $(document).ready(function() {
     $('.select2-multiple').select2({
-        theme: 'bootstrap-5',
+        theme: 'default',
         width: '100%',
         placeholder: 'Digite para buscar...',
         allowClear: true,
@@ -275,6 +284,7 @@ $(document).ready(function() {
             return $('<div class="select2-result">' + data.text + '</div>');
         },
         templateSelection: function(data) {
+            if (!data.id) return data.text;
             return data.text;
         }
     }).on('select2:open', function() {
@@ -282,6 +292,13 @@ $(document).ready(function() {
             $('.select2-search__field').focus();
         }, 0);
     });
+
+    // Adiciona comportamento de clique para abrir o dropdown
+    $('.select2-selection').on('click', function(e) {
+        if (!$(e.target).hasClass('select2-selection__choice__remove')) {
+            $(this).closest('.select2-container').siblings('select').select2('open');
+        }
+    });
 });
 </script>
-{% endblock %}
+{% endblock %} 

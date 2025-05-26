@@ -1,81 +1,246 @@
 {% extends 'base_simplificada.html' %}
-{% block title %}Cadastrar Novo Item{% endblock %}
+{% block title %}{{ 'Editar' if item else 'Novo' }} Item{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  <h4 class="mb-4">Cadastrar/Editar Item</h4>
-
-  <form method="POST">
-    <div class="row g-3 mb-3">
-      <div class="col-md-4">
-        <label for="codigo" class="form-label">Código SAP *</label>
-        <input type="text" class="form-control" name="codigo" id="codigo" required>
-      </div>
-
-      <div class="col-md-4">
-        <label for="codigo_siads" class="form-label">Código SIADS</label>
-        <input type="text" class="form-control" name="codigo_siads" id="codigo_siads">
-      </div>
-
-      <div class="col-md-4">
-        <label for="nome" class="form-label">Nome *</label>
-        <input type="text" class="form-control" name="nome" id="nome" required>
-      </div>
+<div class="container-fluid py-4">
+    <!-- Cabeçalho -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0">
+                    <i class="bi bi-box-seam me-2"></i>
+                    {{ 'Editar' if item else 'Novo' }} Item
+                </h4>
+                <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Voltar para Lista
+                </a>
+            </div>
+        </div>
     </div>
 
-    <div class="row g-3 mb-3">
-      <div class="col-md-12">
-        <label for="descricao" class="form-label">Descrição *</label>
-        <textarea class="form-control" name="descricao" id="descricao" required></textarea>
-      </div>
-    </div>
+    <form method="POST">
+        <!-- Informações Básicas -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary bg-gradient text-white py-3">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Informações Básicas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <input type="text" 
+                                   class="form-control" 
+                                   name="codigo" 
+                                   id="codigo" 
+                                   value="{{ item.codigo_sap if item else '' }}"
+                                   required>
+                            <label for="codigo">
+                                <i class="bi bi-upc me-1"></i>
+                                Código SAP *
+                            </label>
+                        </div>
+                    </div>
 
-    <div class="row g-3 mb-3">
-      <div class="col-md-4">
-        <label for="unidade" class="form-label">Unidade de Medida *</label>
-        <select class="form-select" name="unidade" id="unidade" required>
-          <option value="">Selecione...</option>
-          <option value="UN">UN</option>
-          <option value="KG">KG</option>
-          <option value="L">L</option>
-          <option value="M">M</option>
-          <option value="CX">CX</option>
-          <option value="PC">PC</option>
-          <!-- Adicione mais opções conforme necessário -->
-        </select>
-      </div>
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <input type="text" 
+                                   class="form-control" 
+                                   name="codigo_siads" 
+                                   id="codigo_siads"
+                                   value="{{ item.codigo_siads if item else '' }}">
+                            <label for="codigo_siads">
+                                <i class="bi bi-hash me-1"></i>
+                                Código SIADS
+                            </label>
+                        </div>
+                    </div>
 
-      <div class="col-md-4">
-        <label for="grupo_id" class="form-label">Grupo *</label>
-        <select name="grupo_id" id="grupo_id" class="form-select" required>
-          <option value="" disabled selected>Selecione o grupo...</option>
-          {% for grupo in grupos %}
-            <option value="{{ grupo.id }}">{{ grupo.nome }}</option>
-          {% endfor %}
-        </select>
-      </div>
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <input type="text" 
+                                   class="form-control" 
+                                   name="nome" 
+                                   id="nome" 
+                                   value="{{ item.nome if item else '' }}"
+                                   required>
+                            <label for="nome">
+                                <i class="bi bi-tag me-1"></i>
+                                Nome *
+                            </label>
+                        </div>
+                    </div>
 
-      <div class="col-md-4">
-        <label for="data_validade" class="form-label">Data de Validade</label>
-        <input type="date" class="form-control" name="data_validade" id="data_validade">
-      </div>
-    </div>
+                    <div class="col-12">
+                        <div class="form-floating">
+                            <textarea class="form-control" 
+                                      name="descricao" 
+                                      id="descricao" 
+                                      style="height: 100px"
+                                      required>{{ item.descricao if item else '' }}</textarea>
+                            <label for="descricao">
+                                <i class="bi bi-text-paragraph me-1"></i>
+                                Descrição *
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <div class="row g-3 mb-3">
-      <div class="col-md-4">
-        <label for="estoque_minimo" class="form-label">Estoque Mínimo</label>
-        <input type="number" class="form-control" step="0.01" name="estoque_minimo" id="estoque_minimo">
-      </div>
-    </div>
+        <!-- Classificação e Medidas -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-success bg-gradient text-white py-3">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-diagram-3 me-2"></i>
+                    Classificação e Medidas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <select class="form-select" 
+                                    name="unidade" 
+                                    id="unidade" 
+                                    required>
+                                <option value="" {% if not item %}selected{% endif %}>Selecione...</option>
+                                {% set unidades = ['UN', 'KG', 'L', 'M', 'CX', 'PC'] %}
+                                {% for unid in unidades %}
+                                    <option value="{{ unid }}" {% if item and item.unidade == unid %}selected{% endif %}>
+                                        {{ unid }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <label for="unidade">
+                                <i class="bi bi-rulers me-1"></i>
+                                Unidade de Medida *
+                            </label>
+                        </div>
+                    </div>
 
-    <div class="mt-4 d-flex justify-content-end gap-2">
-      <button type="submit" class="btn btn-success">
-        <i class="bi bi-check-circle"></i> Salvar
-      </button>
-      <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-outline-secondary">
-        <i class="bi bi-x-circle"></i> Cancelar
-      </a>
-    </div>
-  </form>
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <select name="grupo_id" 
+                                    id="grupo_id" 
+                                    class="form-select" 
+                                    required>
+                                <option value="" disabled {% if not item %}selected{% endif %}>Selecione o grupo...</option>
+                                {% for grupo in grupos %}
+                                    <option value="{{ grupo.id }}" {% if item and item.grupo_id == grupo.id %}selected{% endif %}>
+                                        {{ grupo.nome }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <label for="grupo_id">
+                                <i class="bi bi-collection me-1"></i>
+                                Grupo *
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <input type="number" 
+                                   class="form-control" 
+                                   step="0.01" 
+                                   name="estoque_minimo" 
+                                   id="estoque_minimo"
+                                   value="{{ item.estoque_minimo if item else '0.00' }}">
+                            <label for="estoque_minimo">
+                                <i class="bi bi-graph-down me-1"></i>
+                                Estoque Mínimo
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informações Complementares -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-info bg-gradient text-white py-3">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-card-text me-2"></i>
+                    Informações Complementares
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="text" 
+                                   class="form-control" 
+                                   name="localizacao" 
+                                   id="localizacao"
+                                   value="{{ item.localizacao if item else '' }}">
+                            <label for="localizacao">
+                                <i class="bi bi-geo-alt me-1"></i>
+                                Localização no Almoxarifado
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="date" 
+                                   class="form-control" 
+                                   name="data_validade" 
+                                   id="data_validade"
+                                   value="{{ item.data_validade.strftime('%Y-%m-%d') if item and item.data_validade else '' }}">
+                            <label for="data_validade">
+                                <i class="bi bi-calendar-event me-1"></i>
+                                Data de Validade
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle me-1"></i>
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle me-1"></i>
+                        {{ 'Atualizar' if item else 'Cadastrar' }} Item
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
 </div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Adiciona classe 'is-invalid' aos campos required vazios no submit
+    document.querySelector('form').addEventListener('submit', function(e) {
+        var requiredFields = document.querySelectorAll('[required]');
+        requiredFields.forEach(function(field) {
+            if (!field.value) {
+                field.classList.add('is-invalid');
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+    });
+
+    // Remove classe 'is-invalid' quando o usuário começa a digitar
+    document.querySelectorAll('.form-control, .form-select').forEach(function(field) {
+        field.addEventListener('input', function() {
+            this.classList.remove('is-invalid');
+        });
+    });
+});
+</script>
+{% endblock %}
 {% endblock %}

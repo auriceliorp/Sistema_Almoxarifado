@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4">Publicações</h2>
+    
+    <div class="card">
+        <div class="card-header">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h5 class="mb-0">Lista de Publicações</h5>
+                </div>
+                <div class="col text-end">
+                    <a href="{{ url_for('publicacoes.nova') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Nova Publicação
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Espécie</th>
+                            <th>Contrato SAIC</th>
+                            <th>Modalidade</th>
+                            <th>Data Assinatura</th>
+                            <th>Vigência</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pub in publicacoes %}
+                        <tr>
+                            <td>{{ pub.especie }}</td>
+                            <td>{{ pub.contrato_saic }}</td>
+                            <td>{{ pub.modalidade_licitacao }}</td>
+                            <td>{{ pub.data_assinatura.strftime('%d/%m/%Y') }}</td>
+                            <td>
+                                {% if pub.vigencia_inicio and pub.vigencia_fim %}
+                                    {{ pub.vigencia_inicio.strftime('%d/%m/%Y') }} a {{ pub.vigencia_fim.strftime('%d/%m/%Y') }}
+                                {% else %}
+                                    A partir da Assinatura
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('publicacoes.editar', id=pub.id) }}" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{{ url_for('publicacoes.excluir', id=pub.id) }}" 
+                                   class="btn btn-sm btn-danger"
+                                   onclick="return confirm('Tem certeza que deseja excluir esta publicação?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

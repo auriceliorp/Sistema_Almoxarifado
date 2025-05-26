@@ -2,10 +2,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
 from models import db, Publicacao, Usuario, Fornecedor
 from datetime import datetime
-from flask_wtf.csrf import CSRFProtect
 
 bp = Blueprint('publicacao_bp', __name__)
-csrf = CSRFProtect()
 
 @bp.route('/publicacoes')
 @login_required
@@ -41,7 +39,6 @@ def listar():
 
 @bp.route('/publicacao/nova', methods=['GET', 'POST'])
 @login_required
-@csrf.protect()
 def nova_publicacao():
     if request.method == 'POST':
         # Processa os dados do formulário
@@ -109,7 +106,6 @@ def nova_publicacao():
 
 @bp.route('/publicacao/<int:id>/editar', methods=['GET', 'POST'])
 @login_required
-@csrf.protect()
 def editar_publicacao(id):
     publicacao = Publicacao.query.get_or_404(id)
     
@@ -162,7 +158,6 @@ def editar_publicacao(id):
 
 @bp.route('/publicacao/<int:id>/excluir', methods=['POST'])
 @login_required
-@csrf.protect()
 def excluir_publicacao(id):
     publicacao = Publicacao.query.get_or_404(id)
     try:

@@ -22,7 +22,7 @@
         <div class="card-body">
             <h4 class="card-title mb-4">{% if publicacao %}Editar{% else %}Nova{% endif %} Publicação</h4>
             <form method="POST">
-                {{ form.csrf_token }}
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 
                 <div class="row g-3">
                     <!-- Espécie -->
@@ -90,7 +90,7 @@
                     <div class="col-md-6">
                         <label class="form-label">Data da Assinatura *</label>
                         <input type="date" name="data_assinatura" class="form-control" required
-                               value="{{ publicacao.data_assinatura if publicacao else '' }}">
+                               value="{{ publicacao.data_assinatura.strftime('%Y-%m-%d') if publicacao and publicacao.data_assinatura else '' }}">
                     </div>
 
                     <!-- Vigência -->

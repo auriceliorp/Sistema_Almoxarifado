@@ -101,7 +101,7 @@ def nova_publicacao():
             return redirect(url_for('publicacao_bp.nova_publicacao'))
 
     # GET: Renderiza o formulário
-    usuarios = Usuario.query.filter_by(ativo=True).all()
+    usuarios = Usuario.query.all()  # Removido o filtro ativo=True
     fornecedores = Fornecedor.query.all()
     return render_template('publicacao/form.html',
                          usuarios=usuarios,
@@ -157,7 +157,7 @@ def editar_publicacao(id):
             return redirect(url_for('publicacao_bp.editar_publicacao', id=id))
 
     # GET: Renderiza o formulário com os dados atuais
-    usuarios = Usuario.query.filter_by(ativo=True).all()
+    usuarios = Usuario.query.all()  # Removido o filtro ativo=True
     fornecedores = Fornecedor.query.all()
     return render_template('publicacao/form.html',
                          publicacao=publicacao,

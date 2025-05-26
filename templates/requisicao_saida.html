@@ -2,100 +2,281 @@
 
 {% block title %}Requisição de Saída{% endblock %}
 
-{% block content %}
-<div class="container my-4" id="requisicao">
-
-  <!-- Cabeçalho com logo e título -->
-  <div class="text-center mb-4">
-    <img src="{{ url_for('static', filename='embrapa_logo.png') }}" alt="Logo Embrapa" height="80">
-    <h4 class="mt-2 fw-bold text-uppercase">REQUISIÇÃO DE SAÍDA DE MATERIAL</h4>
-
-    <p class="mb-0">
-      <strong>Data:</strong> {{ saida.data_movimento.strftime('%d/%m/%Y') }} |
-      <strong>Nº da Saída:</strong> {{ saida.id }}
-    </p>
-
-    {% if saida.estornada %}
-    <div class="mt-2">
-      <span class="badge bg-danger fs-6 px-4 py-2">REQUISIÇÃO ESTORNADA</span>
-    </div>
-    {% endif %}
-  </div>
-
-  <!-- Dados do solicitante -->
-  <div class="mb-4">
-    <p><strong>Solicitante:</strong> {{ saida.solicitante.nome }}</p>
-    <p><strong>Setor / Unidade Local:</strong> {{ saida.solicitante.unidade_local.descricao if saida.solicitante.unidade_local }}</p>
-    <p><strong>Responsável pela Saída:</strong> {{ saida.usuario.nome }}</p>
-    {% if saida.observacao %}
-    <p><strong>Observações:</strong> {{ saida.observacao }}</p>
-    {% endif %}
-  </div>
-
-  <!-- Itens da requisição -->
-  <div class="table-responsive mb-4">
-    <table class="table table-bordered table-sm align-middle">
-      <thead class="table-light">
-        <tr class="text-center">
-          <th>Código SAP</th>
-          <th>Nome do Item</th>
-          <th>Quantidade</th>
-          <th>Unidade</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in saida.itens %}
-        <tr class="text-center">
-          <td>{{ item.item.codigo_sap }}</td>
-          <td class="text-start">{{ item.item.nome }}</td>
-          <td>{{ item.quantidade }}</td>
-          <td>{{ item.item.unidade }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Termo de responsabilidade -->
-  <div class="border rounded p-3 mb-5">
-    <p class="mb-0 text-justify small">
-      Declaro estar ciente de que o(s) material(is) listado(s) acima foi/foram retirado(s) para fins de uso institucional,
-      sendo de minha responsabilidade sua correta utilização, guarda e devolução, quando aplicável, conforme as normas internas da Embrapa.
-    </p>
-  </div>
-
-  <!-- Assinaturas -->
-  <div class="row mt-5">
-    <div class="col-md-6 text-center">
-      <p class="mb-5">_______________________________________</p>
-      <p><strong>Responsável pela Saída</strong><br>{{ saida.usuario.nome }}</p>
-    </div>
-    <div class="col-md-6 text-center">
-      <p class="mb-5">_______________________________________</p>
-      <p><strong>Solicitante</strong><br>{{ saida.solicitante.nome }}</p>
-    </div>
-  </div>
-
-  <!-- Botão de impressão -->
-  <div class="text-center mt-4 no-print">
-    <button class="btn btn-outline-dark" onclick="window.print()">
-      <i class="bi bi-printer"></i> Imprimir Requisição
-    </button>
-  </div>
-
-</div>
-
-<!-- Estilo para impressão -->
+{% block extra_css %}
 <style>
-@media print {
-  .no-print {
-    display: none !important;
-  }
-  #requisicao {
-    margin: 0 auto;
-    width: 100%;
-    padding: 0;
-  }
-}
+    /* Estilos gerais */
+    #requisicao {
+        max-width: 210mm; /* Tamanho A4 */
+        margin: 0 auto;
+        font-family: 'Segoe UI', Arial, sans-serif;
+    }
+    
+    /* Cabeçalho */
+    .header-section {
+        border-bottom: 2px solid #eee;
+        padding-bottom: 1.5rem;
+    }
+    
+    .requisition-number {
+        font-size: 1.1rem;
+        color: #2c3e50;
+        padding: 0.5rem 1rem;
+        background: #f8f9fa;
+        border-radius: 4px;
+        display: inline-block;
+    }
+    
+    /* Badge de estorno */
+    .estorno-badge {
+        background: #dc3545;
+        color: white;
+        padding: 0.5rem 2rem;
+        border-radius: 4px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        transform: rotate(-5deg);
+        position: absolute;
+        top: 50px;
+        right: 30px;
+    }
+    
+    /* Informações do solicitante */
+    .info-section {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+    }
+    
+    .info-item {
+        margin-bottom: 0.5rem;
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #495057;
+        min-width: 180px;
+    }
+    
+    /* Tabela de itens */
+    .items-table {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .items-table thead th {
+        background: #2c3e50;
+        color: white;
+        font-weight: 500;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+        padding: 1rem;
+    }
+    
+    .items-table tbody td {
+        padding: 0.75rem 1rem;
+        vertical-align: middle;
+    }
+    
+    .items-table tbody tr:nth-child(even) {
+        background: #f8f9fa;
+    }
+    
+    /* Termo de responsabilidade */
+    .termo-section {
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin: 2rem 0;
+        font-size: 0.9rem;
+        color: #495057;
+        position: relative;
+    }
+    
+    .termo-section::before {
+        content: '"';
+        font-size: 4rem;
+        color: #e9ecef;
+        position: absolute;
+        left: 1rem;
+        top: 0.5rem;
+    }
+    
+    /* Assinaturas */
+    .signature-section {
+        margin-top: 4rem;
+    }
+    
+    .signature-line {
+        border-top: 1px solid #000;
+        width: 80%;
+        margin: 0 auto 0.5rem;
+    }
+    
+    .signature-name {
+        font-size: 0.9rem;
+        color: #495057;
+    }
+    
+    /* Botão de impressão */
+    .print-button {
+        background: #2c3e50;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+    }
+    
+    .print-button:hover {
+        background: #1a252f;
+        transform: translateY(-2px);
+    }
+    
+    /* Estilos para impressão */
+    @media print {
+        body {
+            background: white;
+        }
+        
+        #requisicao {
+            width: 100%;
+            max-width: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .no-print {
+            display: none !important;
+        }
+        
+        .items-table {
+            page-break-inside: avoid;
+        }
+        
+        .signature-section {
+            page-break-inside: avoid;
+        }
+        
+        .info-section,
+        .termo-section {
+            background: none;
+            border: 1px solid #ddd;
+        }
+        
+        .items-table thead th {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+    }
 </style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" id="requisicao">
+    <!-- Cabeçalho -->
+    <div class="header-section position-relative">
+        <div class="text-center">
+            <img src="{{ url_for('static', filename='embrapa_logo.png') }}" 
+                 alt="Logo Embrapa" 
+                 height="90" 
+                 class="mb-3">
+            <h3 class="fw-bold text-uppercase mb-3">Requisição de Saída de Material</h3>
+            
+            <div class="requisition-number">
+                <i class="bi bi-upc-scan me-2"></i>
+                Requisição Nº {{ saida.id }} | {{ saida.data_movimento.strftime('%d/%m/%Y') }}
+            </div>
+        </div>
+        
+        {% if saida.estornada %}
+        <div class="estorno-badge">
+            <i class="bi bi-x-circle me-2"></i>ESTORNADA
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Informações do Solicitante -->
+    <div class="info-section">
+        <div class="info-item">
+            <span class="info-label"><i class="bi bi-person me-2"></i>Solicitante:</span>
+            <span>{{ saida.solicitante.nome }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label"><i class="bi bi-building me-2"></i>Setor / Unidade:</span>
+            <span>{{ saida.solicitante.unidade_local.descricao if saida.solicitante.unidade_local }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label"><i class="bi bi-person-check me-2"></i>Responsável:</span>
+            <span>{{ saida.usuario.nome }}</span>
+        </div>
+        {% if saida.observacao %}
+        <div class="info-item">
+            <span class="info-label"><i class="bi bi-chat-left-text me-2"></i>Observações:</span>
+            <span>{{ saida.observacao }}</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Tabela de Itens -->
+    <div class="table-responsive">
+        <table class="table items-table mb-0">
+            <thead>
+                <tr class="text-center">
+                    <th style="width: 15%">Código SAP</th>
+                    <th style="width: 50%">Nome do Item</th>
+                    <th style="width: 20%">Quantidade</th>
+                    <th style="width: 15%">Unidade</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in saida.itens %}
+                <tr>
+                    <td class="text-center">{{ item.item.codigo_sap }}</td>
+                    <td>{{ item.item.nome }}</td>
+                    <td class="text-center">{{ item.quantidade }}</td>
+                    <td class="text-center">{{ item.item.unidade }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Termo de Responsabilidade -->
+    <div class="termo-section">
+        <p class="mb-0">
+            Declaro estar ciente de que o(s) material(is) listado(s) acima foi/foram retirado(s) para fins de uso institucional,
+            sendo de minha responsabilidade sua correta utilização, guarda e devolução, quando aplicável, conforme as normas 
+            internas da Embrapa.
+        </p>
+    </div>
+
+    <!-- Assinaturas -->
+    <div class="row signature-section">
+        <div class="col-6 text-center">
+            <div class="signature-line"></div>
+            <p class="signature-name">
+                <strong>Responsável pela Saída</strong><br>
+                {{ saida.usuario.nome }}
+            </p>
+        </div>
+        <div class="col-6 text-center">
+            <div class="signature-line"></div>
+            <p class="signature-name">
+                <strong>Solicitante</strong><br>
+                {{ saida.solicitante.nome }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Botão de Impressão -->
+    <div class="text-center mt-5 no-print">
+        <button class="btn print-button" onclick="window.print()">
+            <i class="bi bi-printer me-2"></i>Imprimir Requisição
+        </button>
+    </div>
+</div>
 {% endblock %}

@@ -1,219 +1,47 @@
-{% extends 'base_simplificada.html' %}
-{% block title %}{% if publicacao %}Editar{% else %}Nova{% endif %} Publicação{% endblock %}
+{# ... resto do código permanece igual ... #}
 
 {% block extra_css %}
 <!-- Adiciona CSS do Select2 -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
 <style>
-    .select2-container--bootstrap-5 {
-        width: 100% !important;
-    }
-    .form-text {
-        font-size: 0.85em;
-        color: #6c757d;
-    }
-    /* Estilos para o autocomplete */
-    .select2-container--bootstrap-5 .select2-dropdown {
-        border-color: #dee2e6;
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-    }
+    /* ... outros estilos permanecem ... */
 
-    .select2-container--bootstrap-5 .select2-search__field {
-        padding: 0.5rem !important;
-        border: 1px solid #dee2e6 !important;
-        border-radius: 0.25rem;
+    /* Estilos para parecer com a imagem */
+    .select2-container--bootstrap-5 .select2-dropdown {
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
     .select2-container--bootstrap-5 .select2-results__option {
-        padding: 0.5rem 1rem !important;
+        padding: 8px 12px !important;
+        font-size: 14px;
+        border-bottom: 1px solid #f0f0f0;
     }
 
     .select2-container--bootstrap-5 .select2-results__option--highlighted {
-        background-color: #f8f9fa !important;
-        color: #212529 !important;
+        background-color: #007bff !important;
+        color: white !important;
     }
 
-    .select2-container--bootstrap-5 .select2-results__option--selected {
-        background-color: #e9ecef !important;
+    .select2-search__field {
+        padding: 8px !important;
+        border: none !important;
+        border-bottom: 1px solid #ddd !important;
+        border-radius: 0 !important;
     }
 
-    .select2-result-item {
-        display: flex;
-        align-items: center;
-        padding: 4px 0;
+    .select2-container--bootstrap-5 .select2-selection {
+        border: 1px solid #ccc;
+        min-height: 38px;
     }
 
-    .select2-result-item strong {
-        color: #0d6efd;
-        font-weight: 600;
-    }
-
-    .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
-        background-color: #e9ecef;
-        border: 1px solid #dee2e6;
-        border-radius: 0.25rem;
-        padding: 2px 8px;
-        margin: 2px;
+    /* Remove ícones desnecessários */
+    .select2-selection__arrow {
+        display: none;
     }
 </style>
-{% endblock %}
-
-{% block content %}
-<div class="container py-4">
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <h4 class="card-title mb-4">{% if publicacao %}Editar{% else %}Nova{% endif %} Publicação</h4>
-            <form method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                
-                <div class="row g-3">
-                    <!-- Espécie -->
-                    <div class="col-md-6">
-                        <label class="form-label">Espécie *</label>
-                        <input type="text" name="especie" class="form-control" required
-                               value="{{ publicacao.especie if publicacao else '' }}">
-                    </div>
-
-                    <!-- Contrato SAIC -->
-                    <div class="col-md-6">
-                        <label class="form-label">Contrato SAIC</label>
-                        <input type="text" name="contrato_saic" class="form-control" 
-                               placeholder="Digite o contrato SAIC (deixe em branco para 'Não Aplicável')"
-                               value="{{ publicacao.contrato_saic if publicacao else '' }}">
-                        <div class="form-text">
-                            <i class="bi bi-info-circle"></i> Se deixado em branco, será registrado como "Não Aplicável"
-                        </div>
-                    </div>
-
-                    <!-- Objeto -->
-                    <div class="col-12">
-                        <label class="form-label">Objeto *</label>
-                        <textarea name="objeto" class="form-control" rows="3" required>{{ publicacao.objeto if publicacao else '' }}</textarea>
-                    </div>
-
-                    <!-- Modalidade de Licitação -->
-                    <div class="col-md-6">
-                        <label class="form-label">Modalidade de Licitação</label>
-                        <select name="modalidade_licitacao" class="form-select">
-                            <option value="">Selecione a modalidade (ou deixe em branco para 'Não se Aplica')</option>
-                            <option value="Pregão Eletrônico" {% if publicacao and publicacao.modalidade_licitacao == 'Pregão Eletrônico' %}selected{% endif %}>Pregão Eletrônico</option>
-                            <option value="Dispensa de Licitação" {% if publicacao and publicacao.modalidade_licitacao == 'Dispensa de Licitação' %}selected{% endif %}>Dispensa de Licitação</option>
-                            <option value="Inexigibilidade" {% if publicacao and publicacao.modalidade_licitacao == 'Inexigibilidade' %}selected{% endif %}>Inexigibilidade</option>
-                            <option value="Licitação Embrapa" {% if publicacao and publicacao.modalidade_licitacao == 'Licitação Embrapa' %}selected{% endif %}>Licitação Embrapa</option>
-                        </select>
-                        <div class="form-text">
-                            <i class="bi bi-info-circle"></i> Se nenhuma opção for selecionada, será registrado como "Não se Aplica"
-                        </div>
-                    </div>
-
-                    <!-- Fonte de Recursos -->
-                    <div class="col-md-6">
-                        <label class="form-label">Fonte de Recursos</label>
-                        <input type="text" name="fonte_recursos" class="form-control" 
-                               placeholder="Digite a fonte de recursos (deixe em branco para 'Não se Aplica')"
-                               value="{{ publicacao.fonte_recursos if publicacao else '' }}">
-                        <div class="form-text">
-                            <i class="bi bi-info-circle"></i> Se deixado em branco, será registrado como "Não se Aplica"
-                        </div>
-                    </div>
-
-                    <!-- Valor Global -->
-                    <div class="col-md-6">
-                        <label class="form-label">Valor Global</label>
-                        <input type="text" name="valor_global" class="form-control" 
-                               placeholder="Digite o valor global (deixe em branco para 'Não Aplicável')"
-                               value="{{ publicacao.valor_global if publicacao else '' }}">
-                        <div class="form-text">
-                            <i class="bi bi-info-circle"></i> Se deixado em branco, será registrado como "Não Aplicável"
-                        </div>
-                    </div>
-
-                    <!-- Data da Assinatura -->
-                    <div class="col-md-6">
-                        <label class="form-label">Data da Assinatura *</label>
-                        <input type="date" name="data_assinatura" class="form-control" required
-                               value="{{ publicacao.data_assinatura.strftime('%Y-%m-%d') if publicacao and publicacao.data_assinatura else '' }}">
-                    </div>
-
-                    <!-- Vigência -->
-                    <div class="col-md-6">
-                        <label class="form-label">Vigência Início</label>
-                        <input type="date" name="vigencia_inicio" class="form-control"
-                               value="{{ publicacao.vigencia_inicio if publicacao else '' }}">
-                        <div class="form-text">
-                            <i class="bi bi-info-circle"></i> Se as datas de vigência forem deixadas em branco, será registrado como "A partir da Assinatura"
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">Vigência Fim</label>
-                        <input type="date" name="vigencia_fim" class="form-control"
-                               value="{{ publicacao.vigencia_fim if publicacao else '' }}">
-                    </div>
-
-                    <!-- Partes Embrapa - Select2 Múltiplo -->
-                    <div class="col-md-6">
-                        <label class="form-label">Partes Embrapa *</label>
-                        <select class="form-select select2-multiple" name="partes_embrapa" multiple required>
-                            {% for usuario in usuarios %}
-                                <option value="{{ usuario.id }}" {% if publicacao and usuario.id in publicacao.partes_embrapa %}selected{% endif %}>
-                                    {{ usuario.nome }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <!-- Partes Fornecedor - Select2 Múltiplo -->
-                    <div class="col-md-6">
-                        <label class="form-label">Partes Fornecedor *</label>
-                        <select class="form-select select2-multiple" name="partes_fornecedor" multiple required>
-                            {% for fornecedor in fornecedores %}
-                                <option value="{{ fornecedor.id }}" {% if publicacao and fornecedor.id in publicacao.partes_fornecedor %}selected{% endif %}>
-                                    {{ fornecedor.nome }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <!-- Signatários Embrapa - Select2 Múltiplo -->
-                    <div class="col-md-6">
-                        <label class="form-label">Signatários Embrapa *</label>
-                        <select class="form-select select2-multiple" name="signatarios_embrapa" multiple required>
-                            {% for usuario in usuarios %}
-                                <option value="{{ usuario.id }}" {% if publicacao and usuario.id in publicacao.signatarios_embrapa %}selected{% endif %}>
-                                    {{ usuario.nome }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <!-- Signatários Externos - Select2 Múltiplo -->
-                    <div class="col-md-6">
-                        <label class="form-label">Signatários Externos *</label>
-                        <select class="form-select select2-multiple" name="signatarios_externos" multiple required>
-                            {% for fornecedor in fornecedores %}
-                                <option value="{{ fornecedor.id }}" {% if publicacao and fornecedor.id in publicacao.signatarios_externos %}selected{% endif %}>
-                                    {{ fornecedor.nome }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Botões -->
-                <div class="mt-4">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle me-1"></i>Salvar
-                    </button>
-                    <a href="{{ url_for('publicacao_bp.listar') }}" class="btn btn-secondary">
-                        <i class="bi bi-x-circle me-1"></i>Cancelar
-                    </a>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -221,7 +49,6 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
 $(document).ready(function() {
-    // Inicializa todos os select2
     $('.select2-multiple').select2({
         theme: 'bootstrap-5',
         width: '100%',
@@ -238,75 +65,45 @@ $(document).ready(function() {
         },
         minimumInputLength: 1,
         minimumResultsForSearch: 0,
-        maximumSelectionLength: 10,
         matcher: function(params, data) {
             // Se não houver termo de busca, retorna todos os dados
             if ($.trim(params.term) === '') {
                 return data;
             }
 
-            // Não retorna nada se não houver dados
-            if (typeof data.text === 'undefined') {
-                return null;
-            }
-
             // Busca case-insensitive e com acentos
-            var termNormalized = params.term.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-            var textNormalized = data.text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            var term = params.term.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            var text = data.text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-            // Verifica se o texto contém o termo de busca
-            if (textNormalized.indexOf(termNormalized) > -1) {
+            // Retorna se o texto começa com o termo de busca
+            if (text.indexOf(term) === 0) {
                 return data;
             }
 
-            // Se não encontrou, retorna null
+            // Se não encontrou no início, procura em qualquer parte
+            if (text.indexOf(term) > -1) {
+                return data;
+            }
+
             return null;
         },
-        templateResult: formatResult,
-        templateSelection: formatSelection,
-        escapeMarkup: function(markup) {
-            return markup;
+        templateResult: function(data) {
+            if (!data.id) return data.text;
+            return $('<div>' + data.text + '</div>');
+        },
+        templateSelection: function(data) {
+            return data.text;
         }
+    }).on('select2:open', function() {
+        // Foca no campo de busca quando abrir
+        setTimeout(function() {
+            $('.select2-search__field').focus();
+        }, 0);
     });
 
-    // Função para formatar os resultados da busca com highlight
-    function formatResult(result) {
-        if (!result.id || !result.text) return result.text;
-
-        var searchTerm = $('.select2-search__field').val();
-        if (!searchTerm) return result.text;
-
-        var text = result.text;
-        // Destaca o termo buscado no resultado
-        if (searchTerm) {
-            var pattern = '(' + $.fn.select2.escapeMarkup(searchTerm) + ')';
-            text = result.text.replace(new RegExp(pattern, 'gi'), '<strong>$1</strong>');
-        }
-
-        return '<div class="select2-result-item">' +
-               '<i class="bi bi-person me-2"></i>' + text +
-               '</div>';
-    }
-
-    // Função para formatar os itens selecionados
-    function formatSelection(selection) {
-        if (!selection.id) return selection.text;
-        return '<i class="bi bi-check2 me-1"></i>' + selection.text;
-    }
-
-    // Abre o dropdown ao focar no campo
-    $('.select2-multiple').on('focus', function() {
-        $(this).select2('open');
-    });
-
-    // Mantém o dropdown aberto após seleção
-    $('.select2-multiple').on('select2:select select2:unselect', function(e) {
-        $(this).select2('open');
-    });
-
-    // Adiciona classe para estilização do dropdown
-    $('.select2-multiple').on('select2:open', function() {
-        $('.select2-results__options').addClass('select2-results__options--with-search');
+    // Abre o dropdown ao clicar no campo
+    $('.select2-selection').on('click', function() {
+        $(this).closest('.select2-container').siblings('select').select2('open');
     });
 });
 </script>

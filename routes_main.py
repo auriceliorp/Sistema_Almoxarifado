@@ -35,6 +35,9 @@ def perfil_required(perfis_autorizados):
 # --- Tela de login e redirecionamento baseado no perfil ---
 @main.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('main.home'))
+        
     form = LoginForm()
     if form.validate_on_submit():
         email = form.email.data

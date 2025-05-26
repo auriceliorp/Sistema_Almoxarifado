@@ -1,110 +1,375 @@
 {% extends 'base_simplificada.html' %}
 {% block title %}Painel de Contratações{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Cards de estatísticas */
+    .stats-card {
+        transition: all 0.3s ease;
+        border: none;
+        background: white;
+    }
+    .stats-card:hover {
+        transform: translateY(-5px);
+    }
+    .stats-icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+    }
+    
+    /* Filtros */
+    .filter-card {
+        background: white;
+        border: none;
+    }
+    .form-floating > .form-control,
+    .form-floating > .form-select {
+        height: calc(3.5rem + 2px);
+        line-height: 1.25;
+    }
+    .form-floating > label {
+        padding: 1rem 0.75rem;
+    }
+    
+    /* Tabela */
+    .table-container {
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        margin-top: 1.5rem;
+    }
+    .table th {
+        background-color: #2c3e50 !important;
+        color: white !important;
+        font-weight: 500;
+        text-transform: uppercase;
+        font-size: 0.875rem;
+        white-space: nowrap;
+    }
+    .table td {
+        vertical-align: middle;
+        font-size: 0.9rem;
+    }
+    .table-hover tbody tr:hover {
+        background-color: rgba(44, 62, 80, 0.05);
+    }
+    
+    /* Status badges */
+    .status-badge {
+        padding: 0.35rem 0.65rem;
+        border-radius: 50rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .status-iniciado { background: #e3f2fd; color: #1976d2; }
+    .status-andamento { background: #fff3e0; color: #f57c00; }
+    .status-concluido { background: #e8f5e9; color: #2e7d32; }
+    .status-aguardando { background: #fce4ec; color: #c2185b; }
+    .status-cancelado { background: #ffebee; color: #c62828; }
+    
+    /* Botões de ação */
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+    .btn-action:hover {
+        transform: translateY(-2px);
+    }
+    
+    /* Select2 customização */
+    .select2-container .select2-selection--single {
+        height: calc(3.5rem + 2px);
+        padding: 1rem 0.75rem;
+        font-size: 1rem;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 1.5;
+        padding: 0;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: calc(3.5rem + 2px);
+    }
+</style>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
+
 {% block content %}
-<div class="container py-4">
-
-  <!-- Cabeçalho e ação -->
-  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-    <h4 class="mb-0 text-uppercase">Painel de Contratações</h4>
-    <a href="{{ url_for('painel_bp.novo_painel') }}" class="btn btn-success btn-lg">
-      <i class="bi bi-plus-circle me-1 fs-4"></i> Novo Processo
-    </a>
-  </div>
-
-  <!-- Card com filtros -->
-  <div class="card shadow-sm mb-4">
-    <div class="card-body">
-      <form method="get" class="row g-3 align-items-end">
-        <div class="col-md-2">
-          <label class="form-label">Ano</label>
-          <input type="text" name="ano" class="form-control" value="{{ request.args.get('ano', '') }}">
+<div class="container-fluid py-4">
+    <!-- Cards de Estatísticas -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card stats-card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stats-icon bg-primary bg-opacity-10 text-primary">
+                            <i class="bi bi-folder-fill fs-4"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="card-subtitle text-muted mb-1">Total de Processos</h6>
+                            <h3 class="card-title mb-0">{{ processos|length }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="col-md-3">
-          <label class="form-label">Nº SEI</label>
-          <input type="text" name="numero_sei" class="form-control" value="{{ request.args.get('numero_sei', '') }}">
+            <div class="card stats-card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stats-icon bg-success bg-opacity-10 text-success">
+                            <i class="bi bi-check-circle fs-4"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="card-subtitle text-muted mb-1">Concluídos</h6>
+                            <h3 class="card-title mb-0">{{ processos|selectattr('status', 'equalto', 'Concluido')|list|length }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="col-md-3">
-          <label class="form-label">Modalidade</label>
-          <input type="text" name="modalidade" class="form-control" value="{{ request.args.get('modalidade', '') }}">
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Objeto</label>
-          <input type="text" name="objeto" class="form-control" value="{{ request.args.get('objeto', '') }}">
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Solicitante</label>
-          <select name="solicitante_id" class="form-select">
-            <option value="">Todos</option>
-            {% for u in usuarios %}
-              <option value="{{ u.id }}" {% if request.args.get('solicitante_id') == u.id|string %}selected{% endif %}>{{ u.nome }}</option>
-            {% endfor %}
-          </select>
+            <div class="card stats-card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stats-icon bg-warning bg-opacity-10 text-warning">
+                            <i class="bi bi-clock-history fs-4"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="card-subtitle text-muted mb-1">Em Andamento</h6>
+                            <h3 class="card-title mb-0">{{ processos|selectattr('status', 'equalto', 'Em andamento')|list|length }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="col-md-3">
-          <label class="form-label">Status</label>
-          <select name="status" class="form-select">
-            <option value="">Todos</option>
-            <option value="Processo Iniciado" {% if request.args.get('status') == 'Processo Iniciado' %}selected{% endif %}>Processo Iniciado</option>
-            <option value="Em andamento" {% if request.args.get('status') == 'Em andamento' %}selected{% endif %}>Em andamento</option>
-            <option value="Concluido" {% if request.args.get('status') == 'Concluido' %}selected{% endif %}>Concluído</option>
-            <option value="Aguardando Definições" {% if request.args.get('status') == 'Aguardando Definições' %}selected{% endif %}>Aguardando Definições</option>
-            <option value="Cancelada" {% if request.args.get('status') == 'Cancelada' %}selected{% endif %}>Cancelada</option>
-          </select>
+            <div class="card stats-card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stats-icon bg-danger bg-opacity-10 text-danger">
+                            <i class="bi bi-x-circle fs-4"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="card-subtitle text-muted mb-1">Cancelados</h6>
+                            <h3 class="card-title mb-0">{{ processos|selectattr('status', 'equalto', 'Cancelada')|list|length }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="col-md-2">
-          <label class="form-label d-block">&nbsp;</label>
-          <button class="btn btn-primary w-100" type="submit">
-            <i class="bi bi-search"></i> Filtrar
-          </button>
-        </div>
-      </form>
     </div>
-  </div>
 
-  <!-- Tabela responsiva com sticky header -->
-  <div class="table-responsive" style="max-height: 70vh;">
-    <table class="table table-bordered table-hover align-middle table-sm">
-      <thead class="table-dark sticky-top">
-        <tr>
-          <th>Ano</th>
-          <th>Nº SEI</th>
-          <th>Modalidade</th>
-          <th>Nº Licitação</th>
-          <th>Objeto</th>
-          <th>Solicitante</th>
-          <th>Status</th>
-          <th class="text-center">Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for processo in processos %}
-        <tr>
-          <td>{{ processo.ano }}</td>
-          <td>{{ processo.numero_sei }}</td>
-          <td>{{ processo.modalidade }}</td>
-          <td>{{ processo.numero_licitacao }}</td>
-          <td>{{ processo.objeto[:40] }}{% if processo.objeto|length > 40 %}...{% endif %}</td>
-          <td>{{ processo.solicitante.nome if processo.solicitante else '-' }}</td>
-          <td>{{ processo.status }}</td>
-          <td class="text-center">
-            <a href="{{ url_for('painel_bp.visualizar_painel', id=processo.id) }}" class="btn btn-sm btn-outline-info" title="Visualizar">
-              <i class="bi bi-eye"></i>
-            </a>
-            <a href="{{ url_for('painel_bp.editar_painel', id=processo.id) }}" class="btn btn-sm btn-outline-warning" title="Editar">
-              <i class="bi bi-pencil-square"></i>
-            </a>
-            <a href="{{ url_for('painel_bp.excluir_painel', id=processo.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Deseja realmente excluir?')" title="Excluir">
-              <i class="bi bi-trash"></i>
-            </a>
-          </td>
-        </tr>
-        {% else %}
-        <tr><td colspan="8" class="text-center text-muted">Nenhum processo encontrado.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+    <!-- Cabeçalho e ação -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">
+            <i class="bi bi-kanban me-2"></i>Painel de Contratações
+        </h4>
+        <a href="{{ url_for('painel_bp.novo_painel') }}" class="btn btn-success">
+            <i class="bi bi-plus-circle me-2"></i>Novo Processo
+        </a>
+    </div>
 
+    <!-- Card com filtros -->
+    <div class="card filter-card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-2">
+                    <div class="form-floating">
+                        <input type="text" name="ano" class="form-control" id="ano" placeholder="Ano" value="{{ request.args.get('ano', '') }}">
+                        <label for="ano">Ano</label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <input type="text" name="numero_sei" class="form-control" id="numero_sei" placeholder="Nº SEI" value="{{ request.args.get('numero_sei', '') }}">
+                        <label for="numero_sei">Nº SEI</label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <input type="text" name="modalidade" class="form-control" id="modalidade" placeholder="Modalidade" value="{{ request.args.get('modalidade', '') }}">
+                        <label for="modalidade">Modalidade</label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-floating">
+                        <input type="text" name="objeto" class="form-control" id="objeto" placeholder="Objeto" value="{{ request.args.get('objeto', '') }}">
+                        <label for="objeto">Objeto</label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-floating">
+                        <select name="solicitante_id" class="form-select select2" id="solicitante_id" data-placeholder="Selecione um solicitante">
+                            <option value="">Todos</option>
+                            {% for u in usuarios %}
+                            <option value="{{ u.id }}" {% if request.args.get('solicitante_id') == u.id|string %}selected{% endif %}>{{ u.nome }}</option>
+                            {% endfor %}
+                        </select>
+                        <label for="solicitante_id">Solicitante</label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <select name="status" class="form-select" id="status">
+                            <option value="">Todos</option>
+                            <option value="Processo Iniciado" {% if request.args.get('status') == 'Processo Iniciado' %}selected{% endif %}>Processo Iniciado</option>
+                            <option value="Em andamento" {% if request.args.get('status') == 'Em andamento' %}selected{% endif %}>Em andamento</option>
+                            <option value="Concluido" {% if request.args.get('status') == 'Concluido' %}selected{% endif %}>Concluído</option>
+                            <option value="Aguardando Definições" {% if request.args.get('status') == 'Aguardando Definições' %}selected{% endif %}>Aguardando Definições</option>
+                            <option value="Cancelada" {% if request.args.get('status') == 'Cancelada' %}selected{% endif %}>Cancelada</option>
+                        </select>
+                        <label for="status">Status</label>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary h-100 w-100" type="submit">
+                        <i class="bi bi-search me-2"></i>Filtrar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabela -->
+    <div class="table-container">
+        <div class="table-responsive" style="max-height: 70vh;">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="sticky-top">
+                    <tr>
+                        <th>Ano</th>
+                        <th>Nº SEI</th>
+                        <th>Modalidade</th>
+                        <th>Nº Licitação</th>
+                        <th>Objeto</th>
+                        <th>Solicitante</th>
+                        <th>Status</th>
+                        <th class="text-center" style="width: 120px;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for processo in processos %}
+                    <tr>
+                        <td>{{ processo.ano }}</td>
+                        <td>{{ processo.numero_sei }}</td>
+                        <td>{{ processo.modalidade }}</td>
+                        <td>{{ processo.numero_licitacao }}</td>
+                        <td>
+                            <div class="text-truncate" style="max-width: 300px;" title="{{ processo.objeto }}">
+                                {{ processo.objeto }}
+                            </div>
+                        </td>
+                        <td>{{ processo.solicitante.nome if processo.solicitante else '-' }}</td>
+                        <td>
+                            <span class="status-badge 
+                                {% if processo.status == 'Processo Iniciado' %}status-iniciado
+                                {% elif processo.status == 'Em andamento' %}status-andamento
+                                {% elif processo.status == 'Concluido' %}status-concluido
+                                {% elif processo.status == 'Aguardando Definições' %}status-aguardando
+                                {% elif processo.status == 'Cancelada' %}status-cancelado{% endif %}">
+                                {{ processo.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex justify-content-center gap-2">
+                                <a href="{{ url_for('painel_bp.visualizar_painel', id=processo.id) }}" 
+                                   class="btn btn-action btn-outline-info" 
+                                   data-bs-toggle="tooltip" 
+                                   title="Visualizar">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{{ url_for('painel_bp.editar_painel', id=processo.id) }}" 
+                                   class="btn btn-action btn-outline-warning" 
+                                   data-bs-toggle="tooltip" 
+                                   title="Editar">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <button type="button" 
+                                        class="btn btn-action btn-outline-danger" 
+                                        data-bs-toggle="tooltip" 
+                                        title="Excluir"
+                                        onclick="confirmarExclusao('{{ url_for('painel_bp.excluir_painel', id=processo.id) }}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4">
+                            <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
+                            <p class="text-muted mb-0">Nenhum processo encontrado.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
+
+<!-- Modal de Confirmação -->
+<div class="modal fade" id="modalConfirmacao" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Confirmar Exclusão
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir este processo? Esta ação não poderá ser desfeita.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-2"></i>Cancelar
+                </button>
+                <a href="#" id="btnConfirmarExclusao" class="btn btn-danger">
+                    <i class="bi bi-trash me-2"></i>Confirmar Exclusão
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Inicializa Select2
+    $('.select2').select2({
+        theme: 'bootstrap-5',
+        width: '100%'
+    });
+
+    // Inicializa tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+});
+
+// Função para confirmar exclusão
+function confirmarExclusao(url) {
+    $('#btnConfirmarExclusao').attr('href', url);
+    var modal = new bootstrap.Modal(document.getElementById('modalConfirmacao'));
+    modal.show();
+}
+</script>
 {% endblock %}

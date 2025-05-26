@@ -3,11 +3,10 @@
 
 {% block content %}
 <div class="container py-4">
-
   <!-- Cabeçalho com botão Nova Publicação -->
   <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
     <h4 class="mb-0 text-uppercase">Publicações Cadastradas</h4>
-    <a href="{{ url_for('publicacoes.nova') }}" class="btn btn-success">
+    <a href="{{ url_for('publicacao_bp.nova_publicacao') }}" class="btn btn-success">
       <i class="bi bi-plus-circle me-1"></i> Nova Publicação
     </a>
   </div>
@@ -20,8 +19,8 @@
           <label for="tipo_busca" class="form-label">Buscar por:</label>
           <select name="filtro" id="tipo_busca" class="form-select">
             <option value="especie" {% if filtro == 'especie' %}selected{% endif %}>Espécie</option>
+            <option value="objeto" {% if filtro == 'objeto' %}selected{% endif %}>Objeto</option>
             <option value="contrato" {% if filtro == 'contrato' %}selected{% endif %}>Contrato SAIC</option>
-            <option value="modalidade" {% if filtro == 'modalidade' %}selected{% endif %}>Modalidade</option>
           </select>
         </div>
         <div class="col-md-7">
@@ -46,46 +45,38 @@
           <th>Contrato SAIC</th>
           <th>Objeto</th>
           <th>Modalidade</th>
-          <th>Fonte Recursos</th>
           <th>Valor Global</th>
-          <th>Vigência</th>
           <th>Data Assinatura</th>
+          <th>Vigência</th>
           <th class="text-center">Ações</th>
         </tr>
       </thead>
       <tbody>
-        {% for pub in publicacoes.items %}
+        {% for publicacao in publicacoes.items %}
         <tr>
-          <td>{{ pub.especie }}</td>
-          <td>{{ pub.contrato_saic }}</td>
-          <td>{{ pub.objeto[:100] + '...' if pub.objeto|length > 100 else pub.objeto }}</td>
-          <td>{{ pub.modalidade_licitacao }}</td>
-          <td>{{ pub.fonte_recursos }}</td>
-          <td>{{ pub.valor_global }}</td>
-          <td>
-            {% if pub.vigencia_inicio and pub.vigencia_fim %}
-              {{ pub.vigencia_inicio.strftime('%d/%m/%Y') }} a {{ pub.vigencia_fim.strftime('%d/%m/%Y') }}
-            {% else %}
-              A partir da Assinatura
-            {% endif %}
-          </td>
-          <td>{{ pub.data_assinatura.strftime('%d/%m/%Y') }}</td>
+          <td>{{ publicacao.especie }}</td>
+          <td>{{ publicacao.contrato_saic }}</td>
+          <td>{{ publicacao.objeto }}</td>
+          <td>{{ publicacao.modalidade_licitacao }}</td>
+          <td>{{ publicacao.valor_global }}</td>
+          <td>{{ publicacao.data_assinatura.strftime('%d/%m/%Y') }}</td>
+          <td>{{ publicacao.vigencia }}</td>
           <td class="text-center">
-            <div class="d-flex justify-content-center gap-2">
-              <a href="{{ url_for('publicacoes.editar', id=pub.id) }}" class="btn btn-sm btn-outline-warning" title="Editar">
-                <i class="bi bi-pencil"></i>
+            <div class="btn-group">
+              <a href="{{ url_for('publicacao_bp.editar_publicacao', id=publicacao.id) }}" 
+                 class="btn btn-sm btn-primary" title="Editar">
+                <i class="bi bi-pencil-square"></i>
               </a>
-              <form action="{{ url_for('publicacoes.excluir', id=pub.id) }}" method="POST" onsubmit="return confirm('Deseja realmente excluir?');">
-                <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </form>
+              <button type="button" class="btn btn-sm btn-danger" 
+                      onclick="confirmarExclusao('{{ publicacao.id }}')" title="Excluir">
+                <i class="bi bi-trash"></i>
+              </button>
             </div>
           </td>
         </tr>
         {% else %}
         <tr>
-          <td colspan="9" class="text-center text-muted">Nenhuma publicação encontrada.</td>
+          <td colspan="8" class="text-center">Nenhuma publicação encontrada.</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -94,38 +85,64 @@
 
   <!-- Paginação -->
   {% if publicacoes.pages > 1 %}
-  <nav aria-label="Paginação" class="mt-4">
+  <nav aria-label="Navegação de páginas" class="mt-4">
     <ul class="pagination justify-content-center">
-      {% if publicacoes.has_prev %}
-      <li class="page-item">
-        <a class="page-link" href="{{ url_for('publicacoes.listar', page=publicacoes.prev_num, filtro=filtro, busca=busca) }}">Anterior</a>
+      <li class="page-item {% if not publicacoes.has_prev %}disabled{% endif %}">
+        <a class="page-link" href="{{ url_for('publicacao_bp.listar', page=publicacoes.prev_num) if publicacoes.has_prev else '#' }}">
+          Anterior
+        </a>
       </li>
-      {% else %}
-      <li class="page-item disabled"><span class="page-link">Anterior</span></li>
-      {% endif %}
-
-      {% for page_num in publicacoes.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
-        {% if page_num %}
-          {% if publicacoes.page == page_num %}
-            <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
-          {% else %}
-            <li class="page-item"><a class="page-link" href="{{ url_for('publicacoes.listar', page=page_num, filtro=filtro, busca=busca) }}">{{ page_num }}</a></li>
-          {% endif %}
+      
+      {% for page in publicacoes.iter_pages() %}
+        {% if page %}
+          <li class="page-item {% if page == publicacoes.page %}active{% endif %}">
+            <a class="page-link" href="{{ url_for('publicacao_bp.listar', page=page) }}">{{ page }}</a>
+          </li>
         {% else %}
-          <li class="page-item disabled"><span class="page-link">…</span></li>
+          <li class="page-item disabled"><span class="page-link">...</span></li>
         {% endif %}
       {% endfor %}
-
-      {% if publicacoes.has_next %}
-      <li class="page-item">
-        <a class="page-link" href="{{ url_for('publicacoes.listar', page=publicacoes.next_num, filtro=filtro, busca=busca) }}">Próxima</a>
+      
+      <li class="page-item {% if not publicacoes.has_next %}disabled{% endif %}">
+        <a class="page-link" href="{{ url_for('publicacao_bp.listar', page=publicacoes.next_num) if publicacoes.has_next else '#' }}">
+          Próximo
+        </a>
       </li>
-      {% else %}
-      <li class="page-item disabled"><span class="page-link">Próxima</span></li>
-      {% endif %}
     </ul>
   </nav>
   {% endif %}
-
 </div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div class="modal fade" id="modalConfirmacao" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirmar Exclusão</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        Tem certeza que deseja excluir esta publicação?
+      </div>
+      <div class="modal-footer">
+        <form id="formExclusao" method="POST">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmarExclusao(id) {
+  const modal = new bootstrap.Modal(document.getElementById('modalConfirmacao'));
+  const form = document.getElementById('formExclusao');
+  form.action = "{{ url_for('publicacao_bp.excluir_publicacao', id=0) }}".replace('0', id);
+  modal.show();
+}
+</script>
 {% endblock %}

@@ -13,39 +13,68 @@
         font-size: 0.85em;
         color: #6c757d;
     }
-    /* Estilos para parecer com a imagem */
+
     .select2-container--bootstrap-5 .select2-dropdown {
-        border: 1px solid #ccc;
+        border: 1px solid #dee2e6;
         border-radius: 4px;
+        margin-top: 4px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    .select2-container--bootstrap-5 .select2-results__option {
-        padding: 8px 12px !important;
-        font-size: 14px;
-        border-bottom: 1px solid #f0f0f0;
-    }
-
-    .select2-container--bootstrap-5 .select2-results__option--highlighted {
-        background-color: #007bff !important;
-        color: white !important;
+    .select2-container--bootstrap-5 .select2-search--dropdown {
+        padding: 0;
     }
 
     .select2-search__field {
-        padding: 8px !important;
         border: none !important;
-        border-bottom: 1px solid #ddd !important;
+        border-bottom: 1px solid #dee2e6 !important;
         border-radius: 0 !important;
+        padding: 8px 12px !important;
+        margin: 0 !important;
+    }
+
+    .select2-container--bootstrap-5 .select2-results__options {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .select2-container--bootstrap-5 .select2-results__option {
+        padding: 8px 12px;
+        margin: 0;
+        font-size: 14px;
+        border-bottom: 1px solid #f8f9fa;
+    }
+
+    .select2-container--bootstrap-5 .select2-results__option--highlighted[aria-selected] {
+        background-color: #0d6efd;
+        color: white;
     }
 
     .select2-container--bootstrap-5 .select2-selection {
-        border: 1px solid #ccc;
+        border: 1px solid #dee2e6;
         min-height: 38px;
     }
 
-    /* Remove ícones desnecessários */
+    .select2-container--bootstrap-5 .select2-selection--multiple {
+        padding: 2px 6px;
+    }
+
+    .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
+        background-color: #e9ecef;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 2px 8px;
+        margin: 2px 4px 2px 0;
+    }
+
+    .select2-container--bootstrap-5 .select2-selection__choice__remove {
+        margin-right: 4px;
+        color: #6c757d;
+    }
+
+    /* Remove a seta do dropdown */
     .select2-selection__arrow {
-        display: none;
+        display: none !important;
     }
 </style>
 {% endblock %}
@@ -217,7 +246,6 @@ $(document).ready(function() {
         width: '100%',
         placeholder: 'Digite para buscar...',
         allowClear: true,
-        tags: false,
         language: {
             noResults: function() {
                 return "Nenhum resultado encontrado";
@@ -229,21 +257,13 @@ $(document).ready(function() {
         minimumInputLength: 1,
         minimumResultsForSearch: 0,
         matcher: function(params, data) {
-            // Se não houver termo de busca, retorna todos os dados
             if ($.trim(params.term) === '') {
                 return data;
             }
 
-            // Busca case-insensitive e com acentos
             var term = params.term.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             var text = data.text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-            // Retorna se o texto começa com o termo de busca
-            if (text.indexOf(term) === 0) {
-                return data;
-            }
-
-            // Se não encontrou no início, procura em qualquer parte
             if (text.indexOf(term) > -1) {
                 return data;
             }
@@ -252,21 +272,15 @@ $(document).ready(function() {
         },
         templateResult: function(data) {
             if (!data.id) return data.text;
-            return $('<div>' + data.text + '</div>');
+            return $('<div class="select2-result">' + data.text + '</div>');
         },
         templateSelection: function(data) {
             return data.text;
         }
     }).on('select2:open', function() {
-        // Foca no campo de busca quando abrir
         setTimeout(function() {
             $('.select2-search__field').focus();
         }, 0);
-    });
-
-    // Abre o dropdown ao clicar no campo
-    $('.select2-selection').on('click', function() {
-        $(this).closest('.select2-container').siblings('select').select2('open');
     });
 });
 </script>

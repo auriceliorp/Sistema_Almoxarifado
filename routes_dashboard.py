@@ -160,6 +160,15 @@ def dashboard():
             .scalar() or 0
 
         total_locais = db.session.query(func.count(Local.id)).scalar() or 0
+
+        # Adicionando contagem de tipos (usando grupo_bem)
+        total_tipos = db.session.query(func.count(db.distinct(BemPatrimonial.grupo_bem)))\
+            .filter(
+                BemPatrimonial.excluido == False,
+                BemPatrimonial.grupo_bem.isnot(None)
+            )\
+            .scalar() or 0
+
         valor_total_bens = db.session.query(func.coalesce(func.sum(BemPatrimonial.valor_aquisicao), 0))\
             .filter(
                 BemPatrimonial.excluido == False,

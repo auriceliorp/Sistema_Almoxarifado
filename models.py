@@ -266,10 +266,7 @@ class BemPatrimonial(db.Model):
     situacao = db.Column(db.String(50), default='Em uso')  # Novo campo
     data_cadastro = db.Column(db.DateTime, default=datetime.utcnow)
     observacoes = db.Column(db.Text, nullable=True)
-    tipo_bem_id = db.Column(db.Integer, db.ForeignKey('tipos_bem.id'), nullable=True)
-    tipo_bem = db.relationship('TipoBem', backref='bens')
-    local_id = db.Column(db.Integer, db.ForeignKey('local.id'), nullable=True)
-    local = db.relationship('Local', backref='bens')
+    
 
     def __repr__(self):
         return f"<BemPatrimonial {self.numero_ul} - {self.nome}>"

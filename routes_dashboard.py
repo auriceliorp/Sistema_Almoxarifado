@@ -258,7 +258,6 @@ def dashboard():
             )\
             .order_by(BemPatrimonial.data_cadastro.desc())\
             .all()
-
         
         # ---------------- ABA PUBLICAÇÕES ----------------
         total_publicacoes = db.session.query(func.count(Publicacao.id))\

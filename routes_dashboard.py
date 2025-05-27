@@ -3,13 +3,14 @@
 
 from flask import Blueprint, render_template
 from flask_login import login_required, current_user
-from sqlalchemy import func, or_, and_
+from sqlalchemy import func, or_, and_, extract
 from datetime import datetime, timedelta
 from extensoes import db
 from models import (
     EntradaItem, SaidaItem, EntradaMaterial, SaidaMaterial,
     NaturezaDespesa, Item, Fornecedor, PainelContratacao, Grupo,
-    BemPatrimonial, Local, TipoBem, MovimentacaoBem
+    BemPatrimonial, Local, TipoBem, MovimentacaoBem,
+    Publicacao, TipoPublicacao
 )
 
 dashboard_bp = Blueprint('dashboard_bp', __name__, url_prefix='/dashboard')
@@ -243,6 +244,99 @@ def dashboard():
         labels_locais = valores_locais = labels_tipos = valores_tipos = []
         ultimos_bens = []
 
+    # ---------------- ABA PUBLICAÇÕES ----------------
+    try:
+        # Total de publicações e tipos
+        total_publicacoes = db.session.query(func.count(Publicacao.id))\
+            .filter(Publicacao.excluido == False)\
+            .scalar() or 0
+
+        total_tipos = db.session.query(func.count(TipoPublicacao.id)).scalar() or 0
+
+        # Publicações no mês atual
+        data_inicio_mes = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        total_publicacoes_mes = db.session.query(func.count(Publicacao.id))\
+            .filter(
+                Publicacao.excluido == False,
+                Publicacao.data >= data_inicio_mes
+            ).scalar() or 0
+
+        percentual_mes = round((total_publicacoes_mes / total_publicacoes * 100) if total_publicacoes > 0 else 0)
+
+        # Publicações pendentes
+        total_pendentes = db.session.query(func.count(Publicacao.id))\
+            .filter(
+                Publicacao.excluido == False,
+                Publicacao.status == 'Pendente'
+            ).scalar() or 0
+
+        # Média de dias para publicação
+        media_dias = db.session.query(
+            func.avg(Publicacao.data_publicacao - Publicacao.data_cadastro)
+        ).filter(
+            Publicacao.excluido == False,
+            Publicacao.data_publicacao.isnot(None)
+        ).scalar()
+        
+        media_dias_publicacao = round(media_dias.days if media_dias else 0)
+
+        # Publicações urgentes (próximos 2 dias)
+        data_limite = datetime.now() + timedelta(days=2)
+        total_urgentes = db.session.query(func.count(Publicacao.id))\
+            .filter(
+                Publicacao.excluido == False,
+                Publicacao.status == 'Pendente',
+                Publicacao.data_prevista <= data_limite
+            ).scalar() or 0
+
+        # Distribuição por tipo
+        tipos_data = db.session.query(
+            TipoPublicacao.nome,
+            func.count(Publicacao.id).label('total')
+        ).join(Publicacao)\
+        .filter(Publicacao.excluido == False)\
+        .group_by(TipoPublicacao.id, TipoPublicacao.nome)\
+        .order_by(func.count(Publicacao.id).desc())\
+        .all()
+
+        labels_tipos = [t.nome for t in tipos_data]
+        valores_tipos = [int(t.total) for t in tipos_data]
+
+        # Evolução mensal (últimos 6 meses)
+        meses_data = []
+        for i in range(5, -1, -1):
+            data = datetime.now() - timedelta(days=i*30)
+            total = db.session.query(func.count(Publicacao.id))\
+                .filter(
+                    Publicacao.excluido == False,
+                    extract('month', Publicacao.data) == data.month,
+                    extract('year', Publicacao.data) == data.year
+                ).scalar() or 0
+            meses_data.append({
+                'mes': data.strftime('%b/%Y'),
+                'total': total
+            })
+
+        labels_meses = [m['mes'] for m in meses_data]
+        valores_meses = [m['total'] for m in meses_data]
+
+        # Publicações recentes
+        data_limite = datetime.now() - timedelta(days=30)
+        publicacoes_recentes = Publicacao.query\
+            .filter(
+                Publicacao.excluido == False,
+                Publicacao.data >= data_limite
+            )\
+            .order_by(Publicacao.data.desc())\
+            .all()
+
+    except Exception as e:
+        print(f"Erro ao carregar dados de publicações: {str(e)}")
+        total_publicacoes = total_tipos = total_publicacoes_mes = percentual_mes = 0
+        total_pendentes = media_dias_publicacao = total_urgentes = 0
+        labels_tipos = valores_tipos = labels_meses = valores_meses = []
+        publicacoes_recentes = []
+
     # ---------------- ABA COMPRAS ----------------
     try:
         # Total de processos
@@ -335,6 +429,16 @@ def dashboard():
         labels_tipos=labels_tipos,
         valores_tipos=valores_tipos,
         ultimos_bens=ultimos_bens,
+        total_publicacoes=total_publicacoes,
+        total_tipos=total_tipos,
+        total_publicacoes_mes=total_publicacoes_mes,
+        percentual_mes=percentual_mes,
+        total_pendentes=total_pendentes,
+        media_dias_publicacao=media_dias_publicacao,
+        total_urgentes=total_urgentes,
+        labels_meses=labels_meses,
+        valores_meses=valores_meses,
+        publicacoes_recentes=publicacoes_recentes,
         total_fornecedores=total_fornecedores,
         total_entradas=total_entradas,
         total_saidas=total_saidas,

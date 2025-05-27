@@ -3,7 +3,7 @@
 
 from flask import Blueprint, render_template
 from flask_login import login_required, current_user
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from extensoes import db
 from models import (
     EntradaItem, SaidaItem, EntradaMaterial, SaidaMaterial,
@@ -79,46 +79,84 @@ def dashboard():
         item.total_entradas = entradas
         item.total_saidas = saidas
 
-   // ... existing code ...
-   
-# ---------------- ABA COMPRAS ----------------
-    total_processos = db.session.query(func.count()).select_from(PainelContratacao).filter_by(excluido=False).scalar()
-    
-    total_estimado = db.session.query(func.sum(PainelContratacao.valor_estimado))\
-        .filter(PainelContratacao.excluido == False)\
-        .scalar() or 0
-    
-    total_com_sei = db.session.query(func.count()).select_from(PainelContratacao)\
-        .filter(
-            PainelContratacao.numero_sei.isnot(None),
-            PainelContratacao.numero_sei != '',
+    # ---------------- ABA COMPRAS ----------------
+    try:
+        # Total de processos
+        total_processos = db.session.query(func.count(PainelContratacao.id))\
+            .filter(PainelContratacao.excluido == False)\
+            .scalar() or 0
+
+        # Total estimado
+        total_estimado = db.session.query(func.sum(PainelContratacao.valor_estimado))\
+            .filter(PainelContratacao.excluido == False)\
+            .scalar() or 0
+
+        # Total com SEI
+        total_com_sei = db.session.query(func.count(PainelContratacao.id))\
+            .filter(
+                PainelContratacao.excluido == False,
+                PainelContratacao.numero_sei.isnot(None),
+                PainelContratacao.numero_sei != ''
+            ).scalar() or 0
+
+        # Total concluídos
+        total_concluidos = db.session.query(func.count(PainelContratacao.id))\
+            .filter(
+                PainelContratacao.excluido == False,
+                or_(
+                    PainelContratacao.status == 'Concluído',
+                    PainelContratacao.status == 'Concluido'
+                )
+            ).scalar() or 0
+
+        # Modalidades
+        modalidades = db.session.query(
+            func.coalesce(PainelContratacao.modalidade, 'Não Informada').label('modalidade'),
+            func.count(PainelContratacao.id).label('total')
+        ).filter(
             PainelContratacao.excluido == False
-        ).scalar()
-    
-    total_concluidos = db.session.query(func.count()).select_from(PainelContratacao)\
-        .filter(
-            PainelContratacao.status == 'Concluído',
-            PainelContratacao.excluido == False
-        ).scalar()
+        ).group_by(
+            PainelContratacao.modalidade
+        ).order_by(
+            func.count(PainelContratacao.id).desc()
+        ).all()
 
-    # Consulta de modalidades excluindo nulos e vazios
-    modalidades = db.session.query(
-        func.coalesce(PainelContratacao.modalidade, 'Não Informada').label('modalidade'),
-        func.count().label('total')
-    ).filter(
-        PainelContratacao.excluido == False
-    ).group_by(
-        func.coalesce(PainelContratacao.modalidade, 'Não Informada')
-    ).order_by(
-        func.count().desc()
-    ).all()
+        labels_modalidades = [m.modalidade for m in modalidades]
+        valores_modalidades = [int(m.total) for m in modalidades]
 
-    labels_modalidades = [m.modalidade for m in modalidades]
-    valores_modalidades = [m.total for m in modalidades]
+        # Últimos processos
+        ultimos_processos = PainelContratacao.query\
+            .filter(PainelContratacao.excluido == False)\
+            .order_by(PainelContratacao.data_abertura.desc())\
+            .limit(5).all()
 
-    # Últimos processos ordenados por data de abertura
-    ultimos_processos = db.session.query(PainelContratacao)\
-        .filter(PainelContratacao.excluido == False)\
-        .order_by(PainelContratacao.data_abertura.desc())\
-        .limit(5).all()
-// ... existing code ...
+    except Exception as e:
+        print(f"Erro ao carregar dados de compras: {str(e)}")
+        total_processos = 0
+        total_estimado = 0
+        total_com_sei = 0
+        total_concluidos = 0
+        labels_modalidades = []
+        valores_modalidades = []
+        ultimos_processos = []
+
+    return render_template(
+        'dashboard.html',
+        usuario=current_user,
+        dados_entrada=dados_entrada,
+        grafico_grupo_labels=grafico_grupo_labels,
+        grafico_grupo_dados=grafico_grupo_dados,
+        total_itens=total_itens,
+        total_fornecedores=total_fornecedores,
+        total_entradas=total_entradas,
+        total_saidas=total_saidas,
+        itens_abaixo_minimo=itens_abaixo_minimo,
+        itens_movimentados=itens_movimentados,
+        total_processos=total_processos,
+        total_estimado=total_estimado,
+        total_com_sei=total_com_sei,
+        total_concluidos=total_concluidos,
+        labels_modalidades=labels_modalidades,
+        valores_modalidades=valores_modalidades,
+        ultimos_processos=ultimos_processos
+    )

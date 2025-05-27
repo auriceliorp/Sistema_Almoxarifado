@@ -1,93 +1,254 @@
-{# ===================== DASHBOARD: PATRIMÔNIO ===================== #}
-
 <!-- ESTILO PERSONALIZADO -->
 <style>
-  .card-patrimonio {
-    border: none;
-    border-radius: 12px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    text-align: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-  }
+    .card-patrimonio {
+        border: none;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        text-align: center;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    .card-patrimonio:hover {
+        transform: translateY(-5px);
+    }
 
-  .card-ativos     { background-color: #dbeafe; color: #1e3a8a; }
-  .card-inventario { background-color: #fef9c3; color: #92400e; }
-  .card-alienar    { background-color: #fecaca; color: #991b1b; }
+    .card-ativos { background-color: #dbeafe; color: #1e3a8a; }
+    .card-valor { background-color: #d1fae5; color: #065f46; }
+    .card-inventario { background-color: #fef9c3; color: #92400e; }
+    .card-alienar { background-color: #fee2e2; color: #991b1b; }
+    .card-manutencao { background-color: #f3e8ff; color: #6b21a8; }
 
-  .table thead {
-    background-color: #f8fafc;
-  }
+    .table thead {
+        background-color: #f8fafc;
+    }
 
-  .badge-ativo     { background-color: #22c55e; color: white; }
-  .badge-inventario{ background-color: #facc15; color: #92400e; }
-  .badge-alienar   { background-color: #ef4444; color: white; }
+    .table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        color: #475569;
+    }
+
+    .table td {
+        font-size: 0.9rem;
+        vertical-align: middle;
+    }
+
+    .badge-ativo { background-color: #22c55e; color: white; }
+    .badge-inventario { background-color: #facc15; color: #92400e; }
+    .badge-alienar { background-color: #ef4444; color: white; }
+    .badge-manutencao { background-color: #a855f7; color: white; }
 </style>
 
-<!-- AVISO DE DESENVOLVIMENTO -->
-<div class="alert alert-info d-flex align-items-center shadow-sm">
-  <i class="bi bi-info-circle-fill me-2"></i>
-  Módulo de Patrimônio em desenvolvimento. Os dados exibidos são ilustrativos.
-</div>
-
 <!-- INDICADORES -->
-<div class="row mb-4">
-  <div class="col-md-4 col-12">
-    <div class="card-patrimonio card-ativos">
-      <i class="bi bi-building display-6"></i>
-      <h6>Bens Ativos</h6>
-      <h3>235</h3>
+<div class="row g-3 mb-4">
+    <div class="col-md col-12">
+        <div class="card-patrimonio card-ativos">
+            <i class="bi bi-building display-6"></i>
+            <h6>Bens Ativos</h6>
+            <h3>{{ total_bens_ativos }}</h3>
+            <small>Em {{ total_locais }} locais</small>
+        </div>
     </div>
-  </div>
-  <div class="col-md-4 col-12">
-    <div class="card-patrimonio card-inventario">
-      <i class="bi bi-clipboard-data display-6"></i>
-      <h6>Pendentes de Inventário</h6>
-      <h3>42</h3>
+    <div class="col-md col-12">
+        <div class="card-patrimonio card-valor">
+            <i class="bi bi-cash-stack display-6"></i>
+            <h6>Valor Total</h6>
+            <h3>R$ {{ "{:,.2f}".format(valor_total_bens).replace(',', '_').replace('.', ',').replace('_', '.') }}</h3>
+            <small>{{ total_bens_com_valor }} bens com valor</small>
+        </div>
     </div>
-  </div>
-  <div class="col-md-4 col-12">
-    <div class="card-patrimonio card-alienar">
-      <i class="bi bi-trash display-6"></i>
-      <h6>Bens a Alienar</h6>
-      <h3>15</h3>
+    <div class="col-md col-12">
+        <div class="card-patrimonio card-inventario">
+            <i class="bi bi-clipboard-data display-6"></i>
+            <h6>Pendentes de Inventário</h6>
+            <h3>{{ total_pendentes_inventario }}</h3>
+            <small>{{ percentual_inventariado }}% inventariado</small>
+        </div>
     </div>
-  </div>
+    <div class="col-md col-12">
+        <div class="card-patrimonio card-manutencao">
+            <i class="bi bi-tools display-6"></i>
+            <h6>Em Manutenção</h6>
+            <h3>{{ total_em_manutencao }}</h3>
+            <small>{{ total_manutencoes_mes }} no mês</small>
+        </div>
+    </div>
+    <div class="col-md col-12">
+        <div class="card-patrimonio card-alienar">
+            <i class="bi bi-trash display-6"></i>
+            <h6>Bens a Alienar</h6>
+            <h3>{{ total_para_alienar }}</h3>
+            <small>{{ total_alienados_ano }} alienados no ano</small>
+        </div>
+    </div>
 </div>
 
-<!-- TABELA DE BENS -->
-<div class="card shadow p-4">
-  <h5 class="mb-3">Últimos Bens Cadastrados</h5>
-  <div class="table-responsive">
-    <table class="table table-sm table-hover align-middle">
-      <thead>
-        <tr>
-          <th>Patrimônio</th>
-          <th>Descrição</th>
-          <th>Local</th>
-          <th>Situação</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>0408724</td>
-          <td>Ar Condicionado Split 18000 BTU</td>
-          <td>Sala de Reunião</td>
-          <td><span class="badge badge-ativo">Ativo</span></td>
-        </tr>
-        <tr>
-          <td>0407983</td>
-          <td>Computador Desktop Dell</td>
-          <td>Administração</td>
-          <td><span class="badge badge-inventario">Inventariar</span></td>
-        </tr>
-        <tr>
-          <td>0408597</td>
-          <td>Armário em aço duas portas</td>
-          <td>Arquivo</td>
-          <td><span class="badge badge-alienar">Alienar</span></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+<!-- GRÁFICOS -->
+<div class="row g-3 mb-4">
+    <!-- Distribuição por Local -->
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title mb-3">
+                    <i class="bi bi-geo-alt me-2"></i>
+                    Distribuição por Local
+                </h5>
+                <canvas id="graficoLocais" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
+    <!-- Distribuição por Tipo -->
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title mb-3">
+                    <i class="bi bi-diagram-3 me-2"></i>
+                    Distribuição por Tipo
+                </h5>
+                <canvas id="graficoTipos" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- ÚLTIMOS BENS CADASTRADOS -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-clock-history me-2"></i>
+                Últimos Bens Cadastrados
+            </h5>
+            <div>
+                <span class="badge bg-primary me-2">Últimos 30 dias</span>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Patrimônio</th>
+                        <th>Descrição</th>
+                        <th>Local</th>
+                        <th>Valor</th>
+                        <th>Data Cadastro</th>
+                        <th>Situação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bem in ultimos_bens %}
+                    <tr>
+                        <td>{{ bem.numero_patrimonio }}</td>
+                        <td>{{ bem.descricao }}</td>
+                        <td>{{ bem.local }}</td>
+                        <td>R$ {{ "{:,.2f}".format(bem.valor).replace(',', '_').replace('.', ',').replace('_', '.') }}</td>
+                        <td>{{ bem.data_cadastro.strftime('%d/%m/%Y') }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if bem.situacao == 'Ativo' %}badge-ativo
+                                {% elif bem.situacao == 'Inventariar' %}badge-inventario
+                                {% elif bem.situacao == 'Alienar' %}badge-alienar
+                                {% elif bem.situacao == 'Manutenção' %}badge-manutencao
+                                {% endif %}">
+                                {{ bem.situacao }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
+                            <p class="text-muted mb-0">Nenhum bem cadastrado nos últimos 30 dias.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- SCRIPT CHART.JS -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gráfico de Locais
+    const ctxLocais = document.getElementById('graficoLocais').getContext('2d');
+    new Chart(ctxLocais, {
+        type: 'doughnut',
+        data: {
+            labels: {{ labels_locais | tojson }},
+            datasets: [{
+                data: {{ valores_locais | tojson }},
+                backgroundColor: [
+                    '#3b82f6',
+                    '#22c55e',
+                    '#eab308',
+                    '#ef4444',
+                    '#8b5cf6',
+                    '#ec4899',
+                    '#14b8a6',
+                    '#f97316'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: { font: { size: 11 } }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            let label = ctx.label || '';
+                            let value = ctx.parsed || 0;
+                            let total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                            let percentage = ((value * 100) / total).toFixed(1);
+                            return `${label}: ${value} bens (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Gráfico de Tipos
+    const ctxTipos = document.getElementById('graficoTipos').getContext('2d');
+    new Chart(ctxTipos, {
+        type: 'bar',
+        data: {
+            labels: {{ labels_tipos | tojson }},
+            datasets: [{
+                label: 'Quantidade de Bens',
+                data: {{ valores_tipos | tojson }},
+                backgroundColor: '#3b82f6',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            return `${ctx.parsed.y} bens`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 }
+                }
+            }
+        }
+    });
+});</script>

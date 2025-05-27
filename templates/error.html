@@ -1,0 +1,18 @@
+{% extends 'base_simplificada.html' %}
+
+{% block title %}Erro{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="alert alert-danger" role="alert">
+        <h4 class="alert-heading">Ops! Ocorreu um erro</h4>
+        <p>{{ message }}</p>
+        <hr>
+        <p class="mb-0">
+            <a href="javascript:history.back()" class="btn btn-outline-danger">
+                <i class="bi bi-arrow-left-circle"></i> Voltar
+            </a>
+        </p>
+    </div>
+</div>
+{% endblock %}

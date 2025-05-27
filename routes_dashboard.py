@@ -151,7 +151,7 @@ def dashboard():
         labels_grupos = [g.nome for g in grupos_data]
         valores_grupos = [int(g.total) for g in grupos_data]
 
-      # ---------------- ABA PATRIMÔNIO ----------------
+     # ---------------- ABA PATRIMÔNIO ----------------
         total_bens_ativos = db.session.query(func.count(BemPatrimonial.id))\
             .filter(
                 BemPatrimonial.situacao == 'Em uso',
@@ -221,34 +221,28 @@ def dashboard():
                 BemPatrimonial.excluido == False
             ).scalar() or 0
 
-        # Query corrigida para locais
+        # Query para locais usando apenas o campo localizacao
         locais_data = db.session.query(
-            Local.descricao.label('nome'),
+            BemPatrimonial.localizacao.label('nome'),
             func.count(BemPatrimonial.id).label('total')
-        ).outerjoin(
-            BemPatrimonial,
-            and_(
-                BemPatrimonial.localizacao == Local.descricao,
-                BemPatrimonial.excluido == False
-            )
-        ).group_by(Local.id, Local.descricao)\
+        ).filter(
+            BemPatrimonial.excluido == False,
+            BemPatrimonial.localizacao.isnot(None)
+        ).group_by(BemPatrimonial.localizacao)\
         .order_by(func.count(BemPatrimonial.id).desc())\
         .all()
 
         labels_locais = [l.nome for l in locais_data]
         valores_locais = [int(l.total) for l in locais_data]
 
-        # Query corrigida para tipos de bens
+        # Query para tipos de bens usando apenas o campo grupo_bem
         tipos_data = db.session.query(
-            TipoBem.descricao.label('nome'),
+            BemPatrimonial.grupo_bem.label('nome'),
             func.count(BemPatrimonial.id).label('total')
-        ).outerjoin(
-            BemPatrimonial,
-            and_(
-                BemPatrimonial.grupo_bem == TipoBem.descricao,
-                BemPatrimonial.excluido == False
-            )
-        ).group_by(TipoBem.id, TipoBem.descricao)\
+        ).filter(
+            BemPatrimonial.excluido == False,
+            BemPatrimonial.grupo_bem.isnot(None)
+        ).group_by(BemPatrimonial.grupo_bem)\
         .order_by(func.count(BemPatrimonial.id).desc())\
         .all()
 
@@ -263,6 +257,8 @@ def dashboard():
             )\
             .order_by(BemPatrimonial.data_cadastro.desc())\
             .all()
+
+        
         # ---------------- ABA PUBLICAÇÕES ----------------
         total_publicacoes = db.session.query(func.count(Publicacao.id))\
             .filter(Publicacao.excluido == False)\

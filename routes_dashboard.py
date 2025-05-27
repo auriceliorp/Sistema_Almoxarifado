@@ -1,482 +1,292 @@
-# routes_dashboard.py
-# Rota do painel principal com indicadores e gráficos
-
-from flask import Blueprint, render_template
-from flask_login import login_required, current_user
-from sqlalchemy import func, or_, and_, extract
-from datetime import datetime, timedelta
-from extensoes import db
-from models import (
-    EntradaItem, SaidaItem, EntradaMaterial, SaidaMaterial,
-    NaturezaDespesa, Item, Fornecedor, PainelContratacao, Grupo,
-    BemPatrimonial, Local, TipoBem, MovimentacaoBem,
-    Publicacao, TipoPublicacao
-)
-
-dashboard_bp = Blueprint('dashboard_bp', __name__, url_prefix='/dashboard')
-
-@dashboard_bp.route('/', methods=['GET'])
-@login_required
-def dashboard():
-    # ---------------- ENTRADAS E SAÍDAS POR NATUREZA DE DESPESA ----------------
-    subquery_saidas = (
-        db.session.query(
-            Item.natureza_despesa_id.label('nd_id'),
-            func.sum(SaidaItem.quantidade * SaidaItem.valor_unitario).label('total_saida')
-        )
-        .join(SaidaItem, SaidaItem.item_id == Item.id)
-        .group_by(Item.natureza_despesa_id)
-        .subquery()
-    )
-
-    resultados = (
-        db.session.query(
-            NaturezaDespesa.codigo,
-            NaturezaDespesa.nome,
-            func.coalesce(func.sum(EntradaItem.quantidade * EntradaItem.valor_unitario), 0).label('entradas'),
-            func.coalesce(subquery_saidas.c.total_saida, 0).label('saidas')
-        )
-        .outerjoin(Item, Item.natureza_despesa_id == NaturezaDespesa.id)
-        .outerjoin(EntradaItem, EntradaItem.item_id == Item.id)
-        .outerjoin(subquery_saidas, subquery_saidas.c.nd_id == NaturezaDespesa.id)
-        .group_by(NaturezaDespesa.codigo, NaturezaDespesa.nome, subquery_saidas.c.total_saida)
-        .all()
-    )
-
-    dados_entrada = [
-        {
-            'codigo': row.codigo,
-            'nome': row.nome,
-            'entradas': float(row.entradas),
-            'saidas': float(row.saidas)
-        }
-        for row in resultados
-    ]
-
-    # ---------------- INDICADORES GERAIS ----------------
-    total_itens = db.session.query(func.count(Item.id)).scalar()
-    total_fornecedores = db.session.query(func.count(Fornecedor.id)).scalar()
-    total_entradas = db.session.query(func.count(EntradaMaterial.id)).scalar()
-    total_saidas = db.session.query(func.count(SaidaMaterial.id)).scalar()
-
-    # ---------------- GRÁFICO DE PIZZA (DONUT) - Itens por Grupo ----------------
-    grupo_data = (
-        db.session.query(
-            Item.grupo_id,
-            func.count(Item.id).label('quantidade')
-        )
-        .group_by(Item.grupo_id)
-        .all()
-    )
-
-    grafico_grupo_labels = [f'Grupo {g.grupo_id}' for g in grupo_data]
-    grafico_grupo_dados = [int(g.quantidade) for g in grupo_data]
-
-    # ---------------- ABA ALMOXARIFADO ----------------
-    try:
-        # Total de itens e grupos
-        total_itens = db.session.query(func.count(Item.id)).scalar() or 0
-        total_grupos = db.session.query(func.count(Grupo.id)).scalar() or 0
-
-        # Valor total em estoque
-        valor_total_estoque = db.session.query(
-            func.sum(Item.estoque_atual * Item.valor_medio)
-        ).scalar() or 0
-
-        total_itens_com_valor = db.session.query(func.count(Item.id))\
-            .filter(Item.valor_medio.isnot(None))\
-            .scalar() or 0
-
-        # Itens críticos (abaixo do mínimo)
-        itens_abaixo_minimo = Item.query\
-            .filter(Item.estoque_atual < Item.estoque_minimo)\
-            .order_by((Item.estoque_atual / Item.estoque_minimo).asc())\
-            .all()
-
-        total_itens_criticos = len(itens_abaixo_minimo)
-
-        # Movimentações nos últimos 30 dias
-        data_limite = datetime.now() - timedelta(days=30)
-        total_movimentacoes = db.session.query(
-            func.count(EntradaMaterial.id) + func.count(SaidaMaterial.id)
-        ).filter(
-            or_(
-                EntradaMaterial.data_entrada >= data_limite,
-                SaidaMaterial.data_saida >= data_limite
-            )
-        ).scalar() or 0
-
-        # Itens mais movimentados
-        itens_movimentados = []
-        itens_query = Item.query.limit(10).all()
-        
-        for item in itens_query:
-            entradas = db.session.query(func.sum(EntradaItem.quantidade))\
-                .join(EntradaMaterial)\
-                .filter(
-                    EntradaItem.item_id == item.id,
-                    EntradaMaterial.data_entrada >= data_limite
-                ).scalar() or 0
-
-            saidas = db.session.query(func.sum(SaidaItem.quantidade))\
-                .join(SaidaMaterial)\
-                .filter(
-                    SaidaItem.item_id == item.id,
-                    SaidaMaterial.data_saida >= data_limite
-                ).scalar() or 0
-
-            valor_movimentado = (entradas + saidas) * (item.valor_medio or 0)
-
-            item.total_entradas = entradas
-            item.total_saidas = saidas
-            item.valor_movimentado = valor_movimentado
-
-            if entradas > 0 or saidas > 0:
-                itens_movimentados.append(item)
-
-        itens_movimentados.sort(key=lambda x: x.total_entradas + x.total_saidas, reverse=True)
-
-        # Dados para o gráfico de distribuição por grupo
-        grupos_data = db.session.query(
-            Grupo.nome,
-            func.count(Item.id).label('total')
-        ).join(Item)\
-        .group_by(Grupo.id, Grupo.nome)\
-        .order_by(func.count(Item.id).desc())\
-        .all()
-
-        labels_grupos = [g.nome for g in grupos_data]
-        valores_grupos = [int(g.total) for g in grupos_data]
-
-    except Exception as e:
-        print(f"Erro ao carregar dados do almoxarifado: {str(e)}")
-        total_itens = total_grupos = valor_total_estoque = total_itens_com_valor = 0
-        total_itens_criticos = total_movimentacoes = 0
-        itens_abaixo_minimo = itens_movimentados = []
-        labels_grupos = valores_grupos = []
-
-    # ---------------- ABA PATRIMÔNIO ----------------
-    try:
-        # Total de bens ativos e locais
-        total_bens_ativos = db.session.query(func.count(BemPatrimonial.id))\
-            .filter(BemPatrimonial.situacao == 'Ativo')\
-            .scalar() or 0
-
-        total_locais = db.session.query(func.count(Local.id)).scalar() or 0
-
-        # Valor total dos bens
-        valor_total_bens = db.session.query(func.sum(BemPatrimonial.valor))\
-            .filter(BemPatrimonial.valor.isnot(None))\
-            .scalar() or 0
-
-        total_bens_com_valor = db.session.query(func.count(BemPatrimonial.id))\
-            .filter(BemPatrimonial.valor.isnot(None))\
-            .scalar() or 0
-
-        # Bens pendentes de inventário
-        total_pendentes_inventario = db.session.query(func.count(BemPatrimonial.id))\
-            .filter(BemPatrimonial.situacao == 'Inventariar')\
-            .scalar() or 0
-
-        total_bens = db.session.query(func.count(BemPatrimonial.id)).scalar() or 1
-        percentual_inventariado = round(((total_bens - total_pendentes_inventario) / total_bens) * 100)
-
-        # Bens em manutenção
-        total_em_manutencao = db.session.query(func.count(BemPatrimonial.id))\
-            .filter(BemPatrimonial.situacao == 'Manutenção')\
-            .scalar() or 0
-
-        data_inicio_mes = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        total_manutencoes_mes = db.session.query(func.count(MovimentacaoBem.id))\
-            .filter(
-                MovimentacaoBem.tipo == 'Manutenção',
-                MovimentacaoBem.data >= data_inicio_mes
-            ).scalar() or 0
-
-        # Bens para alienar
-        total_para_alienar = db.session.query(func.count(BemPatrimonial.id))\
-            .filter(BemPatrimonial.situacao == 'Alienar')\
-            .scalar() or 0
-
-        data_inicio_ano = datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
-        total_alienados_ano = db.session.query(func.count(MovimentacaoBem.id))\
-            .filter(
-                MovimentacaoBem.tipo == 'Alienação',
-                MovimentacaoBem.data >= data_inicio_ano
-            ).scalar() or 0
-
-        # Distribuição por local
-        locais_data = db.session.query(
-            Local.nome,
-            func.count(BemPatrimonial.id).label('total')
-        ).join(BemPatrimonial)\
-        .group_by(Local.id, Local.nome)\
-        .order_by(func.count(BemPatrimonial.id).desc())\
-        .all()
-
-        labels_locais = [l.nome for l in locais_data]
-        valores_locais = [int(l.total) for l in locais_data]
-
-        # Distribuição por tipo
-        tipos_data = db.session.query(
-            TipoBem.nome,
-            func.count(BemPatrimonial.id).label('total')
-        ).join(BemPatrimonial)\
-        .group_by(TipoBem.id, TipoBem.nome)\
-        .order_by(func.count(BemPatrimonial.id).desc())\
-        .all()
-
-        labels_tipos = [t.nome for t in tipos_data]
-        valores_tipos = [int(t.total) for t in tipos_data]
-
-        # Últimos bens cadastrados
-        data_limite = datetime.now() - timedelta(days=30)
-        ultimos_bens = BemPatrimonial.query\
-            .filter(BemPatrimonial.data_cadastro >= data_limite)\
-            .order_by(BemPatrimonial.data_cadastro.desc())\
-            .all()
-
-    except Exception as e:
-        print(f"Erro ao carregar dados do patrimônio: {str(e)}")
-        total_bens_ativos = total_locais = valor_total_bens = total_bens_com_valor = 0
-        total_pendentes_inventario = percentual_inventariado = total_em_manutencao = 0
-        total_manutencoes_mes = total_para_alienar = total_alienados_ano = 0
-        labels_locais = valores_locais = labels_tipos = valores_tipos = []
-        ultimos_bens = []
-
-    # ---------------- ABA PUBLICAÇÕES ----------------
-    try:
-        # Total de publicações e tipos
-        total_publicacoes = db.session.query(func.count(Publicacao.id))\
-            .filter(Publicacao.excluido == False)\
-            .scalar() or 0
-
-        total_tipos = db.session.query(func.count(TipoPublicacao.id)).scalar() or 0
-
-        # Publicações no mês atual
-        data_inicio_mes = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        total_publicacoes_mes = db.session.query(func.count(Publicacao.id))\
-            .filter(
-                Publicacao.excluido == False,
-                Publicacao.data >= data_inicio_mes
-            ).scalar() or 0
-
-        percentual_mes = round((total_publicacoes_mes / total_publicacoes * 100) if total_publicacoes > 0 else 0)
-
-        # Publicações pendentes
-        total_pendentes = db.session.query(func.count(Publicacao.id))\
-            .filter(
-                Publicacao.excluido == False,
-                Publicacao.status == 'Pendente'
-            ).scalar() or 0
-
-        # Média de dias para publicação
-        media_dias = db.session.query(
-            func.avg(Publicacao.data_publicacao - Publicacao.data_cadastro)
-        ).filter(
-            Publicacao.excluido == False,
-            Publicacao.data_publicacao.isnot(None)
-        ).scalar()
-        
-        media_dias_publicacao = round(media_dias.days if media_dias else 0)
-
-        # Publicações urgentes (próximos 2 dias)
-        data_limite = datetime.now() + timedelta(days=2)
-        total_urgentes = db.session.query(func.count(Publicacao.id))\
-            .filter(
-                Publicacao.excluido == False,
-                Publicacao.status == 'Pendente',
-                Publicacao.data_prevista <= data_limite
-            ).scalar() or 0
-
-        # Distribuição por tipo
-        tipos_data = db.session.query(
-            TipoPublicacao.nome,
-            func.count(Publicacao.id).label('total')
-        ).join(Publicacao)\
-        .filter(Publicacao.excluido == False)\
-        .group_by(TipoPublicacao.id, TipoPublicacao.nome)\
-        .order_by(func.count(Publicacao.id).desc())\
-        .all()
-
-        labels_tipos = [t.nome for t in tipos_data]
-        valores_tipos = [int(t.total) for t in tipos_data]
-
-        # Evolução mensal (últimos 6 meses)
-        meses_data = []
-        for i in range(5, -1, -1):
-            data = datetime.now() - timedelta(days=i*30)
-            total = db.session.query(func.count(Publicacao.id))\
-                .filter(
-                    Publicacao.excluido == False,
-                    extract('month', Publicacao.data) == data.month,
-                    extract('year', Publicacao.data) == data.year
-                ).scalar() or 0
-            meses_data.append({
-                'mes': data.strftime('%b/%Y'),
-                'total': total
-            })
-
-        labels_meses = [m['mes'] for m in meses_data]
-        valores_meses = [m['total'] for m in meses_data]
-
-        # Publicações recentes
-        data_limite = datetime.now() - timedelta(days=30)
-        publicacoes_recentes = Publicacao.query\
-            .filter(
-                Publicacao.excluido == False,
-                Publicacao.data >= data_limite
-            )\
-            .order_by(Publicacao.data.desc())\
-            .all()
-
-    except Exception as e:
-        print(f"Erro ao carregar dados de publicações: {str(e)}")
-        total_publicacoes = total_tipos = total_publicacoes_mes = percentual_mes = 0
-        total_pendentes = media_dias_publicacao = total_urgentes = 0
-        labels_tipos = valores_tipos = labels_meses = valores_meses = []
-        publicacoes_recentes = []
-
-    # ---------------- ABA COMPRAS ----------------
-    try:
-        # Total de processos
-        total_processos = db.session.query(func.count(PainelContratacao.id))\
-            .filter(PainelContratacao.excluido == False)\
-            .scalar() or 0
-
-        # Total estimado
-        total_estimado = db.session.query(func.sum(PainelContratacao.valor_estimado))\
-            .filter(PainelContratacao.excluido == False)\
-            .scalar() or 0
-
-        # Total com SEI
-        total_com_sei = db.session.query(func.count(PainelContratacao.id))\
-            .filter(
-                PainelContratacao.excluido == False,
-                PainelContratacao.numero_sei.isnot(None),
-                PainelContratacao.numero_sei != ''
-            ).scalar() or 0
-
-        # Total concluídos
-        total_concluidos = db.session.query(func.count(PainelContratacao.id))\
-            .filter(
-                PainelContratacao.excluido == False,
-                or_(
-                    PainelContratacao.status == 'Concluído',
-                    PainelContratacao.status == 'Concluido'
-                )
-            ).scalar() or 0
-
-        # Modalidades
-        modalidades = db.session.query(
-            func.coalesce(PainelContratacao.modalidade, 'Não Informada').label('modalidade'),
-            func.count(PainelContratacao.id).label('total')
-        ).filter(
-            PainelContratacao.excluido == False
-        ).group_by(
-            PainelContratacao.modalidade
-        ).order_by(
-            func.count(PainelContratacao.id).desc()
-        ).all()
-
-        labels_modalidades = [m.modalidade for m in modalidades]
-        valores_modalidades = [int(m.total) for m in modalidades]
-
-        # Últimos processos
-        ultimos_processos = PainelContratacao.query\
-            .filter(PainelContratacao.excluido == False)\
-            .order_by(PainelContratacao.data_abertura.desc())\
-            .limit(5).all()
-
-    except Exception as e:
-        print(f"Erro ao carregar dados de compras: {str(e)}")
-        total_processos = 0
-        total_estimado = 0
-        total_com_sei = 0
-        total_concluidos = 0
-        labels_modalidades = []
-        valores_modalidades = []
-        ultimos_processos = []
-
-    # ---------------- EVOLUÇÃO DE MOVIMENTAÇÕES ----------------
-    data_inicio = datetime.now() - timedelta(days=180)  # últimos 6 meses
-    meses_data = []
-    valores_entradas_meses = []
-    valores_saidas_meses = []
-    labels_meses = []
-
-    for i in range(5, -1, -1):
-        data = datetime.now() - timedelta(days=i*30)
-        mes_ano = data.strftime('%b/%Y')
-        labels_meses.append(mes_ano)
-
-        # Entradas no mês
-        total_entradas = db.session.query(func.count(EntradaMaterial.id))\
-            .filter(
-                extract('month', EntradaMaterial.data_entrada) == data.month,
-                extract('year', EntradaMaterial.data_entrada) == data.year
-            ).scalar() or 0
-        valores_entradas_meses.append(total_entradas)
-
-        # Saídas no mês
-        total_saidas = db.session.query(func.count(SaidaMaterial.id))\
-            .filter(
-                extract('month', SaidaMaterial.data_saida) == data.month,
-                extract('year', SaidaMaterial.data_saida) == data.year
-            ).scalar() or 0
-        valores_saidas_meses.append(total_saidas)
-
-    return render_template(
-        'dashboard.html',
-        usuario=current_user,
-        dados_entrada=dados_entrada,
-        grafico_grupo_labels=grafico_grupo_labels,
-        grafico_grupo_dados=grafico_grupo_dados,
-        total_itens=total_itens,
-        total_grupos=total_grupos,
-        valor_total_estoque=valor_total_estoque,
-        total_itens_com_valor=total_itens_com_valor,
-        total_itens_criticos=total_itens_criticos,
-        total_movimentacoes=total_movimentacoes,
-        itens_abaixo_minimo=itens_abaixo_minimo,
-        itens_movimentados=itens_movimentados,
-        labels_grupos=labels_grupos,
-        valores_grupos=valores_grupos,
-        total_bens_ativos=total_bens_ativos,
-        total_locais=total_locais,
-        valor_total_bens=valor_total_bens,
-        total_bens_com_valor=total_bens_com_valor,
-        total_pendentes_inventario=total_pendentes_inventario,
-        percentual_inventariado=percentual_inventariado,
-        total_em_manutencao=total_em_manutencao,
-        total_manutencoes_mes=total_manutencoes_mes,
-        total_para_alienar=total_para_alienar,
-        total_alienados_ano=total_alienados_ano,
-        labels_locais=labels_locais,
-        valores_locais=valores_locais,
-        labels_tipos=labels_tipos,
-        valores_tipos=valores_tipos,
-        ultimos_bens=ultimos_bens,
-        total_publicacoes=total_publicacoes,
-        total_tipos=total_tipos,
-        total_publicacoes_mes=total_publicacoes_mes,
-        percentual_mes=percentual_mes,
-        total_pendentes=total_pendentes,
-        media_dias_publicacao=media_dias_publicacao,
-        total_urgentes=total_urgentes,
-        labels_meses=labels_meses,
-        valores_meses=valores_meses,
-        publicacoes_recentes=publicacoes_recentes,
-        total_fornecedores=total_fornecedores,
-        total_entradas=total_entradas,
-        total_saidas=total_saidas,
-        total_processos=total_processos,
-        total_estimado=total_estimado,
-        total_com_sei=total_com_sei,
-        total_concluidos=total_concluidos,
-        labels_modalidades=labels_modalidades,
-        valores_modalidades=valores_modalidades,
-        ultimos_processos=ultimos_processos,
-        valores_entradas_meses=valores_entradas_meses,
-        valores_saidas_meses=valores_saidas_meses
-    ) 
+{# Conteúdo reutilizável do sidebar para desktop e offcanvas #}
+<div class="sidebar-content">
+    <!-- Botão Fechar (Visível apenas no mobile) -->
+    <div class="d-lg-none close-sidebar text-end p-2">
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Fechar"></button>
+    </div>
+
+    {% if usuario %}
+    <div class="user-profile mb-4 p-3 border-bottom">
+        <div class="d-flex align-items-center">
+            <div class="profile-icon rounded-circle bg-light p-2 me-3">
+                <i class="bi bi-person-circle fs-3 text-primary"></i>
+            </div>
+            <div>
+                <strong class="d-block">{{ usuario.nome }}</strong>
+                <small class="text-light">{{ usuario.email }}</small>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="sidebar-menu">
+        <ul class="nav flex-column">
+            <!-- Dashboard -->
+            <li class="nav-item mb-2">
+                <a href="{{ url_for('dashboard_bp.dashboard') }}" 
+                   class="nav-link {% if request.endpoint == 'dashboard_bp.dashboard' %}active{% endif %} text-white">
+                    <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                </a>
+            </li>
+
+            <!-- Almoxarifado -->
+            <li class="nav-item mb-2">
+                <a class="nav-link text-white d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse" href="#submenuAlmox" role="button"
+                   aria-expanded="{% if request.endpoint.startswith('item_bp') or request.endpoint.startswith('fornecedor_bp') or request.endpoint.startswith('entrada_bp') or request.endpoint.startswith('saida_bp') or request.endpoint == 'main.relatorios' %}true{% else %}false{% endif %}">
+                    <span><i class="bi bi-box-seam me-2"></i> Almoxarifado</span>
+                    <i class="bi bi-chevron-down"></i>
+                </a>
+                <ul class="collapse nav flex-column ms-3 {% if request.endpoint.startswith('item_bp') or request.endpoint.startswith('fornecedor_bp') or request.endpoint.startswith('entrada_bp') or request.endpoint.startswith('saida_bp') or request.endpoint == 'main.relatorios' %}show{% endif %}" id="submenuAlmox">
+                    <li class="nav-item"><a href="{{ url_for('item_bp.lista_itens') }}" class="nav-link {% if request.endpoint == 'item_bp.lista_itens' %}active{% endif %} text-white"><i class="bi bi-box me-2"></i>Itens</a></li>
+                    <li class="nav-item"><a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="nav-link {% if request.endpoint == 'fornecedor_bp.lista_fornecedor' %}active{% endif %} text-white"><i class="bi bi-building me-2"></i>Fornecedores</a></li>
+                    <li class="nav-item"><a href="{{ url_for('entrada_bp.lista_entradas') }}" class="nav-link {% if request.endpoint == 'entrada_bp.lista_entradas' %}active{% endif %} text-white"><i class="bi bi-box-arrow-in-right me-2"></i>Entrada de Materiais</a></li>
+                    <li class="nav-item"><a href="{{ url_for('saida_bp.lista_saidas') }}" class="nav-link {% if request.endpoint == 'saida_bp.lista_saidas' %}active{% endif %} text-white"><i class="bi bi-box-arrow-right me-2"></i>Saída de Materiais</a></li>
+                    <li class="nav-item"><a href="{{ url_for('main.relatorios') }}" class="nav-link {% if request.endpoint == 'main.relatorios' %}active{% endif %} text-white"><i class="bi bi-file-text me-2"></i>Relatórios</a></li>
+                    <li class="nav-item"><a href="{{ url_for('relatorio_bp.mapa_fechamento') }}" class="nav-link {% if request.endpoint == 'relatorio_bp.mapa_fechamento' %}active{% endif %} text-white"><i class="bi bi-calendar-check me-2"></i>Mapa de Fechamento</a></li>
+                </ul>
+            </li>
+
+            <!-- Patrimônio -->
+            <li class="nav-item mb-2">
+                <a class="nav-link text-white d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse" href="#submenuPatrimonio" role="button"
+                   aria-expanded="{% if request.endpoint.startswith('patrimonio_bp') %}true{% else %}false{% endif %}">
+                    <span><i class="bi bi-building-gear me-2"></i> Patrimônio</span>
+                    <i class="bi bi-chevron-down"></i>
+                </a>
+                <ul class="collapse nav flex-column ms-3 {% if request.endpoint.startswith('patrimonio_bp') %}show{% endif %}" id="submenuPatrimonio">
+                    <li class="nav-item"><a href="{{ url_for('patrimonio_bp.listar_bens') }}" class="nav-link {% if request.endpoint == 'patrimonio_bp.listar_bens' %}active{% endif %} text-white"><i class="bi bi-collection me-2"></i>Bens Patrimoniais</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link text-white-50"><i class="bi bi-clipboard-check me-2"></i>Inventário</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link text-white-50"><i class="bi bi-arrow-left-right me-2"></i>Transferência</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link text-white-50"><i class="bi bi-file-earmark-text me-2"></i>Relatórios</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link text-white-50"><i class="bi bi-trash me-2"></i>Baixa Patrimonial</a></li>
+                </ul>
+            </li>
+
+            <!-- Compras -->
+            <li class="nav-item mb-2">
+                <a class="nav-link text-white d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse" href="#submenuCompras" role="button"
+                   aria-expanded="{% if request.endpoint.startswith('painel_bp') %}true{% else %}false{% endif %}">
+                    <span><i class="bi bi-cart-check me-2"></i> Compras</span>
+                    <i class="bi bi-chevron-down"></i>
+                </a>
+                <ul class="collapse nav flex-column ms-3 {% if request.endpoint.startswith('painel_bp') %}show{% endif %}" id="submenuCompras">
+                    <li class="nav-item"><a href="{{ url_for('painel_bp.lista_painel') }}" class="nav-link {% if request.endpoint == 'painel_bp.lista_painel' %}active{% endif %} text-white"><i class="bi bi-grid me-2"></i>Painel de Contratações</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link text-white-50"><i class="bi bi-file-earmark-text me-2"></i>Requisições</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link text-white-50"><i class="bi bi-building me-2"></i>Fornecedores</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link text-white-50"><i class="bi bi-currency-dollar me-2"></i>Cotações</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link text-white-50"><i class="bi bi-folder me-2"></i>Processos SEI</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link text-white-50"><i class="bi bi-calendar4-week me-2"></i>Agenda de Contratos</a></li>
+                </ul>
+            </li>
+
+            <!-- Publicações -->
+            <li class="nav-item mb-2">
+                <a class="nav-link text-white d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse" href="#submenuPublicacoes" role="button"
+                   aria-expanded="{% if request.endpoint.startswith('publicacao_bp') %}true{% else %}false{% endif %}">
+                    <span><i class="bi bi-journal-text me-2"></i> Publicações</span>
+                    <i class="bi bi-chevron-down"></i>
+                </a>
+                <ul class="collapse nav flex-column ms-3 {% if request.endpoint.startswith('publicacao_bp') %}show{% endif %}" id="submenuPublicacoes">
+                    <li class="nav-item"><a href="{{ url_for('publicacao_bp.listar') }}" class="nav-link {% if request.endpoint == 'publicacao_bp.listar' %}active{% endif %} text-white"><i class="bi bi-list-ul me-2"></i>Lista de Publicações</a></li>
+                    <li class="nav-item"><a href="{{ url_for('publicacao_bp.nova_publicacao') }}" class="nav-link {% if request.endpoint == 'publicacao_bp.nova_publicacao' %}active{% endif %} text-white"><i class="bi bi-plus-circle me-2"></i>Nova Publicação</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link text-white-50"><i class="bi bi-search me-2"></i>Busca Avançada</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link text-white-50"><i class="bi bi-archive me-2"></i>Arquivo</a></li>
+                </ul>
+            </li>
+
+            <!-- Configurações -->
+            <li class="nav-item mb-2">
+                <a class="nav-link text-white d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse" href="#submenuConfig" role="button"
+                   aria-expanded="{% if request.endpoint.startswith('usuario_bp') or request.endpoint.startswith('nd_bp') or request.endpoint.startswith('grupo_bp') or request.endpoint.startswith('area_ul_bp') %}true{% else %}false{% endif %}">
+                    <span><i class="bi bi-gear me-2"></i> Configurações</span>
+                    <i class="bi bi-chevron-down"></i>
+                </a>
+                <ul class="collapse nav flex-column ms-3 {% if request.endpoint.startswith('usuario_bp') or request.endpoint.startswith('nd_bp') or request.endpoint.startswith('grupo_bp') or request.endpoint.startswith('area_ul_bp') %}show{% endif %}" id="submenuConfig">
+                    <li class="nav-item"><a href="{{ url_for('usuario_bp.lista_usuarios') }}" class="nav-link {% if request.endpoint == 'usuario_bp.lista_usuarios' %}active{% endif %} text-white"><i class="bi bi-people me-2"></i>Perfis e Usuários</a></li>
+                    <li class="nav-item"><div class="nav-link text-white-50 small"><i class="bi bi-building me-2"></i>Organização Administrativa</div></li>
+                    <li class="nav-item"><a href="{{ url_for('nd_bp.lista_nd') }}" class="nav-link {% if request.endpoint == 'nd_bp.lista_nd' %}active{% endif %} text-white"><i class="bi bi-tag me-2"></i>Natureza de Despesa</a></li>
+                    <li class="nav-item"><a href="{{ url_for('grupo_bp.lista_grupos') }}" class="nav-link {% if request.endpoint == 'grupo_bp.lista_grupos' %}active{% endif %} text-white"><i class="bi bi-collection me-2"></i>Grupos</a></li>
+                    <li class="nav-item"><a href="{{ url_for('area_ul_bp.lista_locais') }}" class="nav-link {% if request.endpoint == 'area_ul_bp.lista_locais' %}active{% endif %} text-white"><i class="bi bi-diagram-3 me-2"></i>Áreas</a></li>
+                    <li class="nav-item"><a href="{{ url_for('area_ul_bp.lista_uls') }}" class="nav-link {% if request.endpoint == 'area_ul_bp.lista_uls' %}active{% endif %} text-white"><i class="bi bi-building me-2"></i>Unidades Locais</a></li>
+                </ul>
+            </li>
+
+            <!-- Auditoria (somente admin) -->
+            {% if usuario and usuario.email == 'admin@admin.com' %}
+            <li class="nav-item mb-2">
+                <a href="{{ url_for('auditoria_bp.lista_logs') }}" 
+                   class="nav-link {% if request.endpoint == 'auditoria_bp.lista_logs' %}active{% endif %} text-white">
+                    <i class="bi bi-shield-lock me-2"></i> Auditoria
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <!-- Footer do Sidebar -->
+    <div class="sidebar-footer mt-auto p-3 border-top">
+        <div class="d-flex justify-content-between align-items-center">
+            <a href="#" class="text-white small" title="Ajuda">
+                <i class="bi bi-question-circle"></i>
+            </a>
+            <a href="#" class="text-white small" title="Configurações">
+                <i class="bi bi-gear"></i>
+            </a>
+            <a href="{{ url_for('auth.logout') }}" class="text-white small" title="Sair">
+                <i class="bi bi-box-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.sidebar-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    max-width: 280px;
+}
+
+.user-profile {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-menu {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.nav-link {
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.nav-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.nav-link.active {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.sidebar-footer {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-footer a:hover {
+    opacity: 0.8;
+}
+
+/* Estilo para links desabilitados */
+.nav-link.text-white-50 {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Animação suave para os submenus */
+.collapse {
+    transition: all 0.3s ease;
+}
+
+/* Estilos específicos para mobile */
+@media (max-width: 991.98px) {
+    .sidebar-content {
+        max-width: none;
+        width: 280px;
+    }
+
+    .close-sidebar {
+        position: sticky;
+        top: 0;
+        z-index: 1020;
+        background: rgba(0, 0, 0, 0.2);
+    }
+
+    .nav-link {
+        padding: 0.75rem 1rem;
+    }
+
+    /* Ajuste para submenus no mobile */
+    .collapse.nav {
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 0.25rem;
+        margin-top: 0.25rem;
+        margin-bottom: 0.25rem;
+    }
+
+    /* Efeito de fade para o backdrop do offcanvas */
+    .offcanvas-backdrop {
+        backdrop-filter: blur(2px);
+    }
+
+    /* Animação suave para o offcanvas */
+    .offcanvas {
+        transition: transform 0.3s ease-in-out;
+    }
+}
+
+/* Ajustes para telas muito pequenas */
+@media (max-width: 375px) {
+    .sidebar-content {
+        width: 260px;
+    }
+
+    .user-profile {
+        padding: 0.75rem !important;
+    }
+
+    .nav-link {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+    }
+}
+</style>
+
+<!-- Script para controle do menu mobile -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Fecha o submenu ativo ao fechar o offcanvas no mobile
+    const offcanvas = document.querySelector('.offcanvas');
+    if (offcanvas) {
+        offcanvas.addEventListener('hidden.bs.offcanvas', function() {
+            const activeSubmenus = this.querySelectorAll('.collapse.show');
+            activeSubmenus.forEach(submenu => {
+                const bsCollapse = new bootstrap.Collapse(submenu, {
+                    toggle: false
+                });
+                bsCollapse.hide();
+            });
+        });
+    }
+
+    // Fecha outros submenus ao abrir um novo no mobile
+    const submenus = document.querySelectorAll('[data-bs-toggle="collapse"]');
+    submenus.forEach(trigger => {
+        trigger.addEventListener('click', function(e) {
+            if (window.innerWidth < 992) { // Mobile only
+                const target = this.getAttribute('href');
+                const others = document.querySelectorAll('.collapse.show');
+                others.forEach(other => {
+                    if (other.id !== target.substring(1)) {
+                        const bsCollapse = new bootstrap.Collapse(other, {
+                            toggle: false
+                        });
+                        bsCollapse.hide();
+                    }
+                });
+            }
+        });
+    });
+});
+</script> 

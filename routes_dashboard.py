@@ -100,14 +100,15 @@ def dashboard():
         total_itens_criticos = len(itens_abaixo_minimo)
 
         data_limite = datetime.now() - timedelta(days=30)
-        total_movimentacoes = db.session.query(
-            func.count(EntradaMaterial.id) + func.count(SaidaMaterial.id)
-        ).filter(
-            or_(
-                EntradaMaterial.data_entrada >= data_limite,
-                SaidaMaterial.data_movimento >= data_limite
-            )
-        ).scalar() or 0
+        total_movimentacoes = (
+            db.session.query(func.count(EntradaMaterial.id))
+            .filter(EntradaMaterial.data_entrada >= data_limite)
+            .scalar() or 0
+        ) + (
+            db.session.query(func.count(SaidaMaterial.id))
+            .filter(SaidaMaterial.data_movimento >= data_limite)
+            .scalar() or 0
+        )
 
         # Itens mais movimentados
         itens_movimentados = []

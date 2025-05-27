@@ -16,6 +16,7 @@
 
     <!-- FORMULÁRIO -->
     <form method="POST" class="border rounded p-4 shadow-sm bg-light">
+        {{ csrf_token() }}
         <div class="row mb-3">
             <div class="col-md-6">
                 <label for="nome" class="form-label">Nome *</label>

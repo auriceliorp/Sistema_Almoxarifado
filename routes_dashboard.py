@@ -221,26 +221,34 @@ def dashboard():
                 BemPatrimonial.excluido == False
             ).scalar() or 0
 
+        # Query corrigida para locais
         locais_data = db.session.query(
             Local.descricao.label('nome'),
             func.count(BemPatrimonial.id).label('total')
-        ).select_from(Local)\
-        .join(BemPatrimonial)\
-        .filter(BemPatrimonial.excluido == False)\
-        .group_by(Local.id, Local.descricao)\
+        ).outerjoin(
+            BemPatrimonial,
+            and_(
+                BemPatrimonial.localizacao == Local.descricao,
+                BemPatrimonial.excluido == False
+            )
+        ).group_by(Local.id, Local.descricao)\
         .order_by(func.count(BemPatrimonial.id).desc())\
         .all()
 
         labels_locais = [l.nome for l in locais_data]
         valores_locais = [int(l.total) for l in locais_data]
 
+        # Query corrigida para tipos de bens
         tipos_data = db.session.query(
             TipoBem.descricao.label('nome'),
             func.count(BemPatrimonial.id).label('total')
-        ).select_from(TipoBem)\
-        .join(BemPatrimonial)\
-        .filter(BemPatrimonial.excluido == False)\
-        .group_by(TipoBem.id, TipoBem.descricao)\
+        ).outerjoin(
+            BemPatrimonial,
+            and_(
+                BemPatrimonial.grupo_bem == TipoBem.descricao,
+                BemPatrimonial.excluido == False
+            )
+        ).group_by(TipoBem.id, TipoBem.descricao)\
         .order_by(func.count(BemPatrimonial.id).desc())\
         .all()
 
@@ -255,7 +263,6 @@ def dashboard():
             )\
             .order_by(BemPatrimonial.data_cadastro.desc())\
             .all()
-
         # ---------------- ABA PUBLICAÇÕES ----------------
         total_publicacoes = db.session.query(func.count(Publicacao.id))\
             .filter(Publicacao.excluido == False)\

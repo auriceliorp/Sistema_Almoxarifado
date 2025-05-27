@@ -22,7 +22,7 @@ def nova_entrada():
 
     if request.method == 'POST':
         try:
-            data_movimento = datetime.strptime(request.form.get('data_movimento'), '%Y-%m-%d')
+            data_entrada = datetime.strptime(request.form.get('data_entrada'), '%Y-%m-%d')
             data_nota_fiscal = datetime.strptime(request.form.get('data_nota_fiscal'), '%Y-%m-%d')
             numero_nota_fiscal = request.form.get('numero_nota_fiscal')
             fornecedor_id = request.form.get('fornecedor')
@@ -32,7 +32,7 @@ def nova_entrada():
             valores_unitarios = request.form.getlist('valor_unitario[]')
 
             nova_entrada = EntradaMaterial(
-                data_movimento=data_movimento,
+                data_entrada=data_entrada,
                 data_nota_fiscal=data_nota_fiscal,
                 numero_nota_fiscal=numero_nota_fiscal,
                 fornecedor_id=fornecedor_id,
@@ -90,7 +90,7 @@ def lista_entradas():
     page = request.args.get('page', 1, type=int)
     filtro = request.args.get('filtro', 'nota')
     busca = request.args.get('busca', '').strip().lower()
-    ordenar_por = request.args.get('ordenar_por', 'data_movimento')
+    ordenar_por = request.args.get('ordenar_por', 'data_entrada')
     direcao = request.args.get('direcao', 'desc')
 
     query = EntradaMaterial.query.join(Fornecedor)
@@ -104,7 +104,7 @@ def lista_entradas():
         elif filtro == 'data':
             try:
                 data = datetime.strptime(busca, '%d/%m/%Y').date()
-                query = query.filter(EntradaMaterial.data_movimento == data)
+                query = query.filter(EntradaMaterial.data_entrada == data)
             except ValueError:
                 flash("Data inválida. Use o formato dd/mm/aaaa.", 'warning')
 
@@ -114,7 +114,7 @@ def lista_entradas():
     elif ordenar_por == 'fornecedor':
         campo = Fornecedor.nome
     else:
-        campo = EntradaMaterial.data_movimento
+        campo = EntradaMaterial.data_entrada
 
     query = query.order_by(campo.asc() if direcao == 'asc' else campo.desc())
 
@@ -157,7 +157,7 @@ def estornar_entrada(entrada_id):
             'entrada': {
                 'id': entrada.id,
                 'numero_nota_fiscal': entrada.numero_nota_fiscal,
-                'data_movimento': entrada.data_movimento.strftime('%Y-%m-%d'),
+                'data_entrada': entrada.data_entrada.strftime('%Y-%m-%d'),
                 'fornecedor_id': entrada.fornecedor_id,
                 'usuario_id': entrada.usuario_id
             },

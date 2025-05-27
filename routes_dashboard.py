@@ -340,7 +340,7 @@ def dashboard():
             bem.valor = bem.valor_aquisicao if bem.valor_aquisicao is not None else 0.0
             bem.local = bem.localizacao if bem.localizacao else 'Não informado'
 
-                     # ---------------- ABA PUBLICAÇÕES ----------------
+                            # ---------------- ABA PUBLICAÇÕES ----------------
         total_publicacoes = db.session.query(func.count(Publicacao.id))\
             .filter(Publicacao.excluido == False)\
             .scalar() or 0
@@ -367,7 +367,7 @@ def dashboard():
         total_publicacoes_mes = db.session.query(func.count(Publicacao.id))\
             .filter(
                 Publicacao.excluido == False,
-                Publicacao.data_assinatura >= data_inicio_mes
+                Publicacao.data_assinatura >= data_inicio_mes.date()  # Convertendo para date
             ).scalar() or 0
 
         percentual_mes = round((total_publicacoes_mes / total_publicacoes * 100) if total_publicacoes > 0 else 0)
@@ -389,7 +389,7 @@ def dashboard():
             Publicacao.data_assinatura.isnot(None)
         ).scalar()
         
-        media_dias_publicacao = round(media_dias.days if media_dias else 0)
+        media_dias_publicacao = round(float(media_dias) if media_dias else 0)
 
         # Publicações urgentes (próximos 2 dias)
         data_limite = datetime.now().date() + timedelta(days=2)
@@ -419,15 +419,14 @@ def dashboard():
         valores_meses = [m['total'] for m in meses_data]
 
         # Publicações recentes com join para tipo
-        data_limite_recentes = datetime.now() - timedelta(days=30)
+        data_limite_recentes = datetime.now().date() - timedelta(days=30)
         data_limite_urgente = datetime.now().date() + timedelta(days=2)
         publicacoes_query = db.session.query(
             Publicacao, 
             TipoPublicacao.nome.label('tipo_nome')
         ).join(
             TipoPublicacao,
-            Publicacao.tipo_id == TipoPublicacao.id,
-            isouter=True  # Left join para pegar mesmo sem tipo
+            Publicacao.tipo_id == TipoPublicacao.id
         ).filter(
             Publicacao.excluido == False,
             Publicacao.data_assinatura >= data_limite_recentes
@@ -437,10 +436,9 @@ def dashboard():
         for pub, tipo_nome in publicacoes_query.all():
             # Determinar o status baseado nas datas
             if pub.vigencia_inicio:
-                vigencia_date = pub.vigencia_inicio.date() if isinstance(pub.vigencia_inicio, datetime) else pub.vigencia_inicio
-                if vigencia_date <= data_limite_urgente:
+                if pub.vigencia_inicio <= data_limite_urgente:
                     status = 'Urgente'
-                elif vigencia_date > data_atual:
+                elif pub.vigencia_inicio > data_atual:
                     status = 'Pendente'
                 else:
                     status = 'Normal'
@@ -450,15 +448,15 @@ def dashboard():
             # Criar dicionário com todos os campos necessários
             publicacao_dict = {
                 'data': pub.data_assinatura,
-                'assunto': pub.assunto or 'Sem assunto',
-                'tipo': tipo_nome or 'Não categorizado',
-                'responsavel': pub.responsavel or 'Não atribuído',
+                'assunto': pub.objeto,  # Usando objeto como assunto
+                'tipo': tipo_nome,
+                'responsavel': pub.signatarios_embrapa[0].nome if pub.signatarios_embrapa else 'Não atribuído',
                 'status': status,
-                'link_do': pub.link_do
+                'link_do': None  # Campo não existe no modelo
             }
             publicacoes_recentes.append(publicacao_dict)
 
-        # Atualizar contagem de tipos (caso tenha mudado)
+        # Atualizar contagem de tipos
         total_tipos = len(tipos_data)
 
         # ---------------- ABA COMPRAS ----------------

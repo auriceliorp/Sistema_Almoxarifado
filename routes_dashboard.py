@@ -210,7 +210,7 @@ def dashboard():
         labels_grupos = [g.nome for g in grupos_data]
         valores_grupos = [int(g.total) for g in grupos_data]
 
-        # ---------------- ABA PATRIMÔNIO ----------------
+               # ---------------- ABA PATRIMÔNIO ----------------
         total_bens_ativos = db.session.query(func.count(BemPatrimonial.id))\
             .filter(
                 BemPatrimonial.situacao == 'Em uso',
@@ -218,9 +218,15 @@ def dashboard():
             )\
             .scalar() or 0
 
-        total_locais = db.session.query(func.count(Local.id)).scalar() or 0
+        # Contagem de locais únicos baseado na localização dos bens
+        total_locais = db.session.query(func.count(db.distinct(BemPatrimonial.localizacao)))\
+            .filter(
+                BemPatrimonial.excluido == False,
+                BemPatrimonial.localizacao.isnot(None)
+            )\
+            .scalar() or 0
 
-        # Adicionando contagem de tipos (usando grupo_bem)
+        # Contagem de tipos usando grupo_bem
         total_tipos = db.session.query(func.count(db.distinct(BemPatrimonial.grupo_bem)))\
             .filter(
                 BemPatrimonial.excluido == False,
@@ -295,13 +301,14 @@ def dashboard():
             func.count(BemPatrimonial.id).label('total')
         ).filter(
             BemPatrimonial.excluido == False,
-            BemPatrimonial.localizacao.isnot(None)
+            BemPatrimonial.localizacao.isnot(None),
+            BemPatrimonial.localizacao != ''  # Adiciona filtro para strings vazias
         ).group_by(BemPatrimonial.localizacao)\
         .order_by(func.count(BemPatrimonial.id).desc())\
         .all()
 
-        labels_locais = [l.nome for l in locais_data if l.nome]
-        valores_locais = [int(l.total) for l in locais_data if l.nome]
+        labels_locais = [l.nome for l in locais_data if l.nome and l.nome.strip()]
+        valores_locais = [int(l.total) for l in locais_data if l.nome and l.nome.strip()]
 
         # Query para tipos agrupando por grupo_bem
         tipos_data = db.session.query(
@@ -309,13 +316,14 @@ def dashboard():
             func.count(BemPatrimonial.id).label('total')
         ).filter(
             BemPatrimonial.excluido == False,
-            BemPatrimonial.grupo_bem.isnot(None)
+            BemPatrimonial.grupo_bem.isnot(None),
+            BemPatrimonial.grupo_bem != ''  # Adiciona filtro para strings vazias
         ).group_by(BemPatrimonial.grupo_bem)\
         .order_by(func.count(BemPatrimonial.id).desc())\
         .all()
 
-        labels_tipos = [t.nome for t in tipos_data if t.nome]
-        valores_tipos = [int(t.total) for t in tipos_data if t.nome]
+        labels_tipos = [t.nome for t in tipos_data if t.nome and t.nome.strip()]
+        valores_tipos = [int(t.total) for t in tipos_data if t.nome and t.nome.strip()]
 
         # Query para últimos bens
         data_limite = datetime.now() - timedelta(days=30)
@@ -326,6 +334,11 @@ def dashboard():
             )\
             .order_by(BemPatrimonial.data_cadastro.desc())\
             .all()
+
+        # Garantir que todos os bens tenham valores definidos
+        for bem in ultimos_bens:
+            bem.valor = bem.valor_aquisicao if bem.valor_aquisicao is not None else 0.0
+            bem.local = bem.localizacao if bem.localizacao else 'Não informado'
 
         # ---------------- ABA PUBLICAÇÕES ----------------
         total_publicacoes = db.session.query(func.count(Publicacao.id))\

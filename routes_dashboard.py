@@ -398,6 +398,34 @@ def dashboard():
         valores_modalidades = []
         ultimos_processos = []
 
+    # ---------------- EVOLUÇÃO DE MOVIMENTAÇÕES ----------------
+    data_inicio = datetime.now() - timedelta(days=180)  # últimos 6 meses
+    meses_data = []
+    valores_entradas_meses = []
+    valores_saidas_meses = []
+    labels_meses = []
+
+    for i in range(5, -1, -1):
+        data = datetime.now() - timedelta(days=i*30)
+        mes_ano = data.strftime('%b/%Y')
+        labels_meses.append(mes_ano)
+
+        # Entradas no mês
+        total_entradas = db.session.query(func.count(EntradaMaterial.id))\
+            .filter(
+                extract('month', EntradaMaterial.data_entrada) == data.month,
+                extract('year', EntradaMaterial.data_entrada) == data.year
+            ).scalar() or 0
+        valores_entradas_meses.append(total_entradas)
+
+        # Saídas no mês
+        total_saidas = db.session.query(func.count(SaidaMaterial.id))\
+            .filter(
+                extract('month', SaidaMaterial.data_saida) == data.month,
+                extract('year', SaidaMaterial.data_saida) == data.year
+            ).scalar() or 0
+        valores_saidas_meses.append(total_saidas)
+
     return render_template(
         'dashboard.html',
         usuario=current_user,
@@ -448,5 +476,8 @@ def dashboard():
         total_concluidos=total_concluidos,
         labels_modalidades=labels_modalidades,
         valores_modalidades=valores_modalidades,
-        ultimos_processos=ultimos_processos
+        ultimos_processos=ultimos_processos,
+        labels_meses=labels_meses,
+        valores_entradas_meses=valores_entradas_meses,
+        valores_saidas_meses=valores_saidas_meses
     ) 

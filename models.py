@@ -424,3 +424,24 @@ class PublicacaoSignatariosExternos(db.Model):
     __tablename__ = 'publicacao_signatarios_externos'
     publicacao_id = db.Column(db.Integer, db.ForeignKey('publicacoes.id'), primary_key=True)
     fornecedor_id = db.Column(db.Integer, db.ForeignKey('fornecedores.id'), primary_key=True)
+
+# ------------------- TIPO DE PUBLICAÇÃO -------------------
+class TipoPublicacao(db.Model):
+    __tablename__ = 'tipos_publicacao'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    codigo = db.Column(db.String(20), nullable=False, unique=True)
+    nome = db.Column(db.String(100), nullable=False)
+    descricao = db.Column(db.Text, nullable=True)
+    
+    # Campos para controle de workflow
+    requer_contrato = db.Column(db.Boolean, default=False)
+    requer_valor = db.Column(db.Boolean, default=False)
+    requer_vigencia = db.Column(db.Boolean, default=False)
+    requer_partes = db.Column(db.Boolean, default=True)
+    
+    # Relacionamento com publicações
+    publicacoes = db.relationship('Publicacao', backref='tipo_publicacao')
+    
+    def __repr__(self):
+        return f"<TipoPublicacao {self.codigo} - {self.nome}>"

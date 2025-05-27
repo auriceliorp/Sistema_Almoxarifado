@@ -5,7 +5,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from datetime import datetime
 
-from app_render import db
+from extensoes import db
 from models import Fornecedor, Item, EntradaMaterial, EntradaItem
 from utils.auditoria import registrar_auditoria
 
@@ -64,6 +64,7 @@ def nova_entrada():
                     item.saldo_financeiro += quantidade * valor_unitario
                     if item.estoque_atual > 0:
                         item.valor_unitario = item.saldo_financeiro / item.estoque_atual
+                        item.valor_medio = item.valor_unitario  # Atualiza também o valor médio
 
                     # Atualiza o valor da natureza de despesa
                     if item.grupo and item.grupo.natureza_despesa:
@@ -179,10 +180,12 @@ def estornar_entrada(entrada_id):
 
                 item.estoque_atual -= entrada_item.quantidade
                 item.saldo_financeiro -= entrada_item.quantidade * float(entrada_item.valor_unitario)
-                item.valor_unitario = (
-                    item.saldo_financeiro / item.estoque_atual
-                    if item.estoque_atual > 0 else 0.0
-                )
+                if item.estoque_atual > 0:
+                    item.valor_unitario = item.saldo_financeiro / item.estoque_atual
+                    item.valor_medio = item.valor_unitario  # Atualiza também o valor médio
+                else:
+                    item.valor_unitario = 0.0
+                    item.valor_medio = 0.0
 
                 if item.grupo and item.grupo.natureza_despesa:
                     item.grupo.natureza_despesa.valor -= entrada_item.quantidade * float(entrada_item.valor_unitario)
@@ -205,5 +208,5 @@ def estornar_entrada(entrada_id):
         flash(f'Erro ao estornar entrada: {e}', 'danger')
         print(e)
 
-    return redirect(url_for('entrada_bp.lista_entradas'))
+    return redirect(url_for('entrada_bp.lista_entradas')) 
 

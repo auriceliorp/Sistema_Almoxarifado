@@ -151,53 +151,79 @@ def dashboard():
         labels_grupos = [g.nome for g in grupos_data]
         valores_grupos = [int(g.total) for g in grupos_data]
 
-        # ---------------- ABA PATRIMÔNIO ----------------
+       # ---------------- ABA PATRIMÔNIO ----------------
         total_bens_ativos = db.session.query(func.count(BemPatrimonial.id))\
-            .filter(BemPatrimonial.situacao == 'Em uso')\
+            .filter(
+                BemPatrimonial.situacao == 'Em uso',
+                BemPatrimonial.excluido == False
+            )\
             .scalar() or 0
 
         total_locais = db.session.query(func.count(Local.id)).scalar() or 0
-        valor_total_bens = db.session.query(func.sum(BemPatrimonial.valor_aquisicao))\
-            .filter(BemPatrimonial.valor_aquisicao.isnot(None))\
+        valor_total_bens = db.session.query(func.coalesce(func.sum(BemPatrimonial.valor_aquisicao), 0))\
+            .filter(
+                BemPatrimonial.excluido == False,
+                BemPatrimonial.situacao == 'Em uso',
+                BemPatrimonial.valor_aquisicao.isnot(None)
+            )\
             .scalar() or 0
 
         total_bens_com_valor = db.session.query(func.count(BemPatrimonial.id))\
-            .filter(BemPatrimonial.valor_aquisicao.isnot(None))\
+            .filter(
+                BemPatrimonial.valor_aquisicao.isnot(None),
+                BemPatrimonial.excluido == False
+            )\
             .scalar() or 0
 
         total_pendentes_inventario = db.session.query(func.count(BemPatrimonial.id))\
-            .filter(BemPatrimonial.situacao == 'Inventariar')\
+            .filter(
+                BemPatrimonial.situacao == 'Inventariar',
+                BemPatrimonial.excluido == False
+            )\
             .scalar() or 0
 
-        total_bens = db.session.query(func.count(BemPatrimonial.id)).scalar() or 1
+        total_bens = db.session.query(func.count(BemPatrimonial.id))\
+            .filter(BemPatrimonial.excluido == False)\
+            .scalar() or 1
         percentual_inventariado = round(((total_bens - total_pendentes_inventario) / total_bens) * 100)
 
         total_em_manutencao = db.session.query(func.count(BemPatrimonial.id))\
-            .filter(BemPatrimonial.situacao == 'Manutenção')\
+            .filter(
+                BemPatrimonial.situacao == 'Manutenção',
+                BemPatrimonial.excluido == False
+            )\
             .scalar() or 0
 
         data_inicio_mes = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         total_manutencoes_mes = db.session.query(func.count(MovimentacaoBem.id))\
+            .join(BemPatrimonial)\
             .filter(
                 MovimentacaoBem.tipo_movimentacao == 'Manutenção',
-                MovimentacaoBem.data_movimentacao >= data_inicio_mes
+                MovimentacaoBem.data_movimentacao >= data_inicio_mes,
+                BemPatrimonial.excluido == False
             ).scalar() or 0
 
         total_para_alienar = db.session.query(func.count(BemPatrimonial.id))\
-            .filter(BemPatrimonial.situacao == 'Alienar')\
+            .filter(
+                BemPatrimonial.situacao == 'Alienar',
+                BemPatrimonial.excluido == False
+            )\
             .scalar() or 0
 
         data_inicio_ano = datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
         total_alienados_ano = db.session.query(func.count(MovimentacaoBem.id))\
+            .join(BemPatrimonial)\
             .filter(
                 MovimentacaoBem.tipo_movimentacao == 'Alienação',
-                MovimentacaoBem.data_movimentacao >= data_inicio_ano
+                MovimentacaoBem.data_movimentacao >= data_inicio_ano,
+                BemPatrimonial.excluido == False
             ).scalar() or 0
 
         locais_data = db.session.query(
             Local.descricao.label('nome'),
             func.count(BemPatrimonial.id).label('total')
         ).join(BemPatrimonial)\
+        .filter(BemPatrimonial.excluido == False)\
         .group_by(Local.id, Local.descricao)\
         .order_by(func.count(BemPatrimonial.id).desc())\
         .all()
@@ -209,6 +235,7 @@ def dashboard():
             TipoBem.descricao.label('nome'),
             func.count(BemPatrimonial.id).label('total')
         ).join(BemPatrimonial)\
+        .filter(BemPatrimonial.excluido == False)\
         .group_by(TipoBem.id, TipoBem.descricao)\
         .order_by(func.count(BemPatrimonial.id).desc())\
         .all()
@@ -218,7 +245,10 @@ def dashboard():
 
         data_limite = datetime.now() - timedelta(days=30)
         ultimos_bens = BemPatrimonial.query\
-            .filter(BemPatrimonial.data_cadastro >= data_limite)\
+            .filter(
+                BemPatrimonial.data_cadastro >= data_limite,
+                BemPatrimonial.excluido == False
+            )\
             .order_by(BemPatrimonial.data_cadastro.desc())\
             .all()
 
@@ -231,8 +261,13 @@ def dashboard():
         tipos_data = db.session.query(
             TipoPublicacao.nome.label('nome'),
             func.count(Publicacao.id).label('total')
-        ).join(Publicacao)\
-        .filter(Publicacao.excluido == False)\
+        ).join(
+            Publicacao,
+            and_(
+                Publicacao.tipo_id == TipoPublicacao.id,
+                Publicacao.excluido == False
+            )
+        )\
         .group_by(TipoPublicacao.id, TipoPublicacao.nome)\
         .order_by(func.count(Publicacao.id).desc())\
         .all()

@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, current_app
 from flask_login import login_required, current_user
 from sqlalchemy import func, or_, and_, extract
 from datetime import datetime, timedelta
+import traceback
 from extensoes import db
 from models import (
     EntradaItem, SaidaItem, EntradaMaterial, SaidaMaterial,
@@ -11,6 +12,63 @@ from models import (
 )
 
 dashboard_bp = Blueprint('dashboard_bp', __name__, url_prefix='/dashboard')
+
+def get_default_dashboard_values():
+    """Retorna um dicionário com valores padrão para o dashboard"""
+    return {
+        'usuario': current_user,
+        'error': True,
+        'dados_entrada': [],
+        'grafico_grupo_labels': [],
+        'grafico_grupo_dados': [],
+        'total_itens': 0,
+        'total_grupos': 0,
+        'valor_total_estoque': 0.0,
+        'total_itens_com_valor': 0,
+        'total_itens_criticos': 0,
+        'total_movimentacoes': 0,
+        'itens_abaixo_minimo': [],
+        'itens_movimentados': [],
+        'labels_grupos': [],
+        'valores_grupos': [],
+        'total_bens_ativos': 0,
+        'total_locais': 0,
+        'valor_total_bens': 0.0,
+        'total_bens_com_valor': 0,
+        'total_pendentes_inventario': 0,
+        'percentual_inventariado': 0,
+        'total_em_manutencao': 0,
+        'total_manutencoes_mes': 0,
+        'total_para_alienar': 0,
+        'total_alienados_ano': 0,
+        'labels_locais': [],
+        'valores_locais': [],
+        'labels_tipos': [],
+        'valores_tipos': [],
+        'ultimos_bens': [],
+        'total_publicacoes': 0,
+        'total_tipos': 0,
+        'total_publicacoes_mes': 0,
+        'percentual_mes': 0,
+        'total_pendentes': 0,
+        'media_dias_publicacao': 0,
+        'total_urgentes': 0,
+        'labels_meses': [],
+        'valores_meses': [],
+        'publicacoes_recentes': [],
+        'total_fornecedores': 0,
+        'total_entradas': 0,
+        'total_saidas': 0,
+        'total_processos': 0,
+        'total_estimado': 0.0,
+        'total_com_sei': 0,
+        'total_concluidos': 0,
+        'labels_modalidades': [],
+        'valores_modalidades': [],
+        'ultimos_processos': [],
+        'valores_entradas_meses': [],
+        'valores_saidas_meses': []
+    }
 
 def get_safe_query_result(query_func):
     """Executa uma query com tratamento de erro seguro"""
@@ -82,7 +140,8 @@ def dashboard():
 
         grafico_grupo_labels = [g.nome for g in grupo_data]
         grafico_grupo_dados = [int(g.quantidade) for g in grupo_data]
-
+             
+        
         # ---------------- ABA ALMOXARIFADO ----------------
         total_grupos = db.session.query(func.count(Grupo.id)).scalar() or 0
         valor_total_estoque = db.session.query(
@@ -151,7 +210,7 @@ def dashboard():
         labels_grupos = [g.nome for g in grupos_data]
         valores_grupos = [int(g.total) for g in grupos_data]
 
-    # ---------------- ABA PATRIMÔNIO ----------------
+        # ---------------- ABA PATRIMÔNIO ----------------
         total_bens_ativos = db.session.query(func.count(BemPatrimonial.id))\
             .filter(
                 BemPatrimonial.situacao == 'Em uso',
@@ -267,7 +326,7 @@ def dashboard():
             )\
             .order_by(BemPatrimonial.data_cadastro.desc())\
             .all()
-        
+
         # ---------------- ABA PUBLICAÇÕES ----------------
         total_publicacoes = db.session.query(func.count(Publicacao.id))\
             .filter(Publicacao.excluido == False)\
@@ -482,20 +541,10 @@ def dashboard():
         )
 
     except Exception as e:
-        current_app.logger.error(f"Erro no dashboard: {str(e)}")
+        current_app.logger.error(f"Erro no dashboard: {str(e)}\nTraceback: {traceback.format_exc()}")
         if 'db' in locals():
             db.session.rollback()
-        return render_template(
-            'dashboard.html',
-            usuario=current_user,
-            error=True,
-            dados_entrada=[],
-            grafico_grupo_labels=[],
-            grafico_grupo_dados=[],
-            total_itens=0,
-            total_fornecedores=0,
-            total_entradas=0,
-            total_saidas=0,
-            valor_total_estoque=0.0,
-            # ... valores padrão para todas as variáveis
-        ) 
+        
+        # Usar valores padrão em caso de erro
+        default_values = get_default_dashboard_values()
+        return render_template('dashboard.html', **default_values)

@@ -114,7 +114,7 @@ def lista_entradas():
     elif ordenar_por == 'fornecedor':
         campo = Fornecedor.nome
     else:
-        campo = EntradaMaterial.data_entrada
+        campo = EntradaMaterial.data_movimento
 
     query = query.order_by(campo.asc() if direcao == 'asc' else campo.desc())
 

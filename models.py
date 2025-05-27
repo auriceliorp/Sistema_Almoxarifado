@@ -317,6 +317,21 @@ class GrupoPatrimonio(db.Model):
     def __repr__(self):
         return f"<GrupoPatrimonio {self.codigo} - {self.descricao}>"
 
+
+# ------------------- TIPO BENS PATRIMONIAIS -------------------
+class TipoBem(db.Model):
+    __tablename__ = 'tipos_bem'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    codigo = db.Column(db.String(20), nullable=False, unique=True)
+    descricao = db.Column(db.String(150), nullable=False)
+    grupo_id = db.Column(db.Integer, db.ForeignKey('grupos_patrimonio.id'), nullable=False)
+    grupo = db.relationship('GrupoPatrimonio', backref='tipos_bem')
+    
+    def __repr__(self):
+        return f"<TipoBem {self.codigo} - {self.descricao}>"
+        
+
 # ------------------- PUBLICAÇÃO -------------------
 class Publicacao(db.Model):
     __tablename__ = 'publicacoes'

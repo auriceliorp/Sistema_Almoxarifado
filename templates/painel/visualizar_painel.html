@@ -4,78 +4,69 @@
 
 {% block extra_css %}
 <style>
+    .page-container {
+        background: white;
+        padding: 20px;
+    }
+
     .page-header {
-        background: white;
-        padding: 1rem;
-        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 2rem;
     }
 
-    .header-actions {
-        display: flex;
-        gap: 1rem;
-        align-items: center;
+    .page-title {
+        font-size: 1.5rem;
+        margin: 0;
     }
 
-    .section-card {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    .section {
         margin-bottom: 2rem;
-        overflow: hidden;
     }
 
-    .section-header {
-        background: #0d6efd;
-        color: white;
-        padding: 1rem 1.5rem;
-        font-size: 1.1rem;
-        font-weight: 500;
+    .section-title {
+        font-size: 1rem;
+        color: #333;
+        margin-bottom: 1rem;
         display: flex;
         align-items: center;
-        gap: 0.75rem;
+        gap: 0.5rem;
     }
 
-    .section-header i {
-        font-size: 1.25rem;
+    .section-title i {
+        font-size: 1rem;
+        color: #0d6efd;
     }
 
-    .section-content {
-        padding: 1.5rem;
-    }
-
-    .info-group {
-        margin-bottom: 1.5rem;
+    .info-row {
+        display: flex;
+        margin-bottom: 1rem;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f0f0f0;
     }
 
     .info-label {
-        font-size: 0.875rem;
-        color: #6c757d;
-        margin-bottom: 0.25rem;
+        width: 200px;
+        color: #666;
         font-weight: 500;
     }
 
     .info-value {
-        font-size: 1rem;
-        color: #212529;
-        padding: 0.5rem;
-        background: #f8f9fa;
-        border-radius: 4px;
-        border: 1px solid #e9ecef;
+        flex: 1;
+        color: #333;
     }
 
     .money-value {
         color: #198754;
-        font-weight: 600;
+        font-weight: 500;
     }
 
     .status-badge {
         display: inline-block;
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
         font-size: 0.875rem;
-        font-weight: 600;
-        text-transform: uppercase;
     }
 
     .status-iniciado { background-color: #cff4fc; color: #055160; }
@@ -83,76 +74,69 @@
     .status-concluido { background-color: #d1e7dd; color: #0f5132; }
     .status-aguardando { background-color: #e2e3e5; color: #41464b; }
     .status-cancelado { background-color: #f8d7da; color: #842029; }
-
-    .btn-action {
-        padding: 0.5rem 1rem;
-        border-radius: 4px;
-        font-weight: 500;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        text-decoration: none;
-        transition: all 0.2s;
-    }
-
-    .btn-action:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Cabeçalho com ações -->
-<div class="page-header d-flex justify-content-between align-items-center">
-    <h4 class="mb-0">Processo de Contratação</h4>
-    <div class="header-actions">
-        <a href="{{ url_for('painel_bp.lista_painel') }}" class="btn btn-outline-secondary btn-action">
-            <i class="bi bi-arrow-left"></i>
-            Voltar para Lista
-        </a>
-        <a href="{{ url_for('painel_bp.editar_painel', id=processo.id) }}" class="btn btn-primary btn-action">
-            <i class="bi bi-pencil-square"></i>
-            Editar
-        </a>
-    </div>
-</div>
-
-<div class="container-fluid px-4">
-    <!-- Identificação do Processo -->
-    <div class="section-card">
-        <div class="section-header">
-            <i class="bi bi-file-text"></i>
-            Identificação do Processo
+<div class="container-fluid py-4">
+    <!-- Cabeçalho -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0">
+                    <i class="bi bi-file-text me-2"></i>
+                    Processo de Contratação
+                </h4>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('painel_bp.lista_painel') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>
+                        Voltar para Lista
+                    </a>
+                    <a href="{{ url_for('painel_bp.editar_painel', id=processo.id) }}" class="btn btn-outline-primary">
+                        <i class="bi bi-pencil-square me-1"></i>
+                        Editar
+                    </a>
+                </div>
+            </div>
         </div>
-        <div class="section-content">
-            <div class="row">
+    </div>
+
+    <!-- Identificação do Processo -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary bg-gradient text-white py-3">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-info-circle me-2"></i>
+                Identificação do Processo
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
                 <div class="col-md-4">
-                    <div class="info-group">
-                        <div class="info-label">Número do Processo</div>
-                        <div class="info-value">{{ processo.numero_processo if processo.numero_processo else 'Não informado' }}</div>
+                    <div class="border-start border-4 border-primary ps-3">
+                        <p class="text-muted mb-1">Número do Processo</p>
+                        <h6 class="mb-0">{{ processo.numero_processo if processo.numero_processo else 'Não informado' }}</h6>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="info-group">
-                        <div class="info-label">Data de Abertura</div>
-                        <div class="info-value">{{ processo.data_abertura.strftime('%d/%m/%Y') if processo.data_abertura else 'Não informada' }}</div>
+                    <div class="border-start border-4 border-primary ps-3">
+                        <p class="text-muted mb-1">Data de Abertura</p>
+                        <h6 class="mb-0">{{ processo.data_abertura.strftime('%d/%m/%Y') if processo.data_abertura else 'Não informada' }}</h6>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="info-group">
-                        <div class="info-label">Status</div>
-                        <div class="info-value">
-                            <span class="status-badge 
-                                {% if processo.status == 'Processo Iniciado' %}status-iniciado
-                                {% elif processo.status == 'Em andamento' %}status-andamento
-                                {% elif processo.status == 'Concluído' %}status-concluido
-                                {% elif processo.status == 'Aguardando Definições' %}status-aguardando
-                                {% elif processo.status == 'Cancelada' %}status-cancelado
+                    <div class="border-start border-4 border-primary ps-3">
+                        <p class="text-muted mb-1">Status</p>
+                        <h6 class="mb-0">
+                            <span class="badge 
+                                {% if processo.status == 'Processo Iniciado' %}bg-info
+                                {% elif processo.status == 'Em andamento' %}bg-warning
+                                {% elif processo.status == 'Concluído' %}bg-success
+                                {% elif processo.status == 'Aguardando Definições' %}bg-secondary
+                                {% elif processo.status == 'Cancelada' %}bg-danger
                                 {% endif %}">
                                 {{ processo.status if processo.status else 'Não informado' }}
                             </span>
-                        </div>
+                        </h6>
                     </div>
                 </div>
             </div>
@@ -160,29 +144,31 @@
     </div>
 
     <!-- Modalidade e Características -->
-    <div class="section-card">
-        <div class="section-header">
-            <i class="bi bi-card-list"></i>
-            Modalidade e Características
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-success bg-gradient text-white py-3">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-card-list me-2"></i>
+                Modalidade e Características
+            </h5>
         </div>
-        <div class="section-content">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="info-group">
-                        <div class="info-label">Modalidade</div>
-                        <div class="info-value">{{ processo.modalidade if processo.modalidade else 'Não informada' }}</div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="border-start border-4 border-success ps-3">
+                        <p class="text-muted mb-1">Modalidade</p>
+                        <h6 class="mb-0">{{ processo.modalidade if processo.modalidade else 'Não informada' }}</h6>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="info-group">
-                        <div class="info-label">Registro de Preços</div>
-                        <div class="info-value">{{ processo.registro_precos if processo.registro_precos else 'Não informado' }}</div>
+                <div class="col-md-4">
+                    <div class="border-start border-4 border-success ps-3">
+                        <p class="text-muted mb-1">Registro de Preços</p>
+                        <h6 class="mb-0">{{ processo.registro_precos if processo.registro_precos else 'Não informado' }}</h6>
                     </div>
                 </div>
                 <div class="col-md-12">
-                    <div class="info-group">
-                        <div class="info-label">Fundamentação Legal</div>
-                        <div class="info-value">{{ processo.fundamentacao_legal if processo.fundamentacao_legal else 'Não informada' }}</div>
+                    <div class="border-start border-4 border-success ps-3">
+                        <p class="text-muted mb-1">Fundamentação Legal</p>
+                        <h6 class="mb-0">{{ processo.fundamentacao_legal if processo.fundamentacao_legal else 'Não informada' }}</h6>
                     </div>
                 </div>
             </div>
@@ -190,35 +176,37 @@
     </div>
 
     <!-- Objeto e Valores -->
-    <div class="section-card">
-        <div class="section-header">
-            <i class="bi bi-currency-dollar"></i>
-            Objeto e Valores
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-info bg-gradient text-white py-3">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-currency-dollar me-2"></i>
+                Objeto e Valores
+            </h5>
         </div>
-        <div class="section-content">
-            <div class="row">
+        <div class="card-body">
+            <div class="row g-3">
                 <div class="col-12">
-                    <div class="info-group">
-                        <div class="info-label">Objeto</div>
-                        <div class="info-value">{{ processo.objeto if processo.objeto else 'Não informado' }}</div>
+                    <div class="border-start border-4 border-info ps-3">
+                        <p class="text-muted mb-1">Objeto</p>
+                        <h6 class="mb-0">{{ processo.objeto if processo.objeto else 'Não informado' }}</h6>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="info-group">
-                        <div class="info-label">Valor Estimado</div>
-                        <div class="info-value money-value">{{ 'R$ {:,.2f}'.format(processo.valor_estimado|float) if processo.valor_estimado else 'Não informado' }}</div>
+                    <div class="border-start border-4 border-info ps-3">
+                        <p class="text-muted mb-1">Valor Estimado</p>
+                        <h6 class="mb-0">R$ {{ "{:,.2f}".format(processo.valor_estimado|float) if processo.valor_estimado else 'Não informado' }}</h6>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="info-group">
-                        <div class="info-label">Valor Homologado</div>
-                        <div class="info-value money-value">{{ 'R$ {:,.2f}'.format(processo.valor_homologado|float) if processo.valor_homologado else 'Não informado' }}</div>
+                    <div class="border-start border-4 border-info ps-3">
+                        <p class="text-muted mb-1">Valor Homologado</p>
+                        <h6 class="mb-0">R$ {{ "{:,.2f}".format(processo.valor_homologado|float) if processo.valor_homologado else 'Não informado' }}</h6>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="info-group">
-                        <div class="info-label">Economia</div>
-                        <div class="info-value money-value">{{ processo.percentual_economia + '%' if processo.percentual_economia else 'Não informado' }}</div>
+                    <div class="border-start border-4 border-info ps-3">
+                        <p class="text-muted mb-1">Economia</p>
+                        <h6 class="mb-0">{{ processo.percentual_economia + '%' if processo.percentual_economia else 'Não informado' }}</h6>
                     </div>
                 </div>
             </div>
@@ -226,29 +214,31 @@
     </div>
 
     <!-- Ocorrências -->
-    <div class="section-card">
-        <div class="section-header">
-            <i class="bi bi-exclamation-circle"></i>
-            Ocorrências
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-warning bg-gradient text-white py-3">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-exclamation-circle me-2"></i>
+                Ocorrências
+            </h5>
         </div>
-        <div class="section-content">
-            <div class="row">
+        <div class="card-body">
+            <div class="row g-3">
                 <div class="col-md-4">
-                    <div class="info-group">
-                        <div class="info-label">Impugnação</div>
-                        <div class="info-value">{{ processo.impugnacao if processo.impugnacao else 'Não' }}</div>
+                    <div class="border-start border-4 border-warning ps-3">
+                        <p class="text-muted mb-1">Impugnação</p>
+                        <h6 class="mb-0">{{ processo.impugnacao if processo.impugnacao else 'Não' }}</h6>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="info-group">
-                        <div class="info-label">Recurso</div>
-                        <div class="info-value">{{ processo.recurso if processo.recurso else 'Não' }}</div>
+                    <div class="border-start border-4 border-warning ps-3">
+                        <p class="text-muted mb-1">Recurso</p>
+                        <h6 class="mb-0">{{ processo.recurso if processo.recurso else 'Não' }}</h6>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="info-group">
-                        <div class="info-label">Itens Desertos</div>
-                        <div class="info-value">{{ processo.itens_desertos if processo.itens_desertos else 'Não' }}</div>
+                    <div class="border-start border-4 border-warning ps-3">
+                        <p class="text-muted mb-1">Itens Desertos</p>
+                        <h6 class="mb-0">{{ processo.itens_desertos if processo.itens_desertos else 'Não' }}</h6>
                     </div>
                 </div>
             </div>
@@ -256,29 +246,31 @@
     </div>
 
     <!-- Responsáveis -->
-    <div class="section-card">
-        <div class="section-header">
-            <i class="bi bi-people"></i>
-            Responsáveis
+    <div class="card shadow-sm">
+        <div class="card-header bg-secondary bg-gradient text-white py-3">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-people me-2"></i>
+                Responsáveis
+            </h5>
         </div>
-        <div class="section-content">
-            <div class="row">
+        <div class="card-body">
+            <div class="row g-3">
                 <div class="col-md-4">
-                    <div class="info-group">
-                        <div class="info-label">Responsável pela Condução</div>
-                        <div class="info-value">{{ processo.responsavel_conducao if processo.responsavel_conducao else 'Não informado' }}</div>
+                    <div class="border-start border-4 border-secondary ps-3">
+                        <p class="text-muted mb-1">Responsável pela Condução</p>
+                        <h6 class="mb-0">{{ processo.responsavel_conducao if processo.responsavel_conducao else 'Não informado' }}</h6>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="info-group">
-                        <div class="info-label">Solicitante</div>
-                        <div class="info-value">{{ processo.solicitante.nome if processo.solicitante else 'Não informado' }}</div>
+                    <div class="border-start border-4 border-secondary ps-3">
+                        <p class="text-muted mb-1">Solicitante</p>
+                        <h6 class="mb-0">{{ processo.solicitante.nome if processo.solicitante else 'Não informado' }}</h6>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="info-group">
-                        <div class="info-label">Setor Responsável</div>
-                        <div class="info-value">{{ processo.setor_responsavel if processo.setor_responsavel else 'Não informado' }}</div>
+                    <div class="border-start border-4 border-secondary ps-3">
+                        <p class="text-muted mb-1">Setor Responsável</p>
+                        <h6 class="mb-0">{{ processo.setor_responsavel if processo.setor_responsavel else 'Não informado' }}</h6>
                     </div>
                 </div>
             </div>

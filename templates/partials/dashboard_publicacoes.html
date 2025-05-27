@@ -135,10 +135,10 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for pub in publicacoes_recentes %}
+                     {% for pub in publicacoes_recentes %}
                     <tr>
-                        <td>{{ pub.data.strftime('%d/%m/%Y') }}</td>
-                        <td>{{ pub.assunto }}</td>
+                        <td>{{ pub.data.strftime('%d/%m/%Y') if pub.data else '-' }}</td>
+                        <td>{{ pub.assunto or '-' }}</td>
                         <td>
                             <span class="badge 
                                 {% if pub.tipo == 'Licitação' %}badge-licitacao
@@ -147,17 +147,17 @@
                                 {% elif pub.tipo == 'Pessoal' %}badge-pessoal
                                 {% else %}badge-outro
                                 {% endif %}">
-                                {{ pub.tipo }}
+                                {{ pub.tipo or 'Outro' }}
                             </span>
                         </td>
-                        <td>{{ pub.responsavel }}</td>
+                        <td>{{ pub.responsavel or '-' }}</td>
                         <td>
                             <span class="badge 
                                 {% if pub.status == 'Urgente' %}badge-urgente
                                 {% elif pub.status == 'Pendente' %}badge-pendente
                                 {% else %}badge-normal
                                 {% endif %}">
-                                {{ pub.status }}
+                                {{ pub.status or 'Normal' }}
                             </span>
                         </td>
                         <td>

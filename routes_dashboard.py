@@ -151,7 +151,7 @@ def dashboard():
         labels_grupos = [g.nome for g in grupos_data]
         valores_grupos = [int(g.total) for g in grupos_data]
 
-     # ---------------- ABA PATRIMÔNIO ----------------
+    # ---------------- ABA PATRIMÔNIO ----------------
         total_bens_ativos = db.session.query(func.count(BemPatrimonial.id))\
             .filter(
                 BemPatrimonial.situacao == 'Em uso',
@@ -221,7 +221,7 @@ def dashboard():
                 BemPatrimonial.excluido == False
             ).scalar() or 0
 
-        # Query para locais usando apenas o campo localizacao
+        # Query para locais agrupando por localização dos bens
         locais_data = db.session.query(
             BemPatrimonial.localizacao.label('nome'),
             func.count(BemPatrimonial.id).label('total')
@@ -232,10 +232,10 @@ def dashboard():
         .order_by(func.count(BemPatrimonial.id).desc())\
         .all()
 
-        labels_locais = [l.nome for l in locais_data]
-        valores_locais = [int(l.total) for l in locais_data]
+        labels_locais = [l.nome for l in locais_data if l.nome]
+        valores_locais = [int(l.total) for l in locais_data if l.nome]
 
-        # Query para tipos de bens usando apenas o campo grupo_bem
+        # Query para tipos agrupando por grupo_bem
         tipos_data = db.session.query(
             BemPatrimonial.grupo_bem.label('nome'),
             func.count(BemPatrimonial.id).label('total')
@@ -246,11 +246,12 @@ def dashboard():
         .order_by(func.count(BemPatrimonial.id).desc())\
         .all()
 
-        labels_tipos = [t.nome for t in tipos_data]
-        valores_tipos = [int(t.total) for t in tipos_data]
+        labels_tipos = [t.nome for t in tipos_data if t.nome]
+        valores_tipos = [int(t.total) for t in tipos_data if t.nome]
 
+        # Query para últimos bens
         data_limite = datetime.now() - timedelta(days=30)
-        ultimos_bens = BemPatrimonial.query\
+        ultimos_bens = db.session.query(BemPatrimonial)\
             .filter(
                 BemPatrimonial.data_cadastro >= data_limite,
                 BemPatrimonial.excluido == False

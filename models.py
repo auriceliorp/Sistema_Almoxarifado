@@ -365,6 +365,10 @@ class Publicacao(db.Model):
     __tablename__ = 'publicacoes'
     
     id = db.Column(db.Integer, primary_key=True)
+    # Adicionar a chave estrangeira para TipoPublicacao
+    tipo_id = db.Column(db.Integer, db.ForeignKey('tipos_publicacao.id'), nullable=False)
+    tipo = db.relationship('TipoPublicacao', back_populates='publicacoes')
+    
     especie = db.Column(db.String(200), nullable=False)
     contrato_saic = db.Column(db.String(100), default='Não Aplicável')
     objeto = db.Column(db.Text, nullable=False)
@@ -440,8 +444,9 @@ class TipoPublicacao(db.Model):
     requer_vigencia = db.Column(db.Boolean, default=False)
     requer_partes = db.Column(db.Boolean, default=True)
     
-    # Relacionamento com publicações
-    publicacoes = db.relationship('Publicacao', backref='tipo_publicacao')
+    # Relacionamento bidirecional com back_populates
+    publicacoes = db.relationship('Publicacao', back_populates='tipo')
     
     def __repr__(self):
         return f"<TipoPublicacao {self.codigo} - {self.nome}>"
+

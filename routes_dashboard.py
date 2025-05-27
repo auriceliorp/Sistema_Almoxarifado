@@ -340,7 +340,7 @@ def dashboard():
             bem.valor = bem.valor_aquisicao if bem.valor_aquisicao is not None else 0.0
             bem.local = bem.localizacao if bem.localizacao else 'Não informado'
 
-               # ---------------- ABA PUBLICAÇÕES ----------------
+                     # ---------------- ABA PUBLICAÇÕES ----------------
         total_publicacoes = db.session.query(func.count(Publicacao.id))\
             .filter(Publicacao.excluido == False)\
             .scalar() or 0
@@ -419,7 +419,8 @@ def dashboard():
         valores_meses = [m['total'] for m in meses_data]
 
         # Publicações recentes com join para tipo
-        data_limite = datetime.now() - timedelta(days=30)
+        data_limite_recentes = datetime.now() - timedelta(days=30)
+        data_limite_urgente = datetime.now().date() + timedelta(days=2)
         publicacoes_query = db.session.query(
             Publicacao, 
             TipoPublicacao.nome.label('tipo_nome')
@@ -429,16 +430,17 @@ def dashboard():
             isouter=True  # Left join para pegar mesmo sem tipo
         ).filter(
             Publicacao.excluido == False,
-            Publicacao.data_assinatura >= data_limite
+            Publicacao.data_assinatura >= data_limite_recentes
         ).order_by(Publicacao.data_assinatura.desc())
 
         publicacoes_recentes = []
         for pub, tipo_nome in publicacoes_query.all():
             # Determinar o status baseado nas datas
             if pub.vigencia_inicio:
-                if pub.vigencia_inicio <= data_limite:
+                vigencia_date = pub.vigencia_inicio.date() if isinstance(pub.vigencia_inicio, datetime) else pub.vigencia_inicio
+                if vigencia_date <= data_limite_urgente:
                     status = 'Urgente'
-                elif pub.vigencia_inicio > data_atual:
+                elif vigencia_date > data_atual:
                     status = 'Pendente'
                 else:
                     status = 'Normal'

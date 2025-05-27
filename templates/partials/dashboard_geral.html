@@ -1,176 +1,337 @@
-{# ===================== DASHBOARD: VISÃO GERAL ===================== #}
-
-<!-- ESTILO PERSONALIZADO PARA INDICADORES -->
+<!-- ESTILO PERSONALIZADO -->
 <style>
-  .card-indicador {
-    border: none;
-    border-radius: 12px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    text-align: center;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  }
+    .card-indicador {
+        border: none;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        text-align: center;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    .card-indicador:hover {
+        transform: translateY(-5px);
+    }
 
-  .card-itens { background-color: #dbeafe; color: #1e3a8a; }
-  .card-fornecedores { background-color: #d1fae5; color: #065f46; }
-  .card-entradas { background-color: #fef9c3; color: #92400e; }
-  .card-saidas { background-color: #fecaca; color: #991b1b; }
+    /* Almoxarifado */
+    .card-itens { background-color: #dbeafe; color: #1e3a8a; }
+    .card-valor-estoque { background-color: #d1fae5; color: #065f46; }
+    .card-movimentacoes { background-color: #fef9c3; color: #92400e; }
+    .card-criticos { background-color: #fee2e2; color: #991b1b; }
 
-  .card-indicador i {
-    font-size: 2rem;
-    display: block;
-    margin-bottom: 0.5rem;
-  }
+    /* Patrimônio */
+    .card-bens { background-color: #f3e8ff; color: #6b21a8; }
+    .card-valor-patrimonio { background-color: #dbeafe; color: #1e3a8a; }
+    .card-manutencao { background-color: #fef9c3; color: #92400e; }
+    .card-inventario { background-color: #fee2e2; color: #991b1b; }
 
-  @media (max-width: 768px) {
-    .card-indicador h3 { font-size: 1.5rem; }
-    .card-indicador i { font-size: 1.8rem; }
-  }
+    /* Compras */
+    .card-processos { background-color: #dbeafe; color: #1e3a8a; }
+    .card-valor-processos { background-color: #d1fae5; color: #065f46; }
+    .card-concluidos { background-color: #fef9c3; color: #92400e; }
+    .card-sei { background-color: #f3e8ff; color: #6b21a8; }
+
+    /* Publicações */
+    .card-publicacoes { background-color: #dbeafe; color: #1e3a8a; }
+    .card-pendentes { background-color: #fee2e2; color: #991b1b; }
+
+    .card-indicador i {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    .table thead {
+        background-color: #f8fafc;
+    }
+
+    .table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        color: #475569;
+    }
+
+    .table td {
+        font-size: 0.9rem;
+        vertical-align: middle;
+    }
+
+    @media (max-width: 768px) {
+        .card-indicador h3 { font-size: 1.5rem; }
+        .card-indicador i { font-size: 1.8rem; }
+    }
+
+    .badge-critico { background-color: #ef4444; color: white; }
+    .badge-alerta { background-color: #facc15; color: #92400e; }
+    .badge-normal { background-color: #22c55e; color: white; }
 </style>
 
-<!-- INDICADORES -->
-<div class="row mb-4">
-  <div class="col-md-3 col-12">
-    <div class="card-indicador card-itens">
-      <i class="bi bi-box-seam"></i>
-      <h6>Itens</h6>
-      <h3>{{ total_itens }}</h3>
+<!-- ALMOXARIFADO -->
+<div class="mb-5">
+    <h5 class="mb-4">
+        <i class="bi bi-box-seam me-2"></i>
+        Almoxarifado
+    </h5>
+    <div class="row g-3">
+        <div class="col-md-3 col-sm-6">
+            <div class="card-indicador card-itens">
+                <i class="bi bi-boxes"></i>
+                <h6>Total de Itens</h6>
+                <h3>{{ total_itens }}</h3>
+                <small>Em {{ total_grupos }} grupos</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card-indicador card-valor-estoque">
+                <i class="bi bi-cash-stack"></i>
+                <h6>Valor em Estoque</h6>
+                <h3>R$ {{ "{:,.2f}".format(valor_total_estoque).replace(',', '_').replace('.', ',').replace('_', '.') }}</h3>
+                <small>{{ total_itens_com_valor }} itens com valor</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card-indicador card-movimentacoes">
+                <i class="bi bi-arrow-left-right"></i>
+                <h6>Movimentações</h6>
+                <h3>{{ total_movimentacoes }}</h3>
+                <small>Últimos 30 dias</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card-indicador card-criticos">
+                <i class="bi bi-exclamation-triangle"></i>
+                <h6>Itens Críticos</h6>
+                <h3>{{ total_itens_criticos }}</h3>
+                <small>Abaixo do mínimo</small>
+            </div>
+        </div>
     </div>
-  </div>
-  <div class="col-md-3 col-12">
-    <div class="card-indicador card-fornecedores">
-      <i class="bi bi-truck"></i>
-      <h6>Fornecedores</h6>
-      <h3>{{ total_fornecedores }}</h3>
-    </div>
-  </div>
-  <div class="col-md-3 col-12">
-    <div class="card-indicador card-entradas">
-      <i class="bi bi-arrow-down-circle"></i>
-      <h6>Entradas</h6>
-      <h3>{{ total_entradas }}</h3>
-    </div>
-  </div>
-  <div class="col-md-3 col-12">
-    <div class="card-indicador card-saidas">
-      <i class="bi bi-arrow-up-circle"></i>
-      <h6>Saídas</h6>
-      <h3>{{ total_saidas }}</h3>
-    </div>
-  </div>
 </div>
 
-<!-- GRÁFICO DE BARRAS -->
-<div class="card p-4 shadow rounded-3 mb-4">
-  <h5 class="mb-3">Comparativo de Entradas e Saídas por Natureza de Despesa</h5>
-  <canvas id="graficoEntradas"></canvas>
+<!-- PATRIMÔNIO -->
+<div class="mb-5">
+    <h5 class="mb-4">
+        <i class="bi bi-building me-2"></i>
+        Patrimônio
+    </h5>
+    <div class="row g-3">
+        <div class="col-md-3 col-sm-6">
+            <div class="card-indicador card-bens">
+                <i class="bi bi-collection"></i>
+                <h6>Total de Bens</h6>
+                <h3>{{ total_bens_ativos }}</h3>
+                <small>Em {{ total_locais }} locais</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card-indicador card-valor-patrimonio">
+                <i class="bi bi-cash-stack"></i>
+                <h6>Valor Total</h6>
+                <h3>R$ {{ "{:,.2f}".format(valor_total_bens).replace(',', '_').replace('.', ',').replace('_', '.') }}</h3>
+                <small>{{ total_bens_com_valor }} bens com valor</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card-indicador card-manutencao">
+                <i class="bi bi-tools"></i>
+                <h6>Em Manutenção</h6>
+                <h3>{{ total_em_manutencao }}</h3>
+                <small>{{ total_manutencoes_mes }} no mês</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card-indicador card-inventario">
+                <i class="bi bi-clipboard-data"></i>
+                <h6>Inventário</h6>
+                <h3>{{ total_pendentes_inventario }}</h3>
+                <small>{{ percentual_inventariado }}% realizado</small>
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- GRÁFICO DE DONUT + TABELAS -->
-<div class="row">
-  <!-- Gráfico de Grupos -->
-  <div class="col-md-6">
-    <div class="card p-4 shadow rounded-3 mb-4">
-      <h5 class="mb-3">Distribuição de Itens por Grupo</h5>
-      <canvas id="graficoGrupos"></canvas>
+<!-- COMPRAS -->
+<div class="mb-5">
+    <h5 class="mb-4">
+        <i class="bi bi-cart me-2"></i>
+        Compras
+    </h5>
+    <div class="row g-3">
+        <div class="col-md-3 col-sm-6">
+            <div class="card-indicador card-processos">
+                <i class="bi bi-folder"></i>
+                <h6>Processos</h6>
+                <h3>{{ total_processos }}</h3>
+                <small>Em andamento</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card-indicador card-valor-processos">
+                <i class="bi bi-cash"></i>
+                <h6>Valor Estimado</h6>
+                <h3>R$ {{ "{:,.2f}".format(total_estimado).replace(',', '_').replace('.', ',').replace('_', '.') }}</h3>
+                <small>Total em processos</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card-indicador card-concluidos">
+                <i class="bi bi-check-circle"></i>
+                <h6>Concluídos</h6>
+                <h3>{{ total_concluidos }}</h3>
+                <small>{{ (total_concluidos/total_processos*100)|round if total_processos > 0 else 0 }}% do total</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card-indicador card-sei">
+                <i class="bi bi-file-earmark-text"></i>
+                <h6>Com SEI</h6>
+                <h3>{{ total_com_sei }}</h3>
+                <small>{{ (total_com_sei/total_processos*100)|round if total_processos > 0 else 0 }}% do total</small>
+            </div>
+        </div>
     </div>
-  </div>
-
-  <!-- Últimas Entradas e Saídas -->
-  <div class="col-md-6">
-    <div class="card shadow p-3 mb-3">
-      <h6 class="fw-bold">Últimas Entradas</h6>
-      <table class="table table-sm table-hover">
-        <thead>
-          <tr><th>Item</th><th>Data</th></tr>
-        </thead>
-        <tbody>
-          {% for entrada in ultimas_entradas %}
-          <tr>
-            <td>{{ entrada.item }}</td>
-            <td>{{ entrada.data.strftime('%d/%m/%Y') }}</td>
-          </tr>
-          {% else %}
-          <tr><td colspan="2" class="text-muted text-center">Nenhuma entrada registrada</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-
-    <div class="card shadow p-3">
-      <h6 class="fw-bold">Últimas Saídas</h6>
-      <table class="table table-sm table-hover">
-        <thead>
-          <tr><th>Item</th><th>Data</th></tr>
-        </thead>
-        <tbody>
-          {% for saida in ultimas_saidas %}
-          <tr>
-            <td>{{ saida.item }}</td>
-            <td>{{ saida.data.strftime('%d/%m/%Y') }}</td>
-          </tr>
-          {% else %}
-          <tr><td colspan="2" class="text-muted text-center">Nenhuma saída registrada</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
 </div>
 
-<!-- SCRIPTS CHART.JS -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- PUBLICAÇÕES -->
+<div class="mb-5">
+    <h5 class="mb-4">
+        <i class="bi bi-newspaper me-2"></i>
+        Publicações
+    </h5>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="card-indicador card-publicacoes">
+                <i class="bi bi-file-text"></i>
+                <h6>Total de Publicações</h6>
+                <h3>{{ total_publicacoes }}</h3>
+                <small>{{ total_publicacoes_mes }} no mês atual</small>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card-indicador card-pendentes">
+                <i class="bi bi-hourglass-split"></i>
+                <h6>Pendentes</h6>
+                <h3>{{ total_pendentes }}</h3>
+                <small>{{ total_urgentes }} urgentes</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- GRÁFICOS -->
+<div class="row g-4">
+    <!-- Evolução de Movimentações -->
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title mb-3">
+                    <i class="bi bi-graph-up me-2"></i>
+                    Evolução de Movimentações
+                </h5>
+                <canvas id="graficoMovimentacoes" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Distribuição de Valores -->
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title mb-3">
+                    <i class="bi bi-pie-chart me-2"></i>
+                    Distribuição de Valores
+                </h5>
+                <canvas id="graficoValores" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SCRIPT CHART.JS -->
 <script>
-  // Gráfico de Barras
-  new Chart(document.getElementById('graficoEntradas'), {
-    type: 'bar',
-    data: {
-      labels: {{ dados_entrada | map(attribute='codigo') | list | tojson }},
-      datasets: [
-        {
-          label: 'Entradas (R$)',
-          data: {{ dados_entrada | map(attribute='entradas') | list | tojson }},
-          backgroundColor: '#38bdf8'
+document.addEventListener('DOMContentLoaded', function() {
+    // Gráfico de Movimentações
+    const ctxMov = document.getElementById('graficoMovimentacoes').getContext('2d');
+    new Chart(ctxMov, {
+        type: 'line',
+        data: {
+            labels: {{ labels_meses | tojson }},
+            datasets: [
+                {
+                    label: 'Entradas',
+                    data: {{ valores_entradas_meses | tojson }},
+                    borderColor: '#22c55e',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'Saídas',
+                    data: {{ valores_saidas_meses | tojson }},
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }
+            ]
         },
-        {
-          label: 'Saídas (R$)',
-          data: {{ dados_entrada | map(attribute='saidas') | list | tojson }},
-          backgroundColor: '#f87171'
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top' }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 }
+                }
+            }
         }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { position: 'top' } },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            callback: value => 'R$ ' + value.toLocaleString('pt-BR')
-          }
-        }
-      }
-    }
-  });
+    });
 
-  // Gráfico de Donut
-  new Chart(document.getElementById('graficoGrupos'), {
-    type: 'doughnut',
-    data: {
-      labels: {{ grafico_grupo_labels | tojson }},
-      datasets: [{
-        data: {{ grafico_grupo_dados | tojson }},
-        backgroundColor: [
-          '#60a5fa', '#818cf8', '#a78bfa', '#f472b6', '#f87171',
-          '#fb923c', '#facc15', '#34d399', '#2dd4bf', '#38bdf8'
-        ]
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { position: 'bottom' }
-      }
-    }
-  });
-</script>
+    // Gráfico de Valores
+    const ctxVal = document.getElementById('graficoValores').getContext('2d');
+    new Chart(ctxVal, {
+        type: 'doughnut',
+        data: {
+            labels: ['Estoque', 'Patrimônio', 'Compras em Andamento'],
+            datasets: [{
+                data: [
+                    {{ valor_total_estoque }},
+                    {{ valor_total_bens }},
+                    {{ total_estimado }}
+                ],
+                backgroundColor: [
+                    '#3b82f6',
+                    '#8b5cf6',
+                    '#22c55e'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: { font: { size: 11 } }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            let label = ctx.label || '';
+                            let value = ctx.parsed || 0;
+                            let total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                            let percentage = ((value * 100) / total).toFixed(1);
+                            return `${label}: R$ ${value.toLocaleString('pt-BR')} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+});</script>

@@ -1,47 +1,28 @@
-# Flask: framework principal usado para desenvolver a aplicação web
-Flask==2.2.3
-
-# Flask-Login: gerencia autenticação de usuários e sessões
-Flask-Login==0.6.2
-
-# Flask-SQLAlchemy: integração do SQLAlchemy com Flask para ORM
-Flask-SQLAlchemy==3.0.3
-
-# SQLAlchemy: ORM usado para comunicação com o banco de dados
-SQLAlchemy==2.0.7
-
-# Werkzeug: biblioteca WSGI usada internamente pelo Flask
-Werkzeug==2.2.3
-
-# email-validator: validação de e-mails
-email-validator==1.3.1
-
-# python-dotenv: carregar variáveis do .env
-python-dotenv==1.0.0
-
-# gunicorn: servidor WSGI para produção
-gunicorn==20.1.0
-
-# psycopg2-binary: driver PostgreSQL
-psycopg2-binary==2.9.5
-
-# pandas: análise e manipulação de dados
-pandas==2.1.4
-
-# openpyxl: leitura e escrita de arquivos Excel
-openpyxl==3.1.2
-
-# fpdf: geração de PDFs
-fpdf==1.7.2
-
-# flask-migrate: migração de banco de dados
-flask-migrate==4.0.5
-
-# faker: geração de dados falsos para testes
-Faker==19.13.0
-
-# Pillow: processamento de imagens
-Pillow>=9.0.0
-
-# Flask-WTF: proteção CSRF e formulários
+# Flask e extensões principais
+Flask==3.0.0
+Flask-Login==0.6.3
+Flask-SQLAlchemy==3.1.1
+Flask-Migrate==4.0.5
 Flask-WTF==1.2.1
+
+# Banco de dados
+SQLAlchemy==2.0.23
+psycopg2-binary==2.9.9
+
+# Utilitários
+Werkzeug==3.0.1
+python-dotenv==1.0.0
+email-validator==2.1.0.post1
+gunicorn==21.2.0
+
+# Processamento de dados
+pandas==2.1.4
+openpyxl==3.1.2
+fpdf==1.7.2
+Pillow==10.1.0
+
+# Desenvolvimento e testes
+Faker==20.1.0
+
+# Setuptools atualizado para evitar warnings
+setuptools>=65.5.1

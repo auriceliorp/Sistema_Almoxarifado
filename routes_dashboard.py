@@ -229,63 +229,58 @@ def dashboard():
         # ---------------- ABA PUBLICAÇÕES ----------------
         with db.session.begin():
             total_publicacoes = db.session.query(func.count(Publicacao.id))\
-                .filter(Publicacao.excluido == False)\
                 .scalar() or 0
 
-            total_tipos = db.session.query(func.count(TipoPublicacao.id)).scalar() or 0
-
-            data_inicio_mes = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-            total_publicacoes_mes = db.session.query(func.count(Publicacao.id))\
-                .filter(
-                    Publicacao.excluido == False,
-                    Publicacao.data >= data_inicio_mes
-                ).scalar() or 0
-
-            percentual_mes = round((total_publicacoes_mes / total_publicacoes * 100) if total_publicacoes > 0 else 0)
-
-            total_pendentes = db.session.query(func.count(Publicacao.id))\
-                .filter(
-                    Publicacao.excluido == False,
-                    Publicacao.status == 'Pendente'
-                ).scalar() or 0
-
-            media_dias = db.session.query(
-                func.avg(Publicacao.data_publicacao - Publicacao.data_cadastro)
-            ).filter(
-                Publicacao.excluido == False,
-                Publicacao.data_publicacao.isnot(None)
-            ).scalar()
-            
-            media_dias_publicacao = round(media_dias.days if media_dias else 0)
-
-            data_limite = datetime.now() + timedelta(days=2)
-            total_urgentes = db.session.query(func.count(Publicacao.id))\
-                .filter(
-                    Publicacao.excluido == False,
-                    Publicacao.status == 'Pendente',
-                    Publicacao.data_prevista <= data_limite
-                ).scalar() or 0
-
+            # Contagem por espécie (em vez de tipo)
             tipos_data = db.session.query(
-                TipoPublicacao.nome,
+                Publicacao.especie.label('nome'),
                 func.count(Publicacao.id).label('total')
-            ).join(Publicacao)\
-            .filter(Publicacao.excluido == False)\
-            .group_by(TipoPublicacao.id, TipoPublicacao.nome)\
+            )\
+            .group_by(Publicacao.especie)\
             .order_by(func.count(Publicacao.id).desc())\
             .all()
 
             labels_tipos = [t.nome for t in tipos_data]
             valores_tipos = [int(t.total) for t in tipos_data]
 
+            data_inicio_mes = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            total_publicacoes_mes = db.session.query(func.count(Publicacao.id))\
+                .filter(
+                    Publicacao.data_assinatura >= data_inicio_mes
+                ).scalar() or 0
+
+            percentual_mes = round((total_publicacoes_mes / total_publicacoes * 100) if total_publicacoes > 0 else 0)
+
+            # Publicações pendentes (considerando data de vigência)
+            data_atual = datetime.now().date()
+            total_pendentes = db.session.query(func.count(Publicacao.id))\
+                .filter(
+                    Publicacao.vigencia_inicio > data_atual
+                ).scalar() or 0
+
+            # Média de dias entre assinatura e início da vigência
+            media_dias = db.session.query(
+                func.avg(Publicacao.vigencia_inicio - Publicacao.data_assinatura)
+            ).scalar()
+            
+            media_dias_publicacao = round(media_dias.days if media_dias else 0)
+
+            # Publicações urgentes (próximos 2 dias)
+            data_limite = datetime.now().date() + timedelta(days=2)
+            total_urgentes = db.session.query(func.count(Publicacao.id))\
+                .filter(
+                    Publicacao.vigencia_inicio <= data_limite,
+                    Publicacao.vigencia_inicio > data_atual
+                ).scalar() or 0
+
+            # Evolução mensal
             meses_data = []
             for i in range(5, -1, -1):
                 data = datetime.now() - timedelta(days=i*30)
                 total = db.session.query(func.count(Publicacao.id))\
                     .filter(
-                        Publicacao.excluido == False,
-                        extract('month', Publicacao.data) == data.month,
-                        extract('year', Publicacao.data) == data.year
+                        extract('month', Publicacao.data_assinatura) == data.month,
+                        extract('year', Publicacao.data_assinatura) == data.year
                     ).scalar() or 0
                 meses_data.append({
                     'mes': data.strftime('%b/%Y'),
@@ -295,13 +290,11 @@ def dashboard():
             labels_meses = [m['mes'] for m in meses_data]
             valores_meses = [m['total'] for m in meses_data]
 
+            # Publicações recentes
             data_limite = datetime.now() - timedelta(days=30)
             publicacoes_recentes = Publicacao.query\
-                .filter(
-                    Publicacao.excluido == False,
-                    Publicacao.data >= data_limite
-                )\
-                .order_by(Publicacao.data.desc())\
+                .filter(Publicacao.data_assinatura >= data_limite)\
+                .order_by(Publicacao.data_assinatura.desc())\
                 .all()
 
         # ---------------- ABA COMPRAS ----------------

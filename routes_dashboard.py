@@ -89,7 +89,7 @@ def dashboard():
             func.sum(Item.estoque_atual * Item.valor_medio)
         ).scalar() or 0
         total_itens_com_valor = db.session.query(func.count(Item.id))\
-            .filter(Item.valor_medio.isnot(None))\
+            .filter(Item.valor_medio > 0)\
             .scalar() or 0
 
         itens_abaixo_minimo = Item.query\
@@ -105,7 +105,7 @@ def dashboard():
         ).filter(
             or_(
                 EntradaMaterial.data_entrada >= data_limite,
-                SaidaMaterial.data_saida >= data_limite
+                SaidaMaterial.data_movimento >= data_limite
             )
         ).scalar() or 0
 
@@ -125,7 +125,7 @@ def dashboard():
                 .join(SaidaMaterial)\
                 .filter(
                     SaidaItem.item_id == item.id,
-                    SaidaMaterial.data_saida >= data_limite
+                    SaidaMaterial.data_movimento >= data_limite
                 ).scalar() or 0
 
             valor_movimentado = (entradas + saidas) * (item.valor_medio or 0)
@@ -152,16 +152,16 @@ def dashboard():
 
         # ---------------- ABA PATRIMÔNIO ----------------
         total_bens_ativos = db.session.query(func.count(BemPatrimonial.id))\
-            .filter(BemPatrimonial.situacao == 'Ativo')\
+            .filter(BemPatrimonial.situacao == 'Em uso')\
             .scalar() or 0
 
         total_locais = db.session.query(func.count(Local.id)).scalar() or 0
-        valor_total_bens = db.session.query(func.sum(BemPatrimonial.valor))\
-            .filter(BemPatrimonial.valor.isnot(None))\
+        valor_total_bens = db.session.query(func.sum(BemPatrimonial.valor_aquisicao))\
+            .filter(BemPatrimonial.valor_aquisicao.isnot(None))\
             .scalar() or 0
 
         total_bens_com_valor = db.session.query(func.count(BemPatrimonial.id))\
-            .filter(BemPatrimonial.valor.isnot(None))\
+            .filter(BemPatrimonial.valor_aquisicao.isnot(None))\
             .scalar() or 0
 
         total_pendentes_inventario = db.session.query(func.count(BemPatrimonial.id))\
@@ -178,8 +178,8 @@ def dashboard():
         data_inicio_mes = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         total_manutencoes_mes = db.session.query(func.count(MovimentacaoBem.id))\
             .filter(
-                MovimentacaoBem.tipo == 'Manutenção',
-                MovimentacaoBem.data >= data_inicio_mes
+                MovimentacaoBem.tipo_movimentacao == 'Manutenção',
+                MovimentacaoBem.data_movimentacao >= data_inicio_mes
             ).scalar() or 0
 
         total_para_alienar = db.session.query(func.count(BemPatrimonial.id))\
@@ -189,15 +189,15 @@ def dashboard():
         data_inicio_ano = datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
         total_alienados_ano = db.session.query(func.count(MovimentacaoBem.id))\
             .filter(
-                MovimentacaoBem.tipo == 'Alienação',
-                MovimentacaoBem.data >= data_inicio_ano
+                MovimentacaoBem.tipo_movimentacao == 'Alienação',
+                MovimentacaoBem.data_movimentacao >= data_inicio_ano
             ).scalar() or 0
 
         locais_data = db.session.query(
-            Local.nome,
+            Local.descricao.label('nome'),
             func.count(BemPatrimonial.id).label('total')
         ).join(BemPatrimonial)\
-        .group_by(Local.id, Local.nome)\
+        .group_by(Local.id, Local.descricao)\
         .order_by(func.count(BemPatrimonial.id).desc())\
         .all()
 
@@ -205,10 +205,10 @@ def dashboard():
         valores_locais = [int(l.total) for l in locais_data]
 
         tipos_data = db.session.query(
-            TipoBem.nome,
+            TipoBem.descricao.label('nome'),
             func.count(BemPatrimonial.id).label('total')
         ).join(BemPatrimonial)\
-        .group_by(TipoBem.id, TipoBem.nome)\
+        .group_by(TipoBem.id, TipoBem.descricao)\
         .order_by(func.count(BemPatrimonial.id).desc())\
         .all()
 
@@ -223,14 +223,16 @@ def dashboard():
 
         # ---------------- ABA PUBLICAÇÕES ----------------
         total_publicacoes = db.session.query(func.count(Publicacao.id))\
+            .filter(Publicacao.excluido == False)\
             .scalar() or 0
 
-        # Contagem por espécie (em vez de tipo)
+        # Contagem por tipo
         tipos_data = db.session.query(
-            Publicacao.especie.label('nome'),
+            TipoPublicacao.nome.label('nome'),
             func.count(Publicacao.id).label('total')
-        )\
-        .group_by(Publicacao.especie)\
+        ).join(Publicacao)\
+        .filter(Publicacao.excluido == False)\
+        .group_by(TipoPublicacao.id, TipoPublicacao.nome)\
         .order_by(func.count(Publicacao.id).desc())\
         .all()
 
@@ -240,6 +242,7 @@ def dashboard():
         data_inicio_mes = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         total_publicacoes_mes = db.session.query(func.count(Publicacao.id))\
             .filter(
+                Publicacao.excluido == False,
                 Publicacao.data_assinatura >= data_inicio_mes
             ).scalar() or 0
 
@@ -249,12 +252,17 @@ def dashboard():
         data_atual = datetime.now().date()
         total_pendentes = db.session.query(func.count(Publicacao.id))\
             .filter(
+                Publicacao.excluido == False,
                 Publicacao.vigencia_inicio > data_atual
             ).scalar() or 0
 
         # Média de dias entre assinatura e início da vigência
         media_dias = db.session.query(
             func.avg(Publicacao.vigencia_inicio - Publicacao.data_assinatura)
+        ).filter(
+            Publicacao.excluido == False,
+            Publicacao.vigencia_inicio.isnot(None),
+            Publicacao.data_assinatura.isnot(None)
         ).scalar()
         
         media_dias_publicacao = round(media_dias.days if media_dias else 0)
@@ -263,6 +271,7 @@ def dashboard():
         data_limite = datetime.now().date() + timedelta(days=2)
         total_urgentes = db.session.query(func.count(Publicacao.id))\
             .filter(
+                Publicacao.excluido == False,
                 Publicacao.vigencia_inicio <= data_limite,
                 Publicacao.vigencia_inicio > data_atual
             ).scalar() or 0
@@ -273,6 +282,7 @@ def dashboard():
             data = datetime.now() - timedelta(days=i*30)
             total = db.session.query(func.count(Publicacao.id))\
                 .filter(
+                    Publicacao.excluido == False,
                     extract('month', Publicacao.data_assinatura) == data.month,
                     extract('year', Publicacao.data_assinatura) == data.year
                 ).scalar() or 0
@@ -287,7 +297,10 @@ def dashboard():
         # Publicações recentes
         data_limite = datetime.now() - timedelta(days=30)
         publicacoes_recentes = Publicacao.query\
-            .filter(Publicacao.data_assinatura >= data_limite)\
+            .filter(
+                Publicacao.excluido == False,
+                Publicacao.data_assinatura >= data_limite
+            )\
             .order_by(Publicacao.data_assinatura.desc())\
             .all()
 
@@ -356,8 +369,8 @@ def dashboard():
 
             total_saidas = db.session.query(func.count(SaidaMaterial.id))\
                 .filter(
-                    extract('month', SaidaMaterial.data_saida) == data.month,
-                    extract('year', SaidaMaterial.data_saida) == data.year
+                    extract('month', SaidaMaterial.data_movimento) == data.month,
+                    extract('year', SaidaMaterial.data_movimento) == data.year
                 ).scalar() or 0
             valores_saidas_meses.append(total_saidas)
 

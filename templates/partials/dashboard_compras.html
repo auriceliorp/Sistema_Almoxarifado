@@ -1,127 +1,191 @@
-{# ===================== DASHBOARD: COMPRAS ===================== #}
-
 <!-- ESTILO PERSONALIZADO -->
 <style>
-  .card-indicador {
-    border: none;
-    border-radius: 12px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    text-align: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-  }
+    .card-indicador {
+        border: none;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        text-align: center;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    .card-indicador:hover {
+        transform: translateY(-5px);
+    }
 
-  .card-proc-total { background-color: #dbeafe; color: #1e3a8a; }
-  .card-proc-valor { background-color: #d1fae5; color: #065f46; }
-  .card-proc-sei   { background-color: #fef9c3; color: #92400e; }
-  .card-proc-ok    { background-color: #fecaca; color: #991b1b; }
+    .card-proc-total { background-color: #dbeafe; color: #1e3a8a; }
+    .card-proc-valor { background-color: #d1fae5; color: #065f46; }
+    .card-proc-sei   { background-color: #fef9c3; color: #92400e; }
+    .card-proc-ok    { background-color: #fecaca; color: #991b1b; }
 
-  .table thead {
-    background-color: #f8fafc;
-  }
+    .table thead {
+        background-color: #f8fafc;
+    }
+
+    .table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        color: #475569;
+    }
+
+    .table td {
+        font-size: 0.9rem;
+        vertical-align: middle;
+    }
 </style>
 
 <!-- INDICADORES -->
-<div class="row mb-4">
-  <div class="col-md-3 col-12">
-    <div class="card-indicador card-proc-total">
-      <i class="bi bi-folder-check display-6"></i>
-      <h6>Total de Processos</h6>
-      <h3>{{ total_processos }}</h3>
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-12">
+        <div class="card-indicador card-proc-total">
+            <i class="bi bi-folder-check display-6"></i>
+            <h6>Total de Processos</h6>
+            <h3>{{ total_processos }}</h3>
+        </div>
     </div>
-  </div>
-  <div class="col-md-3 col-12">
-    <div class="card-indicador card-proc-valor">
-      <i class="bi bi-cash-stack display-6"></i>
-      <h6>Total Estimado</h6>
-      <h3>R$ {{ total_estimado | round(2) | string | replace('.', ',') }}</h3>
+    <div class="col-md-3 col-12">
+        <div class="card-indicador card-proc-valor">
+            <i class="bi bi-cash-stack display-6"></i>
+            <h6>Total Estimado</h6>
+            <h3>R$ {{ "{:,.2f}".format(total_estimado).replace(',', '_').replace('.', ',').replace('_', '.') }}</h3>
+        </div>
     </div>
-  </div>
-  <div class="col-md-3 col-12">
-    <div class="card-indicador card-proc-sei">
-      <i class="bi bi-file-earmark-text display-6"></i>
-      <h6>Com número SEI</h6>
-      <h3>{{ total_com_sei }}</h3>
+    <div class="col-md-3 col-12">
+        <div class="card-indicador card-proc-sei">
+            <i class="bi bi-file-earmark-text display-6"></i>
+            <h6>Com número SEI</h6>
+            <h3>{{ total_com_sei }}</h3>
+        </div>
     </div>
-  </div>
-  <div class="col-md-3 col-12">
-    <div class="card-indicador card-proc-ok">
-      <i class="bi bi-check-circle display-6"></i>
-      <h6>Concluídos</h6>
-      <h3>{{ total_concluidos }}</h3>
+    <div class="col-md-3 col-12">
+        <div class="card-indicador card-proc-ok">
+            <i class="bi bi-check-circle display-6"></i>
+            <h6>Concluídos</h6>
+            <h3>{{ total_concluidos }}</h3>
+        </div>
     </div>
-  </div>
 </div>
 
-<!-- GRÁFICO DE MODALIDADES COM CHART.JS -->
-<div class="card shadow p-4 mb-4">
-  <h5 class="mb-3">Distribuição por Modalidade de Licitação</h5>
-  <canvas id="graficoModalidades"></canvas>
+<!-- GRÁFICO DE MODALIDADES -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h5 class="card-title mb-3">
+            <i class="bi bi-bar-chart me-2"></i>
+            Distribuição por Modalidade de Licitação
+        </h5>
+        <canvas id="graficoModalidades" style="max-height: 300px;"></canvas>
+    </div>
 </div>
 
 <!-- TABELA DE PROCESSOS RECENTES -->
-<div class="card shadow p-4">
-  <h5 class="mb-3">Processos Recentes</h5>
-  <div class="table-responsive">
-    <table class="table table-sm table-hover align-middle">
-      <thead>
-        <tr>
-          <th>Nº Processo SEI</th>
-          <th>Objeto</th>
-          <th>Modalidade</th>
-          <th>Status</th>
-          <th>Responsável</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for p in ultimos_processos %}
-        <tr>
-          <td>{{ p.numero_sei }}</td>
-          <td>{{ p.objeto[:40] }}{% if p.objeto|length > 40 %}...{% endif %}</td>
-          <td>{{ p.modalidade }}</td>
-          <td><span class="badge bg-secondary">{{ p.status }}</span></td>
-          <td>{{ p.responsavel_conducao }}</td>
-        </tr>
-        {% else %}
-        <tr><td colspan="5">Nenhum processo encontrado.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h5 class="card-title mb-3">
+            <i class="bi bi-clock-history me-2"></i>
+            Processos Recentes
+        </h5>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Nº Processo SEI</th>
+                        <th>Objeto</th>
+                        <th>Modalidade</th>
+                        <th>Status</th>
+                        <th>Responsável</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in ultimos_processos %}
+                    <tr>
+                        <td>{{ p.numero_sei }}</td>
+                        <td>
+                            <div class="text-truncate" style="max-width: 300px;" title="{{ p.objeto }}">
+                                {{ p.objeto }}
+                            </div>
+                        </td>
+                        <td>{{ p.modalidade }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if p.status == 'Processo Iniciado' %}bg-info
+                                {% elif p.status == 'Em andamento' %}bg-warning
+                                {% elif p.status == 'Concluído' %}bg-success
+                                {% elif p.status == 'Aguardando Definições' %}bg-secondary
+                                {% elif p.status == 'Cancelada' %}bg-danger
+                                {% endif %}">
+                                {{ p.status }}
+                            </span>
+                        </td>
+                        <td>{{ p.responsavel_conducao }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4">
+                            <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
+                            <p class="text-muted mb-0">Nenhum processo encontrado.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <!-- SCRIPT CHART.JS -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  const ctx = document.getElementById('graficoModalidades').getContext('2d');
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: {{ labels_modalidades | tojson }},
-      datasets: [{
-        label: 'Quantidade de Processos',
-        data: {{ valores_modalidades | tojson }},
-        backgroundColor: ['#93c5fd', '#86efac', '#fde68a', '#ddd6fe', '#fda4af'],
-        borderRadius: 4,
-        barThickness: 30
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: function(ctx) { return `${ctx.parsed.y} processos`; }
-          }
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('graficoModalidades').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ labels_modalidades | tojson }},
+            datasets: [{
+                label: 'Quantidade de Processos',
+                data: {{ valores_modalidades | tojson }},
+                backgroundColor: ['#93c5fd', '#86efac', '#fde68a', '#ddd6fe', '#fda4af'],
+                borderRadius: 4,
+                barThickness: 30
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) { 
+                            return `${ctx.parsed.y} processos`; 
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { 
+                        stepSize: 1,
+                        font: {
+                            size: 12
+                        }
+                    },
+                    grid: {
+                        color: '#e2e8f0'
+                    }
+                },
+                x: {
+                    ticks: {
+                        font: {
+                            size: 12
+                        }
+                    },
+                    grid: {
+                        display: false
+                    }
+                }
+            }
         }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: { stepSize: 1 }
-        }
-      }
-    }
-  });
-</script>
+    });
+});</script>

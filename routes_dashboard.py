@@ -3,11 +3,12 @@
 
 from flask import Blueprint, render_template
 from flask_login import login_required, current_user
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, and_
+from datetime import datetime, timedelta
 from extensoes import db
 from models import (
     EntradaItem, SaidaItem, EntradaMaterial, SaidaMaterial,
-    NaturezaDespesa, Item, Fornecedor, PainelContratacao
+    NaturezaDespesa, Item, Fornecedor, PainelContratacao, Grupo
 )
 
 dashboard_bp = Blueprint('dashboard_bp', __name__, url_prefix='/dashboard')
@@ -70,14 +71,87 @@ def dashboard():
     grafico_grupo_dados = [int(g.quantidade) for g in grupo_data]
 
     # ---------------- ABA ALMOXARIFADO ----------------
-    itens_abaixo_minimo = Item.query.filter(Item.estoque_atual < Item.estoque_minimo).all()
+    try:
+        # Total de itens e grupos
+        total_itens = db.session.query(func.count(Item.id)).scalar() or 0
+        total_grupos = db.session.query(func.count(Grupo.id)).scalar() or 0
 
-    itens_movimentados = Item.query.limit(10).all()
-    for item in itens_movimentados:
-        entradas = db.session.query(func.sum(EntradaItem.quantidade)).filter_by(item_id=item.id).scalar() or 0
-        saidas = db.session.query(func.sum(SaidaItem.quantidade)).filter_by(item_id=item.id).scalar() or 0
-        item.total_entradas = entradas
-        item.total_saidas = saidas
+        # Valor total em estoque
+        valor_total_estoque = db.session.query(
+            func.sum(Item.estoque_atual * Item.valor_medio)
+        ).scalar() or 0
+
+        total_itens_com_valor = db.session.query(func.count(Item.id))\
+            .filter(Item.valor_medio.isnot(None))\
+            .scalar() or 0
+
+        # Itens críticos (abaixo do mínimo)
+        itens_abaixo_minimo = Item.query\
+            .filter(Item.estoque_atual < Item.estoque_minimo)\
+            .order_by((Item.estoque_atual / Item.estoque_minimo).asc())\
+            .all()
+
+        total_itens_criticos = len(itens_abaixo_minimo)
+
+        # Movimentações nos últimos 30 dias
+        data_limite = datetime.now() - timedelta(days=30)
+        total_movimentacoes = db.session.query(
+            func.count(EntradaMaterial.id) + func.count(SaidaMaterial.id)
+        ).filter(
+            or_(
+                EntradaMaterial.data_entrada >= data_limite,
+                SaidaMaterial.data_saida >= data_limite
+            )
+        ).scalar() or 0
+
+        # Itens mais movimentados
+        itens_movimentados = []
+        itens_query = Item.query.limit(10).all()
+        
+        for item in itens_query:
+            entradas = db.session.query(func.sum(EntradaItem.quantidade))\
+                .join(EntradaMaterial)\
+                .filter(
+                    EntradaItem.item_id == item.id,
+                    EntradaMaterial.data_entrada >= data_limite
+                ).scalar() or 0
+
+            saidas = db.session.query(func.sum(SaidaItem.quantidade))\
+                .join(SaidaMaterial)\
+                .filter(
+                    SaidaItem.item_id == item.id,
+                    SaidaMaterial.data_saida >= data_limite
+                ).scalar() or 0
+
+            valor_movimentado = (entradas + saidas) * (item.valor_medio or 0)
+
+            item.total_entradas = entradas
+            item.total_saidas = saidas
+            item.valor_movimentado = valor_movimentado
+
+            if entradas > 0 or saidas > 0:
+                itens_movimentados.append(item)
+
+        itens_movimentados.sort(key=lambda x: x.total_entradas + x.total_saidas, reverse=True)
+
+        # Dados para o gráfico de distribuição por grupo
+        grupos_data = db.session.query(
+            Grupo.nome,
+            func.count(Item.id).label('total')
+        ).join(Item)\
+        .group_by(Grupo.id, Grupo.nome)\
+        .order_by(func.count(Item.id).desc())\
+        .all()
+
+        labels_grupos = [g.nome for g in grupos_data]
+        valores_grupos = [int(g.total) for g in grupos_data]
+
+    except Exception as e:
+        print(f"Erro ao carregar dados do almoxarifado: {str(e)}")
+        total_itens = total_grupos = valor_total_estoque = total_itens_com_valor = 0
+        total_itens_criticos = total_movimentacoes = 0
+        itens_abaixo_minimo = itens_movimentados = []
+        labels_grupos = valores_grupos = []
 
     # ---------------- ABA COMPRAS ----------------
     try:
@@ -147,11 +221,18 @@ def dashboard():
         grafico_grupo_labels=grafico_grupo_labels,
         grafico_grupo_dados=grafico_grupo_dados,
         total_itens=total_itens,
+        total_grupos=total_grupos,
+        valor_total_estoque=valor_total_estoque,
+        total_itens_com_valor=total_itens_com_valor,
+        total_itens_criticos=total_itens_criticos,
+        total_movimentacoes=total_movimentacoes,
+        itens_abaixo_minimo=itens_abaixo_minimo,
+        itens_movimentados=itens_movimentados,
+        labels_grupos=labels_grupos,
+        valores_grupos=valores_grupos,
         total_fornecedores=total_fornecedores,
         total_entradas=total_entradas,
         total_saidas=total_saidas,
-        itens_abaixo_minimo=itens_abaixo_minimo,
-        itens_movimentados=itens_movimentados,
         total_processos=total_processos,
         total_estimado=total_estimado,
         total_com_sei=total_com_sei,
@@ -159,4 +240,4 @@ def dashboard():
         labels_modalidades=labels_modalidades,
         valores_modalidades=valores_modalidades,
         ultimos_processos=ultimos_processos
-    )
+    ) 

@@ -477,7 +477,6 @@ def dashboard():
         labels_modalidades=labels_modalidades,
         valores_modalidades=valores_modalidades,
         ultimos_processos=ultimos_processos,
-        labels_meses=labels_meses,
         valores_entradas_meses=valores_entradas_meses,
         valores_saidas_meses=valores_saidas_meses
     ) 

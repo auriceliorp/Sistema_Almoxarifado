@@ -331,7 +331,35 @@ class TipoBem(db.Model):
     def __repr__(self):
         return f"<TipoBem {self.codigo} - {self.descricao}>"
         
-
+# ------------------- MOVIMENTAÇÃO DE BENS -------------------
+class MovimentacaoBem(db.Model):
+    __tablename__ = 'movimentacoes_bem'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    bem_id = db.Column(db.Integer, db.ForeignKey('bens_patrimoniais.id'), nullable=False)
+    bem = db.relationship('BemPatrimonial', backref='movimentacoes')
+    
+    tipo_movimentacao = db.Column(db.String(50), nullable=False)  # Transferência, Baixa, Empréstimo, etc.
+    data_movimentacao = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    
+    origem_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    destino_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    
+    origem = db.relationship('Usuario', foreign_keys=[origem_id])
+    destino = db.relationship('Usuario', foreign_keys=[destino_id])
+    
+    localizacao_anterior = db.Column(db.String(100))
+    nova_localizacao = db.Column(db.String(100))
+    
+    motivo = db.Column(db.Text)
+    observacoes = db.Column(db.Text)
+    
+    status = db.Column(db.String(50), default='Pendente')  # Pendente, Concluída, Cancelada
+    data_conclusao = db.Column(db.DateTime, nullable=True)
+    
+    def __repr__(self):
+        return f"<MovimentacaoBem {self.tipo_movimentacao} - Bem {self.bem_id}>"
+        
 # ------------------- PUBLICAÇÃO -------------------
 class Publicacao(db.Model):
     __tablename__ = 'publicacoes'

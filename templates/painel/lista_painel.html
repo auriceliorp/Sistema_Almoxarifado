@@ -135,7 +135,7 @@
                         </div>
                         <div class="ms-3">
                             <h6 class="card-subtitle text-muted mb-1">Concluídos</h6>
-                            <h3 class="card-title mb-0">{{ processos|selectattr('status', 'equalto', 'Concluido')|list|length }}</h3>
+                            <h3 class="card-title mb-0">{{ processos|selectattr('status', 'equalto', 'Concluído')|list|length }}</h3>
                         </div>
                     </div>
                 </div>
@@ -228,7 +228,7 @@
                             <option value="">Todos</option>
                             <option value="Processo Iniciado" {% if request.args.get('status') == 'Processo Iniciado' %}selected{% endif %}>Processo Iniciado</option>
                             <option value="Em andamento" {% if request.args.get('status') == 'Em andamento' %}selected{% endif %}>Em andamento</option>
-                            <option value="Concluido" {% if request.args.get('status') == 'Concluido' %}selected{% endif %}>Concluído</option>
+                            <option value="Concluído" {% if request.args.get('status') == 'Concluído' %}selected{% endif %}>Concluído</option>
                             <option value="Aguardando Definições" {% if request.args.get('status') == 'Aguardando Definições' %}selected{% endif %}>Aguardando Definições</option>
                             <option value="Cancelada" {% if request.args.get('status') == 'Cancelada' %}selected{% endif %}>Cancelada</option>
                         </select>
@@ -372,4 +372,4 @@ function confirmarExclusao(url) {
     modal.show();
 }
 </script>
-{% endblock %}
+{% endblock %} 

@@ -79,43 +79,46 @@ def dashboard():
         item.total_entradas = entradas
         item.total_saidas = saidas
 
-    # ---------------- ABA COMPRAS ----------------
+   // ... existing code ...
+   
+# ---------------- ABA COMPRAS ----------------
     total_processos = db.session.query(func.count()).select_from(PainelContratacao).filter_by(excluido=False).scalar()
-    total_estimado = db.session.query(func.sum(PainelContratacao.valor_estimado)).filter_by(excluido=False).scalar() or 0
-    total_com_sei = db.session.query(func.count()).select_from(PainelContratacao)\
-        .filter(PainelContratacao.numero_sei != None, PainelContratacao.numero_sei != '', PainelContratacao.excluido == False).scalar()
-    total_concluidos = db.session.query(func.count()).select_from(PainelContratacao)\
-        .filter(PainelContratacao.status == 'Concluido', PainelContratacao.excluido == False).scalar()
-
-    modalidades = db.session.query(PainelContratacao.modalidade, func.count())\
+    
+    total_estimado = db.session.query(func.sum(PainelContratacao.valor_estimado))\
         .filter(PainelContratacao.excluido == False)\
-        .group_by(PainelContratacao.modalidade).all()
+        .scalar() or 0
+    
+    total_com_sei = db.session.query(func.count()).select_from(PainelContratacao)\
+        .filter(
+            PainelContratacao.numero_sei.isnot(None),
+            PainelContratacao.numero_sei != '',
+            PainelContratacao.excluido == False
+        ).scalar()
+    
+    total_concluidos = db.session.query(func.count()).select_from(PainelContratacao)\
+        .filter(
+            PainelContratacao.status == 'Concluído',
+            PainelContratacao.excluido == False
+        ).scalar()
 
-    labels_modalidades = [m[0] or 'Não Informada' for m in modalidades]
-    valores_modalidades = [m[1] for m in modalidades]
+    # Consulta de modalidades excluindo nulos e vazios
+    modalidades = db.session.query(
+        func.coalesce(PainelContratacao.modalidade, 'Não Informada').label('modalidade'),
+        func.count().label('total')
+    ).filter(
+        PainelContratacao.excluido == False
+    ).group_by(
+        func.coalesce(PainelContratacao.modalidade, 'Não Informada')
+    ).order_by(
+        func.count().desc()
+    ).all()
 
+    labels_modalidades = [m.modalidade for m in modalidades]
+    valores_modalidades = [m.total for m in modalidades]
+
+    # Últimos processos ordenados por data de abertura
     ultimos_processos = db.session.query(PainelContratacao)\
         .filter(PainelContratacao.excluido == False)\
         .order_by(PainelContratacao.data_abertura.desc())\
         .limit(5).all()
-
-    return render_template(
-        'dashboard.html',
-        usuario=current_user,
-        dados_entrada=dados_entrada,
-        grafico_grupo_labels=grafico_grupo_labels,
-        grafico_grupo_dados=grafico_grupo_dados,
-        total_itens=total_itens,
-        total_fornecedores=total_fornecedores,
-        total_entradas=total_entradas,
-        total_saidas=total_saidas,
-        itens_abaixo_minimo=itens_abaixo_minimo,
-        itens_movimentados=itens_movimentados,
-        total_processos=total_processos,
-        total_estimado=total_estimado,
-        total_com_sei=total_com_sei,
-        total_concluidos=total_concluidos,
-        labels_modalidades=labels_modalidades,
-        valores_modalidades=valores_modalidades,
-        ultimos_processos=ultimos_processos
-    )
+// ... existing code ...

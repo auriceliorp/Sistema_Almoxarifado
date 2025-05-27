@@ -4,25 +4,24 @@
 
 {% block extra_css %}
 <style>
-    /* Estilos gerais */
-    .form-container {
+    .page-container {
         background: white;
-        border-radius: 8px;
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-        padding: 2rem;
+        padding: 20px;
     }
-    
-    /* Form floating */
-    .form-floating > .form-control,
-    .form-floating > .form-select {
-        height: calc(3.5rem + 2px);
-        line-height: 1.25;
-        padding: 1rem 0.75rem;
+
+    .section-title {
+        font-size: 1rem;
+        color: #333;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
-    .form-floating > label {
-        padding: 1rem 0.75rem;
+
+    .section-title i {
+        font-size: 1rem;
     }
-    
+
     /* Select2 customização */
     .select2-container .select2-selection--single {
         height: calc(3.5rem + 2px);
@@ -38,31 +37,13 @@
     .select2-container--default .select2-selection--single .select2-selection__arrow {
         height: calc(3.5rem + 2px);
     }
-    
+
     /* Campos calculados */
     .calculated-field {
         background-color: #f8f9fa;
         cursor: not-allowed;
     }
-    
-    /* Seções do formulário */
-    .form-section {
-        border-bottom: 1px solid #eee;
-        padding-bottom: 1.5rem;
-        margin-bottom: 1.5rem;
-    }
-    .form-section:last-child {
-        border-bottom: none;
-        padding-bottom: 0;
-        margin-bottom: 0;
-    }
-    .form-section-title {
-        color: #2c3e50;
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin-bottom: 1.5rem;
-    }
-    
+
     /* Campos monetários */
     .money-field {
         position: relative;
@@ -79,18 +60,6 @@
     .money-field .form-control {
         padding-left: 2.5rem;
     }
-    
-    /* Botões de ação */
-    .btn-action {
-        padding: 0.75rem 1.5rem;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        transition: all 0.3s ease;
-    }
-    .btn-action:hover {
-        transform: translateY(-2px);
-    }
 </style>
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 {% endblock %}
@@ -98,281 +67,360 @@
 {% block content %}
 <div class="container-fluid py-4">
     <!-- Cabeçalho -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="mb-0">
-            <i class="bi bi-plus-circle me-2"></i>Novo Processo de Contratação
-        </h4>
-        <a href="{{ url_for('painel_bp.lista_painel') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-2"></i>Voltar
-        </a>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Novo Processo de Contratação
+                </h4>
+                <a href="{{ url_for('painel_bp.lista_painel') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Voltar para Lista
+                </a>
+            </div>
+        </div>
     </div>
 
     <!-- Formulário -->
-    <div class="form-container">
-        <form method="POST" class="needs-validation" novalidate>
-            <!-- Seção: Informações Básicas -->
-            <div class="form-section">
-                <h5 class="form-section-title">
-                    <i class="bi bi-info-circle me-2"></i>Informações Básicas
+    <form method="POST" class="needs-validation" novalidate>
+        <!-- Informações Básicas -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary bg-gradient text-white py-3">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Informações Básicas
                 </h5>
+            </div>
+            <div class="card-body">
                 <div class="row g-3">
                     <div class="col-md-2">
-                        <div class="form-floating">
-                            <input type="text" class="form-control" name="ano" id="ano" required>
-                            <label for="ano">Ano</label>
+                        <div class="border-start border-4 border-primary ps-3">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" name="ano" id="ano" required>
+                                <label for="ano">Ano</label>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="form-floating">
-                            <input type="date" class="form-control" name="data_abertura" id="data_abertura">
-                            <label for="data_abertura">Data de Abertura</label>
+                        <div class="border-start border-4 border-primary ps-3">
+                            <div class="form-floating">
+                                <input type="date" class="form-control" name="data_abertura" id="data_abertura">
+                                <label for="data_abertura">Data de Abertura</label>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="form-floating">
-                            <input type="date" class="form-control" name="data_homologacao" id="data_homologacao">
-                            <label for="data_homologacao">Data de Homologação</label>
+                        <div class="border-start border-4 border-primary ps-3">
+                            <div class="form-floating">
+                                <input type="date" class="form-control" name="data_homologacao" id="data_homologacao">
+                                <label for="data_homologacao">Data de Homologação</label>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-2">
-                        <div class="form-floating">
-                            <input type="text" class="form-control calculated-field" name="periodo_dias" id="periodo_dias" readonly>
-                            <label for="periodo_dias">Período (dias)</label>
+                        <div class="border-start border-4 border-primary ps-3">
+                            <div class="form-floating">
+                                <input type="text" class="form-control calculated-field" name="periodo_dias" id="periodo_dias" readonly>
+                                <label for="periodo_dias">Período (dias)</label>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="form-floating">
-                            <input type="text" class="form-control" name="numero_sei" id="numero_sei" required>
-                            <label for="numero_sei">Nº Processo SEI</label>
+                        <div class="border-start border-4 border-primary ps-3">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" name="numero_sei" id="numero_sei" required>
+                                <label for="numero_sei">Nº Processo SEI</label>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Seção: Modalidade e Características -->
-            <div class="form-section">
-                <h5 class="form-section-title">
-                    <i class="bi bi-card-list me-2"></i>Modalidade e Características
+        <!-- Modalidade e Características -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-success bg-gradient text-white py-3">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-card-list me-2"></i>
+                    Modalidade e Características
                 </h5>
+            </div>
+            <div class="card-body">
                 <div class="row g-3">
                     <div class="col-md-4">
-                        <div class="form-floating">
-                            <select class="form-select" name="modalidade" id="modalidade">
-                                <option selected disabled>Selecione</option>
-                                {% for opt in ['Dispensa de Licitação', 'Dispensa de Licitação Eletrônica', 'Inexigibilidade de Licitação', 'Pregão Eletrônico', 'Licitação Embrapa'] %}
-                                    <option>{{ opt }}</option>
-                                {% endfor %}
-                            </select>
-                            <label for="modalidade">Modalidade de Licitação</label>
+                        <div class="border-start border-4 border-success ps-3">
+                            <div class="form-floating">
+                                <select class="form-select" name="modalidade" id="modalidade">
+                                    <option selected disabled>Selecione</option>
+                                    {% for opt in ['Dispensa de Licitação', 'Dispensa de Licitação Eletrônica', 'Inexigibilidade de Licitação', 'Pregão Eletrônico', 'Licitação Embrapa'] %}
+                                        <option>{{ opt }}</option>
+                                    {% endfor %}
+                                </select>
+                                <label for="modalidade">Modalidade de Licitação</label>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="form-floating">
-                            <select class="form-select" name="registro_precos" id="registro_precos">
-                                {% for opt in ['Sim', 'Não', 'Não se aplica'] %}
-                                    <option>{{ opt }}</option>
-                                {% endfor %}
-                            </select>
-                            <label for="registro_precos">Registro de Preços</label>
+                        <div class="border-start border-4 border-success ps-3">
+                            <div class="form-floating">
+                                <select class="form-select" name="registro_precos" id="registro_precos">
+                                    {% for opt in ['Sim', 'Não', 'Não se aplica'] %}
+                                        <option>{{ opt }}</option>
+                                    {% endfor %}
+                                </select>
+                                <label for="registro_precos">Registro de Preços</label>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="form-floating">
-                            <select class="form-select" name="orgaos_participantes" id="orgaos_participantes">
-                                {% for opt in ['Sim', 'Não', 'Não se aplica'] %}
-                                    <option>{{ opt }}</option>
-                                {% endfor %}
-                            </select>
-                            <label for="orgaos_participantes">Órgãos Participantes</label>
+                        <div class="border-start border-4 border-success ps-3">
+                            <div class="form-floating">
+                                <select class="form-select" name="orgaos_participantes" id="orgaos_participantes">
+                                    {% for opt in ['Sim', 'Não', 'Não se aplica'] %}
+                                        <option>{{ opt }}</option>
+                                    {% endfor %}
+                                </select>
+                                <label for="orgaos_participantes">Órgãos Participantes</label>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="form-floating">
-                            <input type="text" class="form-control" name="numero_licitacao" id="numero_licitacao">
-                            <label for="numero_licitacao">Número da Licitação</label>
+                        <div class="border-start border-4 border-success ps-3">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" name="numero_licitacao" id="numero_licitacao">
+                                <label for="numero_licitacao">Número da Licitação</label>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="form-floating">
-                            <input type="text" class="form-control" name="parecer_juridico" id="parecer_juridico">
-                            <label for="parecer_juridico">Parecer Jurídico</label>
+                        <div class="border-start border-4 border-success ps-3">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" name="parecer_juridico" id="parecer_juridico">
+                                <label for="parecer_juridico">Parecer Jurídico</label>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="form-floating">
-                            <select class="form-select select2" name="fundamentacao_legal" id="fundamentacao_legal">
-                                <option selected disabled>Selecione</option>
-                                {% for opt in [
-                                    'Art. 17, I (RLCC) c/c Art. 6º, XVI (Lei 14.133/2021) - Pregão',
-                                    'Art. 29, I (Lei 13.303/2016) c/c Art. 98, Art. 100 e Art. 103, §3º - Dispensa',
-                                    'Art. 29, II - Dispensa',
-                                    'Art. 29, X - Prestadoras de Serviço Público',
-                                    'Art. 29, XV - Contratação Emergencial',
-                                    'Art. 30, I - Inexigibilidade',
-                                    'Art. 30, II - Inexigibilidade',
-                                    'Art. 108, IV - Congressos, Feiras e Exposições',
-                                    'Art. 75, IV, "c" - P&D',
-                                    'Art. 17, II - Licitação Embrapa'
-                                ] %}
-                                    <option>{{ opt }}</option>
-                                {% endfor %}
-                            </select>
-                            <label for="fundamentacao_legal">Fundamentação Legal</label>
+                        <div class="border-start border-4 border-success ps-3">
+                            <div class="form-floating">
+                                <select class="form-select select2" name="fundamentacao_legal" id="fundamentacao_legal">
+                                    <option selected disabled>Selecione</option>
+                                    {% for opt in [
+                                        'Art. 17, I (RLCC) c/c Art. 6º, XVI (Lei 14.133/2021) - Pregão',
+                                        'Art. 29, I (Lei 13.303/2016) c/c Art. 98, Art. 100 e Art. 103, §3º - Dispensa',
+                                        'Art. 29, II - Dispensa',
+                                        'Art. 29, X - Prestadoras de Serviço Público',
+                                        'Art. 29, XV - Contratação Emergencial',
+                                        'Art. 30, I - Inexigibilidade',
+                                        'Art. 30, II - Inexigibilidade',
+                                        'Art. 108, IV - Congressos, Feiras e Exposições',
+                                        'Art. 75, IV, "c" - P&D',
+                                        'Art. 17, II - Licitação Embrapa'
+                                    ] %}
+                                        <option>{{ opt }}</option>
+                                    {% endfor %}
+                                </select>
+                                <label for="fundamentacao_legal">Fundamentação Legal</label>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Seção: Objeto e Valores -->
-            <div class="form-section">
-                <h5 class="form-section-title">
-                    <i class="bi bi-currency-dollar me-2"></i>Objeto e Valores
+        <!-- Objeto e Valores -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-info bg-gradient text-white py-3">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-currency-dollar me-2"></i>
+                    Objeto e Valores
                 </h5>
+            </div>
+            <div class="card-body">
                 <div class="row g-3">
                     <div class="col-md-12">
-                        <div class="form-floating">
-                            <textarea class="form-control" name="objeto" id="objeto" style="height: 100px" required></textarea>
-                            <label for="objeto">Objeto</label>
+                        <div class="border-start border-4 border-info ps-3">
+                            <div class="form-floating">
+                                <textarea class="form-control" name="objeto" id="objeto" style="height: 100px" required></textarea>
+                                <label for="objeto">Objeto</label>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="form-floating">
-                            <select class="form-select" name="natureza_despesa" id="natureza_despesa">
-                                <option selected disabled>Selecione</option>
-                                {% for opt in ['Consumo', 'Serviço', 'Obras/Serviço de engenharia', 'Investimento'] %}
-                                    <option>{{ opt }}</option>
-                                {% endfor %}
-                            </select>
-                            <label for="natureza_despesa">Natureza da Despesa</label>
+                        <div class="border-start border-4 border-info ps-3">
+                            <div class="form-floating">
+                                <select class="form-select" name="natureza_despesa" id="natureza_despesa">
+                                    <option selected disabled>Selecione</option>
+                                    {% for opt in ['Consumo', 'Serviço', 'Obras/Serviço de engenharia', 'Investimento'] %}
+                                        <option>{{ opt }}</option>
+                                    {% endfor %}
+                                </select>
+                                <label for="natureza_despesa">Natureza da Despesa</label>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-2">
-                        <div class="form-floating money-field">
-                            <input type="text" class="form-control" id="valor_estimado" name="valor_estimado">
-                            <label for="valor_estimado">Valor Estimado</label>
+                        <div class="border-start border-4 border-info ps-3">
+                            <div class="form-floating money-field">
+                                <input type="text" class="form-control" id="valor_estimado" name="valor_estimado">
+                                <label for="valor_estimado">Valor Estimado</label>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-2">
-                        <div class="form-floating money-field">
-                            <input type="text" class="form-control" id="valor_homologado" name="valor_homologado">
-                            <label for="valor_homologado">Valor Homologado</label>
+                        <div class="border-start border-4 border-info ps-3">
+                            <div class="form-floating money-field">
+                                <input type="text" class="form-control" id="valor_homologado" name="valor_homologado">
+                                <label for="valor_homologado">Valor Homologado</label>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-2">
-                        <div class="form-floating">
-                            <input type="text" class="form-control calculated-field" id="percentual_economia" name="percentual_economia" readonly>
-                            <label for="percentual_economia">% Economia</label>
+                        <div class="border-start border-4 border-info ps-3">
+                            <div class="form-floating">
+                                <input type="text" class="form-control calculated-field" id="percentual_economia" name="percentual_economia" readonly>
+                                <label for="percentual_economia">% Economia</label>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Seção: Status e Ocorrências -->
-            <div class="form-section">
-                <h5 class="form-section-title">
-                    <i class="bi bi-flag me-2"></i>Status e Ocorrências
+        <!-- Status e Ocorrências -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-warning bg-gradient text-white py-3">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                    Status e Ocorrências
                 </h5>
+            </div>
+            <div class="card-body">
                 <div class="row g-3">
                     <div class="col-md-2">
-                        <div class="form-floating">
-                            <select class="form-select" name="impugnacao" id="impugnacao">
-                                <option selected disabled>Selecione</option>
-                                {% for opt in ['Sim', 'Não', 'Não se aplica'] %}
-                                    <option>{{ opt }}</option>
-                                {% endfor %}
-                            </select>
-                            <label for="impugnacao">Impugnação</label>
+                        <div class="border-start border-4 border-warning ps-3">
+                            <div class="form-floating">
+                                <select class="form-select" name="impugnacao" id="impugnacao">
+                                    <option selected disabled>Selecione</option>
+                                    {% for opt in ['Sim', 'Não', 'Não se aplica'] %}
+                                        <option>{{ opt }}</option>
+                                    {% endfor %}
+                                </select>
+                                <label for="impugnacao">Impugnação</label>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-2">
-                        <div class="form-floating">
-                            <select class="form-select" name="recurso" id="recurso">
-                                <option selected disabled>Selecione</option>
-                                {% for opt in ['Sim', 'Não', 'Não se aplica'] %}
-                                    <option>{{ opt }}</option>
-                                {% endfor %}
-                            </select>
-                            <label for="recurso">Recurso</label>
+                        <div class="border-start border-4 border-warning ps-3">
+                            <div class="form-floating">
+                                <select class="form-select" name="recurso" id="recurso">
+                                    <option selected disabled>Selecione</option>
+                                    {% for opt in ['Sim', 'Não', 'Não se aplica'] %}
+                                        <option>{{ opt }}</option>
+                                    {% endfor %}
+                                </select>
+                                <label for="recurso">Recurso</label>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-2">
-                        <div class="form-floating">
-                            <select class="form-select" name="itens_desertos" id="itens_desertos">
-                                <option selected disabled>Selecione</option>
-                                {% for opt in ['Sim', 'Não', 'Não se aplica'] %}
-                                    <option>{{ opt }}</option>
-                                {% endfor %}
-                            </select>
-                            <label for="itens_desertos">Itens Desertos</label>
+                        <div class="border-start border-4 border-warning ps-3">
+                            <div class="form-floating">
+                                <select class="form-select" name="itens_desertos" id="itens_desertos">
+                                    <option selected disabled>Selecione</option>
+                                    {% for opt in ['Sim', 'Não', 'Não se aplica'] %}
+                                        <option>{{ opt }}</option>
+                                    {% endfor %}
+                                </select>
+                                <label for="itens_desertos">Itens Desertos</label>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Seção: Responsáveis -->
-            <div class="form-section">
-                <h5 class="form-section-title">
-                    <i class="bi bi-people me-2"></i>Responsáveis
+        <!-- Responsáveis -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-secondary bg-gradient text-white py-3">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-people me-2"></i>
+                    Responsáveis
                 </h5>
+            </div>
+            <div class="card-body">
                 <div class="row g-3">
                     <div class="col-md-4">
-                        <div class="form-floating">
-                            <select name="responsavel_conducao" id="responsavel_conducao" class="form-select select2">
-                                <option selected disabled>Selecione</option>
-                                {% for u in usuarios %}
-                                    <option value="{{ u.nome }}">{{ u.nome }}</option>
-                                {% endfor %}
-                            </select>
-                            <label for="responsavel_conducao">Responsável pela Condução</label>
+                        <div class="border-start border-4 border-secondary ps-3">
+                            <div class="form-floating">
+                                <select name="responsavel_conducao" id="responsavel_conducao" class="form-select select2">
+                                    <option selected disabled>Selecione</option>
+                                    {% for u in usuarios %}
+                                        <option value="{{ u.nome }}">{{ u.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                                <label for="responsavel_conducao">Responsável pela Condução</label>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="form-floating">
-                            <select name="solicitante_id" id="solicitante_id" class="form-select select2">
-                                <option selected disabled>Selecione</option>
-                                {% for u in usuarios %}
-                                    <option value="{{ u.id }}">{{ u.nome }}</option>
-                                {% endfor %}
-                            </select>
-                            <label for="solicitante_id">Solicitante</label>
+                        <div class="border-start border-4 border-secondary ps-3">
+                            <div class="form-floating">
+                                <select name="solicitante_id" id="solicitante_id" class="form-select select2">
+                                    <option selected disabled>Selecione</option>
+                                    {% for u in usuarios %}
+                                        <option value="{{ u.id }}">{{ u.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                                <label for="solicitante_id">Solicitante</label>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="form-floating">
-                            <select name="setor_responsavel" id="setor_responsavel" class="form-select">
-                                <option selected disabled>Selecione</option>
-                                {% for opt in ['SPS', 'SOF', 'SCC', 'CHAA'] %}
-                                    <option>{{ opt }}</option>
-                                {% endfor %}
-                            </select>
-                            <label for="setor_responsavel">Setor Responsável</label>
+                        <div class="border-start border-4 border-secondary ps-3">
+                            <div class="form-floating">
+                                <select name="setor_responsavel" id="setor_responsavel" class="form-select">
+                                    <option selected disabled>Selecione</option>
+                                    {% for opt in ['SPS', 'SOF', 'SCC', 'CHAA'] %}
+                                        <option>{{ opt }}</option>
+                                    {% endfor %}
+                                </select>
+                                <label for="setor_responsavel">Setor Responsável</label>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="form-floating">
-                            <select name="status" id="status" class="form-select">
-                                <option selected disabled>Selecione</option>
-                                {% for opt in ['Processo Iniciado', 'Em andamento', 'Concluído', 'Aguardando Definições', 'Cancelada'] %}
-                                    <option>{{ opt }}</option>
-                                {% endfor %}
-                            </select>
-                            <label for="status">Status</label>
+                        <div class="border-start border-4 border-secondary ps-3">
+                            <div class="form-floating">
+                                <select name="status" id="status" class="form-select">
+                                    <option selected disabled>Selecione</option>
+                                    {% for opt in ['Processo Iniciado', 'Em andamento', 'Concluído', 'Aguardando Definições', 'Cancelada'] %}
+                                        <option>{{ opt }}</option>
+                                    {% endfor %}
+                                </select>
+                                <label for="status">Status</label>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Botões de Ação -->
-            <div class="d-flex justify-content-end gap-2 mt-4">
-                <a href="{{ url_for('painel_bp.lista_painel') }}" class="btn btn-outline-secondary btn-action">
-                    <i class="bi bi-x-circle me-2"></i>Cancelar
-                </a>
-                <button type="submit" class="btn btn-primary btn-action">
-                    <i class="bi bi-save me-2"></i>Salvar
-                </button>
+        <!-- Botões de Ação -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{{ url_for('painel_bp.lista_painel') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle me-2"></i>Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-2"></i>Salvar
+                    </button>
+                </div>
             </div>
-        </form>
-    </div>
+        </div>
+    </form>
 </div>
 {% endblock %}
 

@@ -340,7 +340,7 @@ def dashboard():
             bem.valor = bem.valor_aquisicao if bem.valor_aquisicao is not None else 0.0
             bem.local = bem.localizacao if bem.localizacao else 'Não informado'
 
-        # ---------------- ABA PUBLICAÇÕES ----------------
+               # ---------------- ABA PUBLICAÇÕES ----------------
         total_publicacoes = db.session.query(func.count(Publicacao.id))\
             .filter(Publicacao.excluido == False)\
             .scalar() or 0
@@ -418,15 +418,46 @@ def dashboard():
         labels_meses = [m['mes'] for m in meses_data]
         valores_meses = [m['total'] for m in meses_data]
 
-        # Publicações recentes
+        # Publicações recentes com join para tipo
         data_limite = datetime.now() - timedelta(days=30)
-        publicacoes_recentes = Publicacao.query\
-            .filter(
-                Publicacao.excluido == False,
-                Publicacao.data_assinatura >= data_limite
-            )\
-            .order_by(Publicacao.data_assinatura.desc())\
-            .all()
+        publicacoes_query = db.session.query(
+            Publicacao, 
+            TipoPublicacao.nome.label('tipo_nome')
+        ).join(
+            TipoPublicacao,
+            Publicacao.tipo_id == TipoPublicacao.id,
+            isouter=True  # Left join para pegar mesmo sem tipo
+        ).filter(
+            Publicacao.excluido == False,
+            Publicacao.data_assinatura >= data_limite
+        ).order_by(Publicacao.data_assinatura.desc())
+
+        publicacoes_recentes = []
+        for pub, tipo_nome in publicacoes_query.all():
+            # Determinar o status baseado nas datas
+            if pub.vigencia_inicio:
+                if pub.vigencia_inicio <= data_limite:
+                    status = 'Urgente'
+                elif pub.vigencia_inicio > data_atual:
+                    status = 'Pendente'
+                else:
+                    status = 'Normal'
+            else:
+                status = 'Normal'
+
+            # Criar dicionário com todos os campos necessários
+            publicacao_dict = {
+                'data': pub.data_assinatura,
+                'assunto': pub.assunto or 'Sem assunto',
+                'tipo': tipo_nome or 'Não categorizado',
+                'responsavel': pub.responsavel or 'Não atribuído',
+                'status': status,
+                'link_do': pub.link_do
+            }
+            publicacoes_recentes.append(publicacao_dict)
+
+        # Atualizar contagem de tipos (caso tenha mudado)
+        total_tipos = len(tipos_data)
 
         # ---------------- ABA COMPRAS ----------------
         total_processos = db.session.query(func.count(PainelContratacao.id))\

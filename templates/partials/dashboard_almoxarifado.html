@@ -1,101 +1,247 @@
-{# ===================== DASHBOARD: ALMOXARIFADO ===================== #}
-
-<!-- ESTILO PERSONALIZADO PARA ESTA ABA -->
+<!-- ESTILO PERSONALIZADO -->
 <style>
-  .card-estoque {
-    border: none;
-    border-radius: 12px;
-    padding: 1rem;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-    margin-bottom: 1.5rem;
-  }
+    .card-indicador {
+        border: none;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        text-align: center;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    .card-indicador:hover {
+        transform: translateY(-5px);
+    }
 
-  .bg-estoque-baixo { background-color: #fee2e2; color: #991b1b; }
-  .bg-movimentado { background-color: #dbeafe; color: #1e3a8a; }
+    .card-total-itens { background-color: #dbeafe; color: #1e3a8a; }
+    .card-valor-total { background-color: #d1fae5; color: #065f46; }
+    .card-itens-criticos { background-color: #fee2e2; color: #991b1b; }
+    .card-movimentacoes { background-color: #fef9c3; color: #92400e; }
 
-  .table thead {
-    background-color: #f8fafc;
-  }
+    .card-estoque {
+        border: none;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        margin-bottom: 1.5rem;
+    }
 
-  .badge-critico {
-    background-color: #dc2626;
-    color: white;
-  }
+    .table thead {
+        background-color: #f8fafc;
+    }
 
-  .badge-alerta {
-    background-color: #facc15;
-    color: #92400e;
-  }
+    .table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        color: #475569;
+    }
 
-  .badge-normal {
-    background-color: #22c55e;
-    color: white;
-  }
+    .table td {
+        font-size: 0.9rem;
+        vertical-align: middle;
+    }
+
+    .badge-critico { background-color: #dc2626; color: white; }
+    .badge-alerta { background-color: #facc15; color: #92400e; }
+    .badge-normal { background-color: #22c55e; color: white; }
 </style>
 
-<!-- Tabela: Itens com Estoque Abaixo do Mínimo -->
-<div class="card-estoque bg-estoque-baixo">
-  <h5 class="mb-3"><i class="bi bi-exclamation-circle me-2"></i>Itens com Estoque Abaixo do Mínimo</h5>
-  <div class="table-responsive">
-    <table class="table table-sm table-hover align-middle">
-      <thead>
-        <tr>
-          <th>Código</th>
-          <th>Nome</th>
-          <th>Grupo</th>
-          <th>Estoque Atual</th>
-          <th>Mínimo</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in itens_abaixo_minimo %}
-        <tr>
-          <td>{{ item.codigo_sap }}</td>
-          <td>{{ item.nome }}</td>
-          <td>{{ item.grupo.nome }}</td>
-          <td><span class="badge badge-critico">{{ item.estoque_atual }}</span></td>
-          <td>{{ item.estoque_minimo }}</td>
-        </tr>
-        {% else %}
-        <tr>
-          <td colspan="5" class="text-muted text-center">Nenhum item com estoque crítico.</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+<!-- INDICADORES -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-12">
+        <div class="card-indicador card-total-itens">
+            <i class="bi bi-box-seam display-6"></i>
+            <h6>Total de Itens</h6>
+            <h3>{{ total_itens }}</h3>
+            <small>Em {{ total_grupos }} grupos</small>
+        </div>
+    </div>
+    <div class="col-md-3 col-12">
+        <div class="card-indicador card-valor-total">
+            <i class="bi bi-cash-stack display-6"></i>
+            <h6>Valor Total em Estoque</h6>
+            <h3>R$ {{ "{:,.2f}".format(valor_total_estoque).replace(',', '_').replace('.', ',').replace('_', '.') }}</h3>
+            <small>{{ total_itens_com_valor }} itens com valor</small>
+        </div>
+    </div>
+    <div class="col-md-3 col-12">
+        <div class="card-indicador card-itens-criticos">
+            <i class="bi bi-exclamation-triangle display-6"></i>
+            <h6>Itens Críticos</h6>
+            <h3>{{ total_itens_criticos }}</h3>
+            <small>Abaixo do estoque mínimo</small>
+        </div>
+    </div>
+    <div class="col-md-3 col-12">
+        <div class="card-indicador card-movimentacoes">
+            <i class="bi bi-arrow-left-right display-6"></i>
+            <h6>Movimentações</h6>
+            <h3>{{ total_movimentacoes }}</h3>
+            <small>Últimos 30 dias</small>
+        </div>
+    </div>
 </div>
 
-<!-- Tabela: Itens mais movimentados -->
-<div class="card-estoque bg-movimentado">
-  <h5 class="mb-3"><i class="bi bi-arrow-left-right me-2"></i>Itens Mais Movimentados</h5>
-  <div class="table-responsive">
-    <table class="table table-sm table-hover align-middle">
-      <thead>
-        <tr>
-          <th>Código</th>
-          <th>Nome</th>
-          <th>Entradas</th>
-          <th>Saídas</th>
-          <th>Total</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in itens_movimentados %}
-        <tr>
-          <td>{{ item.codigo_sap }}</td>
-          <td>{{ item.nome }}</td>
-          <td><span class="badge badge-normal">{{ item.total_entradas }}</span></td>
-          <td><span class="badge badge-alerta">{{ item.total_saidas }}</span></td>
-          <td><strong>{{ item.total_entradas + item.total_saidas }}</strong></td>
-        </tr>
-        {% else %}
-        <tr>
-          <td colspan="5" class="text-muted text-center">Sem movimentações registradas.</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+<!-- GRÁFICO DE ESTOQUE POR GRUPO -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h5 class="card-title mb-3">
+            <i class="bi bi-pie-chart me-2"></i>
+            Distribuição de Itens por Grupo
+        </h5>
+        <canvas id="graficoGrupos" style="max-height: 300px;"></canvas>
+    </div>
 </div>
 
+<!-- ITENS COM ESTOQUE CRÍTICO -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-exclamation-circle me-2"></i>
+                Itens com Estoque Abaixo do Mínimo
+            </h5>
+            <span class="badge bg-danger">{{ itens_abaixo_minimo|length }} itens</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nome</th>
+                        <th>Grupo</th>
+                        <th>Estoque Atual</th>
+                        <th>Mínimo</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in itens_abaixo_minimo %}
+                    <tr>
+                        <td>{{ item.codigo_sap }}</td>
+                        <td>{{ item.nome }}</td>
+                        <td>{{ item.grupo.nome }}</td>
+                        <td>{{ item.estoque_atual }}</td>
+                        <td>{{ item.estoque_minimo }}</td>
+                        <td>
+                            {% set percentual = (item.estoque_atual / item.estoque_minimo * 100)|round %}
+                            <span class="badge {% if percentual < 30 %}badge-critico{% elif percentual < 70 %}badge-alerta{% else %}badge-normal{% endif %}">
+                                {{ percentual }}%
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <i class="bi bi-check-circle fs-1 text-success d-block mb-2"></i>
+                            <p class="text-muted mb-0">Nenhum item com estoque crítico.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ITENS MAIS MOVIMENTADOS -->
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-arrow-left-right me-2"></i>
+                Itens Mais Movimentados
+            </h5>
+            <div>
+                <span class="badge bg-primary me-2">Últimos 30 dias</span>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nome</th>
+                        <th>Grupo</th>
+                        <th>Entradas</th>
+                        <th>Saídas</th>
+                        <th>Total</th>
+                        <th>Valor Movimentado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in itens_movimentados %}
+                    <tr>
+                        <td>{{ item.codigo_sap }}</td>
+                        <td>{{ item.nome }}</td>
+                        <td>{{ item.grupo.nome }}</td>
+                        <td><span class="badge badge-normal">{{ item.total_entradas }}</span></td>
+                        <td><span class="badge badge-alerta">{{ item.total_saidas }}</span></td>
+                        <td><strong>{{ item.total_entradas + item.total_saidas }}</strong></td>
+                        <td>R$ {{ "{:,.2f}".format(item.valor_movimentado).replace(',', '_').replace('.', ',').replace('_', '.') }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
+                            <p class="text-muted mb-0">Sem movimentações registradas.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- SCRIPT CHART.JS -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('graficoGrupos').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ labels_grupos | tojson }},
+            datasets: [{
+                data: {{ valores_grupos | tojson }},
+                backgroundColor: [
+                    '#3b82f6',
+                    '#22c55e',
+                    '#eab308',
+                    '#ef4444',
+                    '#8b5cf6',
+                    '#ec4899',
+                    '#14b8a6',
+                    '#f97316'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            let label = ctx.label || '';
+                            let value = ctx.parsed || 0;
+                            let total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                            let percentage = ((value * 100) / total).toFixed(1);
+                            return `${label}: ${value} itens (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+});</script>

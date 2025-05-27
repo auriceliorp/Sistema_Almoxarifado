@@ -5,10 +5,12 @@ import sys
 project_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, project_dir)
 
-# Importa e cria a aplicação
-from app_render import create_app
+# Importa a instância do app já criada
+from app_render import app
 
-app = create_app()
+# Não é necessário criar uma nova instância pois já existe uma em app_render.py
+# O Gunicorn usará a instância 'app' diretamente
 
 if __name__ == "__main__":
-    app.run()
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)

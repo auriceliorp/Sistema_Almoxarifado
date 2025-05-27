@@ -102,7 +102,7 @@ def dashboard():
         data_limite = datetime.now() - timedelta(days=30)
         total_movimentacoes = (
             db.session.query(func.count(EntradaMaterial.id))
-            .filter(EntradaMaterial.data_entrada >= data_limite)
+            .filter(EntradaMaterial.data_movimento >= data_limite)
             .scalar() or 0
         ) + (
             db.session.query(func.count(SaidaMaterial.id))
@@ -119,7 +119,7 @@ def dashboard():
                 .join(EntradaMaterial)\
                 .filter(
                     EntradaItem.item_id == item.id,
-                    EntradaMaterial.data_entrada >= data_limite
+                    EntradaMaterial.data_movimento >= data_limite
                 ).scalar() or 0
 
             saidas = db.session.query(func.sum(SaidaItem.quantidade))\
@@ -363,8 +363,8 @@ def dashboard():
 
             total_entradas = db.session.query(func.count(EntradaMaterial.id))\
                 .filter(
-                    extract('month', EntradaMaterial.data_entrada) == data.month,
-                    extract('year', EntradaMaterial.data_entrada) == data.year
+                    extract('month', EntradaMaterial.data_movimento) == data.month,
+                    extract('year', EntradaMaterial.data_movimento) == data.year
                 ).scalar() or 0
             valores_entradas_meses.append(total_entradas)
 

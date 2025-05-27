@@ -8,7 +8,8 @@ from datetime import datetime, timedelta
 from extensoes import db
 from models import (
     EntradaItem, SaidaItem, EntradaMaterial, SaidaMaterial,
-    NaturezaDespesa, Item, Fornecedor, PainelContratacao, Grupo
+    NaturezaDespesa, Item, Fornecedor, PainelContratacao, Grupo,
+    BemPatrimonial, Local, TipoBem, MovimentacaoBem
 )
 
 dashboard_bp = Blueprint('dashboard_bp', __name__, url_prefix='/dashboard')
@@ -153,6 +154,95 @@ def dashboard():
         itens_abaixo_minimo = itens_movimentados = []
         labels_grupos = valores_grupos = []
 
+    # ---------------- ABA PATRIMÔNIO ----------------
+    try:
+        # Total de bens ativos e locais
+        total_bens_ativos = db.session.query(func.count(BemPatrimonial.id))\
+            .filter(BemPatrimonial.situacao == 'Ativo')\
+            .scalar() or 0
+
+        total_locais = db.session.query(func.count(Local.id)).scalar() or 0
+
+        # Valor total dos bens
+        valor_total_bens = db.session.query(func.sum(BemPatrimonial.valor))\
+            .filter(BemPatrimonial.valor.isnot(None))\
+            .scalar() or 0
+
+        total_bens_com_valor = db.session.query(func.count(BemPatrimonial.id))\
+            .filter(BemPatrimonial.valor.isnot(None))\
+            .scalar() or 0
+
+        # Bens pendentes de inventário
+        total_pendentes_inventario = db.session.query(func.count(BemPatrimonial.id))\
+            .filter(BemPatrimonial.situacao == 'Inventariar')\
+            .scalar() or 0
+
+        total_bens = db.session.query(func.count(BemPatrimonial.id)).scalar() or 1
+        percentual_inventariado = round(((total_bens - total_pendentes_inventario) / total_bens) * 100)
+
+        # Bens em manutenção
+        total_em_manutencao = db.session.query(func.count(BemPatrimonial.id))\
+            .filter(BemPatrimonial.situacao == 'Manutenção')\
+            .scalar() or 0
+
+        data_inicio_mes = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        total_manutencoes_mes = db.session.query(func.count(MovimentacaoBem.id))\
+            .filter(
+                MovimentacaoBem.tipo == 'Manutenção',
+                MovimentacaoBem.data >= data_inicio_mes
+            ).scalar() or 0
+
+        # Bens para alienar
+        total_para_alienar = db.session.query(func.count(BemPatrimonial.id))\
+            .filter(BemPatrimonial.situacao == 'Alienar')\
+            .scalar() or 0
+
+        data_inicio_ano = datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+        total_alienados_ano = db.session.query(func.count(MovimentacaoBem.id))\
+            .filter(
+                MovimentacaoBem.tipo == 'Alienação',
+                MovimentacaoBem.data >= data_inicio_ano
+            ).scalar() or 0
+
+        # Distribuição por local
+        locais_data = db.session.query(
+            Local.nome,
+            func.count(BemPatrimonial.id).label('total')
+        ).join(BemPatrimonial)\
+        .group_by(Local.id, Local.nome)\
+        .order_by(func.count(BemPatrimonial.id).desc())\
+        .all()
+
+        labels_locais = [l.nome for l in locais_data]
+        valores_locais = [int(l.total) for l in locais_data]
+
+        # Distribuição por tipo
+        tipos_data = db.session.query(
+            TipoBem.nome,
+            func.count(BemPatrimonial.id).label('total')
+        ).join(BemPatrimonial)\
+        .group_by(TipoBem.id, TipoBem.nome)\
+        .order_by(func.count(BemPatrimonial.id).desc())\
+        .all()
+
+        labels_tipos = [t.nome for t in tipos_data]
+        valores_tipos = [int(t.total) for t in tipos_data]
+
+        # Últimos bens cadastrados
+        data_limite = datetime.now() - timedelta(days=30)
+        ultimos_bens = BemPatrimonial.query\
+            .filter(BemPatrimonial.data_cadastro >= data_limite)\
+            .order_by(BemPatrimonial.data_cadastro.desc())\
+            .all()
+
+    except Exception as e:
+        print(f"Erro ao carregar dados do patrimônio: {str(e)}")
+        total_bens_ativos = total_locais = valor_total_bens = total_bens_com_valor = 0
+        total_pendentes_inventario = percentual_inventariado = total_em_manutencao = 0
+        total_manutencoes_mes = total_para_alienar = total_alienados_ano = 0
+        labels_locais = valores_locais = labels_tipos = valores_tipos = []
+        ultimos_bens = []
+
     # ---------------- ABA COMPRAS ----------------
     try:
         # Total de processos
@@ -230,6 +320,21 @@ def dashboard():
         itens_movimentados=itens_movimentados,
         labels_grupos=labels_grupos,
         valores_grupos=valores_grupos,
+        total_bens_ativos=total_bens_ativos,
+        total_locais=total_locais,
+        valor_total_bens=valor_total_bens,
+        total_bens_com_valor=total_bens_com_valor,
+        total_pendentes_inventario=total_pendentes_inventario,
+        percentual_inventariado=percentual_inventariado,
+        total_em_manutencao=total_em_manutencao,
+        total_manutencoes_mes=total_manutencoes_mes,
+        total_para_alienar=total_para_alienar,
+        total_alienados_ano=total_alienados_ano,
+        labels_locais=labels_locais,
+        valores_locais=valores_locais,
+        labels_tipos=labels_tipos,
+        valores_tipos=valores_tipos,
+        ultimos_bens=ultimos_bens,
         total_fornecedores=total_fornecedores,
         total_entradas=total_entradas,
         total_saidas=total_saidas,

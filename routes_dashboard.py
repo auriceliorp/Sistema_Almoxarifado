@@ -7,7 +7,7 @@ from models import (
     EntradaItem, SaidaItem, EntradaMaterial, SaidaMaterial,
     NaturezaDespesa, Item, Fornecedor, PainelContratacao, Grupo,
     BemPatrimonial, Local, TipoBem, MovimentacaoBem,
-    Publicacao, TipoPublicacao
+    Publicacao, TipoPublicacao, Usuario, UnidadeLocal
 )
 
 dashboard_bp = Blueprint('dashboard_bp', __name__, url_prefix='/dashboard')
@@ -104,7 +104,7 @@ def dashboard():
             func.count(EntradaMaterial.id) + func.count(SaidaMaterial.id)
         ).filter(
             or_(
-                EntradaMaterial.data_entrada >= data_limite,
+                EntradaMaterial.data_movimento >= data_limite,
                 SaidaMaterial.data_movimento >= data_limite
             )
         ).scalar() or 0
@@ -118,7 +118,7 @@ def dashboard():
                 .join(EntradaMaterial)\
                 .filter(
                     EntradaItem.item_id == item.id,
-                    EntradaMaterial.data_entrada >= data_limite
+                    EntradaMaterial.data_movimento >= data_limite
                 ).scalar() or 0
 
             saidas = db.session.query(func.sum(SaidaItem.quantidade))\
@@ -362,8 +362,8 @@ def dashboard():
 
             total_entradas = db.session.query(func.count(EntradaMaterial.id))\
                 .filter(
-                    extract('month', EntradaMaterial.data_entrada) == data.month,
-                    extract('year', EntradaMaterial.data_entrada) == data.year
+                    extract('month', EntradaMaterial.data_movimento) == data.month,
+                    extract('year', EntradaMaterial.data_movimento) == data.year
                 ).scalar() or 0
             valores_entradas_meses.append(total_entradas)
 

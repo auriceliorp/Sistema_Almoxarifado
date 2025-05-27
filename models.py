@@ -345,7 +345,6 @@ class Publicacao(db.Model):
     vigencia_inicio = db.Column(db.Date, nullable=True)
     vigencia_fim = db.Column(db.Date, nullable=True)
     data_assinatura = db.Column(db.Date, nullable=False)
-    data = db.Column(db.Date, nullable=False)  # Novo campo
     excluido = db.Column(db.Boolean, default=False)
 
     partes_embrapa = db.relationship(

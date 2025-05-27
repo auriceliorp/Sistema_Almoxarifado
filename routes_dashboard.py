@@ -86,10 +86,10 @@ def dashboard():
         # ---------------- ABA ALMOXARIFADO ----------------
         total_grupos = db.session.query(func.count(Grupo.id)).scalar() or 0
         valor_total_estoque = db.session.query(
-            func.sum(Item.estoque_atual * Item.valor_medio)
+            func.sum(Item.estoque_atual * Item.valor_unitario)
         ).scalar() or 0
         total_itens_com_valor = db.session.query(func.count(Item.id))\
-            .filter(Item.valor_medio > 0)\
+            .filter(Item.valor_unitario > 0)\
             .scalar() or 0
 
         itens_abaixo_minimo = Item.query\
@@ -104,7 +104,7 @@ def dashboard():
             func.count(EntradaMaterial.id) + func.count(SaidaMaterial.id)
         ).filter(
             or_(
-                EntradaMaterial.data_movimento >= data_limite,
+                EntradaMaterial.data_entrada >= data_limite,
                 SaidaMaterial.data_movimento >= data_limite
             )
         ).scalar() or 0
@@ -118,7 +118,7 @@ def dashboard():
                 .join(EntradaMaterial)\
                 .filter(
                     EntradaItem.item_id == item.id,
-                    EntradaMaterial.data_movimento >= data_limite
+                    EntradaMaterial.data_entrada >= data_limite
                 ).scalar() or 0
 
             saidas = db.session.query(func.sum(SaidaItem.quantidade))\
@@ -128,7 +128,7 @@ def dashboard():
                     SaidaMaterial.data_movimento >= data_limite
                 ).scalar() or 0
 
-            valor_movimentado = (entradas + saidas) * (item.valor_medio or 0)
+            valor_movimentado = (entradas + saidas) * (item.valor_unitario or 0)
 
             item.total_entradas = entradas
             item.total_saidas = saidas
@@ -362,8 +362,8 @@ def dashboard():
 
             total_entradas = db.session.query(func.count(EntradaMaterial.id))\
                 .filter(
-                    extract('month', EntradaMaterial.data_movimento) == data.month,
-                    extract('year', EntradaMaterial.data_movimento) == data.year
+                    extract('month', EntradaMaterial.data_entrada) == data.month,
+                    extract('year', EntradaMaterial.data_entrada) == data.year
                 ).scalar() or 0
             valores_entradas_meses.append(total_entradas)
 
@@ -382,7 +382,7 @@ def dashboard():
             grafico_grupo_dados=grafico_grupo_dados,
             total_itens=total_itens,
             total_grupos=total_grupos,
-            valor_total_estoque=valor_total_estoque,
+            valor_total_estoque=float(valor_total_estoque or 0),
             total_itens_com_valor=total_itens_com_valor,
             total_itens_criticos=total_itens_criticos,
             total_movimentacoes=total_movimentacoes,
@@ -444,5 +444,6 @@ def dashboard():
             total_fornecedores=0,
             total_entradas=0,
             total_saidas=0,
+            valor_total_estoque=0.0,
             # ... valores padrão para todas as variáveis
         ) 

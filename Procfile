@@ -1,1 +1,1 @@
-web: gunicorn arquivo_python:funcao_factory
+web: gunicorn wsgi:app

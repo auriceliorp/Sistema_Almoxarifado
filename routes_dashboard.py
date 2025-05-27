@@ -151,7 +151,7 @@ def dashboard():
         labels_grupos = [g.nome for g in grupos_data]
         valores_grupos = [int(g.total) for g in grupos_data]
 
-       # ---------------- ABA PATRIMÔNIO ----------------
+      # ---------------- ABA PATRIMÔNIO ----------------
         total_bens_ativos = db.session.query(func.count(BemPatrimonial.id))\
             .filter(
                 BemPatrimonial.situacao == 'Em uso',
@@ -196,6 +196,7 @@ def dashboard():
 
         data_inicio_mes = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         total_manutencoes_mes = db.session.query(func.count(MovimentacaoBem.id))\
+            .select_from(MovimentacaoBem)\
             .join(BemPatrimonial)\
             .filter(
                 MovimentacaoBem.tipo_movimentacao == 'Manutenção',
@@ -212,6 +213,7 @@ def dashboard():
 
         data_inicio_ano = datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
         total_alienados_ano = db.session.query(func.count(MovimentacaoBem.id))\
+            .select_from(MovimentacaoBem)\
             .join(BemPatrimonial)\
             .filter(
                 MovimentacaoBem.tipo_movimentacao == 'Alienação',
@@ -222,7 +224,8 @@ def dashboard():
         locais_data = db.session.query(
             Local.descricao.label('nome'),
             func.count(BemPatrimonial.id).label('total')
-        ).join(BemPatrimonial)\
+        ).select_from(Local)\
+        .join(BemPatrimonial)\
         .filter(BemPatrimonial.excluido == False)\
         .group_by(Local.id, Local.descricao)\
         .order_by(func.count(BemPatrimonial.id).desc())\
@@ -234,7 +237,8 @@ def dashboard():
         tipos_data = db.session.query(
             TipoBem.descricao.label('nome'),
             func.count(BemPatrimonial.id).label('total')
-        ).join(BemPatrimonial)\
+        ).select_from(TipoBem)\
+        .join(BemPatrimonial)\
         .filter(BemPatrimonial.excluido == False)\
         .group_by(TipoBem.id, TipoBem.descricao)\
         .order_by(func.count(BemPatrimonial.id).desc())\

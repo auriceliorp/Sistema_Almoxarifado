@@ -122,7 +122,7 @@ class UnidadeLocal(db.Model):
 class EntradaMaterial(db.Model):
     __tablename__ = 'entrada_material'
     id = db.Column(db.Integer, primary_key=True)
-    data_entrada = db.Column(db.Date, nullable=False)  # Renomeado de data_movimento
+    data_movimento = db.Column(db.Date, nullable=False)  
     data_nota_fiscal = db.Column(db.Date, nullable=False)
     numero_nota_fiscal = db.Column(db.String(50), nullable=False)
     estornada = db.Column(db.Boolean, default=False)

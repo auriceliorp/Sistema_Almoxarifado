@@ -1,12 +1,13 @@
 # routes_saida.py
 # Rotas para saída de materiais com paginação, filtro e geração de documento
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from app_render import db
 from models import Item, SaidaMaterial, SaidaItem, Usuario
 from datetime import date
 from sqlalchemy.orm import aliased
+from sqlalchemy import or_
 
 # Define o blueprint para as rotas de saída
 saida_bp = Blueprint('saida_bp', __name__)
@@ -46,13 +47,13 @@ def lista_saidas():
 
     return render_template('lista_saida.html', saidas=saidas, filtro=filtro, busca=busca)
 
-
 # -------------------- NOVA SAÍDA -------------------- #
 @saida_bp.route('/nova_saida', methods=['GET', 'POST'])
 @login_required
 def nova_saida():
-    itens = Item.query.all()
-    usuarios = Usuario.query.order_by(Usuario.nome).all()
+    # Busca apenas itens com estoque disponível
+    itens = Item.query.filter(Item.estoque_atual > 0).order_by(Item.nome).all()
+    usuarios = Usuario.query.filter(Usuario.ativo == True).order_by(Usuario.nome).all()
 
     if request.method == 'POST':
         try:
@@ -60,6 +61,11 @@ def nova_saida():
             numero_documento = request.form.get('numero_documento')
             observacao = request.form.get('observacao')
             solicitante_id = int(request.form.get('solicitante'))
+
+            # Validações básicas
+            if not data_movimento or not solicitante_id:
+                flash('Todos os campos obrigatórios devem ser preenchidos.', 'danger')
+                return redirect(url_for('saida_bp.nova_saida'))
 
             nova_saida = SaidaMaterial(
                 data_movimento=data_movimento,
@@ -69,31 +75,45 @@ def nova_saida():
                 solicitante_id=solicitante_id
             )
             db.session.add(nova_saida)
-            db.session.flush()
+            db.session.flush()  # Obtém o ID da nova saída sem commit
 
             item_ids = request.form.getlist('item_id[]')
             quantidades = request.form.getlist('quantidade[]')
             valores_unitarios = request.form.getlist('valor_unitario[]')
+
+            if not item_ids or not quantidades:
+                flash('É necessário incluir pelo menos um item na saída.', 'danger')
+                db.session.rollback()
+                return redirect(url_for('saida_bp.nova_saida'))
 
             for i in range(len(item_ids)):
                 if not item_ids[i] or not quantidades[i] or not valores_unitarios[i]:
                     continue
 
                 item = Item.query.get(int(item_ids[i]))
-                quantidade = int(quantidades[i])
-                valor_unitario = float(valores_unitarios[i].replace(',', '.'))
-
-                if item.estoque_atual < quantidade:
-                    flash(f"Estoque insuficiente para '{item.nome}'", 'danger')
+                if not item:
+                    flash(f'Item não encontrado.', 'danger')
                     db.session.rollback()
                     return redirect(url_for('saida_bp.nova_saida'))
 
+                quantidade = int(quantidades[i])
+                valor_unitario = float(valores_unitarios[i].replace(',', '.'))
+
+                # Validação de estoque
+                if item.estoque_atual < quantidade:
+                    flash(f"Estoque insuficiente para '{item.nome}'. Disponível: {item.estoque_atual}", 'danger')
+                    db.session.rollback()
+                    return redirect(url_for('saida_bp.nova_saida'))
+
+                # Atualiza o estoque e saldo financeiro do item
                 item.estoque_atual -= quantidade
                 item.saldo_financeiro -= quantidade * valor_unitario
 
+                # Atualiza o valor da natureza de despesa, se existir
                 if item.grupo and item.grupo.natureza_despesa:
                     item.grupo.natureza_despesa.valor -= quantidade * valor_unitario
 
+                # Cria o item de saída
                 saida_item = SaidaItem(
                     item_id=item.id,
                     quantidade=quantidade,
@@ -106,11 +126,17 @@ def nova_saida():
             flash('Saída registrada com sucesso.', 'success')
             return redirect(url_for('saida_bp.lista_saidas'))
 
+        except ValueError as e:
+            db.session.rollback()
+            flash(f'Erro de validação: {str(e)}', 'danger')
+            return redirect(url_for('saida_bp.nova_saida'))
         except Exception as e:
             db.session.rollback()
-            flash(f'Erro ao registrar saída: {e}', 'danger')
-            print(e)
+            flash(f'Erro ao registrar saída: {str(e)}', 'danger')
+            print(f"Erro detalhado: {e}")
+            return redirect(url_for('saida_bp.nova_saida'))
 
+    # Gera o próximo número de documento
     ano_atual = date.today().year
     ultima_saida = SaidaMaterial.query.order_by(SaidaMaterial.id.desc()).first()
     if ultima_saida and ultima_saida.numero_documento and '/' in ultima_saida.numero_documento:
@@ -122,7 +148,22 @@ def nova_saida():
     else:
         numero_documento = f"001/{ano_atual}"
 
-    return render_template('nova_saida.html', itens=itens, usuarios=usuarios, numero_documento=numero_documento)
+    return render_template('nova_saida.html', 
+                         itens=itens, 
+                         usuarios=usuarios, 
+                         numero_documento=numero_documento)
+
+# -------------------- BUSCAR ITEM POR AJAX -------------------- #
+@saida_bp.route('/get_item/<int:item_id>')
+@login_required
+def get_item(item_id):
+    item = Item.query.get_or_404(item_id)
+    return jsonify({
+        'id': item.id,
+        'nome': item.nome,
+        'valor_unitario': float(item.valor_unitario),
+        'estoque_atual': item.estoque_atual
+    })
 
 # -------------------- ESTORNAR SAÍDA DE MATERIAL -------------------- #
 @saida_bp.route('/saida/estornar/<int:saida_id>', methods=['POST'])
@@ -170,13 +211,16 @@ def estornar_saida(saida_id):
                     item.grupo.natureza_despesa.valor += item_saida.quantidade * float(item_saida.valor_unitario)
 
         saida.estornada = True
+        saida.data_estorno = date.today()
+        saida.usuario_estorno_id = current_user.id
 
         registrar_auditoria(
             acao='estorno',
             tabela='saida_material',
             registro_id=saida.id,
             dados_antes=dados_antes,
-            dados_depois=None
+            dados_depois=None,
+            usuario_id=current_user.id
         )
 
         db.session.commit()
@@ -184,12 +228,10 @@ def estornar_saida(saida_id):
 
     except Exception as e:
         db.session.rollback()
-        flash(f'Erro ao estornar saída: {e}', 'danger')
-        print(e)
+        flash(f'Erro ao estornar saída: {str(e)}', 'danger')
+        print(f"Erro detalhado: {e}")
 
     return redirect(url_for('saida_bp.lista_saidas'))
-
-
 
 # -------------------- REQUISIÇÃO (IMPRESSÃO) -------------------- #
 @saida_bp.route('/requisicao/<int:saida_id>')

@@ -130,7 +130,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
+                                    <tr class="item-row">
                                         <td>
                                             <select name="item_id[]" class="form-select select2-item" required onchange="atualizarValor(this)">
                                                 <option value="" disabled selected>Selecione...</option>
@@ -207,10 +207,19 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- jQuery (certifique-se de que está sendo carregado primeiro) -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<!-- Select2 -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
+// Verifica se o jQuery está carregado
+if (typeof jQuery === 'undefined') {
+    console.error('jQuery não está carregado!');
+}
+
 $(document).ready(function() {
+    console.log('Document ready!');
+    
     // Inicializa Select2
     $('.select2').select2({
         theme: 'bootstrap-5',
@@ -231,6 +240,7 @@ $(document).ready(function() {
 });
 
 function inicializarSelect2Items() {
+    console.log('Inicializando Select2 Items');
     $('.select2-item').select2({
         theme: 'bootstrap-5',
         width: '100%',
@@ -265,6 +275,7 @@ function parseMoeda(valor) {
 }
 
 function atualizarValor(select) {
+    console.log('Atualizando valor do item');
     const option = select.options[select.selectedIndex];
     const valor = option.getAttribute('data-valor');
     const estoque = parseFloat(option.getAttribute('data-estoque'));
@@ -288,6 +299,7 @@ function atualizarValor(select) {
 }
 
 function atualizarTotais(input) {
+    console.log('Atualizando totais');
     const linha = input.closest('tr');
     const qtd = parseFloat(linha.querySelector('input[name="quantidade[]"]').value) || 0;
     const valor = parseFloat(linha.querySelector('input[name="valor_unitario[]"]').value) || 0;
@@ -307,60 +319,74 @@ function atualizarTotalNota() {
 }
 
 function adicionarLinha() {
-    const tbody = document.querySelector('#tabela-itens tbody');
-    const primeiraLinha = tbody.querySelector('tr');
-    const novaLinha = primeiraLinha.cloneNode(true);
-
-    // Limpa os valores dos inputs
-    novaLinha.querySelectorAll('input, select').forEach(elemento => {
-        if (elemento.tagName === 'SELECT') {
-            elemento.selectedIndex = 0;
-            elemento.classList.remove('is-invalid');
-        } else if (elemento.classList.contains('valor_total')) {
-            elemento.value = '0,00';
-        } else {
-            elemento.value = '';
-            elemento.disabled = false;
-        }
-    });
-
-    // Remove qualquer tooltip e select2 existente
-    novaLinha.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
-        const tooltip = bootstrap.Tooltip.getInstance(el);
-        if (tooltip) {
-            tooltip.dispose();
-        }
-    });
+    console.log('Adicionando nova linha...');
     
-    novaLinha.querySelectorAll('.select2-item').forEach(el => {
-        $(el).select2('destroy');
-    });
+    try {
+        const tbody = document.querySelector('#tabela-itens tbody');
+        if (!tbody) {
+            console.error('Tbody não encontrado');
+            return;
+        }
 
-    // Adiciona a nova linha
-    tbody.appendChild(novaLinha);
+        const primeiraLinha = tbody.querySelector('tr');
+        if (!primeiraLinha) {
+            console.error('Primeira linha não encontrada');
+            return;
+        }
 
-    // Reinicializa os componentes na nova linha
-    novaLinha.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
-        new bootstrap.Tooltip(el);
-    });
-    
-    novaLinha.querySelectorAll('.select2-item').forEach(el => {
-        $(el).select2({
-            theme: 'bootstrap-5',
-            width: '100%',
-            placeholder: 'Selecione um item...',
-            language: {
-                noResults: function() {
-                    return "Nenhum item encontrado";
-                }
+        const novaLinha = primeiraLinha.cloneNode(true);
+
+        // Limpa os valores dos inputs
+        novaLinha.querySelectorAll('input, select').forEach(elemento => {
+            if (elemento.tagName === 'SELECT') {
+                elemento.selectedIndex = 0;
+                elemento.classList.remove('is-invalid');
+            } else if (elemento.classList.contains('valor_total')) {
+                elemento.value = '0,00';
+            } else {
+                elemento.value = '';
+                elemento.disabled = false;
             }
         });
-    });
+
+        // Remove select2 existente
+        novaLinha.querySelectorAll('.select2-item').forEach(el => {
+            if ($(el).data('select2')) {
+                $(el).select2('destroy');
+            }
+        });
+
+        // Adiciona a nova linha
+        tbody.appendChild(novaLinha);
+
+        // Reinicializa select2 na nova linha
+        novaLinha.querySelectorAll('.select2-item').forEach(el => {
+            $(el).select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                placeholder: 'Selecione um item...'
+            });
+        });
+
+        // Atualiza os eventos da nova linha
+        const novoSelect = novaLinha.querySelector('select[name="item_id[]"]');
+        if (novoSelect) {
+            novoSelect.addEventListener('change', function() {
+                atualizarValor(this);
+            });
+        }
+
+        console.log('Nova linha adicionada com sucesso');
+    } catch (error) {
+        console.error('Erro ao adicionar linha:', error);
+    }
 }
 
 function removerLinha(botao) {
+    console.log('Removendo linha');
     const linha = botao.closest('tr');
     const tbody = linha.parentElement;
+    
     if (tbody.rows.length > 1) {
         // Destrói o tooltip antes de remover a linha
         const tooltip = bootstrap.Tooltip.getInstance(botao);
@@ -382,6 +408,7 @@ function removerLinha(botao) {
 }
 
 function validarFormulario() {
+    console.log('Validando formulário');
     let valido = true;
     const mensagens = [];
 

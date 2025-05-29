@@ -53,7 +53,8 @@ def lista_saidas():
 def nova_saida():
     # Busca apenas itens com estoque disponível
     itens = Item.query.filter(Item.estoque_atual > 0).order_by(Item.nome).all()
-    usuarios = Usuario.query.filter(Usuario.ativo == True).order_by(Usuario.nome).all()
+    # Removido o filtro de ativo já que não existe no modelo
+    usuarios = Usuario.query.order_by(Usuario.nome).all()
 
     if request.method == 'POST':
         try:
@@ -211,8 +212,6 @@ def estornar_saida(saida_id):
                     item.grupo.natureza_despesa.valor += item_saida.quantidade * float(item_saida.valor_unitario)
 
         saida.estornada = True
-        saida.data_estorno = date.today()
-        saida.usuario_estorno_id = current_user.id
 
         registrar_auditoria(
             acao='estorno',

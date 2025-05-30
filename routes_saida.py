@@ -1,275 +1,401 @@
-# routes_saida.py
-# Rotas para saída de materiais com paginação, filtro e geração de documento
-
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for, send_file
 from flask_login import login_required, current_user
-from app_render import db
-from models import Item, SaidaMaterial, SaidaItem, Usuario
-from datetime import date
-from sqlalchemy.orm import aliased
-from sqlalchemy import or_, cast, Float
+from datetime import datetime, date, timedelta
 from decimal import Decimal
+from models import db, Item, SaidaMaterial, SaidaItem, Usuario, UnidadeLocal
+from sqlalchemy import desc, and_, or_, func
+import pandas as pd
+import io
+import csv
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment, PatternFill
 
-# Define o blueprint para as rotas de saída
-saida_bp = Blueprint('saida_bp', __name__)
+saida_bp = Blueprint('saida', __name__)
 
-# -------------------- LISTAR SAÍDAS COM FILTRO E PAGINAÇÃO -------------------- #
+def format_currency(value):
+    """Formata valor monetário para exibição"""
+    if value is None:
+        return "R$ 0,00"
+    return f"R$ {value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+def parse_date(date_str):
+    """Converte string de data para objeto date"""
+    try:
+        return datetime.strptime(date_str, '%Y-%m-%d').date()
+    except:
+        return None
+
 @saida_bp.route('/saidas')
 @login_required
-def lista_saidas():
+def listar_saidas():
     page = request.args.get('page', 1, type=int)
-    filtro = request.args.get('filtro')
-    busca = request.args.get('busca', '').strip().lower()
+    per_page = 20
+    
+    # Filtros
+    data_inicio = request.args.get('data_inicio')
+    data_fim = request.args.get('data_fim')
+    solicitante_id = request.args.get('solicitante_id', type=int)
+    item_id = request.args.get('item_id', type=int)
+    
+    query = SaidaMaterial.query.filter_by(estornada=False)
+    
+    if data_inicio:
+        query = query.filter(SaidaMaterial.data_movimento >= parse_date(data_inicio))
+    if data_fim:
+        query = query.filter(SaidaMaterial.data_movimento <= parse_date(data_fim))
+    if solicitante_id:
+        query = query.filter(SaidaMaterial.solicitante_id == solicitante_id)
+    if item_id:
+        query = query.join(SaidaItem).filter(SaidaItem.item_id == item_id)
+    
+    saidas = query.order_by(desc(SaidaMaterial.data_movimento)).paginate(page=page, per_page=per_page)
+    
+    # Dados para filtros
+    solicitantes = Usuario.query.order_by(Usuario.nome).all()
+    itens = Item.query.order_by(Item.nome).all()
+    
+    return render_template('saidas/listar_saidas.html', 
+                         saidas=saidas,
+                         solicitantes=solicitantes,
+                         itens=itens,
+                         data_inicio=data_inicio,
+                         data_fim=data_fim,
+                         solicitante_id=solicitante_id,
+                         item_id=item_id)
 
-    # Aliases para evitar conflito entre usuario_id e solicitante_id
-    responsavel = aliased(Usuario)
-    solicitante = aliased(Usuario)
-
-    # Inicia query com joins explícitos e sem conflito
-    query = db.session.query(SaidaMaterial).join(responsavel, SaidaMaterial.usuario).join(solicitante, SaidaMaterial.solicitante)
-
-    if filtro and busca:
-        if filtro == 'id':
-            query = query.filter(SaidaMaterial.id == busca)
-        elif filtro == 'data':
-            try:
-                dia, mes, ano = map(int, busca.split('/'))
-                query = query.filter(SaidaMaterial.data_movimento == date(ano, mes, dia))
-            except:
-                flash('Formato de data inválido. Use DD/MM/AAAA.', 'warning')
-        elif filtro == 'responsavel':
-            query = query.filter(responsavel.nome.ilike(f'%{busca}%'))
-        elif filtro == 'solicitante':
-            query = query.filter(solicitante.nome.ilike(f'%{busca}%'))
-        elif filtro == 'setor':
-            query = query.join(solicitante.unidade_local).filter(solicitante.unidade_local.has(descricao_ilike=busca))
-
-    saidas = query.order_by(SaidaMaterial.data_movimento.desc()).paginate(page=page, per_page=10)
-
-    return render_template('lista_saida.html', saidas=saidas, filtro=filtro, busca=busca)
-
-# -------------------- NOVA SAÍDA -------------------- #
-@saida_bp.route('/nova_saida', methods=['GET', 'POST'])
+@saida_bp.route('/saida/nova', methods=['GET', 'POST'])
 @login_required
 def nova_saida():
-    try:
-        # Busca itens com estoque disponível e converte valor_unitario para float
-        itens = db.session.query(Item).filter(Item.estoque_atual > 0).order_by(Item.nome).all()
-        
-        # Converte os valores para float para debug
-        for item in itens:
-            if isinstance(item.valor_unitario, Decimal):
-                valor_float = float(item.valor_unitario)
-            else:
-                valor_float = float(item.valor_unitario or 0)
-            print(f"Item: {item.nome}, Valor: {valor_float}, Tipo: {type(valor_float)}")
-            # Garante que o valor_unitario seja float
-            item.valor_unitario = valor_float
+    if request.method == 'POST':
+        try:
+            data_movimento = datetime.strptime(request.form['data_movimento'], '%Y-%m-%d').date()
+            solicitante_id = request.form['solicitante_id']
+            observacao = request.form.get('observacao', '')
+            
+            # Validações básicas
+            if data_movimento > date.today():
+                raise ValueError("Data de movimento não pode ser futura")
+            
+            if not solicitante_id:
+                raise ValueError("Solicitante é obrigatório")
+            
+            # Criar nova saída
+            saida = SaidaMaterial(
+                data_movimento=data_movimento,
+                solicitante_id=solicitante_id,
+                usuario_id=current_user.id,
+                observacao=observacao
+            )
+            db.session.add(saida)
+            db.session.flush()  # Obter o ID da saída
 
-        usuarios = Usuario.query.order_by(Usuario.nome).all()
+            # Processar itens
+            itens = request.form.getlist('item_id[]')
+            quantidades = request.form.getlist('quantidade[]')
+            valores_unitarios = request.form.getlist('valor_unitario[]')
 
-        if request.method == 'POST':
-            try:
-                data_movimento = date.fromisoformat(request.form.get('data_movimento'))
-                numero_documento = request.form.get('numero_documento')
-                observacao = request.form.get('observacao')
-                solicitante_id = int(request.form.get('solicitante'))
+            if not itens:
+                raise ValueError("É necessário incluir pelo menos um item")
 
-                # Validações básicas
-                if not data_movimento or not solicitante_id:
-                    flash('Todos os campos obrigatórios devem ser preenchidos.', 'danger')
-                    return redirect(url_for('saida_bp.nova_saida'))
+            total_saida = Decimal('0.0')
 
-                nova_saida = SaidaMaterial(
-                    data_movimento=data_movimento,
-                    numero_documento=numero_documento,
-                    observacao=observacao,
-                    usuario_id=current_user.id,
-                    solicitante_id=solicitante_id
-                )
-                db.session.add(nova_saida)
-                db.session.flush()
-
-                item_ids = request.form.getlist('item_id[]')
-                quantidades = request.form.getlist('quantidade[]')
-                valores_unitarios = request.form.getlist('valor_unitario[]')
-
-                if not item_ids or not quantidades:
-                    flash('É necessário incluir pelo menos um item na saída.', 'danger')
-                    db.session.rollback()
-                    return redirect(url_for('saida_bp.nova_saida'))
-
-                for i in range(len(item_ids)):
-                    if not item_ids[i] or not quantidades[i] or not valores_unitarios[i]:
-                        continue
-
-                    item = Item.query.get(int(item_ids[i]))
+            for item_id, qtd, valor_unit in zip(itens, quantidades, valores_unitarios):
+                if item_id and qtd and valor_unit:
+                    item = Item.query.get(item_id)
                     if not item:
-                        flash(f'Item não encontrado.', 'danger')
-                        db.session.rollback()
-                        return redirect(url_for('saida_bp.nova_saida'))
+                        raise ValueError(f"Item {item_id} não encontrado")
 
-                    quantidade = int(quantidades[i])
-                    valor_unitario = float(valores_unitarios[i].replace(',', '.'))
+                    quantidade = int(qtd)
+                    valor_unitario = Decimal(valor_unit.replace(',', '.'))
 
-                    # Validação de estoque
+                    if quantidade <= 0:
+                        raise ValueError("Quantidade deve ser maior que zero")
+
                     if item.estoque_atual < quantidade:
-                        flash(f"Estoque insuficiente para '{item.nome}'. Disponível: {item.estoque_atual}", 'danger')
-                        db.session.rollback()
-                        return redirect(url_for('saida_bp.nova_saida'))
+                        raise ValueError(f"Estoque insuficiente para o item {item.nome}")
 
-                    # Atualiza o estoque e saldo financeiro do item
-                    item.estoque_atual -= quantidade
-                    item.saldo_financeiro -= quantidade * valor_unitario
+                    # Validar valor unitário
+                    if valor_unitario <= 0:
+                        raise ValueError(f"Valor unitário inválido para o item {item.nome}")
 
-                    # Atualiza o valor da natureza de despesa, se existir
-                    if item.grupo and item.grupo.natureza_despesa:
-                        item.grupo.natureza_despesa.valor -= quantidade * valor_unitario
+                    if valor_unitario > item.valor_unitario * Decimal('1.1'):
+                        raise ValueError(f"Valor unitário muito alto para o item {item.nome}")
 
-                    # Cria o item de saída
                     saida_item = SaidaItem(
-                        item_id=item.id,
+                        saida_id=saida.id,
+                        item_id=item_id,
                         quantidade=quantidade,
-                        valor_unitario=valor_unitario,
-                        saida_id=nova_saida.id
+                        valor_unitario=valor_unitario
                     )
                     db.session.add(saida_item)
 
-                db.session.commit()
-                flash('Saída registrada com sucesso.', 'success')
-                return redirect(url_for('saida_bp.lista_saidas'))
+                    # Atualizar estoque
+                    item.estoque_atual -= quantidade
+                    item.saldo_financeiro -= (quantidade * valor_unitario)
+                    
+                    # Atualizar total da saída
+                    total_saida += (quantidade * valor_unitario)
 
-            except ValueError as e:
-                db.session.rollback()
-                flash(f'Erro de validação: {str(e)}', 'danger')
-                return redirect(url_for('saida_bp.nova_saida'))
-            except Exception as e:
-                db.session.rollback()
-                flash(f'Erro ao registrar saída: {str(e)}', 'danger')
-                print(f"Erro detalhado: {e}")
-                return redirect(url_for('saida_bp.nova_saida'))
+                    # Verificar estoque mínimo
+                    if item.estoque_atual <= item.estoque_minimo:
+                        flash(f'Atenção: Item {item.nome} atingiu o estoque mínimo!', 'warning')
 
-        # Gera o próximo número de documento
-        ano_atual = date.today().year
-        ultima_saida = SaidaMaterial.query.order_by(SaidaMaterial.id.desc()).first()
-        if ultima_saida and ultima_saida.numero_documento and '/' in ultima_saida.numero_documento:
-            try:
-                ultimo_num = int(ultima_saida.numero_documento.split('/')[0])
-                numero_documento = f"{ultimo_num + 1:03}/{ano_atual}"
-            except:
-                numero_documento = f"001/{ano_atual}"
-        else:
-            numero_documento = f"001/{ano_atual}"
+            db.session.commit()
+            flash('Saída registrada com sucesso! Valor total: ' + format_currency(total_saida), 'success')
+            return redirect(url_for('saida.listar_saidas'))
 
-        return render_template('nova_saida.html', 
-                             itens=itens, 
-                             usuarios=usuarios, 
-                             numero_documento=numero_documento)
-    
-    except Exception as e:
-        print(f"Erro ao carregar página de nova saída: {e}")
-        flash('Erro ao carregar a página. Por favor, tente novamente.', 'danger')
-        return redirect(url_for('saida_bp.lista_saidas'))
+        except ValueError as e:
+            db.session.rollback()
+            flash(str(e), 'error')
+            return redirect(url_for('saida.nova_saida'))
+        except Exception as e:
+            db.session.rollback()
+            flash('Erro ao registrar saída: ' + str(e), 'error')
+            return redirect(url_for('saida.nova_saida'))
 
-# -------------------- BUSCAR ITEM POR AJAX -------------------- #
-@saida_bp.route('/get_item/<int:item_id>')
-@login_required
-def get_item(item_id):
-    try:
-        item = Item.query.get_or_404(item_id)
-        # Converte o valor_unitario para float
-        valor_unitario = float(item.valor_unitario) if item.valor_unitario else 0.0
-        
-        return jsonify({
-            'id': item.id,
-            'nome': item.nome,
-            'valor_unitario': valor_unitario,
-            'estoque_atual': item.estoque_atual
-        })
-    except Exception as e:
-        print(f"Erro ao buscar item: {e}")
-        return jsonify({'error': 'Erro ao buscar item'}), 500
+    # GET - Renderizar formulário
+    itens = Item.query.filter(Item.estoque_atual > 0).order_by(Item.nome).all()
+    solicitantes = Usuario.query.order_by(Usuario.nome).all()
+    unidades = UnidadeLocal.query.all()
+    return render_template('saidas/nova_saida.html', 
+                         itens=itens, 
+                         solicitantes=solicitantes,
+                         unidades=unidades,
+                         data_atual=date.today().strftime('%Y-%m-%d'))
 
-# -------------------- ESTORNAR SAÍDA DE MATERIAL -------------------- #
 @saida_bp.route('/saida/estornar/<int:saida_id>', methods=['POST'])
 @login_required
 def estornar_saida(saida_id):
-    from utils.auditoria import registrar_auditoria
-
-    saida = SaidaMaterial.query.get_or_404(saida_id)
-
-    if saida.estornada:
-        flash('Esta saída já foi estornada anteriormente.', 'warning')
-        return redirect(url_for('saida_bp.lista_saidas'))
-
-    itens = SaidaItem.query.filter_by(saida_id=saida_id).all()
-
-    try:
-        # Coletar dados para auditoria
-        dados_antes = {
-            'saida': {
-                'id': saida.id,
-                'numero_documento': saida.numero_documento,
-                'data_movimento': saida.data_movimento.strftime('%Y-%m-%d'),
-                'responsavel_id': saida.usuario_id,
-                'solicitante_id': saida.solicitante_id
-            },
-            'itens': [
-                {
-                    'item_id': item.item_id,
-                    'quantidade': item.quantidade,
-                    'valor_unitario': float(item.valor_unitario)
-                } for item in itens
-            ]
-        }
-
-        for item_saida in itens:
-            item = Item.query.get(item_saida.item_id)
-            if item:
-                # Recompõe o estoque
-                item.estoque_atual += item_saida.quantidade
-                valor_unitario = float(item_saida.valor_unitario)
-                item.saldo_financeiro += item_saida.quantidade * valor_unitario
-
-                # Recalcula o valor unitário médio
-                if item.estoque_atual > 0:
-                    item.valor_unitario = item.saldo_financeiro / item.estoque_atual
-                else:
-                    item.valor_unitario = 0.0
-
-                # Recompõe a natureza de despesa (se aplicável)
-                if item.grupo and item.grupo.natureza_despesa:
-                    item.grupo.natureza_despesa.valor += item_saida.quantidade * valor_unitario
-
-        saida.estornada = True
-
-        registrar_auditoria(
-            acao='estorno',
-            tabela='saida_material',
-            registro_id=saida.id,
-            dados_antes=dados_antes,
-            dados_depois=None,
-            usuario_id=current_user.id
-        )
-
-        db.session.commit()
-        flash('Saída estornada com sucesso.', 'success')
-
-    except Exception as e:
-        db.session.rollback()
-        flash(f'Erro ao estornar saída: {str(e)}', 'danger')
-        print(f"Erro detalhado: {e}")
-
-    return redirect(url_for('saida_bp.lista_saidas'))
-
-# -------------------- REQUISIÇÃO (IMPRESSÃO) -------------------- #
-@saida_bp.route('/requisicao/<int:saida_id>')
-@login_required
-def requisicao_saida(saida_id):
     try:
         saida = SaidaMaterial.query.get_or_404(saida_id)
-        return render_template('requisicao_saida.html', saida=saida)
+        
+        if saida.estornada:
+            return jsonify({'success': False, 'message': 'Esta saída já foi estornada'}), 400
+
+        # Validar data do estorno
+        if (date.today() - saida.data_movimento) > timedelta(days=30):
+            return jsonify({
+                'success': False, 
+                'message': 'Não é possível estornar saídas com mais de 30 dias'
+            }), 400
+
+        # Estornar cada item
+        for saida_item in saida.itens:
+            item = saida_item.item
+            item.estoque_atual += saida_item.quantidade
+            item.saldo_financeiro += (saida_item.quantidade * saida_item.valor_unitario)
+
+        saida.estornada = True
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Saída estornada com sucesso'})
+    
     except Exception as e:
-        print(f"Erro ao gerar requisição: {e}")
-        flash('Erro ao gerar requisição. Por favor, tente novamente.', 'danger')
-        return redirect(url_for('saida_bp.lista_saidas'))
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@saida_bp.route('/api/item/<int:item_id>')
+@login_required
+def get_item_info(item_id):
+    item = Item.query.get_or_404(item_id)
+    return jsonify({
+        'id': item.id,
+        'nome': item.nome,
+        'valor_unitario': str(item.valor_unitario),
+        'estoque_atual': str(item.estoque_atual),
+        'unidade': item.unidade,
+        'estoque_minimo': str(item.estoque_minimo),
+        'localizacao': item.localizacao
+    })
+
+@saida_bp.route('/saida/imprimir/<int:saida_id>')
+@login_required
+def imprimir_saida(saida_id):
+    saida = SaidaMaterial.query.get_or_404(saida_id)
+    return render_template('saidas/imprimir_saida.html', 
+                         saida=saida,
+                         format_currency=format_currency)
+
+@saida_bp.route('/saida/detalhes/<int:saida_id>')
+@login_required
+def detalhes_saida(saida_id):
+    saida = SaidaMaterial.query.get_or_404(saida_id)
+    return render_template('saidas/detalhes_saida.html', 
+                         saida=saida,
+                         format_currency=format_currency)
+
+@saida_bp.route('/saidas/relatorio')
+@login_required
+def relatorio_saidas():
+    # Parâmetros do relatório
+    data_inicio = request.args.get('data_inicio')
+    data_fim = request.args.get('data_fim')
+    solicitante_id = request.args.get('solicitante_id', type=int)
+    item_id = request.args.get('item_id', type=int)
+    formato = request.args.get('formato', 'html')
+    
+    # Query base
+    query = db.session.query(
+        SaidaMaterial.data_movimento,
+        Usuario.nome.label('solicitante'),
+        Item.nome.label('item'),
+        SaidaItem.quantidade,
+        SaidaItem.valor_unitario,
+        (SaidaItem.quantidade * SaidaItem.valor_unitario).label('valor_total')
+    ).join(
+        SaidaItem, Usuario, Item
+    ).filter(
+        SaidaMaterial.estornada == False
+    )
+    
+    # Aplicar filtros
+    if data_inicio:
+        query = query.filter(SaidaMaterial.data_movimento >= parse_date(data_inicio))
+    if data_fim:
+        query = query.filter(SaidaMaterial.data_movimento <= parse_date(data_fim))
+    if solicitante_id:
+        query = query.filter(SaidaMaterial.solicitante_id == solicitante_id)
+    if item_id:
+        query = query.filter(SaidaItem.item_id == item_id)
+    
+    # Ordenação
+    query = query.order_by(SaidaMaterial.data_movimento.desc())
+    
+    # Executar query
+    resultados = query.all()
+    
+    if formato == 'excel':
+        # Criar workbook
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Relatório de Saídas"
+        
+        # Cabeçalho
+        headers = ['Data', 'Solicitante', 'Item', 'Quantidade', 'Valor Unitário', 'Valor Total']
+        for col, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col, value=header)
+            cell.font = Font(bold=True)
+            cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
+        
+        # Dados
+        for row, dado in enumerate(resultados, 2):
+            ws.cell(row=row, column=1, value=dado.data_movimento.strftime('%d/%m/%Y'))
+            ws.cell(row=row, column=2, value=dado.solicitante)
+            ws.cell(row=row, column=3, value=dado.item)
+            ws.cell(row=row, column=4, value=dado.quantidade)
+            ws.cell(row=row, column=5, value=float(dado.valor_unitario))
+            ws.cell(row=row, column=6, value=float(dado.valor_total))
+        
+        # Ajustar largura das colunas
+        for col in ws.columns:
+            max_length = 0
+            for cell in col:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            ws.column_dimensions[col[0].column_letter].width = max_length + 2
+        
+        # Salvar arquivo
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
+        
+        return send_file(
+            output,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name=f'relatorio_saidas_{date.today()}.xlsx'
+        )
+        
+    elif formato == 'csv':
+        output = io.StringIO()
+        writer = csv.writer(output)
+        
+        # Cabeçalho
+        writer.writerow(['Data', 'Solicitante', 'Item', 'Quantidade', 'Valor Unitário', 'Valor Total'])
+        
+        # Dados
+        for dado in resultados:
+            writer.writerow([
+                dado.data_movimento.strftime('%d/%m/%Y'),
+                dado.solicitante,
+                dado.item,
+                dado.quantidade,
+                float(dado.valor_unitario),
+                float(dado.valor_total)
+            ])
+        
+        output.seek(0)
+        return send_file(
+            io.BytesIO(output.getvalue().encode('utf-8')),
+            mimetype='text/csv',
+            as_attachment=True,
+            download_name=f'relatorio_saidas_{date.today()}.csv'
+        )
+    
+    # Formato HTML (default)
+    return render_template(
+        'saidas/relatorio.html',
+        resultados=resultados,
+        data_inicio=data_inicio,
+        data_fim=data_fim,
+        solicitante_id=solicitante_id,
+        item_id=item_id,
+        format_currency=format_currency
+    )
+
+@saida_bp.route('/saidas/dashboard')
+@login_required
+def dashboard():
+    # Período padrão: último mês
+    data_fim = date.today()
+    data_inicio = data_fim - timedelta(days=30)
+    
+    # Top 5 itens mais saídos
+    top_itens = db.session.query(
+        Item.nome,
+        func.sum(SaidaItem.quantidade).label('total_quantidade'),
+        func.sum(SaidaItem.quantidade * SaidaItem.valor_unitario).label('total_valor')
+    ).join(
+        SaidaItem, SaidaMaterial
+    ).filter(
+        SaidaMaterial.data_movimento.between(data_inicio, data_fim),
+        SaidaMaterial.estornada == False
+    ).group_by(
+        Item.id, Item.nome
+    ).order_by(
+        func.sum(SaidaItem.quantidade).desc()
+    ).limit(5).all()
+    
+    # Total de saídas por dia
+    saidas_por_dia = db.session.query(
+        SaidaMaterial.data_movimento,
+        func.count(SaidaMaterial.id).label('total_saidas'),
+        func.sum(SaidaItem.quantidade * SaidaItem.valor_unitario).label('total_valor')
+    ).join(
+        SaidaItem
+    ).filter(
+        SaidaMaterial.data_movimento.between(data_inicio, data_fim),
+        SaidaMaterial.estornada == False
+    ).group_by(
+        SaidaMaterial.data_movimento
+    ).order_by(
+        SaidaMaterial.data_movimento
+    ).all()
+    
+    # Itens com estoque baixo
+    itens_criticos = Item.query.filter(
+        Item.estoque_atual <= Item.estoque_minimo
+    ).order_by(
+        (Item.estoque_atual / Item.estoque_minimo)
+    ).limit(5).all()
+    
+    return render_template(
+        'saidas/dashboard.html',
+        top_itens=top_itens,
+        saidas_por_dia=saidas_por_dia,
+        itens_criticos=itens_criticos,
+        format_currency=format_currency
+    ) 

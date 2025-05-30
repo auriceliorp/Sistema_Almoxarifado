@@ -9,395 +9,214 @@
         max-width: 210mm; /* Tamanho A4 */
         margin: 0 auto;
         font-family: 'Segoe UI', Arial, sans-serif;
-        background: white;
-        box-shadow: 0 0 20px rgba(0,0,0,0.1);
-        border-radius: 8px;
-        padding: 2rem;
-    }
-    
-    /* Cabeçalho */
-    .header-section {
-        border-bottom: 2px solid #e9ecef;
-        padding-bottom: 2rem;
-        margin-bottom: 2rem;
-        position: relative;
+        padding: 20px;
     }
 
-    .header-section::after {
-        content: '';
-        position: absolute;
-        bottom: -1px;
-        left: 0;
-        width: 100%;
-        height: 1px;
-        background: linear-gradient(to right, #2c3e50, transparent);
-    }
-    
-    .requisition-number {
-        font-size: 1.2rem;
-        color: #2c3e50;
-        padding: 0.75rem 1.5rem;
-        background: #f8f9fa;
-        border-radius: 8px;
-        display: inline-block;
-        border: 1px solid #e9ecef;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    /* Cabeçalho */
+    .header-section {
+        text-align: center;
+        margin-bottom: 20px;
     }
 
     .logo-embrapa {
-        max-width: 200px;
-        height: auto;
-        margin-bottom: 1.5rem;
+        height: 60px; /* Altura fixa para manter proporção */
+        width: auto;
+        margin-bottom: 5px;
     }
 
-    .document-title {
-        color: #2c3e50;
-        font-size: 1.75rem;
-        font-weight: 600;
-        margin-bottom: 1.5rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
+    .empresa-nome {
+        color: #003B7A; /* Azul Embrapa */
+        font-size: 18px;
+        margin: 10px 0;
+        font-weight: bold;
     }
-    
+
+    .linha-divisoria {
+        border-top: 1px solid #003B7A;
+        margin: 8px 0;
+    }
+
+    .titulo-documento {
+        font-size: 16px;
+        margin: 15px 0 10px;
+    }
+
+    .requisition-number {
+        font-size: 14px;
+        margin: 5px 0 15px;
+    }
+
     /* Badge de estorno */
     .estorno-badge {
-        background: #dc3545;
-        color: white;
-        padding: 0.75rem 2rem;
-        border-radius: 8px;
-        font-weight: 600;
-        letter-spacing: 1px;
-        transform: rotate(-5deg);
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        box-shadow: 0 2px 4px rgba(220, 53, 69, 0.4);
-        border: 2px solid rgba(255,255,255,0.2);
+        color: #dc3545;
+        font-weight: bold;
+        text-align: center;
+        padding: 5px;
+        margin: 10px 0;
+        border: 1px solid #dc3545;
     }
-    
-    /* Informações do solicitante */
-    .info-section {
-        background: #f8f9fa;
-        border-radius: 12px;
-        padding: 2rem;
-        margin: 2rem 0;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        border: 1px solid #e9ecef;
-    }
-    
+
+    /* Informações */
     .info-item {
-        margin-bottom: 1rem;
+        margin-bottom: 8px;
         display: flex;
-        gap: 1rem;
-        align-items: center;
-        padding: 0.5rem 0;
     }
 
-    .info-item:last-child {
-        margin-bottom: 0;
-    }
-    
     .info-label {
-        font-weight: 600;
-        color: #2c3e50;
-        min-width: 200px;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
+        font-weight: bold;
+        min-width: 100px;
+        margin-right: 10px;
     }
 
-    .info-label i {
-        color: #6c757d;
-        font-size: 1.1rem;
-    }
-
-    .info-content {
-        flex: 1;
-        color: #495057;
-    }
-    
     /* Tabela de itens */
     .items-table {
-        border: 1px solid #e9ecef;
-        border-radius: 12px;
-        overflow: hidden;
-        margin: 2rem 0;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
-    
-    .items-table thead th {
-        background: #2c3e50;
-        color: white;
-        font-weight: 500;
-        text-transform: uppercase;
-        font-size: 0.9rem;
-        padding: 1.25rem 1rem;
-        border-bottom: 2px solid rgba(255,255,255,0.1);
-    }
-    
-    .items-table tbody td {
-        padding: 1rem;
-        vertical-align: middle;
-        border-bottom: 1px solid #e9ecef;
-        color: #495057;
+        width: 100%;
+        border-collapse: collapse;
+        margin: 15px 0;
     }
 
-    .items-table tbody tr:last-child td {
-        border-bottom: none;
-    }
-    
-    .items-table tbody tr:nth-child(even) {
-        background: #f8f9fa;
+    .items-table th,
+    .items-table td {
+        border: 1px solid #000;
+        padding: 6px 8px;
+        font-size: 14px;
     }
 
-    .items-table tbody tr:hover {
-        background: #f1f3f5;
+    .items-table th {
+        background-color: #f8f9fa;
     }
-    
+
     /* Termo de responsabilidade */
     .termo-section {
-        background: #fff;
-        border: 1px solid #e9ecef;
-        border-radius: 12px;
-        padding: 2rem;
-        margin: 2rem 0;
-        font-size: 0.95rem;
-        color: #495057;
-        position: relative;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
-    
-    .termo-section::before {
-        content: '"';
-        font-size: 5rem;
-        color: #e9ecef;
-        position: absolute;
-        left: 1.5rem;
-        top: 1rem;
-        font-family: Georgia, serif;
-        line-height: 1;
+        margin: 20px 0;
+        text-align: justify;
+        font-size: 12px;
+        line-height: 1.4;
     }
 
-    .termo-content {
-        padding-left: 3rem;
-        position: relative;
-        z-index: 1;
-        line-height: 1.6;
-    }
-    
     /* Assinaturas */
     .signature-section {
-        margin-top: 4rem;
-        padding-top: 2rem;
-        border-top: 1px solid #e9ecef;
+        margin-top: 40px;
+        display: flex;
+        justify-content: space-between;
     }
-    
+
+    .signature-block {
+        text-align: center;
+        flex: 1;
+        max-width: 45%;
+    }
+
     .signature-line {
         border-top: 1px solid #000;
-        width: 80%;
-        margin: 0 auto 0.75rem;
+        margin: 30px auto 5px;
+        width: 100%;
     }
-    
+
     .signature-name {
-        font-size: 0.95rem;
-        color: #495057;
+        font-size: 12px;
     }
 
-    .signature-name strong {
-        color: #2c3e50;
-        display: block;
-        margin-bottom: 0.25rem;
-        font-size: 1rem;
-    }
-    
-    /* Botão de impressão */
-    .print-button {
-        background: #2c3e50;
-        color: white;
-        padding: 0.75rem 2rem;
-        border-radius: 8px;
-        transition: all 0.3s ease;
-        border: none;
-        font-weight: 500;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        box-shadow: 0 2px 4px rgba(44, 62, 80, 0.2);
-    }
-    
-    .print-button:hover {
-        background: #1a252f;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 6px rgba(44, 62, 80, 0.3);
+    .signature-role {
+        font-weight: bold;
+        margin-bottom: 3px;
+        font-size: 12px;
     }
 
-    .print-button i {
-        font-size: 1.1rem;
-    }
-    
     /* Estilos para impressão */
     @media print {
         body {
             background: white;
         }
-        
+
         #requisicao {
-            width: 100%;
-            max-width: none;
             padding: 0;
             margin: 0;
-            box-shadow: none;
-            border-radius: 0;
-        }
-        
-        .no-print {
-            display: none !important;
-        }
-        
-        .items-table {
-            page-break-inside: avoid;
-            box-shadow: none;
-        }
-        
-        .signature-section {
-            page-break-inside: avoid;
-        }
-        
-        .info-section,
-        .termo-section {
-            background: none;
-            border: 1px solid #ddd;
-            box-shadow: none;
-        }
-        
-        .items-table thead th {
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
         }
 
-        .header-section::after {
-            display: none;
+        .no-print {
+            display: none !important;
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4" id="requisicao">
+<div id="requisicao">
     <!-- Cabeçalho -->
     <div class="header-section">
-        <div class="text-center">
-            <img src="{{ url_for('static', filename='embrapa_logo.png') }}" 
-                 alt="Logo Embrapa" 
-                 class="logo-embrapa">
-            <h3 class="document-title">Requisição de Saída de Material</h3>
-            
-            <div class="requisition-number">
-                <i class="bi bi-upc-scan me-2"></i>
-                Requisição Nº {{ saida.numero_documento }} | {{ saida.data_movimento.strftime('%d/%m/%Y') }}
-            </div>
+        <img src="{{ url_for('static', filename='embrapa_logo.png') }}" 
+             alt="Logo Embrapa" 
+             class="logo-embrapa">
+        <div class="empresa-nome">Agroindústria de Alimentos</div>
+        <div class="linha-divisoria"></div>
+        <div class="titulo-documento">Requisição de Saída de Material</div>
+        <div class="requisition-number">
+            Requisição Nº {{ saida.numero_documento }} | {{ saida.data_movimento.strftime('%d/%m/%Y') }}
         </div>
-        
-        {% if saida.estornada %}
-        <div class="estorno-badge">
-            <i class="bi bi-x-circle me-2"></i>ESTORNADA
-        </div>
-        {% endif %}
     </div>
 
-    <!-- Informações do Solicitante -->
-    <div class="info-section">
-        <div class="info-item">
-            <span class="info-label">
-                <i class="bi bi-person"></i>
-                Solicitante:
-            </span>
-            <span class="info-content">{{ saida.solicitante.nome }}</span>
-        </div>
-        <div class="info-item">
-            <span class="info-label">
-                <i class="bi bi-building"></i>
-                Setor / Unidade:
-            </span>
-            <span class="info-content">{{ saida.solicitante.unidade_local.descricao if saida.solicitante.unidade_local }}</span>
-        </div>
-        <div class="info-item">
-            <span class="info-label">
-                <i class="bi bi-person-check"></i>
-                Responsável:
-            </span>
-            <span class="info-content">{{ saida.usuario.nome }}</span>
-        </div>
-        {% if saida.observacao %}
-        <div class="info-item">
-            <span class="info-label">
-                <i class="bi bi-chat-left-text"></i>
-                Observações:
-            </span>
-            <span class="info-content">{{ saida.observacao }}</span>
-        </div>
-        {% endif %}
+    {% if saida.estornada %}
+    <div class="estorno-badge">
+        ESTORNADA
+    </div>
+    {% endif %}
+
+    <!-- Informações -->
+    <div class="info-item">
+        <span class="info-label">Solicitante:</span>
+        <span>{{ saida.solicitante.nome }}</span>
+    </div>
+    <div class="info-item">
+        <span class="info-label">Setor / Unidade:</span>
+        <span>{{ saida.solicitante.unidade_local.descricao if saida.solicitante.unidade_local }}</span>
+    </div>
+    <div class="info-item">
+        <span class="info-label">Responsável:</span>
+        <span>{{ saida.usuario.nome }}</span>
     </div>
 
     <!-- Tabela de Itens -->
-    <div class="table-responsive">
-        <table class="table items-table mb-0">
-            <thead>
-                <tr class="text-center">
-                    <th style="width: 15%">Código SAP</th>
-                    <th style="width: 50%">Nome do Item</th>
-                    <th style="width: 20%">Quantidade</th>
-                    <th style="width: 15%">Unidade</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in saida.itens %}
-                <tr>
-                    <td class="text-center">{{ item.item.codigo_sap }}</td>
-                    <td>{{ item.item.nome }}</td>
-                    <td class="text-center">{{ item.quantidade }}</td>
-                    <td class="text-center">{{ item.item.unidade }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th style="width: 15%">Código SAP</th>
+                <th style="width: 45%">Nome do Item</th>
+                <th style="width: 20%">Quantidade</th>
+                <th style="width: 20%">Unidade</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in saida.itens %}
+            <tr>
+                <td style="text-align: center">{{ item.item.codigo_sap }}</td>
+                <td>{{ item.item.nome }}</td>
+                <td style="text-align: center">{{ item.quantidade }}</td>
+                <td style="text-align: center">{{ item.item.unidade }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
     <!-- Termo de Responsabilidade -->
     <div class="termo-section">
-        <div class="termo-content">
-            <p class="mb-0">
-                Declaro estar ciente de que o(s) material(is) listado(s) acima foi/foram retirado(s) para fins de uso institucional,
-                sendo de minha responsabilidade sua correta utilização, guarda e devolução, quando aplicável, conforme as normas 
-                internas da Embrapa.
-            </p>
-        </div>
+        Declaro estar ciente de que o(s) material(is) listado(s) acima foi/foram retirado(s) para fins de uso institucional,
+        sendo de minha responsabilidade sua correta utilização, guarda e devolução, quando aplicável, conforme as normas 
+        internas da Embrapa.
     </div>
 
     <!-- Assinaturas -->
-    <div class="row signature-section">
-        <div class="col-6 text-center">
+    <div class="signature-section">
+        <div class="signature-block">
             <div class="signature-line"></div>
-            <p class="signature-name">
-                <strong>Responsável pela Saída</strong>
-                {{ saida.usuario.nome }}
-            </p>
+            <div class="signature-role">Responsável pela Saída</div>
+            <div class="signature-name">{{ saida.usuario.nome }}</div>
         </div>
-        <div class="col-6 text-center">
+        <div class="signature-block">
             <div class="signature-line"></div>
-            <p class="signature-name">
-                <strong>Solicitante</strong>
-                {{ saida.solicitante.nome }}
-            </p>
+            <div class="signature-role">Solicitante</div>
+            <div class="signature-name">{{ saida.solicitante.nome }}</div>
         </div>
-    </div>
-
-    <!-- Botão de Impressão -->
-    <div class="text-center mt-5 no-print">
-        <button class="btn print-button" onclick="window.print()">
-            <i class="bi bi-printer"></i>
-            Imprimir Requisição
-        </button>
     </div>
 </div>
 {% endblock %} 

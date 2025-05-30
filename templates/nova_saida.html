@@ -381,10 +381,19 @@ function adicionarLinha() {
         const primeiraLinha = tbody.querySelector('tr');
         const novaLinha = primeiraLinha.cloneNode(true);
 
+        // Limpar classes e estilos indesejados
+        novaLinha.removeAttribute('style');
+        novaLinha.className = 'item-row';
+
         novaLinha.querySelectorAll('input, select').forEach(elemento => {
+            // Limpar classes e estilos dos elementos internos
+            elemento.removeAttribute('style');
+            
             if (elemento.tagName === 'SELECT') {
                 elemento.selectedIndex = 0;
                 elemento.classList.remove('is-invalid');
+                // Remover classes do Select2
+                elemento.className = 'form-select select2-item';
             } else if (elemento.classList.contains('valor_total')) {
                 elemento.value = '0,00';
             } else {
@@ -393,6 +402,7 @@ function adicionarLinha() {
             }
         });
 
+        // Destruir instâncias antigas do Select2
         novaLinha.querySelectorAll('.select2-item').forEach(el => {
             if ($(el).data('select2')) {
                 $(el).select2('destroy');
@@ -401,6 +411,7 @@ function adicionarLinha() {
 
         tbody.appendChild(novaLinha);
 
+        // Reinicializar Select2 na nova linha
         novaLinha.querySelectorAll('.select2-item').forEach(el => {
             $(el).select2({
                 theme: 'bootstrap-5',

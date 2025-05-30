@@ -64,6 +64,11 @@
                 </a>
             </div>
 
+            <div class="requisition-number">
+                <i class="bi bi-upc-scan me-2"></i>
+                Requisição Nº {{ saida.numero_documento }} | {{ saida.data_movimento.strftime('%d/%m/%Y') }}
+            </div>
+
             <form method="POST" id="formSaida">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <!-- Dados do Documento -->
@@ -457,7 +462,9 @@ function removerLinha(botao) {
 function validarFormulario() {
     let valido = true;
     const mensagens = [];
+    let linhasVazias = 0;
 
+    // Validação dos campos principais
     if (!$('#data_movimento').val()) {
         mensagens.push('Data do movimento é obrigatória');
         valido = false;
@@ -468,23 +475,32 @@ function validarFormulario() {
         valido = false;
     }
 
+    // Validação das linhas da tabela
     const linhas = document.querySelectorAll('#tabela-itens tbody tr');
     linhas.forEach((linha, index) => {
         const item = linha.querySelector('select[name="item_id[]"]');
         const quantidade = linha.querySelector('input[name="quantidade[]"]');
-        const option = item.options[item.selectedIndex];
         
-        if (!item.value) {
+        // Verifica se a linha está completamente vazia
+        if (!item.value && (!quantidade.value || quantidade.value <= 0)) {
+            linhasVazias++;
+            return; // Continua para a próxima linha
+        }
+        
+        // Se tem item mas não tem quantidade ou vice-versa
+        if (!item.value && (quantidade.value && quantidade.value > 0)) {
             mensagens.push(`Selecione um item na linha ${index + 1}`);
             valido = false;
         }
         
-        if (!quantidade.value || quantidade.value <= 0) {
+        if (item.value && (!quantidade.value || quantidade.value <= 0)) {
             mensagens.push(`Quantidade inválida na linha ${index + 1}`);
             valido = false;
         }
         
+        // Validação de estoque
         if (item.value && quantidade.value) {
+            const option = item.options[item.selectedIndex];
             const estoque = parseFloat(option.getAttribute('data-estoque'));
             if (parseFloat(quantidade.value) > estoque) {
                 mensagens.push(`Quantidade maior que o estoque disponível na linha ${index + 1}`);
@@ -493,8 +509,25 @@ function validarFormulario() {
         }
     });
 
+    // Se todas as linhas estão vazias
+    if (linhasVazias === linhas.length) {
+        mensagens.push('Adicione pelo menos um item à saída');
+        valido = false;
+    }
+    
+    // Se há algumas linhas vazias (mas não todas)
+    if (linhasVazias > 0 && linhasVazias < linhas.length) {
+        mensagens.push(`Existem ${linhasVazias} linha(s) em branco. Por favor, preencha ou remova estas linhas antes de salvar.`);
+        valido = false;
+    }
+
     if (!valido) {
-        alert('Por favor, corrija os seguintes erros:\n' + mensagens.join('\n'));
+        Swal.fire({
+            title: 'Atenção!',
+            html: 'Por favor, corrija os seguintes erros:<br><br>' + mensagens.join('<br>'),
+            icon: 'warning',
+            confirmButtonText: 'Ok'
+        });
     }
 
     return valido;

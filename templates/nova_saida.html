@@ -385,6 +385,9 @@ function adicionarLinha() {
         novaLinha.removeAttribute('style');
         novaLinha.className = 'item-row';
 
+        // Remover elementos do Select2 gerados dinamicamente
+        novaLinha.querySelectorAll('.select2-container').forEach(el => el.remove());
+
         novaLinha.querySelectorAll('input, select').forEach(elemento => {
             // Limpar classes e estilos dos elementos internos
             elemento.removeAttribute('style');
@@ -394,18 +397,15 @@ function adicionarLinha() {
                 elemento.classList.remove('is-invalid');
                 // Remover classes do Select2
                 elemento.className = 'form-select select2-item';
+                // Destruir instância do Select2 se existir
+                if ($(elemento).data('select2')) {
+                    $(elemento).select2('destroy');
+                }
             } else if (elemento.classList.contains('valor_total')) {
                 elemento.value = '0,00';
             } else {
                 elemento.value = '';
                 elemento.disabled = false;
-            }
-        });
-
-        // Destruir instâncias antigas do Select2
-        novaLinha.querySelectorAll('.select2-item').forEach(el => {
-            if ($(el).data('select2')) {
-                $(el).select2('destroy');
             }
         });
 
@@ -417,7 +417,12 @@ function adicionarLinha() {
                 theme: 'bootstrap-5',
                 width: '100%',
                 placeholder: 'Selecione um item...',
-                dropdownParent: $('body')
+                dropdownParent: $('body'),
+                language: {
+                    noResults: function() {
+                        return "Nenhum item encontrado";
+                    }
+                }
             });
         });
 

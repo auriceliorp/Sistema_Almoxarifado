@@ -4,159 +4,129 @@
 
 {% block extra_css %}
 <style>
-    /* Estilos gerais */
-    #requisicao {
-        max-width: 210mm;
-        margin: 0 auto;
-        font-family: Arial, sans-serif;
-        padding: 30px;
-        font-size: 12px;
-        line-height: 1.4;
-    }
-
     /* Cabeçalho */
-    .header-section {
+    .header {
         display: flex;
+        gap: 20px;
         align-items: center;
-        margin-bottom: 30px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
         border-bottom: 2px solid #003B7A;
-        padding-bottom: 20px;
     }
 
-    .logo-container {
-        flex: 0 0 auto;
-        margin-right: 20px;
+    .logo {
+        width: 180px;
+        height: auto;
     }
 
-    .logo-embrapa {
-        height: 50px;
-        width: auto;
-    }
-
-    .header-text {
+    .header-info {
         flex: 1;
     }
 
-    .empresa-nome {
+    .header-title {
         color: #003B7A;
-        font-size: 20px;
+        font-size: 24px;
         font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .doc-title {
+        font-size: 18px;
         margin-bottom: 5px;
     }
 
-    .titulo-documento {
-        font-size: 16px;
-        font-weight: bold;
-        margin-bottom: 5px;
-    }
-
-    .numero-requisicao {
-        font-size: 14px;
+    .doc-number {
         color: #666;
     }
 
-    /* Informações principais */
-    .info-section {
-        margin-bottom: 25px;
+    /* Informações do solicitante */
+    .info-box {
+        background: #f8f8f8;
         border: 1px solid #ddd;
         padding: 15px;
-        background-color: #f9f9f9;
+        margin-bottom: 20px;
     }
 
     .info-grid {
         display: grid;
-        grid-template-columns: auto 1fr;
-        gap: 10px;
+        grid-template-columns: 150px 1fr;
+        gap: 8px;
+        align-items: center;
     }
 
-    .info-label {
+    .label {
         font-weight: bold;
-        padding-right: 15px;
         color: #444;
     }
 
     /* Tabela de itens */
-    .items-table {
+    table {
         width: 100%;
         border-collapse: collapse;
-        margin: 25px 0;
+        margin: 20px 0;
     }
 
-    .items-table th {
-        background-color: #003B7A;
+    th {
+        background: #003B7A;
         color: white;
-        padding: 10px;
         text-align: left;
+        padding: 10px;
         font-weight: normal;
     }
 
-    .items-table td {
+    td {
         padding: 8px 10px;
         border-bottom: 1px solid #ddd;
     }
 
-    .items-table tr:nth-child(even) {
-        background-color: #f5f5f5;
+    .center {
+        text-align: center;
     }
 
-    /* Termo de responsabilidade */
-    .termo-section {
-        margin: 25px 0;
-        padding: 15px;
+    /* Termo */
+    .termo {
+        background: #f8f8f8;
         border: 1px solid #ddd;
-        background-color: #f9f9f9;
+        padding: 15px;
+        margin: 20px 0;
         text-align: justify;
         font-style: italic;
-        color: #444;
     }
 
     /* Assinaturas */
-    .signature-section {
+    .signatures {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 50px;
+        gap: 40px;
         margin-top: 40px;
     }
 
-    .signature-block {
+    .signature {
         text-align: center;
     }
 
-    .signature-line {
+    .sign-line {
         border-top: 1px solid #000;
-        margin-bottom: 8px;
+        margin-bottom: 5px;
     }
 
-    .signature-role {
+    .sign-title {
         font-weight: bold;
-        margin-bottom: 4px;
-        color: #444;
+        margin-bottom: 3px;
     }
 
-    .signature-name {
-        font-size: 12px;
-    }
-
-    /* Estorno */
-    .estorno-badge {
-        background-color: #dc3545;
+    /* Badge de estorno */
+    .estorno {
+        background: #dc3545;
         color: white;
-        padding: 8px 15px;
+        padding: 8px;
         text-align: center;
+        margin: 10px 0;
         font-weight: bold;
-        margin: 15px 0;
-        border-radius: 4px;
     }
 
     @media print {
-        #requisicao {
-            padding: 0;
-            margin: 0;
-        }
-
-        .items-table th {
-            background-color: #003B7A !important;
-            color: white !important;
+        .header, th {
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
         }
@@ -165,82 +135,74 @@
 {% endblock %}
 
 {% block content %}
-<div id="requisicao">
-    <!-- Cabeçalho -->
-    <div class="header-section">
-        <div class="logo-container">
-            <img src="{{ url_for('static', filename='embrapa_logo.png') }}" 
-                 alt="Logo Embrapa" 
-                 class="logo-embrapa">
-        </div>
-        <div class="header-text">
-            <div class="empresa-nome">Agroindústria de Alimentos</div>
-            <div class="titulo-documento">Requisição de Saída de Material</div>
-            <div class="numero-requisicao">
-                Requisição Nº {{ saida.numero_documento }} | {{ saida.data_movimento.strftime('%d/%m/%Y') }}
-            </div>
-        </div>
+<!-- Cabeçalho -->
+<div class="header">
+    <img src="{{ url_for('static', filename='embrapa_logo.png') }}" alt="Logo Embrapa" class="logo">
+    <div class="header-info">
+        <div class="header-title">Agroindústria de Alimentos</div>
+        <div class="doc-title">Requisição de Saída de Material</div>
+        <div class="doc-number">Requisição Nº {{ saida.numero_documento }} | {{ saida.data_movimento.strftime('%d/%m/%Y') }}</div>
     </div>
+</div>
 
-    {% if saida.estornada %}
-    <div class="estorno-badge">ESTORNADA</div>
-    {% endif %}
+{% if saida.estornada %}
+<div class="estorno">ESTORNADA</div>
+{% endif %}
 
-    <!-- Informações -->
-    <div class="info-section">
-        <div class="info-grid">
-            <div class="info-label">Solicitante:</div>
-            <div>{{ saida.solicitante.nome }}</div>
-            
-            <div class="info-label">Setor / Unidade:</div>
-            <div>{{ saida.solicitante.unidade_local.descricao if saida.solicitante.unidade_local }}</div>
-            
-            <div class="info-label">Responsável:</div>
-            <div>{{ saida.usuario.nome }}</div>
-        </div>
+<!-- Informações do solicitante -->
+<div class="info-box">
+    <div class="info-grid">
+        <div class="label">Solicitante:</div>
+        <div>{{ saida.solicitante.nome }}</div>
+        
+        <div class="label">Setor / Unidade:</div>
+        <div>{{ saida.solicitante.unidade_local.descricao if saida.solicitante.unidade_local }}</div>
+        
+        <div class="label">Responsável:</div>
+        <div>{{ saida.usuario.nome }}</div>
     </div>
+</div>
 
-    <!-- Tabela de Itens -->
-    <table class="items-table">
-        <thead>
-            <tr>
-                <th style="width: 15%">Código SAP</th>
-                <th style="width: 45%">Nome do Item</th>
-                <th style="width: 20%; text-align: center">Quantidade</th>
-                <th style="width: 20%; text-align: center">Unidade</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in saida.itens %}
-            <tr>
-                <td style="text-align: center">{{ item.item.codigo_sap }}</td>
-                <td>{{ item.item.nome }}</td>
-                <td style="text-align: center">{{ item.quantidade }}</td>
-                <td style="text-align: center">{{ item.item.unidade }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<!-- Tabela de itens -->
+<table>
+    <thead>
+        <tr>
+            <th style="width: 15%">Código SAP</th>
+            <th style="width: 45%">Nome do Item</th>
+            <th style="width: 20%" class="center">Quantidade</th>
+            <th style="width: 20%" class="center">Unidade</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in saida.itens %}
+        <tr>
+            <td class="center">{{ item.item.codigo_sap }}</td>
+            <td>{{ item.item.nome }}</td>
+            <td class="center">{{ item.quantidade }}</td>
+            <td class="center">{{ item.item.unidade }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
-    <!-- Termo de Responsabilidade -->
-    <div class="termo-section">
-        Declaro estar ciente de que o(s) material(is) listado(s) acima foi/foram retirado(s) para fins de uso institucional,
-        sendo de minha responsabilidade sua correta utilização, guarda e devolução, quando aplicável, conforme as normas 
-        internas da Embrapa.
+<!-- Termo -->
+<div class="termo">
+    Declaro estar ciente de que o(s) material(is) listado(s) acima foi/foram retirado(s) para fins de uso institucional,
+    sendo de minha responsabilidade sua correta utilização, guarda e devolução, quando aplicável, conforme as normas 
+    internas da Embrapa.
+</div>
+
+<!-- Assinaturas -->
+<div class="signatures">
+    <div class="signature">
+        <div class="sign-line"></div>
+        <div class="sign-title">Responsável pela Saída</div>
+        <div>{{ saida.usuario.nome }}</div>
     </div>
-
-    <!-- Assinaturas -->
-    <div class="signature-section">
-        <div class="signature-block">
-            <div class="signature-line"></div>
-            <div class="signature-role">Responsável pela Saída</div>
-            <div class="signature-name">{{ saida.usuario.nome }}</div>
-        </div>
-        <div class="signature-block">
-            <div class="signature-line"></div>
-            <div class="signature-role">Solicitante</div>
-            <div class="signature-name">{{ saida.solicitante.nome }}</div>
-        </div>
+    <div class="signature">
+        <div class="sign-line"></div>
+        <div class="sign-title">Solicitante</div>
+        <div>{{ saida.solicitante.nome }}</div>
     </div>
 </div>
 {% endblock %} 

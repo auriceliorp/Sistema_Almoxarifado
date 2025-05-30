@@ -54,7 +54,7 @@ def listar_saidas():
     solicitantes = Usuario.query.order_by(Usuario.nome).all()
     itens = Item.query.order_by(Item.nome).all()
     
-    return render_template('saidas/listar_saidas.html', 
+    return render_template('lista_saidas.html', 
                          saidas=saidas,
                          solicitantes=solicitantes,
                          itens=itens,

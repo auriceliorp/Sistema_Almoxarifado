@@ -155,10 +155,18 @@ def nova_saida():
 
     # GET - Renderizar formulário
     itens = Item.query.filter(Item.estoque_atual > 0).order_by(Item.nome).all()
+    itens_formatados = [{
+        'id': item.id,
+        'nome': item.nome,
+        'valor_unitario': float(item.valor_unitario),
+        'estoque_atual': float(item.estoque_atual),
+        'unidade': item.unidade
+    } for item in itens]
+    
     solicitantes = Usuario.query.order_by(Usuario.nome).all()
     unidades = UnidadeLocal.query.all()
     return render_template('nova_saida.html', 
-                         itens=itens, 
+                         itens=itens_formatados, 
                          solicitantes=solicitantes,
                          unidades=unidades,
                          data_atual=date.today().strftime('%Y-%m-%d'))
@@ -201,11 +209,9 @@ def get_item_info(item_id):
     return jsonify({
         'id': item.id,
         'nome': item.nome,
-        'valor_unitario': str(item.valor_unitario),
-        'estoque_atual': str(item.estoque_atual),
-        'unidade': item.unidade,
-        'estoque_minimo': str(item.estoque_minimo),
-        'localizacao': item.localizacao
+        'valor_unitario': float(item.valor_unitario),
+        'estoque_atual': float(item.estoque_atual),
+        'unidade': item.unidade
     })
 
 @saida_bp.route('/saida/imprimir/<int:saida_id>')
@@ -406,4 +412,4 @@ def requisicao_saida(saida_id):
     saida = SaidaMaterial.query.get_or_404(saida_id)
     return render_template('requisicao_saida.html', 
                          saida=saida,
-                         format_currency=format_currency) 
+                         format_currency=format_currency)

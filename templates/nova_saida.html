@@ -59,7 +59,7 @@
                     <i class="bi bi-box-arrow-up me-2"></i>
                     Registrar Nova Saída de Material
                 </h4>
-                <a href="{{ url_for('saida_bp.lista_saidas') }}" class="btn btn-secondary">
+                <a href="{{ url_for('saida.listar_saidas') }}" class="btn btn-secondary">
                     <i class="bi bi-arrow-left me-1"></i>Voltar
                 </a>
             </div>
@@ -76,7 +76,8 @@
                         <div class="row g-3">
                             <div class="col-md-3">
                                 <div class="form-floating">
-                                    <input type="date" class="form-control" id="data_movimento" name="data_movimento" required>
+                                    <input type="date" class="form-control" id="data_movimento" name="data_movimento" 
+                                           value="{{ data_atual }}" required>
                                     <label for="data_movimento" class="required-field">Data do Movimento</label>
                                 </div>
                             </div>
@@ -89,10 +90,10 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <select name="solicitante" class="form-select select2" id="solicitante" required>
+                                    <select name="solicitante_id" class="form-select select2" id="solicitante" required>
                                         <option value="" disabled selected>Selecione o solicitante...</option>
-                                        {% for usuario in usuarios %}
-                                        <option value="{{ usuario.id }}">{{ usuario.nome }}</option>
+                                        {% for solicitante in solicitantes %}
+                                        <option value="{{ solicitante.id }}">{{ solicitante.nome }}</option>
                                         {% endfor %}
                                     </select>
                                     <label for="solicitante" class="required-field">Solicitante</label>
@@ -137,9 +138,10 @@
                                                 <option value="" disabled selected>Selecione...</option>
                                                 {% for item in itens %}
                                                 <option value="{{ item.id }}" 
-                                                        data-valor="{{ "%.2f"|format(item.valor_unitario|float) }}" 
-                                                        data-estoque="{{ item.estoque_atual }}">
-                                                    {{ item.nome }} (Estoque: {{ item.estoque_atual }})
+                                                        data-valor="{{ item.valor_unitario }}"
+                                                        data-estoque="{{ item.estoque_atual }}"
+                                                        data-unidade="{{ item.unidade }}">
+                                                    {{ item.nome }} (Estoque: {{ "%.2f"|format(item.estoque_atual) }} {{ item.unidade }})
                                                 </option>
                                                 {% endfor %}
                                             </select>
@@ -199,7 +201,7 @@
                     <button type="submit" class="btn btn-success">
                         <i class="bi bi-check-circle me-1"></i>Salvar Saída
                     </button>
-                    <a href="{{ url_for('saida_bp.lista_saidas') }}" class="btn btn-secondary">
+                    <a href="{{ url_for('saida.listar_saidas') }}" class="btn btn-secondary">
                         <i class="bi bi-x-circle me-1"></i>Cancelar
                     </a>
                 </div>
@@ -210,9 +212,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- jQuery (certifique-se de que está sendo carregado primeiro) -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<!-- Select2 -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
 $(document).ready(function() {
@@ -226,12 +226,7 @@ $(document).ready(function() {
     });
     
     inicializarSelect2Items();
-    
-    // Inicializa tooltips
     inicializarTooltips();
-
-    // Define a data atual como padrão
-    document.getElementById('data_movimento').valueAsDate = new Date();
 
     // Inicializa eventos para todas as linhas existentes
     document.querySelectorAll('#tabela-itens tbody tr').forEach(linha => {
@@ -285,12 +280,10 @@ function inicializarEventosLinha(linha) {
     const select = linha.querySelector('select[name="item_id[]"]');
     const inputQuantidade = linha.querySelector('input[name="quantidade[]"]');
 
-    // Evento para quando seleciona um item
     select.addEventListener('change', function() {
         atualizarValor(this);
     });
 
-    // Evento para quando altera a quantidade
     inputQuantidade.addEventListener('input', function() {
         atualizarTotais(this);
     });
@@ -309,15 +302,14 @@ function atualizarValor(select) {
 
     const valor = parseFloat(option.getAttribute('data-valor')) || 0;
     const estoque = parseFloat(option.getAttribute('data-estoque')) || 0;
+    const unidade = option.getAttribute('data-unidade');
     
     const inputValor = linha.querySelector('input[name="valor_unitario[]"]');
     const inputQuantidade = linha.querySelector('input[name="quantidade[]"]');
     const inputTotal = linha.querySelector('.valor_total');
 
-    // Atualiza o valor unitário garantindo 2 casas decimais
     inputValor.value = valor.toFixed(2);
 
-    // Verifica o estoque
     if (estoque <= 0) {
         select.classList.add('is-invalid');
         inputQuantidade.disabled = true;
@@ -326,14 +318,13 @@ function atualizarValor(select) {
         select.classList.remove('is-invalid');
         inputQuantidade.disabled = false;
         inputQuantidade.max = estoque;
+        inputQuantidade.step = unidade === 'UN' ? '1' : '0.01';
     }
 
-    // Atualiza o total da linha
     const quantidade = parseFloat(inputQuantidade.value) || 0;
     const total = quantidade * valor;
     inputTotal.value = formatarMoeda(total);
 
-    // Atualiza o total geral
     atualizarTotalNota();
 }
 
@@ -362,7 +353,6 @@ function adicionarLinha() {
         const primeiraLinha = tbody.querySelector('tr');
         const novaLinha = primeiraLinha.cloneNode(true);
 
-        // Limpa os valores dos inputs
         novaLinha.querySelectorAll('input, select').forEach(elemento => {
             if (elemento.tagName === 'SELECT') {
                 elemento.selectedIndex = 0;
@@ -375,17 +365,14 @@ function adicionarLinha() {
             }
         });
 
-        // Remove select2 existente
         novaLinha.querySelectorAll('.select2-item').forEach(el => {
             if ($(el).data('select2')) {
                 $(el).select2('destroy');
             }
         });
 
-        // Adiciona a nova linha
         tbody.appendChild(novaLinha);
 
-        // Reinicializa select2 na nova linha
         novaLinha.querySelectorAll('.select2-item').forEach(el => {
             $(el).select2({
                 theme: 'bootstrap-5',
@@ -395,7 +382,6 @@ function adicionarLinha() {
             });
         });
 
-        // Inicializa os eventos na nova linha
         inicializarEventosLinha(novaLinha);
 
     } catch (error) {
@@ -408,19 +394,16 @@ function removerLinha(botao) {
     const tbody = linha.parentElement;
     
     if (tbody.rows.length > 1) {
-        // Destrói o tooltip antes de remover a linha
         const tooltip = bootstrap.Tooltip.getInstance(botao);
         if (tooltip) {
             tooltip.dispose();
         }
         
-        // Destrói o select2 antes de remover a linha
         linha.querySelectorAll('.select2-item').forEach(el => {
             $(el).select2('destroy');
         });
         
         linha.remove();
-        // Atualiza o total da nota após remover a linha
         atualizarTotalNota();
     } else {
         alert('A saída deve conter pelo menos um item.');
@@ -431,23 +414,21 @@ function validarFormulario() {
     let valido = true;
     const mensagens = [];
 
-    // Valida data do movimento
     if (!$('#data_movimento').val()) {
         mensagens.push('Data do movimento é obrigatória');
         valido = false;
     }
 
-    // Valida solicitante
     if (!$('#solicitante').val()) {
         mensagens.push('Solicitante é obrigatório');
         valido = false;
     }
 
-    // Valida itens
     const linhas = document.querySelectorAll('#tabela-itens tbody tr');
     linhas.forEach((linha, index) => {
         const item = linha.querySelector('select[name="item_id[]"]');
         const quantidade = linha.querySelector('input[name="quantidade[]"]');
+        const option = item.options[item.selectedIndex];
         
         if (!item.value) {
             mensagens.push(`Selecione um item na linha ${index + 1}`);
@@ -459,9 +440,12 @@ function validarFormulario() {
             valido = false;
         }
         
-        if (item.classList.contains('is-invalid')) {
-            mensagens.push(`Item sem estoque na linha ${index + 1}`);
-            valido = false;
+        if (item.value && quantidade.value) {
+            const estoque = parseFloat(option.getAttribute('data-estoque'));
+            if (parseFloat(quantidade.value) > estoque) {
+                mensagens.push(`Quantidade maior que o estoque disponível na linha ${index + 1}`);
+                valido = false;
+            }
         }
     });
 

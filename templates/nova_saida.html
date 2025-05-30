@@ -132,14 +132,17 @@
                                 <tbody>
                                     <tr class="item-row">
                                         <td>
-                                            <select name="item_id[]" class="form-select select2-item" required onchange="atualizarValor(this)">
-                                                <option value="" disabled selected>Selecione...</option>
-                                                {% for item in itens %}
-                                                <option value="{{ item.id }}" data-valor="{{ item.valor_unitario }}" data-estoque="{{ item.estoque_atual }}">
-                                                    {{ item.nome }} (Estoque: {{ item.estoque_atual }})
-                                                </option>
-                                                {% endfor %}
-                                            </select>
+<select name="item_id[]" class="form-select select2-item" required onchange="atualizarValor(this)">
+    <option value="" disabled selected>Selecione...</option>
+    {% for item in itens %}
+    <option value="{{ item.id }}" 
+            data-valor="{{ "%.2f"|format(item.valor_unitario|float) }}" 
+            data-estoque="{{ item.estoque_atual }}">
+        {{ item.nome }} (Estoque: {{ item.estoque_atual }})
+    </option>
+    {% endfor %}
+</select>
+                                            
                                             <div class="invalid-feedback">
                                                 Estoque indisponível para este item!
                                             </div>

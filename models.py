@@ -1,4 +1,4 @@
-    # ------------------------------ IMPORTAÇÕES ------------------------------
+# ------------------------------ IMPORTAÇÕES ------------------------------
 from flask_login import UserMixin
 from extensoes import db
 from datetime import datetime
@@ -29,7 +29,7 @@ class NaturezaDespesa(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     codigo = db.Column(db.String(10), nullable=False)
     nome = db.Column(db.String(100), nullable=False)
-    valor = db.Column(db.Float, default=0.0)
+    valor = db.Column(db.Numeric(10, 2), default=0.0)  # Alterado para Numeric
     grupos = db.relationship('Grupo', back_populates='natureza_despesa')
     itens = db.relationship('Item', back_populates='natureza_despesa')
 
@@ -55,11 +55,11 @@ class Item(db.Model):
     grupo = db.relationship('Grupo', back_populates='itens')
     natureza_despesa_id = db.Column(db.Integer, db.ForeignKey('natureza_despesa.id'), nullable=False)
     natureza_despesa = db.relationship('NaturezaDespesa', back_populates='itens')
-    valor_unitario = db.Column(db.Float, default=0.0)
-    valor_medio = db.Column(db.Float, default=0.0)  # Novo campo
-    saldo_financeiro = db.Column(db.Float, default=0.0)
-    estoque_atual = db.Column(db.Float, default=0.0)
-    estoque_minimo = db.Column(db.Float, default=0.0)
+    valor_unitario = db.Column(db.Numeric(10, 2), default=0.0)  # Alterado para Numeric
+    valor_medio = db.Column(db.Numeric(10, 2), default=0.0)  # Alterado para Numeric
+    saldo_financeiro = db.Column(db.Numeric(10, 2), default=0.0)  # Alterado para Numeric
+    estoque_atual = db.Column(db.Numeric(10, 2), default=0.0)  # Alterado para Numeric
+    estoque_minimo = db.Column(db.Numeric(10, 2), default=0.0)  # Alterado para Numeric
     localizacao = db.Column(db.String(120), default='')
     data_validade = db.Column(db.Date, nullable=True)
 
@@ -71,10 +71,10 @@ class Estoque(db.Model):
     item = db.relationship('Item')
     fornecedor = db.Column(db.String(120), nullable=False)
     nota_fiscal = db.Column(db.String(50))
-    valor_unitario = db.Column(db.Float, nullable=False)
+    valor_unitario = db.Column(db.Numeric(10, 2), nullable=False)  # Alterado para Numeric
     quantidade = db.Column(db.Integer, nullable=False)
     local = db.Column(db.String(120), nullable=False)
-    valor_total = db.Column(db.Float, nullable=False)
+    valor_total = db.Column(db.Numeric(10, 2), nullable=False)  # Alterado para Numeric
 
 # ------------------- FORNECEDOR -------------------
 class Fornecedor(db.Model):
@@ -146,7 +146,7 @@ class EntradaItem(db.Model):
     entrada_id = db.Column(db.Integer, db.ForeignKey('entrada_material.id'), nullable=False)
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
     quantidade = db.Column(db.Integer, nullable=False)
-    valor_unitario = db.Column(db.Numeric(10, 2), nullable=False)
+    valor_unitario = db.Column(db.Numeric(10, 2), nullable=False)  # Já está como Numeric
 
     item = db.relationship('Item', backref='entradas')
     entrada = db.relationship(
@@ -187,7 +187,7 @@ class SaidaItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
     quantidade = db.Column(db.Integer, nullable=False)
-    valor_unitario = db.Column(db.Float, nullable=False)
+    valor_unitario = db.Column(db.Numeric(10, 2), nullable=False)  # Alterado para Numeric
 
     saida_id = db.Column(db.Integer, db.ForeignKey('saida_material.id'), nullable=False)
 
@@ -197,6 +197,10 @@ class SaidaItem(db.Model):
         backref='itens_relacionados',
         overlaps="saida_material,itens"
     )
+
+    @property
+    def valor_total(self):
+        return self.quantidade * self.valor_unitario
 
 # ------------------- LOG AUDITÁVEL -------------------
 class AuditLog(db.Model):
@@ -228,8 +232,8 @@ class PainelContratacao(db.Model):
     fundamentacao_legal = db.Column(db.Text, nullable=True)
     objeto = db.Column(db.Text, nullable=False)
     natureza_despesa = db.Column(db.String(100), nullable=True)
-    valor_estimado = db.Column(db.Numeric(14, 2), nullable=True)
-    valor_homologado = db.Column(db.Numeric(14, 2), nullable=True)
+    valor_estimado = db.Column(db.Numeric(14, 2), nullable=True)  # Já está como Numeric
+    valor_homologado = db.Column(db.Numeric(14, 2), nullable=True)  # Já está como Numeric
     percentual_economia = db.Column(db.String(10), nullable=True)
     impugnacao = db.Column(db.String(10), nullable=True)
     recurso = db.Column(db.String(10), nullable=True)
@@ -261,12 +265,11 @@ class BemPatrimonial(db.Model):
     detentor = db.relationship('Usuario', backref='bens')
     localizacao = db.Column(db.String(100), nullable=True)
     data_aquisicao = db.Column(db.Date, nullable=True)
-    valor_aquisicao = db.Column(db.Float, nullable=True)
+    valor_aquisicao = db.Column(db.Numeric(10, 2), nullable=True)  # Alterado para Numeric
     status = db.Column(db.String(50), default='Ativo')
-    situacao = db.Column(db.String(50), default='Em uso')  # Novo campo
+    situacao = db.Column(db.String(50), default='Em uso')
     data_cadastro = db.Column(db.DateTime, default=datetime.utcnow)
     observacoes = db.Column(db.Text, nullable=True)
-    
 
     def __repr__(self):
         return f"<BemPatrimonial {self.numero_ul} - {self.nome}>"

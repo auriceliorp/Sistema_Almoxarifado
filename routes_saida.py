@@ -10,7 +10,7 @@ import csv
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill
 
-saida_bp = Blueprint('saida', __name__)
+saida_bp = Blueprint('saida_bp', __name__)
 
 def format_currency(value):
     """Formata valor monetário para exibição"""

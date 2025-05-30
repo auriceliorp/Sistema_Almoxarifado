@@ -455,5 +455,54 @@ function validarFormulario() {
 
     return valido;
 }
+    function atualizarValor(select) {
+    console.log('Atualizando valor do item');
+    const linha = select.closest('tr');
+    const option = select.options[select.selectedIndex];
+    
+    if (!option || !option.value) {
+        console.log('Nenhuma opção selecionada');
+        return;
+    }
+
+    // Debug para verificar os valores
+    console.log('Option selecionada:', option);
+    console.log('Data-valor:', option.getAttribute('data-valor'));
+    console.log('Data-estoque:', option.getAttribute('data-estoque'));
+
+    const valor = parseFloat(option.getAttribute('data-valor'));
+    const estoque = parseFloat(option.getAttribute('data-estoque'));
+    
+    console.log('Valor parseado:', valor);
+    console.log('Estoque parseado:', estoque);
+
+    const inputValor = linha.querySelector('input[name="valor_unitario[]"]');
+    const inputQuantidade = linha.querySelector('input[name="quantidade[]"]');
+    const inputTotal = linha.querySelector('.valor_total');
+
+    // Atualiza o valor unitário
+    inputValor.value = valor.toFixed(2);
+    console.log('Valor unitário definido:', inputValor.value);
+
+    // Verifica o estoque
+    if (estoque <= 0) {
+        select.classList.add('is-invalid');
+        inputQuantidade.disabled = true;
+        inputQuantidade.value = '';
+    } else {
+        select.classList.remove('is-invalid');
+        inputQuantidade.disabled = false;
+        inputQuantidade.max = estoque;
+    }
+
+    // Atualiza o total da linha
+    const quantidade = parseFloat(inputQuantidade.value) || 0;
+    const total = quantidade * valor;
+    inputTotal.value = formatarMoeda(total);
+    console.log('Total calculado:', total, 'Formatado:', inputTotal.value);
+
+    // Atualiza o total geral
+    atualizarTotalNota();
+}
 </script>
 {% endblock %}

@@ -212,7 +212,7 @@
         <ul class="pagination justify-content-center">
             {% if saidas.has_prev %}
             <li class="page-item">
-                <a class="page-link" href="{{ url_for('saida_bp.lista_saidas', page=saidas.prev_num, filtro=filtro, busca=busca) }}">
+                <a class="page-link" href="{{ url_for('saida_bp.listar_saidas', page=saidas.prev_num, filtro=filtro, busca=busca) }}">
                     <i class="bi bi-chevron-left"></i>
                 </a>
             </li>
@@ -230,7 +230,7 @@
                 </li>
                 {% else %}
                 <li class="page-item">
-                    <a class="page-link" href="{{ url_for('saida_bp.lista_saidas', page=page_num, filtro=filtro, busca=busca) }}">
+                    <a class="page-link" href="{{ url_for('saida_bp.listar_saidas', page=page_num, filtro=filtro, busca=busca) }}">
                         {{ page_num }}
                     </a>
                 </li>
@@ -242,7 +242,7 @@
 
             {% if saidas.has_next %}
             <li class="page-item">
-                <a class="page-link" href="{{ url_for('saida_bp.lista_saidas', page=saidas.next_num, filtro=filtro, busca=busca) }}">
+                <a class="page-link" href="{{ url_for('saida_bp.listar_saidas', page=saidas.next_num, filtro=filtro, busca=busca) }}">
                     <i class="bi bi-chevron-right"></i>
                 </a>
             </li>

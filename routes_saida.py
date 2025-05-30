@@ -212,7 +212,7 @@ def get_item_info(item_id):
 @login_required
 def imprimir_saida(saida_id):
     saida = SaidaMaterial.query.get_or_404(saida_id)
-    return render_template('saidas/imprimir_saida.html', 
+    return render_template('imprimir_saida.html', 
                          saida=saida,
                          format_currency=format_currency)
 
@@ -220,7 +220,7 @@ def imprimir_saida(saida_id):
 @login_required
 def detalhes_saida(saida_id):
     saida = SaidaMaterial.query.get_or_404(saida_id)
-    return render_template('saidas/detalhes_saida.html', 
+    return render_template('detalhes_saida.html', 
                          saida=saida,
                          format_currency=format_currency)
 
@@ -337,7 +337,7 @@ def relatorio_saidas():
     
     # Formato HTML (default)
     return render_template(
-        'saidas/relatorio.html',
+        'relatorio.html',
         resultados=resultados,
         data_inicio=data_inicio,
         data_fim=data_fim,
@@ -393,9 +393,17 @@ def dashboard():
     ).limit(5).all()
     
     return render_template(
-        'saidas/dashboard.html',
+        'dashboard.html',
         top_itens=top_itens,
         saidas_por_dia=saidas_por_dia,
         itens_criticos=itens_criticos,
         format_currency=format_currency
-    ) 
+    )
+
+@saida_bp.route('/saida/requisicao/<int:saida_id>')
+@login_required
+def requisicao_saida(saida_id):
+    saida = SaidaMaterial.query.get_or_404(saida_id)
+    return render_template('requisicao_saida.html', 
+                         saida=saida,
+                         format_currency=format_currency) 

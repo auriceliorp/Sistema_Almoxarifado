@@ -137,10 +137,7 @@
                                             <select name="item_id[]" class="form-select select2-item" required onchange="atualizarValor(this)">
                                                 <option value="" disabled selected>Selecione...</option>
                                                 {% for item in itens %}
-                                                <option value="{{ item.id }}" 
-                                                        data-valor="{{ item.valor_unitario }}"
-                                                        data-estoque="{{ item.estoque_atual }}"
-                                                        data-unidade="{{ item.unidade }}">
+                                                <option value="{{ item.id }}">
                                                     {{ item.nome }} (Estoque: {{ "%.2f"|format(item.estoque_atual) }} {{ item.unidade }})
                                                 </option>
                                                 {% endfor %}
@@ -291,40 +288,58 @@ function inicializarEventosLinha(linha) {
 
 function atualizarValor(select) {
     const linha = select.closest('tr');
-    const option = select.options[select.selectedIndex];
+    const itemId = select.value;
     
-    if (!option || !option.value) {
-        linha.querySelector('input[name="valor_unitario[]"]').value = '0.00';
-        linha.querySelector('.valor_total').value = '0,00';
-        atualizarTotalNota();
-        return;
-    }
-
-    const valor = parseFloat(option.getAttribute('data-valor')) || 0;
-    const estoque = parseFloat(option.getAttribute('data-estoque')) || 0;
-    const unidade = option.getAttribute('data-unidade');
-    
+    // Reset inicial dos campos
     const inputValor = linha.querySelector('input[name="valor_unitario[]"]');
     const inputQuantidade = linha.querySelector('input[name="quantidade[]"]');
     const inputTotal = linha.querySelector('.valor_total');
-
-    inputValor.value = valor.toFixed(2);
-
-    if (estoque <= 0) {
-        select.classList.add('is-invalid');
-        inputQuantidade.disabled = true;
-        inputQuantidade.value = '';
-    } else {
-        select.classList.remove('is-invalid');
-        inputQuantidade.disabled = false;
-        inputQuantidade.max = estoque;
-        inputQuantidade.step = unidade === 'UN' ? '1' : '0.01';
+    
+    if (!itemId) {
+        resetarCampos(inputValor, inputQuantidade, inputTotal, select);
+        return;
     }
 
-    const quantidade = parseFloat(inputQuantidade.value) || 0;
-    const total = quantidade * valor;
-    inputTotal.value = formatarMoeda(total);
+    // Buscar dados atualizados do item via API
+    fetch(`/api/item/${itemId}`)
+        .then(response => response.json())
+        .then(item => {
+            const valor = parseFloat(item.valor_unitario);
+            const estoque = parseFloat(item.estoque_atual);
+            
+            // Atualiza valor unitário
+            inputValor.value = valor.toFixed(2);
 
+            // Configura quantidade baseado no estoque
+            inputQuantidade.disabled = estoque <= 0;
+            inputQuantidade.max = estoque;
+            inputQuantidade.step = item.unidade === 'UN' ? '1' : '0.01';
+            
+            // Atualiza validação visual
+            select.classList.toggle('is-invalid', estoque <= 0);
+            
+            if (estoque <= 0) {
+                inputQuantidade.value = '';
+            }
+
+            // Calcula e atualiza total
+            const quantidade = parseFloat(inputQuantidade.value) || 0;
+            inputTotal.value = formatarMoeda(quantidade * valor);
+
+            atualizarTotalNota();
+        })
+        .catch(error => {
+            console.error('Erro ao buscar dados do item:', error);
+            resetarCampos(inputValor, inputQuantidade, inputTotal, select);
+        });
+}
+
+function resetarCampos(inputValor, inputQuantidade, inputTotal, select) {
+    inputValor.value = '0.00';
+    inputQuantidade.value = '';
+    inputQuantidade.disabled = true;
+    inputTotal.value = '0,00';
+    if (select) select.classList.remove('is-invalid');
     atualizarTotalNota();
 }
 
@@ -332,8 +347,18 @@ function atualizarTotais(input) {
     const linha = input.closest('tr');
     const qtd = parseFloat(input.value) || 0;
     const valorUnitario = parseFloat(linha.querySelector('input[name="valor_unitario[]"]').value) || 0;
-    const total = qtd * valorUnitario;
     
+    // Validar quantidade máxima
+    const select = linha.querySelector('select[name="item_id[]"]');
+    const maxEstoque = parseFloat(select.options[select.selectedIndex].getAttribute('data-estoque'));
+    
+    if (qtd > maxEstoque) {
+        input.value = maxEstoque;
+        alert('Quantidade ajustada para o máximo disponível em estoque.');
+        return atualizarTotais(input);
+    }
+    
+    const total = qtd * valorUnitario;
     linha.querySelector('.valor_total').value = formatarMoeda(total);
     
     atualizarTotalNota();
@@ -456,4 +481,4 @@ function validarFormulario() {
     return valido;
 }
 </script>
-{% endblock %}
+{% endblock %} 

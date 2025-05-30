@@ -18,16 +18,10 @@
       <li class="nav-item"><a href="{{ url_for('item_bp.lista_itens') }}" class="nav-link {% if request.endpoint == 'item_bp.lista_itens' %}active{% endif %} text-white">Itens</a></li>
       <li class="nav-item"><a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="nav-link {% if request.endpoint == 'fornecedor_bp.lista_fornecedor' %}active{% endif %} text-white">Fornecedores</a></li>
       <li class="nav-item"><a href="{{ url_for('entrada_bp.lista_entradas') }}" class="nav-link {% if request.endpoint == 'entrada_bp.lista_entradas' %}active{% endif %} text-white">Entrada de Materiais</a></li>
-
-
-<li class="nav-item"><a href="{{ url_for('saida.listar_saidas') }}"class="nav-link {% if request.endpoint == 'saida.listar_saidas' %}active{% endif %} text-white"><i class="bi bi-box-arrow-up me-2"></i>Saída de Materiais</a></li> 
-
-      
-     
+      <li class="nav-item"><a href="{{ url_for('saida_bp.lista_saidas') }}" class="nav-link {% if request.endpoint == 'saida_bp.lista_saidas' %}active{% endif %} text-white"><i class="bi bi-box-arrow-up me-2"></i>Saída de Materiais</a></li>
       <li class="nav-item"><a href="{{ url_for('main.relatorios') }}" class="nav-link {% if request.endpoint == 'main.relatorios' %}active{% endif %} text-white">Relatórios</a></li>
     </ul>
   </li>
-
   <!-- Patrimônio -->
   <li class="nav-item mt-3">
     <a class="nav-link text-white fw-bold d-flex justify-content-between align-items-center"

@@ -215,11 +215,6 @@
 <!-- Select2 -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-// Verifica se o jQuery está carregado
-if (typeof jQuery === 'undefined') {
-    console.error('jQuery não está carregado!');
-}
-
 $(document).ready(function() {
     console.log('Document ready!');
     
@@ -235,6 +230,9 @@ $(document).ready(function() {
     // Inicializa tooltips
     inicializarTooltips();
 
+    // Define a data atual como padrão
+    document.getElementById('data_movimento').valueAsDate = new Date();
+
     // Inicializa eventos para todas as linhas existentes
     document.querySelectorAll('#tabela-itens tbody tr').forEach(linha => {
         inicializarEventosLinha(linha);
@@ -249,7 +247,6 @@ $(document).ready(function() {
 });
 
 function inicializarSelect2Items() {
-    console.log('Inicializando Select2 Items');
     $('.select2-item').select2({
         theme: 'bootstrap-5',
         width: '100%',
@@ -300,33 +297,25 @@ function inicializarEventosLinha(linha) {
 }
 
 function atualizarValor(select) {
-    console.log('Atualizando valor do item');
     const linha = select.closest('tr');
     const option = select.options[select.selectedIndex];
     
     if (!option || !option.value) {
-        console.log('Nenhuma opção selecionada');
+        linha.querySelector('input[name="valor_unitario[]"]').value = '0.00';
+        linha.querySelector('.valor_total').value = '0,00';
+        atualizarTotalNota();
         return;
     }
 
-    // Debug para verificar os valores
-    console.log('Option selecionada:', option);
-    console.log('Data-valor:', option.getAttribute('data-valor'));
-    console.log('Data-estoque:', option.getAttribute('data-estoque'));
-
-    const valor = parseFloat(option.getAttribute('data-valor'));
-    const estoque = parseFloat(option.getAttribute('data-estoque'));
+    const valor = parseFloat(option.getAttribute('data-valor')) || 0;
+    const estoque = parseFloat(option.getAttribute('data-estoque')) || 0;
     
-    console.log('Valor parseado:', valor);
-    console.log('Estoque parseado:', estoque);
-
     const inputValor = linha.querySelector('input[name="valor_unitario[]"]');
     const inputQuantidade = linha.querySelector('input[name="quantidade[]"]');
     const inputTotal = linha.querySelector('.valor_total');
 
-    // Atualiza o valor unitário
+    // Atualiza o valor unitário garantindo 2 casas decimais
     inputValor.value = valor.toFixed(2);
-    console.log('Valor unitário definido:', inputValor.value);
 
     // Verifica o estoque
     if (estoque <= 0) {
@@ -343,18 +332,16 @@ function atualizarValor(select) {
     const quantidade = parseFloat(inputQuantidade.value) || 0;
     const total = quantidade * valor;
     inputTotal.value = formatarMoeda(total);
-    console.log('Total calculado:', total, 'Formatado:', inputTotal.value);
 
     // Atualiza o total geral
     atualizarTotalNota();
 }
 
 function atualizarTotais(input) {
-    console.log('Atualizando totais');
     const linha = input.closest('tr');
     const qtd = parseFloat(input.value) || 0;
-    const valor = parseFloat(linha.querySelector('input[name="valor_unitario[]"]').value) || 0;
-    const total = qtd * valor;
+    const valorUnitario = parseFloat(linha.querySelector('input[name="valor_unitario[]"]').value) || 0;
+    const total = qtd * valorUnitario;
     
     linha.querySelector('.valor_total').value = formatarMoeda(total);
     
@@ -370,21 +357,9 @@ function atualizarTotalNota() {
 }
 
 function adicionarLinha() {
-    console.log('Adicionando nova linha...');
-    
     try {
         const tbody = document.querySelector('#tabela-itens tbody');
-        if (!tbody) {
-            console.error('Tbody não encontrado');
-            return;
-        }
-
         const primeiraLinha = tbody.querySelector('tr');
-        if (!primeiraLinha) {
-            console.error('Primeira linha não encontrada');
-            return;
-        }
-
         const novaLinha = primeiraLinha.cloneNode(true);
 
         // Limpa os valores dos inputs
@@ -423,14 +398,12 @@ function adicionarLinha() {
         // Inicializa os eventos na nova linha
         inicializarEventosLinha(novaLinha);
 
-        console.log('Nova linha adicionada com sucesso');
     } catch (error) {
         console.error('Erro ao adicionar linha:', error);
     }
 }
 
 function removerLinha(botao) {
-    console.log('Removendo linha');
     const linha = botao.closest('tr');
     const tbody = linha.parentElement;
     
@@ -455,7 +428,6 @@ function removerLinha(botao) {
 }
 
 function validarFormulario() {
-    console.log('Validando formulário');
     let valido = true;
     const mensagens = [];
 

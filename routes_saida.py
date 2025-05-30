@@ -142,22 +142,22 @@ def nova_saida():
 
             db.session.commit()
             flash('Saída registrada com sucesso! Valor total: ' + format_currency(total_saida), 'success')
-            return redirect(url_for('saida.listar_saidas'))
+            return redirect(url_for('saida_bp.listar_saidas'))
 
         except ValueError as e:
             db.session.rollback()
             flash(str(e), 'error')
-            return redirect(url_for('saida.nova_saida'))
+            return redirect(url_for('saida_bp.nova_saida'))
         except Exception as e:
             db.session.rollback()
             flash('Erro ao registrar saída: ' + str(e), 'error')
-            return redirect(url_for('saida.nova_saida'))
+            return redirect(url_for('saida_bp.nova_saida'))
 
     # GET - Renderizar formulário
     itens = Item.query.filter(Item.estoque_atual > 0).order_by(Item.nome).all()
     solicitantes = Usuario.query.order_by(Usuario.nome).all()
     unidades = UnidadeLocal.query.all()
-    return render_template('saidas/nova_saida.html', 
+    return render_template('nova_saida.html', 
                          itens=itens, 
                          solicitantes=solicitantes,
                          unidades=unidades,

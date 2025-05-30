@@ -25,6 +25,24 @@ def parse_date(date_str):
     except:
         return None
 
+def gerar_numero_documento():
+    """Gera número sequencial do documento de saída para o ano atual"""
+    ano_atual = date.today().year
+    ultimo_documento = SaidaMaterial.query.filter(
+        db.extract('year', SaidaMaterial.data_movimento) == ano_atual
+    ).order_by(SaidaMaterial.id.desc()).first()
+
+    if ultimo_documento and ultimo_documento.numero_documento:
+        try:
+            ultimo_numero = int(ultimo_documento.numero_documento.split('/')[0].replace('SAIDA', ''))
+            novo_numero = ultimo_numero + 1
+        except:
+            novo_numero = 1
+    else:
+        novo_numero = 1
+
+    return f"SAIDA{novo_numero:04d}/{ano_atual}"
+
 @saida_bp.route('/saidas')
 @login_required
 def listar_saidas():
@@ -84,7 +102,8 @@ def nova_saida():
                 data_movimento=data_movimento,
                 solicitante_id=solicitante_id,
                 usuario_id=current_user.id,
-                observacao=observacao
+                observacao=observacao,
+                numero_documento=gerar_numero_documento()
             )
             db.session.add(saida)
             db.session.flush()  # Obter o ID da saída
@@ -169,6 +188,7 @@ def nova_saida():
                          itens=itens_formatados, 
                          solicitantes=solicitantes,
                          unidades=unidades,
+                         numero_documento=gerar_numero_documento(),
                          data_atual=date.today().strftime('%Y-%m-%d'))
 
 @saida_bp.route('/saida/estornar/<int:saida_id>', methods=['POST'])

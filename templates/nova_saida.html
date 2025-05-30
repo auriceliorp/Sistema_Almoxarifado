@@ -46,6 +46,7 @@
     }
 </style>
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
 {% endblock %}
 
 {% block content %}
@@ -132,17 +133,16 @@
                                 <tbody>
                                     <tr class="item-row">
                                         <td>
-<select name="item_id[]" class="form-select select2-item" required onchange="atualizarValor(this)">
-    <option value="" disabled selected>Selecione...</option>
-    {% for item in itens %}
-    <option value="{{ item.id }}" 
-            data-valor="{{ "%.2f"|format(item.valor_unitario|float) }}" 
-            data-estoque="{{ item.estoque_atual }}">
-        {{ item.nome }} (Estoque: {{ item.estoque_atual }})
-    </option>
-    {% endfor %}
-</select>
-                                            
+                                            <select name="item_id[]" class="form-select select2-item" required onchange="atualizarValor(this)">
+                                                <option value="" disabled selected>Selecione...</option>
+                                                {% for item in itens %}
+                                                <option value="{{ item.id }}" 
+                                                        data-valor="{{ "%.2f"|format(item.valor_unitario|float) }}" 
+                                                        data-estoque="{{ item.estoque_atual }}">
+                                                    {{ item.nome }} (Estoque: {{ item.estoque_atual }})
+                                                </option>
+                                                {% endfor %}
+                                            </select>
                                             <div class="invalid-feedback">
                                                 Estoque indisponível para este item!
                                             </div>
@@ -226,13 +226,19 @@ $(document).ready(function() {
     // Inicializa Select2
     $('.select2').select2({
         theme: 'bootstrap-5',
-        width: '100%'
+        width: '100%',
+        dropdownParent: $('body')
     });
     
     inicializarSelect2Items();
     
     // Inicializa tooltips
     inicializarTooltips();
+
+    // Inicializa eventos para todas as linhas existentes
+    document.querySelectorAll('#tabela-itens tbody tr').forEach(linha => {
+        inicializarEventosLinha(linha);
+    });
 
     // Validação do formulário
     $('#formSaida').on('submit', function(e) {
@@ -248,6 +254,7 @@ function inicializarSelect2Items() {
         theme: 'bootstrap-5',
         width: '100%',
         placeholder: 'Selecione um item...',
+        dropdownParent: $('body'),
         language: {
             noResults: function() {
                 return "Nenhum item encontrado";
@@ -277,34 +284,75 @@ function parseMoeda(valor) {
     return parseFloat(valor) || 0;
 }
 
+function inicializarEventosLinha(linha) {
+    const select = linha.querySelector('select[name="item_id[]"]');
+    const inputQuantidade = linha.querySelector('input[name="quantidade[]"]');
+
+    // Evento para quando seleciona um item
+    select.addEventListener('change', function() {
+        atualizarValor(this);
+    });
+
+    // Evento para quando altera a quantidade
+    inputQuantidade.addEventListener('input', function() {
+        atualizarTotais(this);
+    });
+}
+
 function atualizarValor(select) {
     console.log('Atualizando valor do item');
-    const option = select.options[select.selectedIndex];
-    const valor = option.getAttribute('data-valor');
-    const estoque = parseFloat(option.getAttribute('data-estoque'));
     const linha = select.closest('tr');
-    const inputValor = linha.querySelector('input[name="valor_unitario[]"]');
-    const quantidade = linha.querySelector('input[name="quantidade[]"]');
-
-    inputValor.value = valor || 0;
-
-    if (estoque <= 0) {
-        select.classList.add('is-invalid');
-        quantidade.disabled = true;
-        quantidade.value = '';
-    } else {
-        select.classList.remove('is-invalid');
-        quantidade.disabled = false;
-        quantidade.max = estoque;
+    const option = select.options[select.selectedIndex];
+    
+    if (!option || !option.value) {
+        console.log('Nenhuma opção selecionada');
+        return;
     }
 
-    atualizarTotais(quantidade);
+    // Debug para verificar os valores
+    console.log('Option selecionada:', option);
+    console.log('Data-valor:', option.getAttribute('data-valor'));
+    console.log('Data-estoque:', option.getAttribute('data-estoque'));
+
+    const valor = parseFloat(option.getAttribute('data-valor'));
+    const estoque = parseFloat(option.getAttribute('data-estoque'));
+    
+    console.log('Valor parseado:', valor);
+    console.log('Estoque parseado:', estoque);
+
+    const inputValor = linha.querySelector('input[name="valor_unitario[]"]');
+    const inputQuantidade = linha.querySelector('input[name="quantidade[]"]');
+    const inputTotal = linha.querySelector('.valor_total');
+
+    // Atualiza o valor unitário
+    inputValor.value = valor.toFixed(2);
+    console.log('Valor unitário definido:', inputValor.value);
+
+    // Verifica o estoque
+    if (estoque <= 0) {
+        select.classList.add('is-invalid');
+        inputQuantidade.disabled = true;
+        inputQuantidade.value = '';
+    } else {
+        select.classList.remove('is-invalid');
+        inputQuantidade.disabled = false;
+        inputQuantidade.max = estoque;
+    }
+
+    // Atualiza o total da linha
+    const quantidade = parseFloat(inputQuantidade.value) || 0;
+    const total = quantidade * valor;
+    inputTotal.value = formatarMoeda(total);
+    console.log('Total calculado:', total, 'Formatado:', inputTotal.value);
+
+    // Atualiza o total geral
+    atualizarTotalNota();
 }
 
 function atualizarTotais(input) {
     console.log('Atualizando totais');
     const linha = input.closest('tr');
-    const qtd = parseFloat(linha.querySelector('input[name="quantidade[]"]').value) || 0;
+    const qtd = parseFloat(input.value) || 0;
     const valor = parseFloat(linha.querySelector('input[name="valor_unitario[]"]').value) || 0;
     const total = qtd * valor;
     
@@ -367,17 +415,13 @@ function adicionarLinha() {
             $(el).select2({
                 theme: 'bootstrap-5',
                 width: '100%',
-                placeholder: 'Selecione um item...'
+                placeholder: 'Selecione um item...',
+                dropdownParent: $('body')
             });
         });
 
-        // Atualiza os eventos da nova linha
-        const novoSelect = novaLinha.querySelector('select[name="item_id[]"]');
-        if (novoSelect) {
-            novoSelect.addEventListener('change', function() {
-                atualizarValor(this);
-            });
-        }
+        // Inicializa os eventos na nova linha
+        inicializarEventosLinha(novaLinha);
 
         console.log('Nova linha adicionada com sucesso');
     } catch (error) {
@@ -454,55 +498,6 @@ function validarFormulario() {
     }
 
     return valido;
-}
-    function atualizarValor(select) {
-    console.log('Atualizando valor do item');
-    const linha = select.closest('tr');
-    const option = select.options[select.selectedIndex];
-    
-    if (!option || !option.value) {
-        console.log('Nenhuma opção selecionada');
-        return;
-    }
-
-    // Debug para verificar os valores
-    console.log('Option selecionada:', option);
-    console.log('Data-valor:', option.getAttribute('data-valor'));
-    console.log('Data-estoque:', option.getAttribute('data-estoque'));
-
-    const valor = parseFloat(option.getAttribute('data-valor'));
-    const estoque = parseFloat(option.getAttribute('data-estoque'));
-    
-    console.log('Valor parseado:', valor);
-    console.log('Estoque parseado:', estoque);
-
-    const inputValor = linha.querySelector('input[name="valor_unitario[]"]');
-    const inputQuantidade = linha.querySelector('input[name="quantidade[]"]');
-    const inputTotal = linha.querySelector('.valor_total');
-
-    // Atualiza o valor unitário
-    inputValor.value = valor.toFixed(2);
-    console.log('Valor unitário definido:', inputValor.value);
-
-    // Verifica o estoque
-    if (estoque <= 0) {
-        select.classList.add('is-invalid');
-        inputQuantidade.disabled = true;
-        inputQuantidade.value = '';
-    } else {
-        select.classList.remove('is-invalid');
-        inputQuantidade.disabled = false;
-        inputQuantidade.max = estoque;
-    }
-
-    // Atualiza o total da linha
-    const quantidade = parseFloat(inputQuantidade.value) || 0;
-    const total = quantidade * valor;
-    inputTotal.value = formatarMoeda(total);
-    console.log('Total calculado:', total, 'Formatado:', inputTotal.value);
-
-    // Atualiza o total geral
-    atualizarTotalNota();
 }
 </script>
 {% endblock %}

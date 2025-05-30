@@ -1,9 +1,18 @@
-<!DOCTYPE html><html lang="pt-BR">
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <title>{% block title %}GestorSPS{% endblock %}</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">  <!-- Bootstrap & Ícones -->  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">  <style>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <!-- Bootstrap & Ícones -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  
+  <!-- Bloco para CSS adicional -->
+  {% block extra_css %}{% endblock %}
+  
+  <style>
     body {
       margin: 0;
       background-color: #f8f9fa;
@@ -91,8 +100,10 @@
       color: #004b5b !important;
       border-radius: 4px;
     }
-  </style></head>
-<body>  <div class="topbar no-print">
+  </style>
+</head>
+<body>
+  <div class="topbar no-print">
     <div class="d-flex align-items-center">
       <button class="navbar-toggler d-md-none me-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas">
         <i class="bi bi-list fs-3"></i>
@@ -105,9 +116,13 @@
     <a href="{{ url_for('main.logout') }}" class="btn btn-sm btn-outline-warning d-flex align-items-center">
       <i class="bi bi-box-arrow-right me-1"></i> Sair
     </a>
-  </div>  <div class="sidebar-desktop d-none d-md-block p-0">
+  </div>
+
+  <div class="sidebar-desktop d-none d-md-block p-0">
     {% include 'partials/sidebar.html' %}
-  </div>  <div class="offcanvas offcanvas-start text-bg-dark d-md-none" tabindex="-1" id="sidebarOffcanvas" style="width: 250px;">
+  </div>
+
+  <div class="offcanvas offcanvas-start text-bg-dark d-md-none" tabindex="-1" id="sidebarOffcanvas" style="width: 250px;">
     <div class="offcanvas-header border-bottom">
       <h5 class="offcanvas-title">GestorSPS</h5>
       <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
@@ -115,7 +130,9 @@
     <div class="offcanvas-body p-0">
       {% include 'partials/sidebar.html' %}
     </div>
-  </div>  <main>
+  </div>
+
+  <main>
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         <div class="container mt-3 no-print">
@@ -127,11 +144,21 @@
           {% endfor %}
         </div>
       {% endif %}
-    {% endwith %}<div id="conteudo-dinamico">
-  {% block content %}{% endblock %}
-</div>
+    {% endwith %}
 
-  </main>  <!-- Scripts -->  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>  <script src="https://cdn.jsdelivr.net/npm/inputmask@5.0.8/dist/inputmask.min.js"></script>  <script src="https://cdn.jsdelivr.net/npm/inputmask@5.0.8/dist/jquery.inputmask.min.js"></script>  <script>
+    <div id="conteudo-dinamico">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <!-- Scripts Base -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/inputmask@5.0.8/dist/inputmask.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/inputmask@5.0.8/dist/jquery.inputmask.min.js"></script>
+
+  <!-- Script para carregamento dinâmico -->
+  <script>
     function carregarConteudo(url) {
       const container = document.getElementById('conteudo-dinamico');
       if (!container) return;
@@ -148,6 +175,9 @@
         })
         .then(html => {
           container.innerHTML = html;
+          // Dispara um evento para notificar que o conteúdo foi carregado
+          const event = new Event('conteudoCarregado');
+          document.dispatchEvent(event);
         })
         .catch(error => {
           container.innerHTML = `
@@ -157,5 +187,26 @@
           console.error(error);
         });
     }
-  </script></body>
+
+    // Inicializa tooltips do Bootstrap globalmente
+    document.addEventListener('DOMContentLoaded', function() {
+      var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+      tooltipTriggerList.map(function(tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+      });
+    });
+
+    // Reinicializa tooltips após carregamento dinâmico
+    document.addEventListener('conteudoCarregado', function() {
+      var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+      tooltipTriggerList.map(function(tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+      });
+    });
+  </script>
+
+  <!-- Bloco para scripts adicionais -->
+  {% block extra_js %}{% endblock %}
+
+</body>
 </html>

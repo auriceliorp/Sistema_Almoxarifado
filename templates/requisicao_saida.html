@@ -188,7 +188,7 @@
             
             <div class="requisition-number">
                 <i class="bi bi-upc-scan me-2"></i>
-                Requisição Nº {{ saida.id }} | {{ saida.data_movimento.strftime('%d/%m/%Y') }}
+                Requisição Nº {{ saida.numero_documento }} | {{ saida.data_movimento.strftime('%d/%m/%Y') }}
             </div>
         </div>
         
@@ -279,4 +279,4 @@
         </button>
     </div>
 </div>
-{% endblock %}
+{% endblock %} 

@@ -133,6 +133,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    {% for _ in range(5) %}
                                     <tr class="item-row">
                                         <td>
                                             <select name="item_id[]" class="form-select select2-item" required onchange="atualizarValor(this)">
@@ -170,6 +171,7 @@
                                             </button>
                                         </td>
                                     </tr>
+                                    {% endfor %}
                                 </tbody>
                             </table>
                         </div>

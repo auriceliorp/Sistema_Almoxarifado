@@ -4,6 +4,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from datetime import datetime
+from decimal import Decimal  # ✅ Importa o Decimal!
 
 from extensoes import db
 from models import Fornecedor, Item, EntradaMaterial, EntradaItem
@@ -47,7 +48,7 @@ def nova_entrada():
                     continue
 
                 quantidade = int(quantidades[i])
-                valor_unitario = float(valores_unitarios[i])
+                valor_unitario = Decimal(valores_unitarios[i])  # ✅ Converte para Decimal
                 item = Item.query.get(item_ids[i])
 
                 if item:
@@ -59,16 +60,15 @@ def nova_entrada():
                     )
                     db.session.add(entrada_item)
 
-                    # Atualiza o item no estoque
+                    # ✅ Atualiza usando Decimal
                     item.estoque_atual += quantidade
-                    item.saldo_financeiro += quantidade * valor_unitario
+                    item.saldo_financeiro += Decimal(quantidade) * valor_unitario
                     if item.estoque_atual > 0:
-                        item.valor_unitario = item.saldo_financeiro / item.estoque_atual
-                        item.valor_medio = item.valor_unitario  # Atualiza também o valor médio
+                        item.valor_unitario = item.saldo_financeiro / Decimal(item.estoque_atual)
+                        item.valor_medio = item.valor_unitario
 
-                    # Atualiza o valor da natureza de despesa
                     if item.grupo and item.grupo.natureza_despesa:
-                        item.grupo.natureza_despesa.valor += quantidade * valor_unitario
+                        item.grupo.natureza_despesa.valor += Decimal(quantidade) * valor_unitario
 
             db.session.commit()
             flash('Entrada registrada com sucesso.', 'success')
@@ -86,7 +86,6 @@ def nova_entrada():
 @entrada_bp.route('/entrada/lista')
 @login_required
 def lista_entradas():
-    # Parâmetros da URL
     page = request.args.get('page', 1, type=int)
     filtro = request.args.get('filtro', 'nota')
     busca = request.args.get('busca', '').strip().lower()
@@ -95,7 +94,6 @@ def lista_entradas():
 
     query = EntradaMaterial.query.join(Fornecedor)
 
-    # Filtro de busca
     if busca:
         if filtro == 'nota':
             query = query.filter(EntradaMaterial.numero_nota_fiscal.ilike(f'%{busca}%'))
@@ -108,7 +106,6 @@ def lista_entradas():
             except ValueError:
                 flash("Data inválida. Use o formato dd/mm/aaaa.", 'warning')
 
-    # Ordenação dinâmica por campo e direção
     if ordenar_por == 'nota_fiscal':
         campo = EntradaMaterial.numero_nota_fiscal
     elif ordenar_por == 'fornecedor':
@@ -152,7 +149,6 @@ def estornar_entrada(entrada_id):
     itens = EntradaItem.query.filter_by(entrada_id=entrada_id).all()
 
     try:
-        # Dados para auditoria antes da alteração
         dados_antes = {
             'entrada': {
                 'id': entrada.id,
@@ -170,7 +166,6 @@ def estornar_entrada(entrada_id):
             ]
         }
 
-        # Reversão de estoque e valores
         for entrada_item in itens:
             item = Item.query.get(entrada_item.item_id)
             if item:
@@ -179,16 +174,16 @@ def estornar_entrada(entrada_id):
                     return redirect(url_for('entrada_bp.lista_entradas'))
 
                 item.estoque_atual -= entrada_item.quantidade
-                item.saldo_financeiro -= entrada_item.quantidade * float(entrada_item.valor_unitario)
+                item.saldo_financeiro -= Decimal(entrada_item.quantidade) * entrada_item.valor_unitario
                 if item.estoque_atual > 0:
-                    item.valor_unitario = item.saldo_financeiro / item.estoque_atual
-                    item.valor_medio = item.valor_unitario  # Atualiza também o valor médio
+                    item.valor_unitario = item.saldo_financeiro / Decimal(item.estoque_atual)
+                    item.valor_medio = item.valor_unitario
                 else:
                     item.valor_unitario = 0.0
                     item.valor_medio = 0.0
 
                 if item.grupo and item.grupo.natureza_despesa:
-                    item.grupo.natureza_despesa.valor -= entrada_item.quantidade * float(entrada_item.valor_unitario)
+                    item.grupo.natureza_despesa.valor -= Decimal(entrada_item.quantidade) * entrada_item.valor_unitario
 
         entrada.estornada = True
 
@@ -208,5 +203,6 @@ def estornar_entrada(entrada_id):
         flash(f'Erro ao estornar entrada: {e}', 'danger')
         print(e)
 
-    return redirect(url_for('entrada_bp.lista_entradas')) 
+    return redirect(url_for('entrada_bp.lista_entradas'))
+
 

@@ -205,4 +205,58 @@ def estornar_entrada(entrada_id):
 
     return redirect(url_for('entrada_bp.lista_entradas'))
 
+# ------------------------- ROTA: EDITAR ENTRADA COM AUDITORIA ------------------------- #
+@entrada_bp.route('/entrada/editar/<int:entrada_id>', methods=['GET', 'POST'])
+@login_required
+def editar_entrada(entrada_id):
+    entrada = EntradaMaterial.query.get_or_404(entrada_id)
+    fornecedores = Fornecedor.query.all()
+    itens = Item.query.all()
+    itens_entrada = EntradaItem.query.filter_by(entrada_id=entrada_id).all()
+
+    if request.method == 'POST':
+        try:
+            # Salva o estado atual antes da edição
+            dados_antes = {
+                'data_movimento': entrada.data_movimento.strftime('%Y-%m-%d'),
+                'data_nota_fiscal': entrada.data_nota_fiscal.strftime('%Y-%m-%d'),
+                'numero_nota_fiscal': entrada.numero_nota_fiscal,
+                'fornecedor_id': entrada.fornecedor_id,
+                'usuario_id': entrada.usuario_id,
+            }
+
+            # Atualiza os campos da entrada
+            entrada.data_movimento = datetime.strptime(request.form.get('data_movimento'), '%Y-%m-%d')
+            entrada.data_nota_fiscal = datetime.strptime(request.form.get('data_nota_fiscal'), '%Y-%m-%d')
+            entrada.numero_nota_fiscal = request.form.get('numero_nota_fiscal')
+            entrada.fornecedor_id = request.form.get('fornecedor')
+
+            # Monta o estado depois da edição
+            dados_depois = {
+                'data_movimento': entrada.data_movimento.strftime('%Y-%m-%d'),
+                'data_nota_fiscal': entrada.data_nota_fiscal.strftime('%Y-%m-%d'),
+                'numero_nota_fiscal': entrada.numero_nota_fiscal,
+                'fornecedor_id': entrada.fornecedor_id,
+                'usuario_id': entrada.usuario_id,
+            }
+
+            # Registra a auditoria
+            registrar_auditoria(
+                acao='edicao',
+                tabela='entrada_material',
+                registro_id=entrada.id,
+                dados_antes=dados_antes,
+                dados_depois=dados_depois
+            )
+
+            db.session.commit()
+            flash('Entrada atualizada com sucesso.', 'success')
+            return redirect(url_for('entrada_bp.lista_entradas'))
+
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao editar entrada: {e}', 'danger')
+            print(e)
+
+    return render_template('editar_entrada.html', entrada=entrada, fornecedores=fornecedores, itens=itens, itens_entrada=itens_entrada)
 

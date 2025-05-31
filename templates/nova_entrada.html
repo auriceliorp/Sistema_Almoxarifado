@@ -3,9 +3,7 @@
 {% block title %}Nova Entrada de Material{% endblock %}
 
 {% block extra_css %}
- <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <!-- Dados do Documento -->
-<style>
+ <style>
     .table th {
         background-color: #2c3e50 !important;
         color: white !important;
@@ -59,6 +57,7 @@
             </div>
 
             <form method="POST" id="formEntrada">
+             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <!-- Dados da Nota Fiscal -->
                 <div class="card mb-4">
                     <div class="card-header bg-primary text-white">

@@ -16,6 +16,7 @@
   <div class="card shadow-sm mb-4">
     <div class="card-body">
       <form method="GET" class="row g-3 align-items-end">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="col-md-3">
           <label for="tipo_busca" class="form-label">Buscar por:</label>
           <select name="filtro" id="tipo_busca" class="form-select">

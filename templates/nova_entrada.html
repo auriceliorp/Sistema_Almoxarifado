@@ -1,4 +1,4 @@
- {% extends 'base_simplificada.html' %}
+{% extends 'base_simplificada.html' %}
 
 {% block title %}Nova Entrada de Material{% endblock %}
 
@@ -15,11 +15,6 @@
   .required-field::after {
     content: " *";
     color: red;
-  }
-  .table-container {
-    background: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
   }
   .valor-total-nota {
     font-size: 1.5rem;
@@ -41,7 +36,6 @@
 <div class="container-fluid py-4">
   <div class="card shadow-sm">
     <div class="card-body">
-      <!-- Cabeçalho -->
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="card-title mb-0">
           <i class="bi bi-box-arrow-in-down me-2"></i>Registrar Nova Entrada de Material
@@ -57,7 +51,9 @@
         <!-- Dados da Nota Fiscal -->
         <div class="card mb-4">
           <div class="card-header bg-primary text-white">
-            <h5 class="card-title mb-0"><i class="bi bi-receipt me-2"></i>Dados da Nota Fiscal</h5>
+            <h5 class="card-title mb-0">
+              <i class="bi bi-receipt me-2"></i>Dados da Nota Fiscal
+            </h5>
           </div>
           <div class="card-body">
             <div class="row g-3">
@@ -97,7 +93,9 @@
         <!-- Itens da Nota -->
         <div class="card mb-4">
           <div class="card-header bg-success text-white">
-            <h5 class="card-title mb-0"><i class="bi bi-list-check me-2"></i>Itens da Nota</h5>
+            <h5 class="card-title mb-0">
+              <i class="bi bi-list-check me-2"></i>Itens da Nota
+            </h5>
           </div>
           <div class="card-body">
             <div class="table-responsive">
@@ -152,7 +150,6 @@
               </button>
             </div>
 
-            <!-- Total da Nota -->
             <div class="d-flex justify-content-end mt-4">
               <div class="card bg-light">
                 <div class="card-body">
@@ -164,10 +161,13 @@
           </div>
         </div>
 
-        <!-- Botões de Ação -->
         <div class="d-flex justify-content-end gap-2">
-          <button type="submit" class="btn btn-success"><i class="bi bi-check-circle me-1"></i>Salvar Entrada</button>
-          <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="btn btn-secondary"><i class="bi bi-x-circle me-1"></i>Cancelar</a>
+          <button type="submit" class="btn btn-success">
+            <i class="bi bi-check-circle me-1"></i>Salvar Entrada
+          </button>
+          <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="btn btn-secondary">
+            <i class="bi bi-x-circle me-1"></i>Cancelar
+          </a>
         </div>
       </form>
     </div>
@@ -182,6 +182,10 @@
 $(document).ready(function() {
   $('.select2').select2({ theme: 'bootstrap-5', width: '100%' });
   inicializarSelect2Items();
+
+  $('#tabela-itens').on('input', 'input[name="quantidade[]"], input[name="valor_unitario[]"]', function() {
+    atualizarTotais(this);
+  });
 });
 
 function inicializarSelect2Items() {
@@ -189,7 +193,7 @@ function inicializarSelect2Items() {
     theme: 'bootstrap-5',
     width: '100%',
     placeholder: 'Selecione um item...',
-    language: { noResults: function() { return "Nenhum item encontrado"; } }
+    language: { noResults: () => "Nenhum item encontrado" }
   });
 }
 
@@ -198,15 +202,13 @@ function adicionarLinha() {
   const primeiraLinha = tbody.querySelector('tr');
   const novaLinha = primeiraLinha.cloneNode(true);
 
-  // Remove elementos do Select2 renderizado
-  $(novaLinha).find('.select2-container').remove();
+  const selectContainer = novaLinha.querySelector('.select2-container');
+  if (selectContainer) selectContainer.remove();
 
-  // Limpa e restaura o select
   const novoSelect = novaLinha.querySelector('select[name="item_id[]"]');
   novoSelect.selectedIndex = 0;
   novoSelect.className = 'form-select select2-item';
 
-  // Limpa campos de inputs
   novaLinha.querySelectorAll('input').forEach(input => {
     if (input.classList.contains('valor_total')) {
       input.value = '0,00';
@@ -216,13 +218,11 @@ function adicionarLinha() {
   });
 
   tbody.appendChild(novaLinha);
-
-  // Re-inicializa apenas o novo Select2
   $(novoSelect).select2({
     theme: 'bootstrap-5',
     width: '100%',
     placeholder: 'Selecione um item...',
-    language: { noResults: function() { return "Nenhum item encontrado"; } }
+    language: { noResults: () => "Nenhum item encontrado" }
   });
 }
 
@@ -237,13 +237,24 @@ function removerLinha(botao) {
   }
 }
 
+function atualizarTotais(input) {
+  const linha = input.closest('tr');
+  const quantidade = parseFloat(linha.querySelector('input[name="quantidade[]"]').value) || 0;
+  const valorUnitario = parseFloat(linha.querySelector('input[name="valor_unitario[]"]').value) || 0;
+  const total = quantidade * valorUnitario;
+  linha.querySelector('.valor_total').value = total.toFixed(2).replace('.', ',');
+  atualizarTotalNota();
+}
+
 function atualizarTotalNota() {
   let totalNota = 0;
   document.querySelectorAll('.valor_total').forEach(input => {
-    totalNota += parseFloat(input.value.replace(',', '.')) || 0;
+    const valor = parseFloat(input.value.replace(',', '.')) || 0;
+    totalNota += valor;
   });
   document.getElementById('totalNota').innerText = totalNota.toFixed(2).replace('.', ',');
 }
 </script>
 {% endblock %}
+
 

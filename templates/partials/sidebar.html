@@ -1,4 +1,12 @@
-<!-- Almoxarifado -->
+{# Conteúdo reutilizável do sidebar para desktop e offcanvas #}
+{% if usuario %}
+<div class="d-flex align-items-center mb-4 ps-3">
+  <i class="bi bi-person-circle fs-4 me-2"></i>
+  <strong>{{ usuario.nome }}</strong>
+</div>
+{% endif %}
+
+ <!-- Almoxarifado -->
 <ul class="collapse nav flex-column ms-3 {% if request.endpoint.startswith('item_bp') or request.endpoint.startswith('fornecedor_bp') or request.endpoint.startswith('entrada_bp') or request.endpoint.startswith('saida') or request.endpoint == 'main.relatorios' %}show{% endif %}" id="submenuAlmox">
   <li class="nav-item">
     <a href="{{ url_for('item_bp.lista_itens') }}" class="nav-link {% if request.endpoint == 'item_bp.lista_itens' %}active{% endif %} text-white">

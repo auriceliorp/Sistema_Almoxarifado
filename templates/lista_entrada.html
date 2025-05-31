@@ -277,8 +277,8 @@
                 <p class="mb-0">Tem certeza que deseja estornar esta entrada? Esta ação não poderá ser desfeita.</p>
             </div>
             <div class="modal-footer">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <form id="formEstorno" method="POST">
+                   <form id="formEstorno" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         <i class="bi bi-x-circle me-1"></i>Cancelar
                     </button>

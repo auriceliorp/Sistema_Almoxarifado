@@ -1,0 +1,133 @@
+{% extends 'base_simplificada.html' %}
+
+{% block title %}Editar Entrada de Material{% endblock %}
+
+{% block extra_css %}
+<style>
+    .table th {
+        background-color: #2c3e50 !important;
+        color: white !important;
+    }
+    .card {
+        transition: all 0.3s ease;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    .required-field::after {
+        content: " *";
+        color: red;
+    }
+</style>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h4 class="mb-4 text-center">Editar Entrada de Material</h4>
+
+            <form method="POST" id="formEditarEntrada">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                            <input type="date" class="form-control" id="data_movimento" name="data_movimento"
+                                   value="{{ entrada.data_movimento.strftime('%Y-%m-%d') }}" required>
+                            <label for="data_movimento" class="required-field">Data do Movimento</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                            <input type="date" class="form-control" id="data_nota_fiscal" name="data_nota_fiscal"
+                                   value="{{ entrada.data_nota_fiscal.strftime('%Y-%m-%d') }}" required>
+                            <label for="data_nota_fiscal" class="required-field">Data da Nota Fiscal</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="numero_nota_fiscal"
+                                   name="numero_nota_fiscal" value="{{ entrada.numero_nota_fiscal }}"
+                                   required placeholder="Número">
+                            <label for="numero_nota_fiscal" class="required-field">Número da Nota Fiscal</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                            <select name="fornecedor" class="form-select select2" id="fornecedor" required>
+                                <option value="" disabled>Selecione...</option>
+                                {% for fornecedor in fornecedores %}
+                                    <option value="{{ fornecedor.id }}"
+                                        {% if fornecedor.id == entrada.fornecedor_id %}selected{% endif %}>
+                                        {{ fornecedor.nome }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <label for="fornecedor" class="required-field">Fornecedor</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabela de itens apenas para visualização -->
+                <div class="card mt-3">
+                    <div class="card-header bg-secondary text-white">
+                        <h6 class="mb-0">
+                            <i class="bi bi-list-check me-2"></i>Itens Vinculados (não editáveis)
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Quantidade</th>
+                                        <th>Valor Unitário (R$)</th>
+                                        <th>Valor Total (R$)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in itens_entrada %}
+                                    <tr>
+                                        <td>{{ item.item.nome }}</td>
+                                        <td>{{ item.quantidade }}</td>
+                                        <td>{{ '{:,.2f}'.format(item.valor_unitario).replace('.', ',') }}</td>
+                                        <td>{{ '{:,.2f}'.format(item.quantidade * item.valor_unitario).replace('.', ',') }}</td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted">Nenhum item vinculado.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex justify-content-end gap-2">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle me-1"></i>Salvar Alterações
+                    </button>
+                    <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle me-1"></i>Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('.select2').select2({
+        theme: 'bootstrap-5',
+        width: '100%'
+    });
+});
+</script>
+{% endblock %}

@@ -183,49 +183,56 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for entrada in entradas.items %}
-                        <tr class="{% if entrada.estornada %}table-danger{% endif %}">
-                            <td>{{ entrada.id }}</td>
-                            <td>{{ entrada.data_movimento.strftime('%d/%m/%Y') }}</td>
-                            <td>{{ entrada.data_nota_fiscal.strftime('%d/%m/%Y') }}</td>
-                            <td>{{ entrada.numero_nota_fiscal }}</td>
-                            <td>
-                                {{ entrada.fornecedor.nome }}
-                                {% if entrada.estornada %}
-                                    <span class="badge bg-danger ms-1">Estornada</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div class="d-flex justify-content-center gap-1">
-                                    <a href="{{ url_for('entrada_bp.visualizar_entrada', entrada_id=entrada.id) }}" 
-                                       class="btn btn-sm btn-info" 
-                                       data-bs-toggle="tooltip" 
-                                       title="Visualizar detalhes">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    {% if not entrada.estornada %}
-                                    <button type="button" 
-                                            class="btn btn-sm btn-danger"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#modalEstornar"
-                                            data-entrada-id="{{ entrada.id }}"
-                                            data-bs-tooltip="tooltip"
-                                            title="Estornar entrada">
-                                        <i class="bi bi-x-circle"></i>
-                                    </button>
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="6" class="text-center py-4">
-                                <i class="bi bi-inbox fs-1 text-muted"></i>
-                                <p class="mb-0 mt-2">Nenhuma entrada encontrada.</p>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
+    {% for entrada in entradas.items %}
+    <tr class="{% if entrada.estornada %}table-danger{% endif %}">
+        <td>{{ entrada.id }}</td>
+        <td>{{ entrada.data_movimento.strftime('%d/%m/%Y') }}</td>
+        <td>{{ entrada.data_nota_fiscal.strftime('%d/%m/%Y') }}</td>
+        <td>{{ entrada.numero_nota_fiscal }}</td>
+        <td>
+            {{ entrada.fornecedor.nome }}
+            {% if entrada.estornada %}
+                <span class="badge bg-danger ms-1">Estornada</span>
+            {% endif %}
+        </td>
+        <td>
+            <div class="d-flex justify-content-center gap-1">
+                <a href="{{ url_for('entrada_bp.visualizar_entrada', entrada_id=entrada.id) }}" 
+                   class="btn btn-sm btn-info" 
+                   data-bs-toggle="tooltip" 
+                   title="Visualizar detalhes">
+                    <i class="bi bi-eye"></i>
+                </a>
+                {% if not entrada.estornada %}
+                <a href="{{ url_for('entrada_bp.editar_entrada', entrada_id=entrada.id) }}" 
+                   class="btn btn-sm btn-warning" 
+                   data-bs-toggle="tooltip" 
+                   title="Editar entrada">
+                    <i class="bi bi-pencil"></i>
+                </a>
+                <button type="button" 
+                        class="btn btn-sm btn-danger"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalEstornar"
+                        data-entrada-id="{{ entrada.id }}"
+                        data-bs-tooltip="tooltip"
+                        title="Estornar entrada">
+                    <i class="bi bi-x-circle"></i>
+                </button>
+                {% endif %}
+            </div>
+        </td>
+    </tr>
+    {% else %}
+    <tr>
+        <td colspan="6" class="text-center py-4">
+            <i class="bi bi-inbox fs-1 text-muted"></i>
+            <p class="mb-0 mt-2">Nenhuma entrada encontrada.</p>
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+
                 </table>
             </div>
         </div>

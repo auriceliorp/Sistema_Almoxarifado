@@ -2,6 +2,7 @@
 from flask_login import UserMixin
 from extensoes import db
 from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # ------------------- USUÁRIO E PERFIL -------------------
 class Perfil(db.Model):
@@ -14,7 +15,7 @@ class Usuario(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    senha = db.Column(db.String(255), nullable=False)
+    senha_hash = db.Column(db.String(128))
     matricula = db.Column(db.String(50))
     ramal = db.Column(db.String(20))
     unidade_local_id = db.Column(db.Integer, db.ForeignKey('unidade_local.id'))
@@ -22,6 +23,12 @@ class Usuario(UserMixin, db.Model):
     perfil_id = db.Column(db.Integer, db.ForeignKey('perfil.id'))
     perfil = db.relationship('Perfil', backref='usuarios')
     senha_temporaria = db.Column(db.Boolean, default=True)
+
+    def set_senha(self, senha):
+        self.senha_hash = generate_password_hash(senha)
+        
+    def check_senha(self, senha):
+        return check_password_hash(self.senha_hash, senha)
 
 # ------------------- NATUREZA DE DESPESA -------------------
 class NaturezaDespesa(db.Model):
@@ -436,19 +443,19 @@ class PublicacaoSignatariosExternos(db.Model):
     fornecedor_id = db.Column(db.Integer, db.ForeignKey('fornecedores.id'), primary_key=True)
 
 # ------------------- PROJETO -------------------
-class Projeto(db.Model):
-    __tablename__ = 'projetos'
+class Tarefa(db.Model):
+    __tablename__ = 'tarefas'
 
     id = db.Column(db.Integer, primary_key=True)
-    titulo = db.Column(db.String(120), nullable=False)
-    descricao = db.Column(db.Text, nullable=True)
+    titulo = db.Column(db.String(100), nullable=False)
+    descricao = db.Column(db.Text)
     area = db.Column(db.String(50), nullable=False)
     prioridade = db.Column(db.String(20), nullable=False)
-    status = db.Column(db.String(20), nullable=False, default='A Fazer')
-    responsavel = db.Column(db.String(120), nullable=True)
+    status = db.Column(db.String(20), default='A Fazer')
+    responsavel = db.Column(db.String(100))
     data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
-    data_conclusao = db.Column(db.DateTime, nullable=True)
-
+    data_conclusao = db.Column(db.DateTime)
+    
     def to_dict(self):
         return {
             'id': self.id,
@@ -463,5 +470,4 @@ class Projeto(db.Model):
         }
 
     def __repr__(self):
-        return f'<Projeto {self.titulo}>'
-
+        return f'<Tarefa {self.titulo}>'

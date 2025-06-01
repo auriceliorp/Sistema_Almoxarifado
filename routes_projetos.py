@@ -60,7 +60,6 @@ def get_tarefas():
 
 @api_bp.route('/tarefas', methods=['POST'])
 @login_required
-@csrf.exempt
 def criar_tarefa_api():
     try:
         data = request.get_json()
@@ -89,7 +88,10 @@ def criar_tarefa_api():
         
         print(f"Tarefa criada com ID: {tarefa.id}")  # Log após salvar
         
-        return jsonify(tarefa.to_dict()), 201
+        return jsonify({
+            'message': 'Tarefa criada com sucesso',
+            'data': tarefa.to_dict()
+        }), 201
     except Exception as e:
         db.session.rollback()
         print(f"Erro ao criar tarefa: {str(e)}")  # Log do erro
@@ -97,7 +99,6 @@ def criar_tarefa_api():
 
 @api_bp.route('/tarefas/<int:tarefa_id>', methods=['PUT'])
 @login_required
-@csrf.exempt
 def atualizar_tarefa_api(tarefa_id):
     """Atualiza uma tarefa existente."""
     try:
@@ -119,7 +120,6 @@ def atualizar_tarefa_api(tarefa_id):
 
 @api_bp.route('/tarefas/<int:tarefa_id>', methods=['DELETE'])
 @login_required
-@csrf.exempt
 def deletar_tarefa_api(tarefa_id):
     """Deleta uma tarefa."""
     try:

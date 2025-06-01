@@ -121,6 +121,10 @@
       <li class="nav-item"><a href="{{ url_for('grupo_bp.lista_grupos') }}" class="nav-link {% if request.endpoint == 'grupo_bp.lista_grupos' %}active{% endif %} text-white"><i class="bi bi-diagram-3 me-2"></i>Grupos</a></li>
       <li class="nav-item"><a href="{{ url_for('area_ul_bp.lista_locais') }}" class="nav-link {% if request.endpoint == 'area_ul_bp.lista_locais' %}active{% endif %} text-white"><i class="bi bi-geo-alt me-2"></i>Áreas</a></li>
       <li class="nav-item"><a href="{{ url_for('area_ul_bp.lista_uls') }}" class="nav-link {% if request.endpoint == 'area_ul_bp.lista_uls' %}active{% endif %} text-white"><i class="bi bi-building me-2"></i>Unidades Locais</a></li>
+      
+      <li class="nav-item mt-2 text-white-50 small">Configurações de Tarefas</li>
+      <li class="nav-item"><a href="{{ url_for('config_tarefas.lista_categorias') }}" class="nav-link {% if request.endpoint == 'config_tarefas.lista_categorias' %}active{% endif %} text-white"><i class="bi bi-tag me-2"></i>Categorias</a></li>
+      <li class="nav-item"><a href="{{ url_for('config_tarefas.lista_origens') }}" class="nav-link {% if request.endpoint == 'config_tarefas.lista_origens' %}active{% endif %} text-white"><i class="bi bi-flag me-2"></i>Origens</a></li>
     </ul>
   </li>
 

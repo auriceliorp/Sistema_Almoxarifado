@@ -1,4 +1,5 @@
 {% extends 'base_simplificada.html' %}
+
 {% block title %}GestorSPS - Início{% endblock %}
 
 {% block content %}
@@ -95,6 +96,13 @@
       <a href="{{ url_for('publicacao_bp.listar') }}" class="btn btn-outline-primary w-100">Acessar</a>
     </div>
 
+    <!-- Projetos -->
+    <div class="home-card">
+      <i class="bi bi-kanban"></i>
+      <h6>Projetos</h6>
+      <a href="#" onclick="carregarConteudo('/projetos/conteudo'); return false;" class="btn btn-outline-primary w-100">Acessar</a>
+    </div>
+
     <!-- Dashboard -->
     <div class="home-card">
       <i class="bi bi-graph-up"></i>
@@ -118,4 +126,21 @@
 
   </div>
 </div>
-{% endblock %}
+
+<script>
+    function carregarConteudo(url) {
+        fetch(url)
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('conteudo-principal').innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Erro ao carregar conteúdo:', error);
+                Toast.fire({
+                    icon: 'error',
+                    title: 'Erro ao carregar conteúdo'
+                });
+            });
+    }
+</script>
+{% endblock %} 

@@ -52,7 +52,7 @@ def create_app():
         Usuario, Perfil, UnidadeLocal, NaturezaDespesa, Grupo, Item,
         Fornecedor, EntradaMaterial, EntradaItem, SaidaMaterial, SaidaItem, 
         BemPatrimonial, Publicacao, PublicacaoPartesEmbrapa, PublicacaoPartesFornecedor,
-        PublicacaoSignatariosEmbrapa, PublicacaoSignatariosExternos, Projeto
+        PublicacaoSignatariosEmbrapa, PublicacaoSignatariosExternos, Tarefa
     )
 
     # -------------------- Define função de carregamento do usuário --------------------
@@ -77,7 +77,7 @@ def create_app():
             admin = Usuario(
                 nome='Administrador',
                 email='admin@admin.com',
-                senha=generate_password_hash('admin'),
+                senha_hash=generate_password_hash('admin'),
                 perfil_id=perfil_admin.id
             )
             db.session.add(admin)
@@ -102,7 +102,7 @@ def create_app():
     from routes_patrimonio import patrimonio_bp
     from routes_links import links_bp
     from routes_publicacao import bp as publicacoes_bp
-    from routes_projetos import bp as projetos_bp, api_bp as projetos_api_bp
+    from routes_projetos import bp as tarefas_bp, api_bp as tarefas_api_bp
 
     # Registro dos blueprints
     app.register_blueprint(main)
@@ -123,17 +123,11 @@ def create_app():
     app.register_blueprint(patrimonio_bp)
     app.register_blueprint(links_bp)
     app.register_blueprint(publicacoes_bp)
-    app.register_blueprint(projetos_bp)
-    app.register_blueprint(projetos_api_bp)  # Registrando o blueprint da API de projetos
+    app.register_blueprint(tarefas_bp)
+    app.register_blueprint(tarefas_api_bp)  # Registrando o blueprint da API de tarefas
 
     # Configuração do CSRF para rotas da API
-    csrf.exempt(projetos_api_bp)
-
-    # Rota para renderizar o conteúdo dos projetos
-    @app.route('/projetos/conteudo')
-    @login_required
-    def projetos_conteudo():
-        return render_template('projetos/conteudo.html')
+    csrf.exempt(tarefas_api_bp)
 
     return app
 

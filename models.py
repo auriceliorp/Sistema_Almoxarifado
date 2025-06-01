@@ -30,6 +30,32 @@ class Usuario(UserMixin, db.Model):
     def check_senha(self, senha):
         return check_password_hash(self.senha, senha)
 
+# ------------------- LOCAL E UNIDADE LOCAL -------------------
+class Local(db.Model):
+    __tablename__ = 'local'
+    id = db.Column(db.Integer, primary_key=True)
+    descricao = db.Column(db.String(120), nullable=False)
+    uls = db.relationship('UnidadeLocal', back_populates='local', lazy=True)
+
+class UnidadeLocal(db.Model):
+    __tablename__ = 'unidade_local'
+    id = db.Column(db.Integer, primary_key=True)
+    codigo = db.Column(db.String(20), nullable=False)
+    descricao = db.Column(db.String(120), nullable=False)
+    local_id = db.Column(db.Integer, db.ForeignKey('local.id'), nullable=False)
+    local = db.relationship('Local', back_populates='uls')
+    usuarios = db.relationship('Usuario', back_populates='unidade_local')
+
+# ------------------- ÁREA -------------------
+class Area(db.Model):
+    __tablename__ = 'areas'
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False)
+    descricao = db.Column(db.Text, nullable=True)
+    responsavel_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True)
+    responsavel = db.relationship('Usuario', backref='areas_responsavel')
+    tarefas = db.relationship('Tarefa', backref='area', lazy=True)
+
 # ------------------- NATUREZA DE DESPESA -------------------
 class NaturezaDespesa(db.Model):
     __tablename__ = 'natureza_despesa'
@@ -108,23 +134,6 @@ class Fornecedor(db.Model):
 
     def __repr__(self):
         return f'<Fornecedor {self.nome} - {self.cnpj_cpf}>'
-
-
-# ------------------- LOCAL E UNIDADE LOCAL -------------------
-class Local(db.Model):
-    __tablename__ = 'local'
-    id = db.Column(db.Integer, primary_key=True)
-    descricao = db.Column(db.String(120), nullable=False)
-    uls = db.relationship('UnidadeLocal', back_populates='local', lazy=True)
-
-class UnidadeLocal(db.Model):
-    __tablename__ = 'unidade_local'
-    id = db.Column(db.Integer, primary_key=True)
-    codigo = db.Column(db.String(20), nullable=False)
-    descricao = db.Column(db.String(120), nullable=False)
-    local_id = db.Column(db.Integer, db.ForeignKey('local.id'), nullable=False)
-    local = db.relationship('Local', back_populates='uls')
-    usuarios = db.relationship('Usuario', back_populates='unidade_local')
 
 # ------------------- ENTRADA DE MATERIAL -------------------
 class EntradaMaterial(db.Model):

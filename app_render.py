@@ -10,7 +10,6 @@ from flask_login import login_required
 
 # Importa extensões globais (db, login_manager, migrate, csrf)
 from extensoes import db, login_manager, migrate, csrf
-
 # -------------------- Carrega variáveis de ambiente do arquivo .env (para uso local) --------------------
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))

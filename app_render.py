@@ -52,7 +52,8 @@ def create_app():
         Usuario, Perfil, UnidadeLocal, NaturezaDespesa, Grupo, Item,
         Fornecedor, EntradaMaterial, EntradaItem, SaidaMaterial, SaidaItem, 
         BemPatrimonial, Publicacao, PublicacaoPartesEmbrapa, PublicacaoPartesFornecedor,
-        PublicacaoSignatariosEmbrapa, PublicacaoSignatariosExternos, Tarefa
+        PublicacaoSignatariosEmbrapa, PublicacaoSignatariosExternos, Tarefa,
+        CategoriaTarefa, OrigemTarefa
     )
 
     # -------------------- Define função de carregamento do usuário --------------------
@@ -103,6 +104,7 @@ def create_app():
     from routes_links import links_bp
     from routes_publicacao import bp as publicacoes_bp
     from routes_tarefas import bp as tarefas_bp, api_bp as tarefas_api_bp
+    from routes_config_tarefas import bp as config_tarefas_bp
 
     # Registro dos blueprints
     app.register_blueprint(main)
@@ -125,6 +127,7 @@ def create_app():
     app.register_blueprint(publicacoes_bp)
     app.register_blueprint(tarefas_bp)
     app.register_blueprint(tarefas_api_bp)
+    app.register_blueprint(config_tarefas_bp)
 
     # Configuração do CSRF para rotas da API
     csrf.exempt(tarefas_api_bp)

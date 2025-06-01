@@ -398,3 +398,29 @@ class PublicacaoSignatariosExternos(db.Model):
     __tablename__ = 'publicacao_signatarios_externos'
     publicacao_id = db.Column(db.Integer, db.ForeignKey('publicacoes.id'), primary_key=True)
     fornecedor_id = db.Column(db.Integer, db.ForeignKey('fornecedores.id'), primary_key=True)
+
+# ------------------- PROJETO -------------------
+class Projeto(db.Model):
+    __tablename__ = 'projetos'
+    id = db.Column(db.Integer, primary_key=True)
+    titulo = db.Column(db.String(200), nullable=False)
+    descricao = db.Column(db.Text)
+    area = db.Column(db.String(100))
+    prioridade = db.Column(db.String(50))
+    status = db.Column(db.String(50))  # A Fazer, Em Progresso, Concluído
+    responsavel = db.Column(db.String(100))
+    data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
+    data_conclusao = db.Column(db.DateTime)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'titulo': self.titulo,
+            'descricao': self.descricao,
+            'area': self.area,
+            'prioridade': self.prioridade,
+            'status': self.status,
+            'responsavel': self.responsavel,
+            'data_criacao': self.data_criacao.strftime('%d/%m/%Y') if self.data_criacao else None,
+            'data_conclusao': self.data_conclusao.strftime('%d/%m/%Y') if self.data_conclusao else None
+        }

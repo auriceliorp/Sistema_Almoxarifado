@@ -102,7 +102,7 @@ def create_app():
     from routes_patrimonio import patrimonio_bp
     from routes_links import links_bp
     from routes_publicacao import bp as publicacoes_bp
-    from routes_projetos import projetos_bp as tarefas_bp, api_projetos_bp as tarefas_api_bp
+    from routes_tarefas import bp as tarefas_bp, api_bp as tarefas_api_bp
 
     # Registro dos blueprints
     app.register_blueprint(main)
@@ -124,7 +124,7 @@ def create_app():
     app.register_blueprint(links_bp)
     app.register_blueprint(publicacoes_bp)
     app.register_blueprint(tarefas_bp)
-    app.register_blueprint(tarefas_api_bp)  # Registrando o blueprint da API de tarefas
+    app.register_blueprint(tarefas_api_bp)
 
     # Configuração do CSRF para rotas da API
     csrf.exempt(tarefas_api_bp)

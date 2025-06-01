@@ -34,6 +34,28 @@
     .select2-container .select2-selection--single {
         height: 38px;
         padding: 5px;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+    }
+    
+    /* Cores para os selects */
+    #area + .select2-container .select2-selection {
+        background-color: #e8f4f8;
+    }
+    #prioridade + .select2-container .select2-selection {
+        background-color: #fff3cd;
+    }
+    #status + .select2-container .select2-selection {
+        background-color: #d1e7dd;
+    }
+    #responsavel + .select2-container .select2-selection {
+        background-color: #f8d7da;
+    }
+
+    /* Hover effect para os selects */
+    .select2-container .select2-selection:hover {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
     }
 </style>
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -130,7 +152,7 @@
                         <option value="Estoque" {% if area == 'Estoque' %}selected{% endif %}>Estoque</option>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label for="prioridade" class="form-label">
                         <i class="bi bi-flag me-1"></i>Prioridade
                     </label>
@@ -141,7 +163,18 @@
                         <option value="Baixa" {% if prioridade == 'Baixa' %}selected{% endif %}>Baixa</option>
                     </select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-2">
+                    <label for="status" class="form-label">
+                        <i class="bi bi-check-circle me-1"></i>Status
+                    </label>
+                    <select id="status" name="status" class="form-select select2">
+                        <option value="">Todos</option>
+                        <option value="A Fazer" {% if status == 'A Fazer' %}selected{% endif %}>A Fazer</option>
+                        <option value="Em Progresso" {% if status == 'Em Progresso' %}selected{% endif %}>Em Progresso</option>
+                        <option value="Concluído" {% if status == 'Concluído' %}selected{% endif %}>Concluído</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
                     <label for="responsavel" class="form-label">
                         <i class="bi bi-person me-1"></i>Responsável
                     </label>
@@ -214,7 +247,7 @@ $(document).ready(function() {
     carregarTarefas();
 
     // Configura os filtros
-    $('#area, #prioridade, #responsavel').on('change', function() {
+    $('#area, #prioridade, #status, #responsavel').on('change', function() {
         carregarTarefas();
     });
 });
@@ -222,10 +255,11 @@ $(document).ready(function() {
 function carregarTarefas() {
     const area = $('#area').val();
     const prioridade = $('#prioridade').val();
+    const status = $('#status').val();
     const responsavel = $('#responsavel').val();
     
     $.ajax({
-        url: `/api/tarefas?area=${area}&prioridade=${prioridade}&responsavel=${responsavel}`,
+        url: `/api/tarefas?area=${area}&prioridade=${prioridade}&status=${status}&responsavel=${responsavel}`,
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         },

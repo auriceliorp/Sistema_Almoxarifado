@@ -49,6 +49,7 @@ def get_tarefas():
     try:
         area = request.args.get('area')
         prioridade = request.args.get('prioridade')
+        status = request.args.get('status')
         responsavel = request.args.get('responsavel')
         
         query = Tarefa.query
@@ -57,6 +58,8 @@ def get_tarefas():
             query = query.filter_by(area=area)
         if prioridade:
             query = query.filter_by(prioridade=prioridade)
+        if status:
+            query = query.filter_by(status=status)
         if responsavel:
             query = query.filter_by(responsavel=responsavel)
             
@@ -172,4 +175,4 @@ def excluir_tarefa(tarefa_id):
     except Exception as e:
         db.session.rollback()
         print(f"Erro ao excluir tarefa: {str(e)}")  # Log do erro
-        return jsonify({'error': str(e)}), 500 
+        return jsonify({'error': str(e)}), 500

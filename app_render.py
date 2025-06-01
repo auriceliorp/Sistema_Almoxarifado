@@ -6,6 +6,7 @@ from flask import Flask, render_template
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
 from flask_wtf.csrf import CSRFProtect, CSRFError
+from flask_login import login_required
 
 # Importa extensões globais (db, login_manager, migrate)
 from extensoes import db, login_manager, migrate
@@ -54,7 +55,7 @@ def create_app():
         Usuario, Perfil, UnidadeLocal, NaturezaDespesa, Grupo, Item,
         Fornecedor, EntradaMaterial, EntradaItem, SaidaMaterial, SaidaItem, 
         BemPatrimonial, Publicacao, PublicacaoPartesEmbrapa, PublicacaoPartesFornecedor,
-        PublicacaoSignatariosEmbrapa, PublicacaoSignatariosExternos
+        PublicacaoSignatariosEmbrapa, PublicacaoSignatariosExternos, Projeto
     )
 
     # -------------------- Define função de carregamento do usuário --------------------
@@ -97,13 +98,14 @@ def create_app():
     from routes_saida import saida_bp
     from routes_relatorio import relatorio_bp
     from routes_dashboard import dashboard_bp
-    from routes_popular import popular_bp       # <-- já existente
-    from limpar_dados import limpar_bp          # <-- já existente
-    from routes_auditoria import auditoria_bp   # <-- já existente
-    from routes_painel import painel_bp         # <-- já existente
-    from routes_patrimonio import patrimonio_bp # <-- ADICIONADO AGORA
+    from routes_popular import popular_bp
+    from limpar_dados import limpar_bp
+    from routes_auditoria import auditoria_bp
+    from routes_painel import painel_bp
+    from routes_patrimonio import patrimonio_bp
     from routes_links import links_bp
     from routes_publicacao import bp as publicacoes_bp
+    from routes_projetos import bp as projetos_bp
 
     # Registro dos blueprints
     app.register_blueprint(main)
@@ -121,9 +123,16 @@ def create_app():
     app.register_blueprint(limpar_bp)
     app.register_blueprint(auditoria_bp)
     app.register_blueprint(painel_bp)
-    app.register_blueprint(patrimonio_bp)       # <-- NOVO REGISTRO
+    app.register_blueprint(patrimonio_bp)
     app.register_blueprint(links_bp)
     app.register_blueprint(publicacoes_bp)
+    app.register_blueprint(projetos_bp)
+
+    # Rota para renderizar o conteúdo dos projetos
+    @app.route('/projetos/conteudo')
+    @login_required
+    def projetos_conteudo():
+        return render_template('projetos/conteudo.html')
 
     return app
 
@@ -134,3 +143,4 @@ app = create_app()
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
+

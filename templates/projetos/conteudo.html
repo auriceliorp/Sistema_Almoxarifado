@@ -1,4 +1,8 @@
 {# Template de conteúdo dos projetos - sem extensão base pois será carregado dinamicamente #}
+
+{# Inclui o SweetAlert2 #}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Gerenciar Projetos</h1>
@@ -119,6 +123,9 @@
 </div>
 
 <script>
+    // Teste inicial para verificar se o script está sendo executado
+    console.log('Script de projetos carregado');
+
     // Função para mostrar mensagens de toast
     const Toast = Swal.mixin({
         toast: true,
@@ -128,10 +135,117 @@
         timerProgressBar: true
     });
 
-    // Adiciona o evento de click no botão salvar
-    document.getElementById('btnSalvarProjeto').addEventListener('click', function() {
-        salvarProjeto();
+    // Adiciona o evento de click assim que o documento carregar
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Página carregada, configurando eventos...');
+        
+        // Configura o botão salvar
+        const btnSalvar = document.getElementById('btnSalvarProjeto');
+        if (btnSalvar) {
+            console.log('Botão salvar encontrado, adicionando evento de click');
+            btnSalvar.addEventListener('click', salvarProjeto);
+        } else {
+            console.error('Botão salvar não encontrado!');
+        }
+        
+        // Configura os filtros
+        const areaSelect = document.getElementById('area');
+        const prioridadeSelect = document.getElementById('prioridade');
+        
+        if (areaSelect) areaSelect.addEventListener('change', carregarProjetos);
+        if (prioridadeSelect) prioridadeSelect.addEventListener('change', carregarProjetos);
+        
+        // Carrega os projetos iniciais
+        carregarProjetos();
     });
+
+    function salvarProjeto() {
+        console.log('Função salvarProjeto chamada');
+
+        const form = document.getElementById('formNovoProjeto');
+        if (!form) {
+            console.error('Formulário não encontrado!');
+            return;
+        }
+
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        
+        // Validação básica
+        if (!data.titulo || !data.area || !data.prioridade) {
+            Toast.fire({
+                icon: 'error',
+                title: 'Por favor, preencha todos os campos obrigatórios'
+            });
+            return;
+        }
+
+        // Adiciona o status inicial
+        data.status = 'A Fazer';
+        
+        // Desabilita o botão durante o salvamento
+        const btnSalvar = document.getElementById('btnSalvarProjeto');
+        btnSalvar.disabled = true;
+        btnSalvar.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Salvando...';
+        
+        console.log('Dados a serem enviados:', data);
+        console.log('CSRF Token:', document.querySelector('input[name="csrf_token"]').value);
+
+        // Faz a requisição para a API
+        fetch('/api/projetos', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('input[name="csrf_token"]').value
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            console.log('Status da resposta:', response.status);
+            return response.json().then(data => {
+                if (!response.ok) {
+                    throw new Error(data.error || 'Erro ao salvar projeto');
+                }
+                return data;
+            });
+        })
+        .then(projeto => {
+            console.log('Projeto salvo:', projeto);
+            
+            // Fecha o modal
+            const modalElement = document.getElementById('novoProjeto');
+            const modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) {
+                modal.hide();
+            } else {
+                console.error('Modal não encontrado!');
+            }
+            
+            // Limpa o formulário
+            form.reset();
+            
+            // Recarrega os projetos
+            carregarProjetos();
+            
+            // Mostra mensagem de sucesso
+            Toast.fire({
+                icon: 'success',
+                title: 'Projeto criado com sucesso!'
+            });
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            Toast.fire({
+                icon: 'error',
+                title: error.message || 'Erro ao criar projeto. Tente novamente.'
+            });
+        })
+        .finally(() => {
+            // Reabilita o botão após o salvamento
+            btnSalvar.disabled = false;
+            btnSalvar.innerHTML = 'Salvar';
+        });
+    }
 
     function carregarProjetos() {
         const area = document.getElementById('area').value;
@@ -209,75 +323,6 @@
         }
     }
 
-    function salvarProjeto() {
-        console.log('Função salvarProjeto chamada'); // Debug
-
-        const form = document.getElementById('formNovoProjeto');
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
-        
-        // Validação básica
-        if (!data.titulo || !data.area || !data.prioridade) {
-            Toast.fire({
-                icon: 'error',
-                title: 'Por favor, preencha todos os campos obrigatórios'
-            });
-            return;
-        }
-
-        // Adiciona o status inicial
-        data.status = 'A Fazer';
-        
-        // Desabilita o botão durante o salvamento
-        const btnSalvar = document.getElementById('btnSalvarProjeto');
-        btnSalvar.disabled = true;
-        btnSalvar.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Salvando...';
-        
-        console.log('Dados a serem enviados:', data); // Debug
-        console.log('CSRF Token:', document.querySelector('input[name="csrf_token"]').value); // Debug
-
-        fetch('/api/projetos', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('input[name="csrf_token"]').value
-            },
-            body: JSON.stringify(data)
-        })
-        .then(response => {
-            console.log('Status da resposta:', response.status); // Debug
-            return response.json().then(data => {
-                if (!response.ok) {
-                    throw new Error(data.error || 'Erro ao salvar projeto');
-                }
-                return data;
-            });
-        })
-        .then(projeto => {
-            console.log('Projeto salvo:', projeto); // Debug
-            const modal = bootstrap.Modal.getInstance(document.getElementById('novoProjeto'));
-            modal.hide();
-            form.reset();
-            carregarProjetos();
-            Toast.fire({
-                icon: 'success',
-                title: 'Projeto criado com sucesso!'
-            });
-        })
-        .catch(error => {
-            console.error('Erro:', error);
-            Toast.fire({
-                icon: 'error',
-                title: error.message || 'Erro ao criar projeto. Tente novamente.'
-            });
-        })
-        .finally(() => {
-            // Reabilita o botão após o salvamento
-            btnSalvar.disabled = false;
-            btnSalvar.innerHTML = 'Salvar';
-        });
-    }
-
     function atualizarStatus(projetoId, novoStatus) {
         fetch(`/api/projetos/${projetoId}`, {
             method: 'PUT',
@@ -308,13 +353,4 @@
             });
         });
     }
-
-    // Carrega projetos ao iniciar e quando os filtros mudarem
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log('Página carregada, carregando projetos...'); // Debug
-        carregarProjetos();
-    });
-
-    document.getElementById('area').addEventListener('change', carregarProjetos);
-    document.getElementById('prioridade').addEventListener('change', carregarProjetos);
 </script> 

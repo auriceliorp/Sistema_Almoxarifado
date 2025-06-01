@@ -35,15 +35,18 @@ def get_projetos():
         projetos = query.all()
         return jsonify([projeto.to_dict() for projeto in projetos])
     except Exception as e:
+        print(f"Erro ao buscar projetos: {str(e)}")  # Log do erro
         return jsonify({'error': str(e)}), 500
 
 @api_bp.route('/', methods=['POST'])
 @login_required
 def criar_projeto():
     try:
-        data = request.json
+        data = request.get_json()
         if not data:
             return jsonify({'error': 'Dados não fornecidos'}), 400
+            
+        print(f"Dados recebidos: {data}")  # Log dos dados recebidos
             
         if not data.get('titulo'):
             return jsonify({'error': 'Título é obrigatório'}), 400
@@ -58,12 +61,17 @@ def criar_projeto():
             data_criacao=datetime.utcnow()
         )
         
+        print(f"Projeto a ser criado: {projeto}")  # Log do objeto antes de salvar
+        
         db.session.add(projeto)
         db.session.commit()
+        
+        print(f"Projeto criado com ID: {projeto.id}")  # Log após salvar
         
         return jsonify(projeto.to_dict()), 201
     except Exception as e:
         db.session.rollback()
+        print(f"Erro ao criar projeto: {str(e)}")  # Log do erro
         return jsonify({'error': str(e)}), 500
 
 @api_bp.route('/<int:projeto_id>', methods=['PUT'])
@@ -71,7 +79,7 @@ def criar_projeto():
 def atualizar_projeto(projeto_id):
     try:
         projeto = Projeto.query.get_or_404(projeto_id)
-        data = request.json
+        data = request.get_json()
         
         if not data:
             return jsonify({'error': 'Dados não fornecidos'}), 400
@@ -92,6 +100,7 @@ def atualizar_projeto(projeto_id):
         return jsonify(projeto.to_dict())
     except Exception as e:
         db.session.rollback()
+        print(f"Erro ao atualizar projeto: {str(e)}")  # Log do erro
         return jsonify({'error': str(e)}), 500
 
 @api_bp.route('/<int:projeto_id>', methods=['DELETE'])
@@ -104,4 +113,5 @@ def deletar_projeto(projeto_id):
         return '', 204
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500 
+        print(f"Erro ao deletar projeto: {str(e)}")  # Log do erro
+        return jsonify({'error': str(e)}), 500

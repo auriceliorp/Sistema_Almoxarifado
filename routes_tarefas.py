@@ -159,4 +159,17 @@ def deletar_tarefa(tarefa_id):
         return '', 204
     except Exception as e:
         db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@api_bp.route('/<int:tarefa_id>', methods=['DELETE'])
+@login_required
+def excluir_tarefa(tarefa_id):
+    try:
+        tarefa = Tarefa.query.get_or_404(tarefa_id)
+        db.session.delete(tarefa)
+        db.session.commit()
+        return jsonify({'message': 'Tarefa excluída com sucesso'}), 200
+    except Exception as e:
+        db.session.rollback()
+        print(f"Erro ao excluir tarefa: {str(e)}")  # Log do erro
         return jsonify({'error': str(e)}), 500 

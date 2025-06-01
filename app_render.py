@@ -5,14 +5,10 @@ import os
 from flask import Flask, render_template
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
-from flask_wtf.csrf import CSRFProtect, CSRFError
-from flask_login import login_required
+from flask_wtf.csrf import CSRFError
 
-# Importa extensões globais (db, login_manager, migrate)
-from extensoes import db, login_manager, migrate
-
-# Cria instância do CSRFProtect
-csrf = CSRFProtect()
+# Importa extensões globais (db, login_manager, migrate, csrf)
+from extensoes import db, login_manager, migrate, csrf
 
 # -------------------- Carrega variáveis de ambiente do arquivo .env (para uso local) --------------------
 basedir = os.path.abspath(os.path.dirname(__file__))

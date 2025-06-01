@@ -10,7 +10,7 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Gerenciar Projetos</h1>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#novoProjeto">
+        <button class="btn btn-primary" onclick="window.parent.abrirModalNovoProjeto()">
             <i class="fas fa-plus"></i> Novo Projeto
         </button>
     </div>
@@ -18,7 +18,7 @@
     <div class="row mb-4">
         <div class="col-md-6">
             <label for="area">Área</label>
-            <select class="form-select" id="area">
+            <select class="form-select" id="area" onchange="window.parent.carregarProjetos()">
                 <option value="">-- Selecionar --</option>
                 <option value="Compras">Compras</option>
                 <option value="Patrimônio">Patrimônio</option>
@@ -27,7 +27,7 @@
         </div>
         <div class="col-md-6">
             <label for="prioridade">Prioridade</label>
-            <select class="form-select" id="prioridade">
+            <select class="form-select" id="prioridade" onchange="window.parent.carregarProjetos()">
                 <option value="">-- Selecionar --</option>
                 <option value="Alta">Alta</option>
                 <option value="Média">Média</option>
@@ -69,6 +69,11 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Notifica o pai que a página carregou
+    window.parent.projetosCarregado();
+</script>
 
 <!-- Modal Novo Projeto -->
 <div class="modal fade" id="novoProjeto" tabindex="-1">

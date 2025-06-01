@@ -168,7 +168,7 @@
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header bg-primary text-white">
-                    <i class="fas fa-list"></i> A Fazer
+                    <i class="bi bi-list"></i> A Fazer
                 </div>
                 <div class="card-body" id="a-fazer">
                     <!-- Tarefas serão carregadas aqui -->
@@ -178,7 +178,7 @@
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header bg-warning">
-                    <i class="fas fa-spinner"></i> Em Progresso
+                    <i class="bi bi-hourglass"></i> Em Progresso
                 </div>
                 <div class="card-body" id="em-progresso">
                     <!-- Tarefas serão carregadas aqui -->
@@ -188,7 +188,7 @@
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header bg-success text-white">
-                    <i class="fas fa-check"></i> Concluído
+                    <i class="bi bi-check"></i> Concluído
                 </div>
                 <div class="card-body" id="concluido">
                     <!-- Tarefas serão carregadas aqui -->
@@ -234,7 +234,8 @@ function carregarTarefas() {
             
             tarefas.forEach(function(tarefa) {
                 const card = criarCardTarefa(tarefa);
-                $(`#${tarefa.status.toLowerCase().replace(' ', '-')}`).append(card);
+                const statusNormalizado = normalizarStatus(tarefa.status);
+                $(`#${statusNormalizado}`).append(card);
             });
         },
         error: function() {
@@ -300,5 +301,14 @@ function atualizarStatus(tarefaId, novoStatus) {
         }
     });
 }
+
+function normalizarStatus(status) {
+    const mapa = {
+        'A Fazer': 'a-fazer',
+        'Em Progresso': 'em-progresso',
+        'Concluído': 'concluido'
+    };
+    return mapa[status] || status.toLowerCase().replace(/\s+/g, '-').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
 </script>
-{% endblock %}
+{% endblock %} 

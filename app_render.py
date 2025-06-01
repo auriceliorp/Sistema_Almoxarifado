@@ -77,7 +77,7 @@ def create_app():
             admin = Usuario(
                 nome='Administrador',
                 email='admin@admin.com',
-                senha_hash=generate_password_hash('admin'),
+                senha=generate_password_hash('admin'),
                 perfil_id=perfil_admin.id
             )
             db.session.add(admin)

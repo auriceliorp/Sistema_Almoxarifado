@@ -1,0 +1,56 @@
+{% extends 'config_tarefas/base_config_tarefas.html' %}
+
+{% block config_content %}
+<div class="card config-card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="bi bi-tag me-2"></i>Categorias de Tarefas
+        </h5>
+        <a href="{{ url_for('config_tarefas.nova_categoria') }}" class="btn btn-success btn-sm">
+            <i class="bi bi-plus-circle me-1"></i>Nova Categoria
+        </a>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover config-table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Descrição</th>
+                        <th>Data de Criação</th>
+                        <th class="text-center" style="width: 100px">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for categoria in categorias %}
+                    <tr>
+                        <td>{{ categoria.nome }}</td>
+                        <td>{{ categoria.descricao or '' }}</td>
+                        <td>{{ categoria.data_criacao.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td class="text-center">
+                            <div class="btn-group">
+                                <a href="{{ url_for('config_tarefas.editar_categoria', categoria_id=categoria.id) }}" 
+                                   class="btn btn-sm btn-outline-primary btn-icon" 
+                                   title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-danger btn-icon"
+                                        title="Excluir"
+                                        onclick="confirmarExclusao('{{ url_for('config_tarefas.excluir_categoria', categoria_id=categoria.id) }}', '{{ categoria.nome }}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center">Nenhuma categoria cadastrada.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,16 +1,20 @@
-from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for
-from models import db, Projeto
+from flask import Blueprint, request, jsonify, render_template
+from flask_login import login_required
+from models import db, Projeto, Usuario
 from datetime import datetime
-from flask_login import login_required, current_user
 
-bp = Blueprint('projetos', __name__)
+bp = Blueprint('projetos', __name__, url_prefix='/projetos')
 
-@bp.route('/projetos')
+@bp.route('/conteudo')
 @login_required
-def index():
-    return render_template('projetos/index.html')
+def conteudo():
+    usuarios = Usuario.query.order_by(Usuario.nome).all()
+    return render_template('projetos/conteudo.html', usuarios=usuarios)
 
-@bp.route('/api/projetos', methods=['GET'])
+# Rotas da API
+api_bp = Blueprint('projetos_api', __name__, url_prefix='/api/projetos')
+
+@api_bp.route('/', methods=['GET'])
 @login_required
 def get_projetos():
     status = request.args.get('status', None)
@@ -29,7 +33,7 @@ def get_projetos():
     projetos = query.all()
     return jsonify([projeto.to_dict() for projeto in projetos])
 
-@bp.route('/api/projetos', methods=['POST'])
+@api_bp.route('/', methods=['POST'])
 @login_required
 def criar_projeto():
     data = request.json
@@ -49,7 +53,7 @@ def criar_projeto():
     
     return jsonify(projeto.to_dict()), 201
 
-@bp.route('/api/projetos/<int:projeto_id>', methods=['PUT'])
+@api_bp.route('/<int:projeto_id>', methods=['PUT'])
 @login_required
 def atualizar_projeto(projeto_id):
     projeto = Projeto.query.get_or_404(projeto_id)
@@ -70,7 +74,7 @@ def atualizar_projeto(projeto_id):
     db.session.commit()
     return jsonify(projeto.to_dict())
 
-@bp.route('/api/projetos/<int:projeto_id>', methods=['DELETE'])
+@api_bp.route('/<int:projeto_id>', methods=['DELETE'])
 @login_required
 def deletar_projeto(projeto_id):
     projeto = Projeto.query.get_or_404(projeto_id)

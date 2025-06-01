@@ -259,20 +259,36 @@ function criarCardTarefa(tarefa) {
     function formatarDataBrasil(dataString) {
         if (!dataString) return '';
         
-        // Cria a data no fuso horário local
-        const data = new Date(dataString);
-        
-        // Ajusta para horário de Brasília (UTC-3)
-        const dataBrasilia = new Date(data.getTime() - (data.getTimezoneOffset() * 60000));
-        
-        // Formata a data
-        const dia = dataBrasilia.getDate().toString().padStart(2, '0');
-        const mes = (dataBrasilia.getMonth() + 1).toString().padStart(2, '0');
-        const ano = dataBrasilia.getFullYear();
-        const hora = dataBrasilia.getHours().toString().padStart(2, '0');
-        const minutos = dataBrasilia.getMinutes().toString().padStart(2, '0');
-        
-        return `${dia}/${mes}/${ano} ${hora}:${minutos}`;
+        try {
+            // Garante que a data seja interpretada como UTC
+            const [data, hora] = dataString.split('T');
+            const [ano, mes, dia] = data.split('-');
+            const [hours, minutes] = hora.split(':');
+            
+            // Cria a data explicitamente com os componentes
+            const dataObj = new Date(Date.UTC(
+                parseInt(ano),
+                parseInt(mes) - 1, // Mês em JavaScript é 0-based
+                parseInt(dia),
+                parseInt(hours),
+                parseInt(minutes)
+            ));
+            
+            // Ajusta para horário de Brasília (UTC-3)
+            const dataBrasilia = new Date(dataObj.getTime() - (3 * 60 * 60 * 1000));
+            
+            // Formata a data
+            const diaFormatado = dataBrasilia.getUTCDate().toString().padStart(2, '0');
+            const mesFormatado = (dataBrasilia.getUTCMonth() + 1).toString().padStart(2, '0');
+            const anoFormatado = dataBrasilia.getUTCFullYear();
+            const horaFormatada = dataBrasilia.getUTCHours().toString().padStart(2, '0');
+            const minutosFormatados = dataBrasilia.getUTCMinutes().toString().padStart(2, '0');
+            
+            return `${diaFormatado}/${mesFormatado}/${anoFormatado} ${horaFormatada}:${minutosFormatados}`;
+        } catch (error) {
+            console.error('Erro ao formatar data:', error);
+            return dataString; // Retorna a string original em caso de erro
+        }
     }
 
     // Formata as datas

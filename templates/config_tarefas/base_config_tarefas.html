@@ -1,0 +1,80 @@
+{% extends 'base_simplificada.html' %}
+
+{% block extra_css %}
+<style>
+    .config-card {
+        border: none;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    .config-card .card-header {
+        background-color: #f8f9fa;
+        border-bottom: none;
+    }
+    .config-table th {
+        background-color: #f8f9fa;
+    }
+    .config-table td {
+        vertical-align: middle;
+    }
+    .btn-icon {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    {% block config_content %}{% endblock %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.all.min.js"></script>
+<script>
+    // Configuração global do Toast
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+    });
+
+    // Função para confirmar exclusão
+    function confirmarExclusao(url, nome) {
+        Swal.fire({
+            title: 'Confirmar exclusão?',
+            text: `Deseja realmente excluir "${nome}"?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sim, excluir!',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = url;
+            }
+        });
+    }
+
+    // Exibe mensagens flash com SweetAlert2
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                Toast.fire({
+                    icon: '{{ "success" if category == "success" else "error" }}',
+                    title: '{{ message }}'
+                });
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</script>
+{% block config_js %}{% endblock %}
+{% endblock %}

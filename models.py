@@ -29,7 +29,7 @@ class NaturezaDespesa(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     codigo = db.Column(db.String(10), nullable=False)
     nome = db.Column(db.String(100), nullable=False)
-    valor = db.Column(db.Numeric(10, 2), default=0.0)  # Alterado para Numeric
+    valor = db.Column(db.Numeric(10, 2), default=0.0)
     grupos = db.relationship('Grupo', back_populates='natureza_despesa')
     itens = db.relationship('Item', back_populates='natureza_despesa')
 
@@ -55,11 +55,11 @@ class Item(db.Model):
     grupo = db.relationship('Grupo', back_populates='itens')
     natureza_despesa_id = db.Column(db.Integer, db.ForeignKey('natureza_despesa.id'), nullable=False)
     natureza_despesa = db.relationship('NaturezaDespesa', back_populates='itens')
-    valor_unitario = db.Column(db.Numeric(10, 2), default=0.0)  # Alterado para Numeric
-    valor_medio = db.Column(db.Numeric(10, 2), default=0.0)  # Alterado para Numeric
-    saldo_financeiro = db.Column(db.Numeric(10, 2), default=0.0)  # Alterado para Numeric
-    estoque_atual = db.Column(db.Numeric(10, 2), default=0.0)  # Alterado para Numeric
-    estoque_minimo = db.Column(db.Numeric(10, 2), default=0.0)  # Alterado para Numeric
+    valor_unitario = db.Column(db.Numeric(10, 2), default=0.0)
+    valor_medio = db.Column(db.Numeric(10, 2), default=0.0)
+    saldo_financeiro = db.Column(db.Numeric(10, 2), default=0.0)
+    estoque_atual = db.Column(db.Numeric(10, 2), default=0.0)
+    estoque_minimo = db.Column(db.Numeric(10, 2), default=0.0)
     localizacao = db.Column(db.String(120), default='')
     data_validade = db.Column(db.Date, nullable=True)
 
@@ -71,10 +71,10 @@ class Estoque(db.Model):
     item = db.relationship('Item')
     fornecedor = db.Column(db.String(120), nullable=False)
     nota_fiscal = db.Column(db.String(50))
-    valor_unitario = db.Column(db.Numeric(10, 2), nullable=False)  # Alterado para Numeric
+    valor_unitario = db.Column(db.Numeric(10, 2), nullable=False)
     quantidade = db.Column(db.Integer, nullable=False)
     local = db.Column(db.String(120), nullable=False)
-    valor_total = db.Column(db.Numeric(10, 2), nullable=False)  # Alterado para Numeric
+    valor_total = db.Column(db.Numeric(10, 2), nullable=False)
 
 # ------------------- FORNECEDOR -------------------
 class Fornecedor(db.Model):
@@ -102,6 +102,7 @@ class Fornecedor(db.Model):
     def __repr__(self):
         return f'<Fornecedor {self.nome} - {self.cnpj_cpf}>'
 
+
 # ------------------- LOCAL E UNIDADE LOCAL -------------------
 class Local(db.Model):
     __tablename__ = 'local'
@@ -122,7 +123,7 @@ class UnidadeLocal(db.Model):
 class EntradaMaterial(db.Model):
     __tablename__ = 'entrada_material'
     id = db.Column(db.Integer, primary_key=True)
-    data_movimento = db.Column(db.Date, nullable=False)  
+    data_movimento = db.Column(db.Date, nullable=False)
     data_nota_fiscal = db.Column(db.Date, nullable=False)
     numero_nota_fiscal = db.Column(db.String(50), nullable=False)
     estornada = db.Column(db.Boolean, default=False)
@@ -146,7 +147,7 @@ class EntradaItem(db.Model):
     entrada_id = db.Column(db.Integer, db.ForeignKey('entrada_material.id'), nullable=False)
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
     quantidade = db.Column(db.Integer, nullable=False)
-    valor_unitario = db.Column(db.Numeric(10, 2), nullable=False)  # Já está como Numeric
+    valor_unitario = db.Column(db.Numeric(10, 2), nullable=False)
 
     item = db.relationship('Item', backref='entradas')
     entrada = db.relationship(
@@ -182,16 +183,19 @@ class SaidaMaterial(db.Model):
         overlaps="saida,itens_relacionados"
     )
 
+
+# ------------------- ITEM DA SAÍDA -------------------
 class SaidaItem(db.Model):
     __tablename__ = 'saida_item'
     id = db.Column(db.Integer, primary_key=True)
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
     quantidade = db.Column(db.Integer, nullable=False)
-    valor_unitario = db.Column(db.Numeric(10, 2), nullable=False)  # Alterado para Numeric
+    valor_unitario = db.Column(db.Numeric(10, 2), nullable=False)
 
     saida_id = db.Column(db.Integer, db.ForeignKey('saida_material.id'), nullable=False)
 
     item = db.relationship('Item', backref='saidas')
+
     saida = db.relationship(
         'SaidaMaterial',
         backref='itens_relacionados',
@@ -205,71 +209,102 @@ class SaidaItem(db.Model):
 # ------------------- LOG AUDITÁVEL -------------------
 class AuditLog(db.Model):
     __tablename__ = 'audit_log'
+
+    # Chave primária do log
     id = db.Column(db.Integer, primary_key=True)
+
+    # ID do usuário responsável pela ação (nullable em casos automatizados)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
     usuario = db.relationship('Usuario')
+
+    # Tipo de ação realizada: ex: 'inserção', 'edição', 'exclusão', 'estorno', etc.
     acao = db.Column(db.String(20), nullable=False)
+
+    # Nome da tabela afetada (ex: 'entrada_material', 'item', etc.)
     tabela = db.Column(db.String(50), nullable=False)
+
+    # ID do registro afetado na tabela (opcional)
     registro_id = db.Column(db.Integer, nullable=True)
+
+    # Dados antes da ação (JSON serializado em string)
     dados_anteriores = db.Column(db.Text)
+
+    # Dados após a ação (JSON serializado em string)
     dados_novos = db.Column(db.Text)
+
+    # Data e hora da operação
     data_hora = db.Column(db.DateTime, default=datetime.utcnow)
 
 # ------------------- PAINEL DE CONTRATAÇÕES -------------------
 class PainelContratacao(db.Model):
     __tablename__ = 'painel_contratacoes'
+
     id = db.Column(db.Integer, primary_key=True)
     ano = db.Column(db.Integer, nullable=False)
     data_abertura = db.Column(db.Date, nullable=True)
     data_homologacao = db.Column(db.Date, nullable=True)
     periodo_dias = db.Column(db.Integer, nullable=True)
-    numero_sei = db.Column(db.String(25), nullable=False)
+
+    numero_sei = db.Column(db.String(25), nullable=False)  # Ex: 21152.000001/2025-57
     modalidade = db.Column(db.String(100), nullable=True)
     registro_precos = db.Column(db.String(100), nullable=True)
     orgaos_participantes = db.Column(db.Text, nullable=True)
     numero_licitacao = db.Column(db.String(50), nullable=True)
+
     parecer_juridico = db.Column(db.String(100), nullable=True)
     fundamentacao_legal = db.Column(db.Text, nullable=True)
     objeto = db.Column(db.Text, nullable=False)
+
     natureza_despesa = db.Column(db.String(100), nullable=True)
-    valor_estimado = db.Column(db.Numeric(14, 2), nullable=True)  # Já está como Numeric
-    valor_homologado = db.Column(db.Numeric(14, 2), nullable=True)  # Já está como Numeric
+    valor_estimado = db.Column(db.Numeric(14, 2), nullable=True)
+    valor_homologado = db.Column(db.Numeric(14, 2), nullable=True)
     percentual_economia = db.Column(db.String(10), nullable=True)
+
     impugnacao = db.Column(db.String(10), nullable=True)
     recurso = db.Column(db.String(10), nullable=True)
     itens_desertos = db.Column(db.String(10), nullable=True)
+
     responsavel_conducao = db.Column(db.String(100), nullable=True)
     setor_responsavel = db.Column(db.String(100), nullable=True)
     status = db.Column(db.String(50), nullable=True)
     excluido = db.Column(db.Boolean, default=False)
+
     solicitante_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
     solicitante = db.relationship('Usuario', foreign_keys=[solicitante_id])
+
+
 
     def __repr__(self):
         return f"<PainelContratacao {self.numero_sei}>"
 
+
 # ------------------- CONTROLE DE BENS -------------------
+from extensoes import db
+from datetime import datetime
 class BemPatrimonial(db.Model):
     __tablename__ = 'bens_patrimoniais'
+
     id = db.Column(db.Integer, primary_key=True)
-    numero_ul = db.Column(db.String(50), unique=True, nullable=False)
-    numero_sap = db.Column(db.String(50), unique=True, nullable=False)
-    numero_siads = db.Column(db.String(50), unique=True, nullable=True)
+    
+    numero_ul = db.Column(db.String(50), unique=True, nullable=False)       # Nº Patrimônio da Unidade Local
+    numero_sap = db.Column(db.String(50), unique=True, nullable=False)      # Nº SAP
+    numero_siads = db.Column(db.String(50), unique=True, nullable=True)     # Nº SIADS (pode ser preenchido depois)
     nome = db.Column(db.String(120), nullable=False)
     descricao = db.Column(db.Text, nullable=True)
-    grupo_bem = db.Column(db.String(100), nullable=True)
-    classificacao_contabil = db.Column(db.String(100), nullable=True)
-    foto = db.Column(db.String(255), nullable=True)
+    grupo_bem = db.Column(db.String(100), nullable=True)                    # Grupo ou categoria do bem
+    classificacao_contabil = db.Column(db.String(100), nullable=True)       # Classificação contábil
+    foto = db.Column(db.String(255), nullable=True)                         # Caminho para o arquivo da foto
     detentor_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True)
     excluido = db.Column(db.Boolean, default=False)
     detentor = db.relationship('Usuario', backref='bens')
     localizacao = db.Column(db.String(100), nullable=True)
     data_aquisicao = db.Column(db.Date, nullable=True)
-    valor_aquisicao = db.Column(db.Numeric(10, 2), nullable=True)  # Alterado para Numeric
-    status = db.Column(db.String(50), default='Ativo')
+    valor_aquisicao = db.Column(db.Numeric(10, 2), nullable=True)
+    status = db.Column(db.String(50), default='Ativo')  # Ativo, Baixado, Em transferência etc.
     situacao = db.Column(db.String(50), default='Em uso')
     data_cadastro = db.Column(db.DateTime, default=datetime.utcnow)
     observacoes = db.Column(db.Text, nullable=True)
+
 
     def __repr__(self):
         return f"<BemPatrimonial {self.numero_ul} - {self.nome}>"
@@ -277,6 +312,7 @@ class BemPatrimonial(db.Model):
 # ------------------- GRUPO DE BENS PATRIMONIAIS -------------------
 class GrupoPatrimonio(db.Model):
     __tablename__ = 'grupos_patrimonio'
+
     id = db.Column(db.Integer, primary_key=True)
     codigo = db.Column(db.String(20), nullable=False)
     descricao = db.Column(db.String(150), nullable=False)
@@ -402,16 +438,17 @@ class PublicacaoSignatariosExternos(db.Model):
 # ------------------- PROJETO -------------------
 class Projeto(db.Model):
     __tablename__ = 'projetos'
+
     id = db.Column(db.Integer, primary_key=True)
-    titulo = db.Column(db.String(200), nullable=False)
-    descricao = db.Column(db.Text)
-    area = db.Column(db.String(100))
-    prioridade = db.Column(db.String(50))
-    status = db.Column(db.String(50))  # A Fazer, Em Progresso, Concluído
-    responsavel = db.Column(db.String(100))
+    titulo = db.Column(db.String(120), nullable=False)
+    descricao = db.Column(db.Text, nullable=True)
+    area = db.Column(db.String(50), nullable=False)
+    prioridade = db.Column(db.String(20), nullable=False)
+    status = db.Column(db.String(20), nullable=False, default='A Fazer')
+    responsavel = db.Column(db.String(120), nullable=True)
     data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
-    data_conclusao = db.Column(db.DateTime)
-    
+    data_conclusao = db.Column(db.DateTime, nullable=True)
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -421,6 +458,10 @@ class Projeto(db.Model):
             'prioridade': self.prioridade,
             'status': self.status,
             'responsavel': self.responsavel,
-            'data_criacao': self.data_criacao.strftime('%d/%m/%Y') if self.data_criacao else None,
-            'data_conclusao': self.data_conclusao.strftime('%d/%m/%Y') if self.data_conclusao else None
+            'data_criacao': self.data_criacao.isoformat() if self.data_criacao else None,
+            'data_conclusao': self.data_conclusao.isoformat() if self.data_conclusao else None
         }
+
+    def __repr__(self):
+        return f'<Projeto {self.titulo}>'
+

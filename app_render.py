@@ -105,7 +105,7 @@ def create_app():
     from routes_patrimonio import patrimonio_bp
     from routes_links import links_bp
     from routes_publicacao import bp as publicacoes_bp
-    from routes_projetos import bp as projetos_bp
+    from routes_projetos import bp as projetos_bp, api_bp as projetos_api_bp
 
     # Registro dos blueprints
     app.register_blueprint(main)
@@ -127,6 +127,7 @@ def create_app():
     app.register_blueprint(links_bp)
     app.register_blueprint(publicacoes_bp)
     app.register_blueprint(projetos_bp)
+    app.register_blueprint(projetos_api_bp)
 
     # Rota para renderizar o conteúdo dos projetos
     @app.route('/projetos/conteudo')
@@ -143,4 +144,3 @@ app = create_app()
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
-

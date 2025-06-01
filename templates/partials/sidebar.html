@@ -22,6 +22,7 @@
       <li class="nav-item"><a href="{{ url_for('main.relatorios') }}" class="nav-link {% if request.endpoint == 'main.relatorios' %}active{% endif %} text-white">Relatórios</a></li>
     </ul>
   </li>
+
   <!-- Patrimônio -->
   <li class="nav-item mt-3">
     <a class="nav-link text-white fw-bold d-flex justify-content-between align-items-center"
@@ -53,28 +54,51 @@
     </ul>
   </li>
 
-<!-- Publicações -->
-<li class="nav-item mt-3">
-  <a class="nav-link text-white fw-bold d-flex justify-content-between align-items-center"
-     data-bs-toggle="collapse" href="#submenuPublicacoes" role="button"
-     aria-expanded="{% if request.endpoint.startswith('publicacoes') %}true{% else %}false{% endif %}">
-    <span><i class="bi bi-journal-text me-1"></i> Publicações</span><i class="bi bi-chevron-down"></i>
-  </a>
-  <ul class="collapse nav flex-column ms-3 {% if request.endpoint.startswith('publicacoes') %}show{% endif %}" id="submenuPublicacoes">
-    <li class="nav-item">
-      <a href="{{ url_for('publicacao_bp.listar') }}" 
-         class="nav-link {% if request.endpoint == 'publicacao_bp.listar' %}active{% endif %} text-white">
-        Lista de Publicações
-      </a>
-    </li>
-    <li class="nav-item">
-      <a href="{{ url_for('publicacao_bp.nova_publicacao') }}" 
-         class="nav-link {% if request.endpoint == 'publicacao_bp.nova_publicacao' %}active{% endif %} text-white">
-        Nova Publicação
-      </a>
-    </li>
-  </ul>
-</li>
+  <!-- Publicações -->
+  <li class="nav-item mt-3">
+    <a class="nav-link text-white fw-bold d-flex justify-content-between align-items-center"
+       data-bs-toggle="collapse" href="#submenuPublicacoes" role="button"
+       aria-expanded="{% if request.endpoint.startswith('publicacoes') %}true{% else %}false{% endif %}">
+      <span><i class="bi bi-journal-text me-1"></i> Publicações</span><i class="bi bi-chevron-down"></i>
+    </a>
+    <ul class="collapse nav flex-column ms-3 {% if request.endpoint.startswith('publicacoes') %}show{% endif %}" id="submenuPublicacoes">
+      <li class="nav-item">
+        <a href="{{ url_for('publicacao_bp.listar') }}" 
+           class="nav-link {% if request.endpoint == 'publicacao_bp.listar' %}active{% endif %} text-white">
+          Lista de Publicações
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="{{ url_for('publicacao_bp.nova_publicacao') }}" 
+           class="nav-link {% if request.endpoint == 'publicacao_bp.nova_publicacao' %}active{% endif %} text-white">
+          Nova Publicação
+        </a>
+      </li>
+    </ul>
+  </li>
+
+  <!-- Tarefas -->
+  <li class="nav-item mt-3">
+    <a class="nav-link text-white fw-bold d-flex justify-content-between align-items-center"
+       data-bs-toggle="collapse" href="#submenuTarefas" role="button"
+       aria-expanded="{% if request.endpoint.startswith('tarefas') %}true{% else %}false{% endif %}">
+      <span><i class="bi bi-list-task me-1"></i> Tarefas</span><i class="bi bi-chevron-down"></i>
+    </a>
+    <ul class="collapse nav flex-column ms-3 {% if request.endpoint.startswith('tarefas') %}show{% endif %}" id="submenuTarefas">
+      <li class="nav-item">
+        <a href="{{ url_for('tarefas.lista_tarefas') }}" 
+           class="nav-link {% if request.endpoint == 'tarefas.lista_tarefas' %}active{% endif %} text-white">
+          <i class="bi bi-kanban me-1"></i> Quadro Kanban
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="{{ url_for('tarefas.nova_tarefa') }}" 
+           class="nav-link {% if request.endpoint == 'tarefas.nova_tarefa' %}active{% endif %} text-white">
+          <i class="bi bi-plus-circle me-1"></i> Nova Tarefa
+        </a>
+      </li>
+    </ul>
+  </li>
 
   <!-- Dashboard -->
   <li class="nav-item mt-3">
@@ -108,4 +132,4 @@
     </a>
   </li>
   {% endif %}
-</ul>
+</ul> 

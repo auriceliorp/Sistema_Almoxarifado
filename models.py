@@ -445,17 +445,19 @@ class PublicacaoSignatariosExternos(db.Model):
 # ------------------- PROJETO -------------------
 class Tarefa(db.Model):
     __tablename__ = 'tarefas'
-
     id = db.Column(db.Integer, primary_key=True)
-    titulo = db.Column(db.String(100), nullable=False)
-    descricao = db.Column(db.Text)
-    area = db.Column(db.String(50), nullable=False)
-    prioridade = db.Column(db.String(20), nullable=False)
-    status = db.Column(db.String(20), default='A Fazer')
-    responsavel = db.Column(db.String(100))
+    titulo = db.Column(db.String(120), nullable=False)
+    descricao = db.Column(db.Text, nullable=True)
+    area = db.Column(db.String(50), nullable=False)  # Compras, Patrimônio, Estoque
+    prioridade = db.Column(db.String(20), nullable=False)  # Alta, Média, Baixa
+    status = db.Column(db.String(20), nullable=False, default='A Fazer')  # A Fazer, Em Progresso, Concluído
+    responsavel = db.Column(db.String(120), nullable=True)
     data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
-    data_conclusao = db.Column(db.DateTime)
-    
+    data_conclusao = db.Column(db.DateTime, nullable=True)
+
+    def __repr__(self):
+        return f"<Tarefa {self.id} - {self.titulo}>"
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -465,9 +467,6 @@ class Tarefa(db.Model):
             'prioridade': self.prioridade,
             'status': self.status,
             'responsavel': self.responsavel,
-            'data_criacao': self.data_criacao.isoformat() if self.data_criacao else None,
-            'data_conclusao': self.data_conclusao.isoformat() if self.data_conclusao else None
+            'data_criacao': self.data_criacao.strftime('%d/%m/%Y %H:%M') if self.data_criacao else None,
+            'data_conclusao': self.data_conclusao.strftime('%d/%m/%Y %H:%M') if self.data_conclusao else None
         }
-
-    def __repr__(self):
-        return f'<Tarefa {self.titulo}>'

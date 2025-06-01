@@ -1,6 +1,4 @@
-{% extends 'base_simplificada.html' %}
-
-{% block content %}
+{# Template de conteúdo dos projetos - sem extensão base pois será carregado dinamicamente #}
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Gerenciar Projetos</h1>
@@ -238,4 +236,3 @@
     document.getElementById('area').addEventListener('change', carregarProjetos);
     document.getElementById('prioridade').addEventListener('change', carregarProjetos);
 </script> 
-{% endblock %} 

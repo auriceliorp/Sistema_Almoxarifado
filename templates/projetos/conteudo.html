@@ -71,7 +71,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form id="formNovoProjeto">
+                <form id="formNovoProjeto" onsubmit="return false;">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="mb-3">
                         <label class="form-label">Título</label>
@@ -83,7 +83,8 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Área</label>
-                        <select class="form-select" name="area">
+                        <select class="form-select" name="area" required>
+                            <option value="">Selecione uma área</option>
                             <option value="Compras">Compras</option>
                             <option value="Patrimônio">Patrimônio</option>
                             <option value="Estoque">Estoque</option>
@@ -91,7 +92,8 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Prioridade</label>
-                        <select class="form-select" name="prioridade">
+                        <select class="form-select" name="prioridade" required>
+                            <option value="">Selecione uma prioridade</option>
                             <option value="Alta">Alta</option>
                             <option value="Média">Média</option>
                             <option value="Baixa">Baixa</option>
@@ -110,13 +112,27 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" onclick="salvarProjeto()">Salvar</button>
+                <button type="button" class="btn btn-primary" id="btnSalvarProjeto">Salvar</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
+    // Função para mostrar mensagens de toast
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+    });
+
+    // Adiciona o evento de click no botão salvar
+    document.getElementById('btnSalvarProjeto').addEventListener('click', function() {
+        salvarProjeto();
+    });
+
     function carregarProjetos() {
         const area = document.getElementById('area').value;
         const prioridade = document.getElementById('prioridade').value;
@@ -194,19 +210,31 @@
     }
 
     function salvarProjeto() {
+        console.log('Função salvarProjeto chamada'); // Debug
+
         const form = document.getElementById('formNovoProjeto');
         const formData = new FormData(form);
         const data = Object.fromEntries(formData.entries());
         
+        // Validação básica
+        if (!data.titulo || !data.area || !data.prioridade) {
+            Toast.fire({
+                icon: 'error',
+                title: 'Por favor, preencha todos os campos obrigatórios'
+            });
+            return;
+        }
+
         // Adiciona o status inicial
         data.status = 'A Fazer';
         
         // Desabilita o botão durante o salvamento
-        const btnSalvar = document.querySelector('[onclick="salvarProjeto()"]');
+        const btnSalvar = document.getElementById('btnSalvarProjeto');
         btnSalvar.disabled = true;
         btnSalvar.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Salvando...';
         
-        console.log('Enviando dados:', data); // Debug
+        console.log('Dados a serem enviados:', data); // Debug
+        console.log('CSRF Token:', document.querySelector('input[name="csrf_token"]').value); // Debug
 
         fetch('/api/projetos', {
             method: 'POST',
@@ -218,16 +246,17 @@
         })
         .then(response => {
             console.log('Status da resposta:', response.status); // Debug
-            if (!response.ok) {
-                return response.json().then(err => {
-                    throw new Error(err.error || 'Erro ao salvar projeto');
-                });
-            }
-            return response.json();
+            return response.json().then(data => {
+                if (!response.ok) {
+                    throw new Error(data.error || 'Erro ao salvar projeto');
+                }
+                return data;
+            });
         })
         .then(projeto => {
             console.log('Projeto salvo:', projeto); // Debug
-            $('#novoProjeto').modal('hide');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('novoProjeto'));
+            modal.hide();
             form.reset();
             carregarProjetos();
             Toast.fire({
@@ -280,8 +309,12 @@
         });
     }
 
-    // Carregar projetos ao iniciar e quando os filtros mudarem
-    document.addEventListener('DOMContentLoaded', carregarProjetos);
+    // Carrega projetos ao iniciar e quando os filtros mudarem
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('Página carregada, carregando projetos...'); // Debug
+        carregarProjetos();
+    });
+
     document.getElementById('area').addEventListener('change', carregarProjetos);
     document.getElementById('prioridade').addEventListener('change', carregarProjetos);
 </script> 

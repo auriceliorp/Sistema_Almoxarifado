@@ -4,10 +4,10 @@ from models import db, Tarefa, Usuario
 from datetime import datetime
 from extensoes import csrf
 
-bp = Blueprint('tarefas', __name__, url_prefix='/tarefas')
-api_bp = Blueprint('tarefas_api', __name__, url_prefix='/api')
+projetos_bp = Blueprint('projetos', __name__, url_prefix='/projetos')
+api_projetos_bp = Blueprint('api_projetos', __name__, url_prefix='/api')
 
-@bp.route('/')
+@projetos_bp.route('/tarefas')
 @login_required
 def lista_tarefas():
     """Renderiza a página principal de tarefas."""
@@ -20,22 +20,30 @@ def lista_tarefas():
     # Busca usuários para o select de responsável
     usuarios = Usuario.query.all()
 
-    return render_template('tarefas/lista_tarefas.html',
+    return render_template('projetos/tarefas/lista_tarefas.html',
                          total_tarefas=total_tarefas,
                          tarefas_em_progresso=tarefas_em_progresso,
                          tarefas_concluidas=tarefas_concluidas,
                          total_responsaveis=total_responsaveis,
                          usuarios=usuarios)
 
-@bp.route('/nova')
+@projetos_bp.route('/tarefas/nova')
 @login_required
 def nova_tarefa():
     """Renderiza o formulário de nova tarefa."""
     usuarios = Usuario.query.all()
-    return render_template('tarefas/nova_tarefa.html', usuarios=usuarios)
+    return render_template('projetos/tarefas/nova_tarefa.html', usuarios=usuarios)
+
+@projetos_bp.route('/tarefas/editar/<int:tarefa_id>')
+@login_required
+def editar_tarefa(tarefa_id):
+    """Renderiza o formulário de edição de tarefa."""
+    tarefa = Tarefa.query.get_or_404(tarefa_id)
+    usuarios = Usuario.query.all()
+    return render_template('projetos/tarefas/editar_tarefa.html', tarefa=tarefa, usuarios=usuarios)
 
 # Rotas da API
-@api_bp.route('/tarefas', methods=['GET'])
+@api_projetos_bp.route('/tarefas', methods=['GET'])
 @login_required
 def get_tarefas():
     try:
@@ -58,7 +66,7 @@ def get_tarefas():
         print(f"Erro ao buscar tarefas: {str(e)}")  # Log do erro
         return jsonify({'error': str(e)}), 500
 
-@api_bp.route('/tarefas', methods=['POST'])
+@api_projetos_bp.route('/tarefas', methods=['POST'])
 @login_required
 def criar_tarefa_api():
     try:
@@ -97,7 +105,7 @@ def criar_tarefa_api():
         print(f"Erro ao criar tarefa: {str(e)}")  # Log do erro
         return jsonify({'error': str(e)}), 500
 
-@api_bp.route('/tarefas/<int:tarefa_id>', methods=['PUT'])
+@api_projetos_bp.route('/tarefas/<int:tarefa_id>', methods=['PUT'])
 @login_required
 def atualizar_tarefa_api(tarefa_id):
     """Atualiza uma tarefa existente."""
@@ -105,20 +113,42 @@ def atualizar_tarefa_api(tarefa_id):
         tarefa = Tarefa.query.get_or_404(tarefa_id)
         data = request.get_json()
         
+        # Atualiza os campos básicos se fornecidos
+        if 'titulo' in data:
+            tarefa.titulo = data['titulo']
+        if 'descricao' in data:
+            tarefa.descricao = data['descricao']
+        if 'area' in data:
+            tarefa.area = data['area']
+        if 'prioridade' in data:
+            tarefa.prioridade = data['prioridade']
+        if 'responsavel' in data:
+            tarefa.responsavel = data['responsavel']
+        
+        # Atualiza o status e a data de conclusão
         if 'status' in data:
+            old_status = tarefa.status
             tarefa.status = data['status']
-            if data['status'] == 'Concluído' and not tarefa.data_conclusao:
+            
+            # Se a tarefa foi concluída agora, adiciona a data de conclusão
+            if data['status'] == 'Concluído' and old_status != 'Concluído':
                 tarefa.data_conclusao = datetime.utcnow()
-            elif data['status'] != 'Concluído':
+            # Se a tarefa foi movida de Concluído para outro status, remove a data de conclusão
+            elif data['status'] != 'Concluído' and old_status == 'Concluído':
                 tarefa.data_conclusao = None
         
         db.session.commit()
-        return jsonify(tarefa.to_dict())
+        
+        return jsonify({
+            'message': 'Tarefa atualizada com sucesso',
+            'data': tarefa.to_dict()
+        })
     except Exception as e:
         db.session.rollback()
+        print(f"Erro ao atualizar tarefa: {str(e)}")  # Log do erro
         return jsonify({'error': str(e)}), 500
 
-@api_bp.route('/tarefas/<int:tarefa_id>', methods=['DELETE'])
+@api_projetos_bp.route('/tarefas/<int:tarefa_id>', methods=['DELETE'])
 @login_required
 def deletar_tarefa_api(tarefa_id):
     """Deleta uma tarefa."""
@@ -129,4 +159,4 @@ def deletar_tarefa_api(tarefa_id):
         return '', 204
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500 
+        return jsonify({'error': str(e)}), 500

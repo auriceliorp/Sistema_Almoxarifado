@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
 from flask_login import login_required, current_user
-from models import db, Tarefa, Usuario
+from models import db, Tarefa, CategoriaTarefa, OrigemTarefa, Area, Usuario
 from datetime import datetime
 from extensoes import csrf
 
@@ -10,39 +10,193 @@ api_bp = Blueprint('tarefas_api', __name__, url_prefix='/api')
 @bp.route('/')
 @login_required
 def lista_tarefas():
-    """Renderiza a página principal de tarefas."""
-    # Busca estatísticas
-    total_tarefas = Tarefa.query.count()
-    tarefas_em_progresso = Tarefa.query.filter_by(status='Em Progresso').count()
-    tarefas_concluidas = Tarefa.query.filter_by(status='Concluído').count()
-    total_responsaveis = db.session.query(Tarefa.responsavel).distinct().count()
-
-    # Busca usuários para o select de responsável
-    usuarios = Usuario.query.all()
-
+    """Lista todas as tarefas."""
+    status_filter = request.args.get('status', None)
+    
+    # Query base
+    query = Tarefa.query
+    
+    # Aplicar filtro de status se fornecido
+    if status_filter:
+        query = query.filter(Tarefa.status == status_filter)
+    
+    # Ordenar por data de criação (mais recentes primeiro)
+    tarefas = query.order_by(Tarefa.data_criacao.desc()).all()
+    
+    # Buscar dados para os selects
+    categorias = CategoriaTarefa.query.order_by(CategoriaTarefa.nome).all()
+    origens = OrigemTarefa.query.order_by(OrigemTarefa.nome).all()
+    areas = Area.query.order_by(Area.nome).all()
+    usuarios = Usuario.query.order_by(Usuario.nome).all()
+    
+    # Estatísticas
+    total_tarefas = len(tarefas)
+    tarefas_nao_iniciadas = sum(1 for t in tarefas if t.status == 'Não iniciada')
+    tarefas_em_execucao = sum(1 for t in tarefas if t.status == 'Em execução')
+    tarefas_suspensas = sum(1 for t in tarefas if t.status == 'Suspensa')
+    tarefas_concluidas = sum(1 for t in tarefas if t.status == 'Concluída')
+    tarefas_em_atraso = sum(1 for t in tarefas if t.status == 'Em atraso')
+    
     return render_template('tarefas/lista_tarefas.html',
+                         tarefas=tarefas,
+                         categorias=categorias,
+                         origens=origens,
+                         areas=areas,
+                         usuarios=usuarios,
                          total_tarefas=total_tarefas,
-                         tarefas_em_progresso=tarefas_em_progresso,
+                         tarefas_nao_iniciadas=tarefas_nao_iniciadas,
+                         tarefas_em_execucao=tarefas_em_execucao,
+                         tarefas_suspensas=tarefas_suspensas,
                          tarefas_concluidas=tarefas_concluidas,
-                         total_responsaveis=total_responsaveis,
-                         usuarios=usuarios)
+                         tarefas_em_atraso=tarefas_em_atraso)
 
-@bp.route('/nova')
+@bp.route('/nova', methods=['GET', 'POST'])
 @login_required
 def nova_tarefa():
-    """Renderiza o formulário de nova tarefa."""
-    usuarios = Usuario.query.all()
-    return render_template('tarefas/nova_tarefa.html', usuarios=usuarios)
+    """Cria uma nova tarefa."""
+    if request.method == 'POST':
+        try:
+            # Obter dados do formulário
+            titulo = request.form.get('titulo')
+            numero_sei = request.form.get('numero_sei')
+            categoria_id = request.form.get('categoria_id')
+            resumo = request.form.get('resumo')
+            area_id = request.form.get('area_id')
+            origem_id = request.form.get('origem_id')
+            responsavel_id = request.form.get('responsavel_id')
+            solicitante_id = request.form.get('solicitante_id')
+            quantidade_acoes = request.form.get('quantidade_acoes', type=int)
+            prioridade = request.form.get('prioridade')
+            status = request.form.get('status')
+            data_inicio = request.form.get('data_inicio')
+            data_termino = request.form.get('data_termino')
+            observacoes = request.form.get('observacoes')
+            
+            # Validar campos obrigatórios
+            if not titulo:
+                flash('Título é obrigatório.', 'error')
+                return redirect(url_for('tarefas.nova_tarefa'))
+            
+            # Converter datas
+            data_inicio = datetime.strptime(data_inicio, '%Y-%m-%d') if data_inicio else None
+            data_termino = datetime.strptime(data_termino, '%Y-%m-%d') if data_termino else None
+            
+            # Criar nova tarefa
+            tarefa = Tarefa(
+                titulo=titulo,
+                numero_sei=numero_sei,
+                categoria_id=categoria_id,
+                resumo=resumo,
+                area_id=area_id,
+                origem_id=origem_id,
+                responsavel_id=responsavel_id,
+                solicitante_id=solicitante_id or current_user.id,  # Se não especificado, usar usuário atual
+                quantidade_acoes=quantidade_acoes,
+                prioridade=prioridade,
+                status=status,
+                data_inicio=data_inicio,
+                data_termino=data_termino,
+                observacoes=observacoes
+            )
+            
+            db.session.add(tarefa)
+            db.session.commit()
+            
+            flash('Tarefa criada com sucesso!', 'success')
+            return redirect(url_for('tarefas.lista_tarefas'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao criar tarefa: {str(e)}', 'error')
+            return redirect(url_for('tarefas.nova_tarefa'))
+    
+    # GET: Renderizar formulário
+    categorias = CategoriaTarefa.query.order_by(CategoriaTarefa.nome).all()
+    origens = OrigemTarefa.query.order_by(OrigemTarefa.nome).all()
+    areas = Area.query.order_by(Area.nome).all()
+    usuarios = Usuario.query.order_by(Usuario.nome).all()
+    
+    return render_template('tarefas/form_tarefa.html',
+                         categorias=categorias,
+                         origens=origens,
+                         areas=areas,
+                         usuarios=usuarios)
 
-@bp.route('/editar/<int:tarefa_id>')
+@bp.route('/editar/<int:tarefa_id>', methods=['GET', 'POST'])
 @login_required
 def editar_tarefa(tarefa_id):
-    """Renderiza o formulário de edição de tarefa."""
+    """Edita uma tarefa existente."""
     tarefa = Tarefa.query.get_or_404(tarefa_id)
-    usuarios = Usuario.query.all()
-    return render_template('tarefas/editar_tarefa.html', tarefa=tarefa, usuarios=usuarios)
+    
+    if request.method == 'POST':
+        try:
+            # Obter dados do formulário
+            tarefa.titulo = request.form.get('titulo')
+            tarefa.numero_sei = request.form.get('numero_sei')
+            tarefa.categoria_id = request.form.get('categoria_id')
+            tarefa.resumo = request.form.get('resumo')
+            tarefa.area_id = request.form.get('area_id')
+            tarefa.origem_id = request.form.get('origem_id')
+            tarefa.responsavel_id = request.form.get('responsavel_id')
+            tarefa.solicitante_id = request.form.get('solicitante_id')
+            tarefa.quantidade_acoes = request.form.get('quantidade_acoes', type=int)
+            tarefa.prioridade = request.form.get('prioridade')
+            tarefa.status = request.form.get('status')
+            
+            # Converter datas
+            data_inicio = request.form.get('data_inicio')
+            data_termino = request.form.get('data_termino')
+            tarefa.data_inicio = datetime.strptime(data_inicio, '%Y-%m-%d') if data_inicio else None
+            tarefa.data_termino = datetime.strptime(data_termino, '%Y-%m-%d') if data_termino else None
+            
+            tarefa.observacoes = request.form.get('observacoes')
+            
+            db.session.commit()
+            
+            flash('Tarefa atualizada com sucesso!', 'success')
+            return redirect(url_for('tarefas.lista_tarefas'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao atualizar tarefa: {str(e)}', 'error')
+            return redirect(url_for('tarefas.editar_tarefa', tarefa_id=tarefa_id))
+    
+    # GET: Renderizar formulário
+    categorias = CategoriaTarefa.query.order_by(CategoriaTarefa.nome).all()
+    origens = OrigemTarefa.query.order_by(OrigemTarefa.nome).all()
+    areas = Area.query.order_by(Area.nome).all()
+    usuarios = Usuario.query.order_by(Usuario.nome).all()
+    
+    return render_template('tarefas/form_tarefa.html',
+                         tarefa=tarefa,
+                         categorias=categorias,
+                         origens=origens,
+                         areas=areas,
+                         usuarios=usuarios)
 
-# Rotas da API
+@bp.route('/excluir/<int:tarefa_id>')
+@login_required
+def excluir_tarefa(tarefa_id):
+    """Exclui uma tarefa."""
+    try:
+        tarefa = Tarefa.query.get_or_404(tarefa_id)
+        db.session.delete(tarefa)
+        db.session.commit()
+        flash('Tarefa excluída com sucesso!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Erro ao excluir tarefa: {str(e)}', 'error')
+    
+    return redirect(url_for('tarefas.lista_tarefas'))
+
+# API Routes
+@bp.route('/api/tarefas')
+@login_required
+def get_tarefas():
+    """Retorna todas as tarefas em formato JSON."""
+    tarefas = Tarefa.query.all()
+    return jsonify([t.to_dict() for t in tarefas])
+
 @api_bp.route('/tarefas', methods=['GET'])
 @login_required
 def get_tarefas():
@@ -175,4 +329,4 @@ def excluir_tarefa(tarefa_id):
     except Exception as e:
         db.session.rollback()
         print(f"Erro ao excluir tarefa: {str(e)}")  # Log do erro
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': str(e)}), 500 

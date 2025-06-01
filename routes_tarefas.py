@@ -5,7 +5,7 @@ from datetime import datetime
 from extensoes import csrf
 
 bp = Blueprint('tarefas', __name__, url_prefix='/tarefas')
-api_bp = Blueprint('tarefas_api', __name__, url_prefix='/api/tarefas')
+api_bp = Blueprint('tarefas_api', __name__, url_prefix='/api')
 
 @bp.route('/')
 @login_required
@@ -43,7 +43,7 @@ def editar_tarefa(tarefa_id):
     return render_template('tarefas/editar_tarefa.html', tarefa=tarefa, usuarios=usuarios)
 
 # Rotas da API
-@api_bp.route('/', methods=['GET'])
+@api_bp.route('/tarefas', methods=['GET'])
 @login_required
 def get_tarefas():
     try:
@@ -66,7 +66,7 @@ def get_tarefas():
         print(f"Erro ao buscar tarefas: {str(e)}")  # Log do erro
         return jsonify({'error': str(e)}), 500
 
-@api_bp.route('/', methods=['POST'])
+@api_bp.route('/tarefas', methods=['POST'])
 @login_required
 def criar_tarefa():
     try:
@@ -105,7 +105,7 @@ def criar_tarefa():
         print(f"Erro ao criar tarefa: {str(e)}")  # Log do erro
         return jsonify({'error': str(e)}), 500
 
-@api_bp.route('/<int:tarefa_id>', methods=['PUT'])
+@api_bp.route('/tarefas/<int:tarefa_id>', methods=['PUT'])
 @login_required
 def atualizar_tarefa(tarefa_id):
     """Atualiza uma tarefa existente."""
@@ -148,7 +148,7 @@ def atualizar_tarefa(tarefa_id):
         print(f"Erro ao atualizar tarefa: {str(e)}")  # Log do erro
         return jsonify({'error': str(e)}), 500
 
-@api_bp.route('/<int:tarefa_id>', methods=['DELETE'])
+@api_bp.route('/tarefas/<int:tarefa_id>', methods=['DELETE'])
 @login_required
 def deletar_tarefa(tarefa_id):
     """Deleta uma tarefa."""

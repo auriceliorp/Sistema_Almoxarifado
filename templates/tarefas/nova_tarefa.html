@@ -1,7 +1,8 @@
-{% extends 'base_simplificada.html' %}
+{% extends 'tarefas/base_tarefas.html' %}
+
 {% block title %}Nova Tarefa{% endblock %}
 
-{% block extra_css %}
+{% block tarefas_css %}
 <style>
     .card {
         transition: all 0.3s ease;
@@ -122,7 +123,7 @@
 </div>
 {% endblock %}
 
-{% block extra_js %}
+{% block tarefas_js %}
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>

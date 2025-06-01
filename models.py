@@ -15,7 +15,7 @@ class Usuario(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    senha_hash = db.Column(db.String(128))
+    senha = db.Column(db.String(128))
     matricula = db.Column(db.String(50))
     ramal = db.Column(db.String(20))
     unidade_local_id = db.Column(db.Integer, db.ForeignKey('unidade_local.id'))
@@ -25,10 +25,10 @@ class Usuario(UserMixin, db.Model):
     senha_temporaria = db.Column(db.Boolean, default=True)
 
     def set_senha(self, senha):
-        self.senha_hash = generate_password_hash(senha)
+        self.senha = generate_password_hash(senha)
         
     def check_senha(self, senha):
-        return check_password_hash(self.senha_hash, senha)
+        return check_password_hash(self.senha, senha)
 
 # ------------------- NATUREZA DE DESPESA -------------------
 class NaturezaDespesa(db.Model):
@@ -202,7 +202,6 @@ class SaidaItem(db.Model):
     saida_id = db.Column(db.Integer, db.ForeignKey('saida_material.id'), nullable=False)
 
     item = db.relationship('Item', backref='saidas')
-
     saida = db.relationship(
         'SaidaMaterial',
         backref='itens_relacionados',

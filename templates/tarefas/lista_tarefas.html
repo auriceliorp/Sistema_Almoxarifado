@@ -1,8 +1,8 @@
-{% extends 'base_simplificada.html' %}
+{% extends 'tarefas/base_tarefas.html' %}
 
 {% block title %}Tarefas{% endblock %}
 
-{% block extra_css %}
+{% block tarefas_css %}
 <style>
     .stats-card {
         transition: all 0.3s ease;
@@ -199,7 +199,7 @@
 </div>
 {% endblock %}
 
-{% block extra_js %}
+{% block tarefas_js %}
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
@@ -255,13 +255,43 @@ function criarCardTarefa(tarefa) {
         'Baixa': 'info'
     }[tarefa.prioridade] || 'secondary';
 
+    // Formata a data de criação
+    const dataCriacao = new Date(tarefa.data_criacao).toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+
+    // Formata a data de conclusão se existir
+    let dataConclusao = '';
+    if (tarefa.status === 'Concluído' && tarefa.data_conclusao) {
+        dataConclusao = new Date(tarefa.data_conclusao).toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
     return $('<div>').addClass('card mb-2').html(`
         <div class="card-body">
             <h5 class="card-title">${tarefa.titulo}</h5>
             <p class="card-text">${tarefa.descricao || ''}</p>
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex justify-content-between align-items-center mb-2">
                 <span class="badge bg-${prioridadeClass}">${tarefa.prioridade}</span>
                 <small>${tarefa.responsavel || 'Sem responsável'}</small>
+            </div>
+            <div class="d-flex flex-column gap-1">
+                <small class="text-muted">
+                    <i class="bi bi-calendar-plus"></i> Criada em: ${dataCriacao}
+                </small>
+                ${dataConclusao ? `
+                <small class="text-success">
+                    <i class="bi bi-calendar-check"></i> Concluída em: ${dataConclusao}
+                </small>` : ''}
             </div>
             <div class="mt-2">
                 <select class="form-select form-select-sm" onchange="atualizarStatus(${tarefa.id}, this.value)">
@@ -275,6 +305,15 @@ function criarCardTarefa(tarefa) {
 }
 
 function atualizarStatus(tarefaId, novoStatus) {
+    const data = {
+        status: novoStatus
+    };
+
+    // Se o status for Concluído, adiciona a data de conclusão
+    if (novoStatus === 'Concluído') {
+        data.data_conclusao = new Date().toISOString();
+    }
+
     $.ajax({
         url: `/api/tarefas/${tarefaId}`,
         method: 'PUT',
@@ -282,13 +321,12 @@ function atualizarStatus(tarefaId, novoStatus) {
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         },
-        data: JSON.stringify({ status: novoStatus }),
+        data: JSON.stringify(data),
         success: function() {
             carregarTarefas();
-            Swal.fire({
+            Toast.fire({
                 icon: 'success',
-                title: 'Sucesso',
-                text: 'Status atualizado com sucesso!'
+                title: 'Status atualizado com sucesso!'
             });
         },
         error: function() {

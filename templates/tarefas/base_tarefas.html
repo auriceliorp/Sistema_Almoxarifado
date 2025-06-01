@@ -1,0 +1,27 @@
+{% extends 'base_simplificada.html' %}
+
+{% block extra_css %}
+<!-- SweetAlert2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.min.css" rel="stylesheet">
+<!-- CSS específico para tarefas -->
+{% block tarefas_css %}{% endblock %}
+{% endblock %}
+
+{% block extra_js %}
+<!-- SweetAlert2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.all.min.js"></script>
+
+<!-- Scripts específicos para tarefas -->
+<script>
+// Configuração global do Toast do SweetAlert2
+const Toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true
+});
+</script>
+
+{% block tarefas_js %}{% endblock %}
+{% endblock %} 

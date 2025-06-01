@@ -201,21 +201,32 @@
         // Adiciona o status inicial
         data.status = 'A Fazer';
         
+        // Desabilita o botão durante o salvamento
+        const btnSalvar = document.querySelector('[onclick="salvarProjeto()"]');
+        btnSalvar.disabled = true;
+        btnSalvar.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Salvando...';
+        
+        console.log('Enviando dados:', data); // Debug
+
         fetch('/api/projetos', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                'X-CSRF-TOKEN': document.querySelector('input[name="csrf_token"]').value
             },
             body: JSON.stringify(data)
         })
         .then(response => {
+            console.log('Status da resposta:', response.status); // Debug
             if (!response.ok) {
-                throw new Error(`Erro ao salvar projeto: ${response.status}`);
+                return response.json().then(err => {
+                    throw new Error(err.error || 'Erro ao salvar projeto');
+                });
             }
             return response.json();
         })
-        .then(() => {
+        .then(projeto => {
+            console.log('Projeto salvo:', projeto); // Debug
             $('#novoProjeto').modal('hide');
             form.reset();
             carregarProjetos();
@@ -228,8 +239,13 @@
             console.error('Erro:', error);
             Toast.fire({
                 icon: 'error',
-                title: 'Erro ao criar projeto. Tente novamente.'
+                title: error.message || 'Erro ao criar projeto. Tente novamente.'
             });
+        })
+        .finally(() => {
+            // Reabilita o botão após o salvamento
+            btnSalvar.disabled = false;
+            btnSalvar.innerHTML = 'Salvar';
         });
     }
 

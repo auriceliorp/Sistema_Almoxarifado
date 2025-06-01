@@ -15,15 +15,29 @@ let formNovoProjeto = null;
 // Inicialização quando o documento estiver pronto
 $(document).ready(function() {
     console.log('Script de projetos carregado');
+    inicializarModal();
+});
+
+// Função para inicializar o modal e seus elementos
+function inicializarModal() {
+    console.log('Inicializando modal...');
     
     // Inicializa elementos do modal
-    modalNovoProjeto = new bootstrap.Modal(document.getElementById('novoProjeto'));
+    const modalElement = document.getElementById('novoProjeto');
+    if (!modalElement) {
+        console.error('Modal não encontrado!');
+        return;
+    }
+    
+    modalNovoProjeto = new bootstrap.Modal(modalElement);
     btnSalvarProjeto = $('#btnSalvarProjeto');
     formNovoProjeto = $('#formNovoProjeto');
     
     // Configura eventos
     btnSalvarProjeto.on('click', salvarProjeto);
-});
+    
+    console.log('Modal inicializado com sucesso');
+}
 
 // Função chamada quando o iframe de projetos carrega
 function projetosCarregado() {
@@ -34,12 +48,21 @@ function projetosCarregado() {
 // Função para abrir o modal de novo projeto
 function abrirModalNovoProjeto() {
     console.log('Abrindo modal de novo projeto');
+    if (!modalNovoProjeto) {
+        console.error('Modal não inicializado!');
+        inicializarModal();
+    }
     modalNovoProjeto.show();
 }
 
 // Função para salvar projeto
 function salvarProjeto() {
     console.log('Função salvarProjeto chamada');
+
+    if (!formNovoProjeto || !formNovoProjeto[0]) {
+        console.error('Formulário não encontrado!');
+        return;
+    }
 
     const formData = new FormData(formNovoProjeto[0]);
     const data = Object.fromEntries(formData.entries());
@@ -106,6 +129,11 @@ function salvarProjeto() {
 // Função para carregar projetos
 function carregarProjetos() {
     const iframe = document.querySelector('#conteudo-projetos');
+    if (!iframe) {
+        console.error('Iframe não encontrado!');
+        return;
+    }
+    
     const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
     
     const area = $(iframeDoc).find('#area').val();
@@ -161,7 +189,7 @@ function criarCardProjeto(projeto) {
                 <small>${projeto.responsavel || 'Sem responsável'}</small>
             </div>
             <div class="mt-2">
-                <select class="form-select form-select-sm" onchange="window.parent.atualizarStatus(${projeto.id}, this.value)">
+                <select class="form-select form-select-sm" onchange="parent.atualizarStatus(${projeto.id}, this.value)">
                     <option value="A Fazer" ${projeto.status === 'A Fazer' ? 'selected' : ''}>A Fazer</option>
                     <option value="Em Progresso" ${projeto.status === 'Em Progresso' ? 'selected' : ''}>Em Progresso</option>
                     <option value="Concluído" ${projeto.status === 'Concluído' ? 'selected' : ''}>Concluído</option>

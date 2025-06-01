@@ -127,7 +127,10 @@ def create_app():
     app.register_blueprint(links_bp)
     app.register_blueprint(publicacoes_bp)
     app.register_blueprint(projetos_bp)
-    app.register_blueprint(projetos_api_bp)
+    app.register_blueprint(projetos_api_bp)  # Registrando o blueprint da API de projetos
+
+    # Configuração do CSRF para rotas da API
+    csrf.exempt(projetos_api_bp)
 
     # Rota para renderizar o conteúdo dos projetos
     @app.route('/projetos/conteudo')

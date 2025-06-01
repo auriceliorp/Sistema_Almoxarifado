@@ -102,7 +102,7 @@ def create_app():
     from routes_patrimonio import patrimonio_bp
     from routes_links import links_bp
     from routes_publicacao import bp as publicacoes_bp
-    from routes_projetos import bp as tarefas_bp, api_bp as tarefas_api_bp
+    from routes_projetos import projetos_bp as tarefas_bp, api_projetos_bp as tarefas_api_bp
 
     # Registro dos blueprints
     app.register_blueprint(main)

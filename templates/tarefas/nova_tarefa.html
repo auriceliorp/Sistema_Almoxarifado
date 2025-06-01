@@ -157,22 +157,43 @@ $(document).ready(function() {
             },
             data: JSON.stringify(data),
             success: function(response) {
+                console.log('Resposta da API:', response);  // Log para debug
+                
+                // Mostra o alerta de sucesso
                 Swal.fire({
                     icon: 'success',
                     title: 'Sucesso!',
-                    text: 'Tarefa criada com sucesso.',
-                    showConfirmButton: false,
-                    timer: 1500
+                    text: response.message || 'Tarefa criada com sucesso.',
+                    showConfirmButton: true,
+                    confirmButtonText: 'OK',
+                    timer: 2000,
+                    timerProgressBar: true
                 }).then(() => {
+                    // Redireciona mesmo se o usuário fechar o alerta
                     window.location.href = "{{ url_for('tarefas.lista_tarefas') }}";
                 });
             },
-            error: function(xhr) {
-                console.error('Erro:', xhr);  // Adicionando log de erro
+            error: function(xhr, status, error) {
+                console.error('Erro completo:', {xhr, status, error});  // Log detalhado do erro
+                
+                // Tenta extrair a mensagem de erro da resposta
+                let mensagemErro = 'Erro ao criar tarefa';
+                try {
+                    if (xhr.responseJSON && xhr.responseJSON.error) {
+                        mensagemErro = xhr.responseJSON.error;
+                    } else if (xhr.responseText) {
+                        const resposta = JSON.parse(xhr.responseText);
+                        mensagemErro = resposta.error || mensagemErro;
+                    }
+                } catch (e) {
+                    console.error('Erro ao processar resposta:', e);
+                }
+
                 Swal.fire({
                     icon: 'error',
                     title: 'Erro',
-                    text: xhr.responseJSON?.error || 'Erro ao criar tarefa'
+                    text: mensagemErro,
+                    confirmButtonText: 'OK'
                 });
             }
         });

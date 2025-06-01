@@ -1,0 +1,111 @@
+{% extends "base/base.html" %}
+{% block title %}Home - Sistema de Almoxarifado{% endblock %}
+
+{% block main_content %}
+<div class="container-fluid py-4">
+    <h2 class="mb-4">Bem-vindo(a), {{ current_user.nome }}!</h2>
+
+    <!-- Cards de Acesso Rápido -->
+    <div class="row g-4 mb-5">
+        <!-- Entrada de Material -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-box-arrow-in-down text-success"></i>
+                        Entrada de Material
+                    </h5>
+                    <p class="card-text">Registre novas entradas de materiais no almoxarifado.</p>
+                    <a href="{{ url_for('almoxarifado.entrada.nova_entrada') }}" class="btn btn-success">
+                        Nova Entrada
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Saída de Material -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-box-arrow-up text-danger"></i>
+                        Saída de Material
+                    </h5>
+                    <p class="card-text">Registre saídas de materiais do almoxarifado.</p>
+                    <a href="{{ url_for('almoxarifado.saida.nova_saida') }}" class="btn btn-danger">
+                        Nova Saída
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Requisições -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-clipboard-check text-primary"></i>
+                        Requisições
+                    </h5>
+                    <p class="card-text">Gerencie as requisições de materiais.</p>
+                    <a href="{{ url_for('almoxarifado.requisicoes') }}" class="btn btn-primary">
+                        Ver Requisições
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seção de Relatórios -->
+    <h3 class="mb-4">Relatórios</h3>
+    <div class="row g-4">
+        <!-- Mapa de Fechamento -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-graph-up text-info"></i>
+                        Mapa de Fechamento
+                    </h5>
+                    <p class="card-text">Visualize o mapa de fechamento mensal do almoxarifado.</p>
+                    <a href="{{ url_for('relatorios.mapa_fechamento') }}" class="btn btn-info text-white">
+                        Acessar
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventário -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-list-check text-warning"></i>
+                        Inventário
+                    </h5>
+                    <p class="card-text">Acesse o inventário atual do almoxarifado.</p>
+                    <a href="{{ url_for('relatorios.inventario') }}" class="btn btn-warning">
+                        Visualizar
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Movimentações -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-arrow-left-right text-secondary"></i>
+                        Movimentações
+                    </h5>
+                    <p class="card-text">Consulte o histórico de movimentações.</p>
+                    <a href="{{ url_for('almoxarifado.movimentacoes') }}" class="btn btn-secondary">
+                        Consultar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

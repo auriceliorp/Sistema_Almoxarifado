@@ -455,7 +455,7 @@ class Tarefa(db.Model):
     data_conclusao = db.Column(db.DateTime, nullable=True)
 
     def __repr__(self):
-        return f"<Tarefa {self.id} - {self.titulo}>"
+        return f'<Tarefa {self.titulo}>'
 
     def to_dict(self):
         return {
@@ -466,6 +466,6 @@ class Tarefa(db.Model):
             'prioridade': self.prioridade,
             'status': self.status,
             'responsavel': self.responsavel,
-            'data_criacao': self.data_criacao.strftime('%d/%m/%Y %H:%M') if self.data_criacao else None,
-            'data_conclusao': self.data_conclusao.strftime('%d/%m/%Y %H:%M') if self.data_conclusao else None
+            'data_criacao': self.data_criacao.isoformat() if self.data_criacao else None,
+            'data_conclusao': self.data_conclusao.isoformat() if self.data_conclusao else None
         }

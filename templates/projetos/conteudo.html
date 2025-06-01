@@ -1,24 +1,17 @@
-{# Template de conteúdo dos projetos - sem extensão base pois será carregado dinamicamente #}
-
-{# Inclui o SweetAlert2 #}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{# Template de conteúdo das tarefas - será carregado dinamicamente na área principal #}
 
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Gerenciar Projetos</h1>
-        <button class="btn btn-primary" onclick="parent.abrirModalNovoProjeto()">
-            <i class="fas fa-plus"></i> Novo Projeto
+        <h1>Tarefas</h1>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#novaTarefa">
+            <i class="fas fa-plus"></i> Nova Tarefa
         </button>
     </div>
 
     <div class="row mb-4">
         <div class="col-md-6">
             <label for="area">Área</label>
-            <select class="form-select" id="area" onchange="parent.carregarProjetos()">
+            <select class="form-select" id="area">
                 <option value="">-- Selecionar --</option>
                 <option value="Compras">Compras</option>
                 <option value="Patrimônio">Patrimônio</option>
@@ -27,7 +20,7 @@
         </div>
         <div class="col-md-6">
             <label for="prioridade">Prioridade</label>
-            <select class="form-select" id="prioridade" onchange="parent.carregarProjetos()">
+            <select class="form-select" id="prioridade">
                 <option value="">-- Selecionar --</option>
                 <option value="Alta">Alta</option>
                 <option value="Média">Média</option>
@@ -43,7 +36,7 @@
                     <i class="fas fa-list"></i> A Fazer
                 </div>
                 <div class="card-body" id="a-fazer">
-                    <!-- Projetos serão carregados aqui -->
+                    <!-- Tarefas serão carregadas aqui -->
                 </div>
             </div>
         </div>
@@ -53,7 +46,7 @@
                     <i class="fas fa-spinner"></i> Em Progresso
                 </div>
                 <div class="card-body" id="em-progresso">
-                    <!-- Projetos serão carregados aqui -->
+                    <!-- Tarefas serão carregadas aqui -->
                 </div>
             </div>
         </div>
@@ -63,31 +56,23 @@
                     <i class="fas fa-check"></i> Concluído
                 </div>
                 <div class="card-body" id="concluido">
-                    <!-- Projetos serão carregados aqui -->
+                    <!-- Tarefas serão carregadas aqui -->
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Notifica o pai que a página carregou -->
-<script>
-    // Garante que o pai saiba que estamos prontos
-    if (parent && parent.projetosCarregado) {
-        parent.projetosCarregado();
-    }
-</script>
-
-<!-- Modal Novo Projeto -->
-<div class="modal fade" id="novoProjeto" tabindex="-1">
+<!-- Modal Nova Tarefa -->
+<div class="modal fade" id="novaTarefa" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Novo Projeto</h5>
+                <h5 class="modal-title">Nova Tarefa</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form id="formNovoProjeto" onsubmit="return false;">
+                <form id="formNovaTarefa" onsubmit="return false;">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="mb-3">
                         <label class="form-label">Título</label>
@@ -128,178 +113,169 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" id="btnSalvarProjeto">Salvar</button>
+                <button type="button" class="btn btn-primary" id="btnSalvarTarefa">Salvar</button>
             </div>
         </div>
     </div>
 </div>
 
-<script type="text/javascript">
-    // Garante que o código só execute após o carregamento completo
-    $(document).ready(function() {
-        console.log('Script de projetos carregado via jQuery');
-
-        // Função para mostrar mensagens de toast
-        const Toast = Swal.mixin({
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true
-        });
-
-        // Configura o botão salvar
-        $('#btnSalvarProjeto').on('click', function() {
-            console.log('Botão salvar clicado');
-            salvarProjeto();
-        });
-
-        // Configura os filtros
-        $('#area, #prioridade').on('change', function() {
-            console.log('Filtro alterado');
-            carregarProjetos();
-        });
-
-        // Função para salvar projeto
-        function salvarProjeto() {
-            console.log('Função salvarProjeto chamada');
-
-            const form = $('#formNovoProjeto');
-            const formData = new FormData(form[0]);
-            const data = Object.fromEntries(formData.entries());
-            
-            // Validação básica
-            if (!data.titulo || !data.area || !data.prioridade) {
-                Toast.fire({
-                    icon: 'error',
-                    title: 'Por favor, preencha todos os campos obrigatórios'
-                });
-                return;
-            }
-
-            // Adiciona o status inicial
-            data.status = 'A Fazer';
-            
-            // Desabilita o botão durante o salvamento
-            const btnSalvar = $('#btnSalvarProjeto');
-            btnSalvar.prop('disabled', true)
-                    .html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Salvando...');
-            
-            console.log('Dados a serem enviados:', data);
-            console.log('CSRF Token:', $('input[name="csrf_token"]').val());
-
-            // Faz a requisição para a API
-            $.ajax({
-                url: '/api/projetos',
-                method: 'POST',
-                contentType: 'application/json',
-                headers: {
-                    'X-CSRF-TOKEN': $('input[name="csrf_token"]').val()
-                },
-                data: JSON.stringify(data),
-                success: function(response) {
-                    console.log('Projeto salvo:', response);
-                    
-                    // Fecha o modal
-                    $('#novoProjeto').modal('hide');
-                    
-                    // Limpa o formulário
-                    form[0].reset();
-                    
-                    // Recarrega os projetos
-                    carregarProjetos();
-                    
-                    // Mostra mensagem de sucesso
-                    Toast.fire({
-                        icon: 'success',
-                        title: 'Projeto criado com sucesso!'
-                    });
-                },
-                error: function(xhr, status, error) {
-                    console.error('Erro:', error);
-                    Toast.fire({
-                        icon: 'error',
-                        title: xhr.responseJSON?.error || 'Erro ao criar projeto. Tente novamente.'
-                    });
-                },
-                complete: function() {
-                    // Reabilita o botão após o salvamento
-                    btnSalvar.prop('disabled', false).html('Salvar');
-                }
-            });
-        }
-
-        // Função para carregar projetos
-        function carregarProjetos() {
-            const area = $('#area').val();
-            const prioridade = $('#prioridade').val();
-            
-            $.ajax({
-                url: `/api/projetos?area=${area}&prioridade=${prioridade}`,
-                headers: {
-                    'X-CSRF-TOKEN': $('input[name="csrf_token"]').val()
-                },
-                success: function(projetos) {
-                    $('#a-fazer, #em-progresso, #concluido').empty();
-                    
-                    projetos.forEach(function(projeto) {
-                        const card = criarCardProjeto(projeto);
-                        switch(projeto.status) {
-                            case 'A Fazer':
-                                $('#a-fazer').append(card);
-                                break;
-                            case 'Em Progresso':
-                                $('#em-progresso').append(card);
-                                break;
-                            case 'Concluído':
-                                $('#concluido').append(card);
-                                break;
-                        }
-                    });
-                },
-                error: function(xhr, status, error) {
-                    console.error('Erro:', error);
-                    Toast.fire({
-                        icon: 'error',
-                        title: 'Erro ao carregar projetos'
-                    });
-                }
-            });
-        }
-
-        // Função para criar card de projeto
-        function criarCardProjeto(projeto) {
-            return $('<div>').addClass('card mb-2').html(`
-                <div class="card-body">
-                    <h5 class="card-title">${projeto.titulo}</h5>
-                    <p class="card-text">${projeto.descricao || ''}</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="badge bg-${getPrioridadeClass(projeto.prioridade)}">${projeto.prioridade}</span>
-                        <small>${projeto.responsavel || 'Sem responsável'}</small>
-                    </div>
-                    <div class="mt-2">
-                        <select class="form-select form-select-sm" onchange="atualizarStatus(${projeto.id}, this.value)">
-                            <option value="A Fazer" ${projeto.status === 'A Fazer' ? 'selected' : ''}>A Fazer</option>
-                            <option value="Em Progresso" ${projeto.status === 'Em Progresso' ? 'selected' : ''}>Em Progresso</option>
-                            <option value="Concluído" ${projeto.status === 'Concluído' ? 'selected' : ''}>Concluído</option>
-                        </select>
-                    </div>
-                </div>
-            `);
-        }
-
-        // Função para obter classe de prioridade
-        function getPrioridadeClass(prioridade) {
-            switch(prioridade) {
-                case 'Alta': return 'danger';
-                case 'Média': return 'warning';
-                case 'Baixa': return 'info';
-                default: return 'secondary';
-            }
-        }
-
-        // Carrega os projetos iniciais
-        console.log('Carregando projetos iniciais...');
-        carregarProjetos();
+<!-- Scripts específicos da página -->
+<script>
+$(document).ready(function() {
+    // Configura os filtros
+    $('#area, #prioridade').on('change', function() {
+        carregarTarefas();
     });
+
+    // Configura o botão salvar
+    $('#btnSalvarTarefa').on('click', function() {
+        const form = $('#formNovaTarefa');
+        const formData = new FormData(form[0]);
+        const data = Object.fromEntries(formData.entries());
+        
+        // Validação básica
+        if (!data.titulo || !data.area || !data.prioridade) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro',
+                text: 'Por favor, preencha todos os campos obrigatórios'
+            });
+            return;
+        }
+
+        // Adiciona o status inicial
+        data.status = 'A Fazer';
+        
+        // Desabilita o botão durante o salvamento
+        const btnSalvar = $(this);
+        btnSalvar.prop('disabled', true)
+                .html('<span class="spinner-border spinner-border-sm"></span> Salvando...');
+        
+        // Faz a requisição para a API
+        $.ajax({
+            url: '/api/tarefas',
+            method: 'POST',
+            contentType: 'application/json',
+            headers: {
+                'X-CSRF-TOKEN': $('input[name="csrf_token"]').val()
+            },
+            data: JSON.stringify(data),
+            success: function(response) {
+                // Fecha o modal
+                $('#novaTarefa').modal('hide');
+                
+                // Limpa o formulário
+                form[0].reset();
+                
+                // Recarrega as tarefas
+                carregarTarefas();
+                
+                // Mostra mensagem de sucesso
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sucesso',
+                    text: 'Tarefa criada com sucesso!'
+                });
+            },
+            error: function(xhr) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: xhr.responseJSON?.error || 'Erro ao criar tarefa'
+                });
+            },
+            complete: function() {
+                // Reabilita o botão
+                btnSalvar.prop('disabled', false).html('Salvar');
+            }
+        });
+    });
+
+    // Carrega as tarefas iniciais
+    carregarTarefas();
+});
+
+// Função para carregar tarefas
+function carregarTarefas() {
+    const area = $('#area').val();
+    const prioridade = $('#prioridade').val();
+    
+    $.ajax({
+        url: `/api/tarefas?area=${area}&prioridade=${prioridade}`,
+        headers: {
+            'X-CSRF-TOKEN': $('input[name="csrf_token"]').val()
+        },
+        success: function(tarefas) {
+            $('#a-fazer, #em-progresso, #concluido').empty();
+            
+            tarefas.forEach(function(tarefa) {
+                const card = criarCardTarefa(tarefa);
+                $(`#${tarefa.status.toLowerCase().replace(' ', '-')}`).append(card);
+            });
+        },
+        error: function() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro',
+                text: 'Erro ao carregar tarefas'
+            });
+        }
+    });
+}
+
+// Função para criar card de tarefa
+function criarCardTarefa(tarefa) {
+    const prioridadeClass = {
+        'Alta': 'danger',
+        'Média': 'warning',
+        'Baixa': 'info'
+    }[tarefa.prioridade] || 'secondary';
+
+    return $('<div>').addClass('card mb-2').html(`
+        <div class="card-body">
+            <h5 class="card-title">${tarefa.titulo}</h5>
+            <p class="card-text">${tarefa.descricao || ''}</p>
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="badge bg-${prioridadeClass}">${tarefa.prioridade}</span>
+                <small>${tarefa.responsavel || 'Sem responsável'}</small>
+            </div>
+            <div class="mt-2">
+                <select class="form-select form-select-sm" onchange="atualizarStatus(${tarefa.id}, this.value)">
+                    <option value="A Fazer" ${tarefa.status === 'A Fazer' ? 'selected' : ''}>A Fazer</option>
+                    <option value="Em Progresso" ${tarefa.status === 'Em Progresso' ? 'selected' : ''}>Em Progresso</option>
+                    <option value="Concluído" ${tarefa.status === 'Concluído' ? 'selected' : ''}>Concluído</option>
+                </select>
+            </div>
+        </div>
+    `);
+}
+
+// Função para atualizar status da tarefa
+function atualizarStatus(tarefaId, novoStatus) {
+    $.ajax({
+        url: `/api/tarefas/${tarefaId}`,
+        method: 'PUT',
+        contentType: 'application/json',
+        headers: {
+            'X-CSRF-TOKEN': $('input[name="csrf_token"]').val()
+        },
+        data: JSON.stringify({ status: novoStatus }),
+        success: function() {
+            carregarTarefas();
+            Swal.fire({
+                icon: 'success',
+                title: 'Sucesso',
+                text: 'Status atualizado com sucesso!'
+            });
+        },
+        error: function() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro',
+                text: 'Erro ao atualizar status'
+            });
+            carregarTarefas(); // Recarrega para reverter mudanças visuais
+        }
+    });
+}
 </script> 

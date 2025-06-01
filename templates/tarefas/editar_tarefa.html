@@ -1,111 +1,226 @@
-{% extends "base/base.html" %}
-{% block title %}Home - Sistema de Almoxarifado{% endblock %}
+{% extends 'tarefas/base_tarefas.html' %}
 
-{% block main_content %}
+{% block title %}Editar Tarefa{% endblock %}
+
+{% block tarefas_css %}
+<style>
+    .card {
+        transition: all 0.3s ease;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    .required-field::after {
+        content: " *";
+        color: red;
+    }
+    .form-floating > .form-control:focus ~ label,
+    .form-floating > .form-control:not(:placeholder-shown) ~ label {
+        color: #2c3e50;
+    }
+    .select2-container .select2-selection--single {
+        height: 58px;
+        padding: 15px 5px;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 56px;
+    }
+</style>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+{% endblock %}
+
+{% block content %}
 <div class="container-fluid py-4">
-    <h2 class="mb-4">Bem-vindo(a), {{ current_user.nome }}!</h2>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <!-- Cabeçalho -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="card-title mb-0">
+                    <i class="bi bi-pencil-square me-2"></i>
+                    Editar Tarefa
+                </h4>
+                <a href="{{ url_for('tarefas.lista_tarefas') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Voltar
+                </a>
+            </div>
 
-    <!-- Cards de Acesso Rápido -->
-    <div class="row g-4 mb-5">
-        <!-- Entrada de Material -->
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="bi bi-box-arrow-in-down text-success"></i>
-                        Entrada de Material
-                    </h5>
-                    <p class="card-text">Registre novas entradas de materiais no almoxarifado.</p>
-                    <a href="{{ url_for('almoxarifado.entrada.nova_entrada') }}" class="btn btn-success">
-                        Nova Entrada
+            <form method="POST" id="formTarefa">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="id" value="{{ tarefa.id }}">
+                
+                <!-- Dados da Tarefa -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-info-circle me-2"></i>Informações da Tarefa
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="titulo" name="titulo" 
+                                           value="{{ tarefa.titulo }}" required>
+                                    <label for="titulo" class="required-field">Título</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="form-floating">
+                                    <textarea class="form-control" id="descricao" name="descricao" 
+                                              style="height: 100px">{{ tarefa.descricao }}</textarea>
+                                    <label for="descricao">Descrição</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <select class="form-select" id="area" name="area" required>
+                                        <option value="" disabled>Selecione...</option>
+                                        <option value="Compras" {% if tarefa.area == 'Compras' %}selected{% endif %}>Compras</option>
+                                        <option value="Patrimônio" {% if tarefa.area == 'Patrimônio' %}selected{% endif %}>Patrimônio</option>
+                                        <option value="Estoque" {% if tarefa.area == 'Estoque' %}selected{% endif %}>Estoque</option>
+                                    </select>
+                                    <label for="area" class="required-field">Área</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <select class="form-select" id="prioridade" name="prioridade" required>
+                                        <option value="" disabled>Selecione...</option>
+                                        <option value="Alta" {% if tarefa.prioridade == 'Alta' %}selected{% endif %}>Alta</option>
+                                        <option value="Média" {% if tarefa.prioridade == 'Média' %}selected{% endif %}>Média</option>
+                                        <option value="Baixa" {% if tarefa.prioridade == 'Baixa' %}selected{% endif %}>Baixa</option>
+                                    </select>
+                                    <label for="prioridade" class="required-field">Prioridade</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <select class="form-select select2" id="responsavel" name="responsavel">
+                                        <option value="">Selecione...</option>
+                                        {% for usuario in usuarios %}
+                                        <option value="{{ usuario.nome }}" {% if tarefa.responsavel == usuario.nome %}selected{% endif %}>
+                                            {{ usuario.nome }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <label for="responsavel">Responsável</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botões de Ação -->
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle me-1"></i>Salvar Alterações
+                    </button>
+                    <a href="{{ url_for('tarefas.lista_tarefas') }}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle me-1"></i>Cancelar
                     </a>
                 </div>
-            </div>
-        </div>
-
-        <!-- Saída de Material -->
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="bi bi-box-arrow-up text-danger"></i>
-                        Saída de Material
-                    </h5>
-                    <p class="card-text">Registre saídas de materiais do almoxarifado.</p>
-                    <a href="{{ url_for('almoxarifado.saida.nova_saida') }}" class="btn btn-danger">
-                        Nova Saída
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Requisições -->
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="bi bi-clipboard-check text-primary"></i>
-                        Requisições
-                    </h5>
-                    <p class="card-text">Gerencie as requisições de materiais.</p>
-                    <a href="{{ url_for('almoxarifado.requisicoes') }}" class="btn btn-primary">
-                        Ver Requisições
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Seção de Relatórios -->
-    <h3 class="mb-4">Relatórios</h3>
-    <div class="row g-4">
-        <!-- Mapa de Fechamento -->
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="bi bi-graph-up text-info"></i>
-                        Mapa de Fechamento
-                    </h5>
-                    <p class="card-text">Visualize o mapa de fechamento mensal do almoxarifado.</p>
-                    <a href="{{ url_for('relatorios.mapa_fechamento') }}" class="btn btn-info text-white">
-                        Acessar
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Inventário -->
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="bi bi-list-check text-warning"></i>
-                        Inventário
-                    </h5>
-                    <p class="card-text">Acesse o inventário atual do almoxarifado.</p>
-                    <a href="{{ url_for('relatorios.inventario') }}" class="btn btn-warning">
-                        Visualizar
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Movimentações -->
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="bi bi-arrow-left-right text-secondary"></i>
-                        Movimentações
-                    </h5>
-                    <p class="card-text">Consulte o histórico de movimentações.</p>
-                    <a href="{{ url_for('almoxarifado.movimentacoes') }}" class="btn btn-secondary">
-                        Consultar
-                    </a>
-                </div>
-            </div>
+            </form>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block tarefas_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Inicializa Select2
+    $('.select2').select2({
+        theme: 'bootstrap-5',
+        width: '100%',
+        dropdownParent: $('body')
+    });
+
+    // Validação do formulário
+    $('#formTarefa').on('submit', function(e) {
+        e.preventDefault();
+        
+        if (!validarFormulario()) {
+            return;
+        }
+
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+        const tarefaId = data.id;
+        delete data.id;
+        delete data.csrf_token;
+
+        $.ajax({
+            url: `/api/tarefas/${tarefaId}`,
+            method: 'PUT',
+            contentType: 'application/json',
+            headers: {
+                'X-CSRF-TOKEN': $('input[name="csrf_token"]').val()
+            },
+            data: JSON.stringify(data),
+            success: function(response) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sucesso!',
+                    text: response.message || 'Tarefa atualizada com sucesso.',
+                    showConfirmButton: true,
+                    confirmButtonText: 'OK',
+                    timer: 2000,
+                    timerProgressBar: true
+                }).then(() => {
+                    window.location.href = "{{ url_for('tarefas.lista_tarefas') }}";
+                });
+            },
+            error: function(xhr, status, error) {
+                let mensagemErro = 'Erro ao atualizar tarefa';
+                try {
+                    if (xhr.responseJSON && xhr.responseJSON.error) {
+                        mensagemErro = xhr.responseJSON.error;
+                    } else if (xhr.responseText) {
+                        const resposta = JSON.parse(xhr.responseText);
+                        mensagemErro = resposta.error || mensagemErro;
+                    }
+                } catch (e) {
+                    console.error('Erro ao processar resposta:', e);
+                }
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: mensagemErro,
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+    });
+});
+
+function validarFormulario() {
+    const campos = ['titulo', 'area', 'prioridade'];
+    let valido = true;
+    const mensagens = [];
+
+    campos.forEach(campo => {
+        const elemento = document.getElementById(campo);
+        if (!elemento.value) {
+            mensagens.push(`O campo ${elemento.labels[0].textContent.replace('*', '')} é obrigatório`);
+            valido = false;
+        }
+    });
+
+    if (!valido) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Atenção',
+            html: 'Por favor, corrija os seguintes erros:<br><br>' + mensagens.join('<br>')
+        });
+    }
+
+    return valido;
+}
+</script>
 {% endblock %} 

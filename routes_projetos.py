@@ -238,4 +238,4 @@ def deletar_tarefa(tarefa_id):
     except Exception as e:
         db.session.rollback()
         print(f"Erro ao deletar tarefa: {str(e)}")  # Log do erro
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': str(e)}), 500 

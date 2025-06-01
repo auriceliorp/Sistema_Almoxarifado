@@ -1,117 +1,132 @@
-te, request, redirect, url_for, flash
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
 from flask_login import login_required, current_user
-from app import db
-from app.models.item import Item
-from app.models.fornecedor import Fornecedor
-from app.models.movimento import EntradaMaterial, EntradaItem
-from app.services.almoxarifado import AlmoxarifadoService
-from app.utils.exceptions import ItemNaoEncontradoError
-from app.utils.decorators import admin_required
-from app.blueprints.almoxarifado.entrada import bp
+from models import db, Tarefa, Usuario
 from datetime import datetime
+from extensoes import csrf
+
+bp = Blueprint('tarefas', __name__, url_prefix='/tarefas')
+api_bp = Blueprint('tarefas_api', __name__, url_prefix='/api')
 
 @bp.route('/')
 @login_required
-def lista_entradas():
-    """Lista todas as entradas de material."""
-    page = request.args.get('page', 1, type=int)
-    filtro = request.args.get('filtro', 'nota')
-    busca = request.args.get('busca', '').strip().lower()
-    
-    entradas = AlmoxarifadoService.buscar_entradas(
-        page=page,
-        filtro=filtro,
-        busca=busca
-    )
-    
-    return render_template(
-        'entrada/list.html',
-        entradas=entradas,
-        filtro=filtro,
-        busca=busca
-    )
+def lista_tarefas():
+    """Renderiza a página principal de tarefas."""
+    # Busca estatísticas
+    total_tarefas = Tarefa.query.count()
+    tarefas_em_progresso = Tarefa.query.filter_by(status='Em Progresso').count()
+    tarefas_concluidas = Tarefa.query.filter_by(status='Concluído').count()
+    total_responsaveis = db.session.query(Tarefa.responsavel).distinct().count()
 
-@bp.route('/nova', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def nova_entrada():
-    """Cadastra uma nova entrada de material."""
-    if request.method == 'POST':
-        try:
-            entrada = AlmoxarifadoService.registrar_entrada(
-                data_entrada=datetime.strptime(request.form.get('data_entrada'), '%Y-%m-%d'),
-                fornecedor_id=request.form.get('fornecedor'),
-                numero_nota=request.form.get('numero_nota'),
-                valor_total=float(request.form.get('valor_total')),
-                observacao=request.form.get('observacao'),
-                usuario_id=current_user.id
-            )
-            flash('Entrada registrada com sucesso!', 'success')
-            return redirect(url_for('almoxarifado.entrada.lista_entradas'))
-        except Exception as e:
-            flash(f'Erro ao registrar entrada: {str(e)}', 'danger')
-    
-    fornecedores = Fornecedor.query.all()
-    return render_template('entrada/form.html', fornecedores=fornecedores)
+    # Busca usuários para o select de responsável
+    usuarios = Usuario.query.all()
 
-@bp.route('/<int:id>')
-@login_required
-def visualizar_entrada(id):
-    """Visualiza os detalhes de uma entrada específica."""
-    entrada = EntradaMaterial.query.get_or_404(id)
-    return render_template('entrada/detail.html', entrada=entrada)
+    return render_template('tarefas/lista_tarefas.html',
+                         total_tarefas=total_tarefas,
+                         tarefas_em_progresso=tarefas_em_progresso,
+                         tarefas_concluidas=tarefas_concluidas,
+                         total_responsaveis=total_responsaveis,
+                         usuarios=usuarios)
 
-@bp.route('/editar/<int:id>', methods=['GET', 'POST'])
+@bp.route('/nova')
 @login_required
-@admin_required
-def editar_entrada(id):
-    """Edita uma entrada existente."""
-    entrada = EntradaMaterial.query.get_or_404(id)
-    
-    if entrada.status == 'Finalizada':
-        flash('Não é possível editar uma entrada finalizada.', 'warning')
-        return redirect(url_for('almoxarifado.entrada.lista_entradas'))
-    
-    if request.method == 'POST':
-        try:
-            AlmoxarifadoService.atualizar_entrada(
-                entrada_id=id,
-                data_entrada=datetime.strptime(request.form.get('data_entrada'), '%Y-%m-%d'),
-                fornecedor_id=request.form.get('fornecedor'),
-                numero_nota=request.form.get('numero_nota'),
-                valor_total=float(request.form.get('valor_total')),
-                observacao=request.form.get('observacao')
-            )
-            flash('Entrada atualizada com sucesso!', 'success')
-            return redirect(url_for('almoxarifado.entrada.lista_entradas'))
-        except Exception as e:
-            flash(f'Erro ao atualizar entrada: {str(e)}', 'danger')
-    
-    fornecedores = Fornecedor.query.all()
-    return render_template('entrada/form.html', entrada=entrada, fornecedores=fornecedores)
+def nova_tarefa():
+    """Renderiza o formulário de nova tarefa."""
+    usuarios = Usuario.query.all()
+    return render_template('tarefas/nova_tarefa.html', usuarios=usuarios)
 
-@bp.route('/excluir/<int:id>', methods=['POST'])
+# Rotas da API
+@api_bp.route('/tarefas', methods=['GET'])
 @login_required
-@admin_required
-def excluir_entrada(id):
-    """Exclui uma entrada existente."""
-    entrada = EntradaMaterial.query.get_or_404(id)
-    
-    if entrada.status == 'Finalizada':
-        flash('Não é possível excluir uma entrada finalizada.', 'warning')
-        return redirect(url_for('almoxarifado.entrada.lista_entradas'))
-    
+def get_tarefas():
     try:
-        AlmoxarifadoService.excluir_entrada(id)
-        flash('Entrada excluída com sucesso!', 'success')
+        area = request.args.get('area')
+        prioridade = request.args.get('prioridade')
+        responsavel = request.args.get('responsavel')
+        
+        query = Tarefa.query
+        
+        if area:
+            query = query.filter_by(area=area)
+        if prioridade:
+            query = query.filter_by(prioridade=prioridade)
+        if responsavel:
+            query = query.filter_by(responsavel=responsavel)
+            
+        tarefas = query.all()
+        return jsonify([tarefa.to_dict() for tarefa in tarefas])
     except Exception as e:
-        flash(f'Erro ao excluir entrada: {str(e)}', 'danger')
-    
-    return redirect(url_for('almoxarifado.entrada.lista_entradas'))
+        print(f"Erro ao buscar tarefas: {str(e)}")  # Log do erro
+        return jsonify({'error': str(e)}), 500
 
-@bp.route('/imprimir/<int:id>')
+@api_bp.route('/tarefas', methods=['POST'])
 @login_required
-def imprimir_entrada(id):
-    """Gera uma versão para impressão da entrada."""
-    entrada = EntradaMaterial.query.get_or_404(id)
-    return render_template('entrada/print.html', entrada=entrada) 
+@csrf.exempt
+def criar_tarefa_api():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Dados não fornecidos'}), 400
+            
+        print(f"Dados recebidos: {data}")  # Log dos dados recebidos
+            
+        if not data.get('titulo'):
+            return jsonify({'error': 'Título é obrigatório'}), 400
+            
+        tarefa = Tarefa(
+            titulo=data['titulo'],
+            descricao=data.get('descricao', ''),
+            area=data.get('area', ''),
+            prioridade=data.get('prioridade', 'Média'),
+            status=data.get('status', 'A Fazer'),
+            responsavel=data.get('responsavel', ''),
+            data_criacao=datetime.utcnow()
+        )
+        
+        print(f"Tarefa a ser criada: {tarefa}")  # Log do objeto antes de salvar
+        
+        db.session.add(tarefa)
+        db.session.commit()
+        
+        print(f"Tarefa criada com ID: {tarefa.id}")  # Log após salvar
+        
+        return jsonify(tarefa.to_dict()), 201
+    except Exception as e:
+        db.session.rollback()
+        print(f"Erro ao criar tarefa: {str(e)}")  # Log do erro
+        return jsonify({'error': str(e)}), 500
+
+@api_bp.route('/tarefas/<int:tarefa_id>', methods=['PUT'])
+@login_required
+@csrf.exempt
+def atualizar_tarefa_api(tarefa_id):
+    """Atualiza uma tarefa existente."""
+    try:
+        tarefa = Tarefa.query.get_or_404(tarefa_id)
+        data = request.get_json()
+        
+        if 'status' in data:
+            tarefa.status = data['status']
+            if data['status'] == 'Concluído' and not tarefa.data_conclusao:
+                tarefa.data_conclusao = datetime.utcnow()
+            elif data['status'] != 'Concluído':
+                tarefa.data_conclusao = None
+        
+        db.session.commit()
+        return jsonify(tarefa.to_dict())
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@api_bp.route('/tarefas/<int:tarefa_id>', methods=['DELETE'])
+@login_required
+@csrf.exempt
+def deletar_tarefa_api(tarefa_id):
+    """Deleta uma tarefa."""
+    try:
+        tarefa = Tarefa.query.get_or_404(tarefa_id)
+        db.session.delete(tarefa)
+        db.session.commit()
+        return '', 204
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500 

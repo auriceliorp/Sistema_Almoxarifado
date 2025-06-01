@@ -126,7 +126,12 @@
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro ao carregar projetos');
+            }
+            return response.json();
+        })
         .then(projetos => {
             document.getElementById('a-fazer').innerHTML = '';
             document.getElementById('em-progresso').innerHTML = '';
@@ -145,6 +150,13 @@
                         document.getElementById('concluido').appendChild(card);
                         break;
                 }
+            });
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            Toast.fire({
+                icon: 'error',
+                title: 'Erro ao carregar projetos'
             });
         });
     }
@@ -186,6 +198,9 @@
         const formData = new FormData(form);
         const data = Object.fromEntries(formData.entries());
         
+        // Adiciona o status inicial
+        data.status = 'A Fazer';
+        
         fetch('/api/projetos', {
             method: 'POST',
             headers: {
@@ -194,7 +209,12 @@
             },
             body: JSON.stringify(data)
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Erro ao salvar projeto: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(() => {
             $('#novoProjeto').modal('hide');
             form.reset();
@@ -205,9 +225,10 @@
             });
         })
         .catch(error => {
+            console.error('Erro:', error);
             Toast.fire({
                 icon: 'error',
-                title: 'Erro ao criar projeto'
+                title: 'Erro ao criar projeto. Tente novamente.'
             });
         });
     }
@@ -221,6 +242,12 @@
             },
             body: JSON.stringify({ status: novoStatus })
         })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro ao atualizar status');
+            }
+            return response.json();
+        })
         .then(() => {
             carregarProjetos();
             Toast.fire({
@@ -229,6 +256,7 @@
             });
         })
         .catch(error => {
+            console.error('Erro:', error);
             Toast.fire({
                 icon: 'error',
                 title: 'Erro ao atualizar status'

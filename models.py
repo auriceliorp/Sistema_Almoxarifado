@@ -442,30 +442,84 @@ class PublicacaoSignatariosExternos(db.Model):
     fornecedor_id = db.Column(db.Integer, db.ForeignKey('fornecedores.id'), primary_key=True)
 
 # ------------------- PROJETO -------------------
-class Tarefa(db.Model):
-    __tablename__ = 'tarefas'
+class CategoriaTarefa(db.Model):
+    """Modelo para categorias de tarefas."""
+    __tablename__ = 'categorias_tarefas'
+    
     id = db.Column(db.Integer, primary_key=True)
-    titulo = db.Column(db.String(120), nullable=False)
+    nome = db.Column(db.String(100), nullable=False, unique=True)
     descricao = db.Column(db.Text, nullable=True)
-    area = db.Column(db.String(50), nullable=False)  # Compras, Patrimônio, Estoque
-    prioridade = db.Column(db.String(20), nullable=False)  # Alta, Média, Baixa
-    status = db.Column(db.String(20), nullable=False, default='A Fazer')  # A Fazer, Em Progresso, Concluído
-    responsavel = db.Column(db.String(120), nullable=True)
     data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
-    data_conclusao = db.Column(db.DateTime, nullable=True)
+    
+    # Relacionamentos
+    tarefas = db.relationship('Tarefa', backref='categoria', lazy=True)
+    
+    def __repr__(self):
+        return f'<CategoriaTarefa {self.nome}>'
+
+class OrigemTarefa(db.Model):
+    """Modelo para origens de tarefas."""
+    __tablename__ = 'origens_tarefas'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False, unique=True)
+    descricao = db.Column(db.Text, nullable=True)
+    data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relacionamentos
+    tarefas = db.relationship('Tarefa', backref='origem', lazy=True)
+    
+    def __repr__(self):
+        return f'<OrigemTarefa {self.nome}>'
+
+class Tarefa(db.Model):
+    """Modelo para tarefas."""
+    __tablename__ = 'tarefas'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    titulo = db.Column(db.String(200), nullable=False)
+    numero_sei = db.Column(db.String(20), nullable=True)  # Formato: 00000.000000/0000-00
+    categoria_id = db.Column(db.Integer, db.ForeignKey('categorias_tarefas.id'), nullable=True)
+    resumo = db.Column(db.Text, nullable=True)
+    area_id = db.Column(db.Integer, db.ForeignKey('areas.id'), nullable=True)
+    origem_id = db.Column(db.Integer, db.ForeignKey('origens_tarefas.id'), nullable=True)
+    responsavel_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True)
+    solicitante_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True)
+    quantidade_acoes = db.Column(db.Integer, default=0)
+    prioridade = db.Column(db.String(20), nullable=False, default='Média')  # Alta, Média, Baixa
+    status = db.Column(db.String(20), nullable=False, default='Não iniciada')  # Não iniciada, Em execução, Suspensa, Concluída, Em atraso
+    data_inicio = db.Column(db.DateTime, nullable=True)
+    data_termino = db.Column(db.DateTime, nullable=True)
+    observacoes = db.Column(db.Text, nullable=True)
+    data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
+    data_atualizacao = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relacionamentos
+    area = db.relationship('Area', backref='tarefas', lazy=True)
+    responsavel = db.relationship('Usuario', foreign_keys=[responsavel_id], backref='tarefas_responsavel', lazy=True)
+    solicitante = db.relationship('Usuario', foreign_keys=[solicitante_id], backref='tarefas_solicitante', lazy=True)
 
     def __repr__(self):
         return f'<Tarefa {self.titulo}>'
 
     def to_dict(self):
+        """Converte o objeto em um dicionário."""
         return {
             'id': self.id,
             'titulo': self.titulo,
-            'descricao': self.descricao,
-            'area': self.area,
+            'numero_sei': self.numero_sei,
+            'categoria': self.categoria.nome if self.categoria else None,
+            'resumo': self.resumo,
+            'area': self.area.nome if self.area else None,
+            'origem': self.origem.nome if self.origem else None,
+            'responsavel': self.responsavel.nome if self.responsavel else None,
+            'solicitante': self.solicitante.nome if self.solicitante else None,
+            'quantidade_acoes': self.quantidade_acoes,
             'prioridade': self.prioridade,
             'status': self.status,
-            'responsavel': self.responsavel,
+            'data_inicio': self.data_inicio.isoformat() if self.data_inicio else None,
+            'data_termino': self.data_termino.isoformat() if self.data_termino else None,
+            'observacoes': self.observacoes,
             'data_criacao': self.data_criacao.isoformat() if self.data_criacao else None,
-            'data_conclusao': self.data_conclusao.isoformat() if self.data_conclusao else None
+            'data_atualizacao': self.data_atualizacao.isoformat() if self.data_atualizacao else None
         }

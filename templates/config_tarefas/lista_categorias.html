@@ -34,12 +34,16 @@
                                    title="Editar">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <button type="button" 
-                                        class="btn btn-sm btn-outline-danger btn-icon"
-                                        title="Excluir"
-                                        onclick="confirmarExclusao('{{ url_for('config_tarefas.excluir_categoria', categoria_id=categoria.id) }}', '{{ categoria.nome }}')">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                <form action="{{ url_for('config_tarefas.excluir_categoria', categoria_id=categoria.id) }}" 
+                                      method="POST" 
+                                      style="display: inline;"
+                                      onsubmit="return confirmarExclusao('{{ categoria.nome }}')">
+                                    <button type="submit" 
+                                            class="btn btn-sm btn-outline-danger btn-icon"
+                                            title="Excluir">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>
@@ -53,4 +57,10 @@
         </div>
     </div>
 </div>
-{% endblock %}
+
+<script>
+function confirmarExclusao(nome) {
+    return confirm(`Deseja realmente excluir a categoria "${nome}"?`);
+}
+</script>
+{% endblock %} 

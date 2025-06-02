@@ -91,13 +91,13 @@ class Tarefa(db.Model):
     numero_sei = db.Column(db.String(20), nullable=True)  # Formato: 00000.000000/0000-00
     categoria_id = db.Column(db.Integer, db.ForeignKey('categorias_tarefas.id'), nullable=True)
     resumo = db.Column(db.Text, nullable=True)
-    area_id = db.Column(db.Integer, db.ForeignKey('areas.id'), nullable=True)
+    unidade_local_id = db.Column(db.Integer, db.ForeignKey('unidade_local.id'), nullable=True)  # Alterado para unidade_local
     origem_id = db.Column(db.Integer, db.ForeignKey('origens_tarefas.id'), nullable=True)
     responsavel_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True)
     solicitante_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True)
     quantidade_acoes = db.Column(db.Integer, default=0)
-    prioridade = db.Column(db.String(20), nullable=False, default='Média')  # Alta, Média, Baixa
-    status = db.Column(db.String(20), nullable=False, default='Não iniciada')  # Não iniciada, Em execução, Suspensa, Concluída, Em atraso
+    prioridade = db.Column(db.String(20), nullable=False, default='Média')
+    status = db.Column(db.String(20), nullable=False, default='Não iniciada')
     data_inicio = db.Column(db.DateTime, nullable=True)
     data_termino = db.Column(db.DateTime, nullable=True)
     observacoes = db.Column(db.Text, nullable=True)
@@ -107,22 +107,18 @@ class Tarefa(db.Model):
     # Relacionamentos
     categoria = db.relationship('CategoriaTarefa', backref='tarefas')
     origem = db.relationship('OrigemTarefa', backref='tarefas')
-    area = db.relationship('Area', backref='tarefas')
+    unidade_local = db.relationship('UnidadeLocal', backref='tarefas')  # Alterado para UnidadeLocal
     responsavel = db.relationship('Usuario', foreign_keys=[responsavel_id], backref='tarefas_responsavel')
     solicitante = db.relationship('Usuario', foreign_keys=[solicitante_id], backref='tarefas_solicitante')
 
-    def __repr__(self):
-        return f'<Tarefa {self.titulo}>'
-
     def to_dict(self):
-        """Converte o objeto em um dicionário."""
         return {
             'id': self.id,
             'titulo': self.titulo,
             'numero_sei': self.numero_sei,
             'categoria': self.categoria.nome if self.categoria else None,
             'resumo': self.resumo,
-            'area': self.area.nome if self.area else None,
+            'unidade_local': self.unidade_local.descricao if self.unidade_local else None,  # Alterado para unidade_local
             'origem': self.origem.nome if self.origem else None,
             'responsavel': self.responsavel.nome if self.responsavel else None,
             'solicitante': self.solicitante.nome if self.solicitante else None,

@@ -116,17 +116,17 @@ def nova_tarefa():
     unidades_locais = UnidadeLocal.query.order_by(UnidadeLocal.descricao).all()
     usuarios = Usuario.query.order_by(Usuario.nome).all()
     
-    return render_template('tarefas/nova_tarefa.html',
+    return render_template('tarefas/form_tarefa.html',
                          categorias=categorias,
                          origens=origens,
                          unidades_locais=unidades_locais,
                          usuarios=usuarios)
 
-@bp.route('/editar/<int:tarefa_id>', methods=['GET', 'POST'])
+@bp.route('/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
-def editar_tarefa(tarefa_id):
+def editar_tarefa(id):
     """Edita uma tarefa existente."""
-    tarefa = Tarefa.query.get_or_404(tarefa_id)
+    tarefa = Tarefa.query.get_or_404(id)
     
     if request.method == 'POST':
         try:
@@ -159,7 +159,7 @@ def editar_tarefa(tarefa_id):
         except Exception as e:
             db.session.rollback()
             flash(f'Erro ao atualizar tarefa: {str(e)}', 'error')
-            return redirect(url_for('tarefas.editar_tarefa', tarefa_id=tarefa_id))
+            return redirect(url_for('tarefas.editar_tarefa', id=id))
     
     # GET: Renderizar formulário
     categorias = CategoriaTarefa.query.order_by(CategoriaTarefa.nome).all()
@@ -167,7 +167,7 @@ def editar_tarefa(tarefa_id):
     unidades_locais = UnidadeLocal.query.order_by(UnidadeLocal.descricao).all()
     usuarios = Usuario.query.order_by(Usuario.nome).all()
     
-    return render_template('tarefas/nova_tarefa.html',
+    return render_template('tarefas/form_tarefa.html',
                          tarefa=tarefa,
                          categorias=categorias,
                          origens=origens,

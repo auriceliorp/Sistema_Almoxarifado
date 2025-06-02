@@ -71,6 +71,7 @@ def nova_tarefa():
             data_inicio = request.form.get('data_inicio')
             data_termino = request.form.get('data_termino')
             observacoes = request.form.get('observacoes')
+            unidades_locais = UnidadeLocal.query.all()  # Adicione esta linha
             
             # Validar campos obrigatórios
             if not titulo:
@@ -97,6 +98,7 @@ def nova_tarefa():
                 data_inicio=data_inicio,
                 data_termino=data_termino,
                 observacoes=observacoes
+                unidades_locais=unidades_locais)  # Adicione esta variável
             )
             
             db.session.add(tarefa)

@@ -126,25 +126,25 @@
 
                             <div class="col-md-4">
                                 <div class="form-floating">
-                                    <select class="form-select select2" id="responsavel" name="responsavel" required>
+                                    <select class="form-select select2" id="responsavel_id" name="responsavel_id" required>
                                         <option value="">Selecione...</option>
                                         {% for usuario in usuarios %}
                                         <option value="{{ usuario.id }}">{{ usuario.nome }}</option>
                                         {% endfor %}
                                     </select>
-                                    <label for="responsavel" class="required-field">Responsável</label>
+                                    <label for="responsavel_id" class="required-field">Responsável</label>
                                 </div>
                             </div>
 
                             <div class="col-md-4">
                                 <div class="form-floating">
-                                    <select class="form-select select2" id="solicitante" name="solicitante" required>
+                                    <select class="form-select select2" id="solicitante_id" name="solicitante_id" required>
                                         <option value="">Selecione...</option>
                                         {% for usuario in usuarios %}
                                         <option value="{{ usuario.id }}">{{ usuario.nome }}</option>
                                         {% endfor %}
                                     </select>
-                                    <label for="solicitante" class="required-field">Solicitante</label>
+                                    <label for="solicitante_id" class="required-field">Solicitante</label>
                                 </div>
                             </div>
 
@@ -275,12 +275,12 @@ $(document).ready(function() {
 function validarFormulario() {
     const campos = [
         'titulo', 
-        'categoria', 
-        'unidade_local', 
-        'origem',
+        'categoria_id', 
+        'unidade_local_id', 
+        'origem_id',
         'prioridade',
-        'responsavel',
-        'solicitante'
+        'responsavel_id',
+        'solicitante_id'
     ];
     let valido = true;
     const mensagens = [];

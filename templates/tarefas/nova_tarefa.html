@@ -93,7 +93,7 @@
                                     <select class="form-select" id="unidade_local" name="unidade_local" required>
                                         <option value="" disabled selected>Selecione...</option>
                                         {% for unidade in unidades_locais %}
-                                        <option value="{{ unidade.id }}">{{ unidade.nome }}</option>
+                                        <option value="{{ unidade.id }}">{{ unidade.descricao }}</option>
                                         {% endfor %}
                                     </select>
                                     <label for="unidade_local" class="required-field">Unidade Local</label>

@@ -112,17 +112,21 @@
             <li class="nav-item mb-2">
                 <a class="nav-link text-white d-flex justify-content-between align-items-center"
                    data-bs-toggle="collapse" href="#submenuConfig" role="button"
-                   aria-expanded="{% if request.endpoint.startswith('usuario_bp') or request.endpoint.startswith('nd_bp') or request.endpoint.startswith('grupo_bp') or request.endpoint.startswith('area_ul_bp') %}true{% else %}false{% endif %}">
+                   aria-expanded="{% if request.endpoint.startswith('usuario_bp') or request.endpoint.startswith('nd_bp') or request.endpoint.startswith('grupo_bp') or request.endpoint.startswith('area_ul_bp') or request.endpoint.startswith('config_tarefas') %}true{% else %}false{% endif %}">
                     <span><i class="bi bi-gear me-2"></i> Configurações</span>
                     <i class="bi bi-chevron-down"></i>
                 </a>
-                <ul class="collapse nav flex-column ms-3 {% if request.endpoint.startswith('usuario_bp') or request.endpoint.startswith('nd_bp') or request.endpoint.startswith('grupo_bp') or request.endpoint.startswith('area_ul_bp') %}show{% endif %}" id="submenuConfig">
+                <ul class="collapse nav flex-column ms-3 {% if request.endpoint.startswith('usuario_bp') or request.endpoint.startswith('nd_bp') or request.endpoint.startswith('grupo_bp') or request.endpoint.startswith('area_ul_bp') or request.endpoint.startswith('config_tarefas') %}show{% endif %}" id="submenuConfig">
                     <li class="nav-item"><a href="{{ url_for('usuario_bp.lista_usuarios') }}" class="nav-link {% if request.endpoint == 'usuario_bp.lista_usuarios' %}active{% endif %} text-white"><i class="bi bi-people me-2"></i>Perfis e Usuários</a></li>
                     <li class="nav-item"><div class="nav-link text-white-50 small"><i class="bi bi-building me-2"></i>Organização Administrativa</div></li>
                     <li class="nav-item"><a href="{{ url_for('nd_bp.lista_nd') }}" class="nav-link {% if request.endpoint == 'nd_bp.lista_nd' %}active{% endif %} text-white"><i class="bi bi-tag me-2"></i>Natureza de Despesa</a></li>
                     <li class="nav-item"><a href="{{ url_for('grupo_bp.lista_grupos') }}" class="nav-link {% if request.endpoint == 'grupo_bp.lista_grupos' %}active{% endif %} text-white"><i class="bi bi-collection me-2"></i>Grupos</a></li>
                     <li class="nav-item"><a href="{{ url_for('area_ul_bp.lista_locais') }}" class="nav-link {% if request.endpoint == 'area_ul_bp.lista_locais' %}active{% endif %} text-white"><i class="bi bi-diagram-3 me-2"></i>Áreas</a></li>
                     <li class="nav-item"><a href="{{ url_for('area_ul_bp.lista_uls') }}" class="nav-link {% if request.endpoint == 'area_ul_bp.lista_uls' %}active{% endif %} text-white"><i class="bi bi-building me-2"></i>Unidades Locais</a></li>
+                    
+                    <li class="nav-item"><div class="nav-link text-white-50 small mt-2"><i class="bi bi-list-task me-2"></i>Configurações de Tarefas</div></li>
+                    <li class="nav-item"><a href="{{ url_for('config_tarefas.lista_categorias') }}" class="nav-link {% if request.endpoint == 'config_tarefas.lista_categorias' %}active{% endif %} text-white"><i class="bi bi-tag me-2"></i>Categorias</a></li>
+                    <li class="nav-item"><a href="{{ url_for('config_tarefas.lista_origens') }}" class="nav-link {% if request.endpoint == 'config_tarefas.lista_origens' %}active{% endif %} text-white"><i class="bi bi-flag me-2"></i>Origens</a></li>
                 </ul>
             </li>
 

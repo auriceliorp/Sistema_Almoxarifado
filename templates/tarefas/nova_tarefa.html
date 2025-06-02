@@ -1,478 +1,307 @@
 {% extends 'tarefas/base_tarefas.html' %}
 
-{% block extra_css %}
+{% block title %}Nova Tarefa{% endblock %}
+
+{% block tarefas_css %}
 <style>
-    .kanban-board {
-        display: flex;
-        gap: 1rem;
-        overflow-x: auto;
-        padding-bottom: 1rem;
-    }
-    
-    .kanban-board::-webkit-scrollbar {
-        height: 8px;
-    }
-    
-    .kanban-board::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 4px;
-    }
-    
-    .kanban-board::-webkit-scrollbar-thumb {
-        background: #888;
-        border-radius: 4px;
-    }
-    
-    .kanban-column {
-        min-width: 300px;
-        background: #f8f9fa;
-        border-radius: 0.5rem;
-        padding: 1rem;
-    }
-    
-    .kanban-column h6 {
-        margin-bottom: 1rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid;
-    }
-    
-    .kanban-column.nao-iniciada h6 { border-color: #6c757d; }
-    .kanban-column.em-execucao h6 { border-color: #0d6efd; }
-    .kanban-column.suspensa h6 { border-color: #ffc107; }
-    .kanban-column.concluida h6 { border-color: #198754; }
-    .kanban-column.em-atraso h6 { border-color: #dc3545; }
-    
-    .kanban-card {
-        background: white;
-        border-radius: 0.25rem;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-        border-left: 4px solid;
-    }
-    
-    .kanban-card:hover {
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-        transform: translateY(-2px);
-        transition: all 0.2s ease-in-out;
-    }
-    
-    .kanban-card.alta { border-left-color: #dc3545; }
-    .kanban-card.media { border-left-color: #ffc107; }
-    .kanban-card.baixa { border-left-color: #198754; }
-    
-    .kanban-card .card-title {
-        font-size: 1rem;
-        font-weight: 500;
-        margin-bottom: 0.5rem;
-    }
-    
-    .kanban-card .card-subtitle {
-        font-size: 0.875rem;
-        color: #6c757d;
-        margin-bottom: 0.5rem;
-    }
-    
-    .kanban-card .card-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 1rem;
-        padding-top: 0.5rem;
-        border-top: 1px solid #dee2e6;
-    }
-    
-    .badge.categoria { background-color: #e3f2fd !important; color: #0d6efd; }
-    .badge.unidade { background-color: #e8f5e9 !important; color: #198754; }
-    .badge.origem { background-color: #fff3e0 !important; color: #fd7e14; }
-    .badge.usuario { background-color: #ffebee !important; color: #dc3545; }
-    
-    .stats-card {
-        border: none;
-        border-radius: 0.5rem;
+    .card {
+        transition: all 0.3s ease;
         box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
     }
-    
-    .stats-card .card-body {
-        padding: 1rem;
+    .required-field::after {
+        content: " *";
+        color: red;
     }
-    
-    .stats-card .stats-icon {
-        width: 48px;
-        height: 48px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 0.5rem;
-        margin-bottom: 1rem;
+    .form-floating > .form-control:focus ~ label,
+    .form-floating > .form-control:not(:placeholder-shown) ~ label {
+        color: #2c3e50;
     }
-    
-    .stats-card .stats-title {
-        font-size: 0.875rem;
-        color: #6c757d;
-        margin-bottom: 0.25rem;
+    .select2-container .select2-selection--single {
+        height: 58px;
+        padding: 15px 5px;
     }
-    
-    .stats-card .stats-value {
-        font-size: 1.5rem;
-        font-weight: 500;
-        margin-bottom: 0;
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 56px;
     }
 </style>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
-    <!-- Estatísticas -->
-    <div class="row mb-4">
-        <div class="col">
-            <div class="stats-card">
-                <div class="card-body">
-                    <div class="stats-icon bg-light">
-                        <i class="bi bi-list-task text-primary fs-4"></i>
-                    </div>
-                    <div class="stats-title">Total de Tarefas</div>
-                    <div class="stats-value">{{ total_tarefas }}</div>
-                </div>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <!-- Cabeçalho -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="card-title mb-0">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Nova Tarefa
+                </h4>
+                <a href="{{ url_for('tarefas.lista_tarefas') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Voltar
+                </a>
             </div>
-        </div>
-        <div class="col">
-            <div class="stats-card">
-                <div class="card-body">
-                    <div class="stats-icon bg-light">
-                        <i class="bi bi-hourglass text-secondary fs-4"></i>
+
+            <form method="POST" id="formTarefa">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <!-- Dados da Tarefa -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-info-circle me-2"></i>Informações da Tarefa
+                        </h5>
                     </div>
-                    <div class="stats-title">Não Iniciadas</div>
-                    <div class="stats-value">{{ tarefas_nao_iniciadas }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col">
-            <div class="stats-card">
-                <div class="card-body">
-                    <div class="stats-icon bg-light">
-                        <i class="bi bi-play-circle text-primary fs-4"></i>
-                    </div>
-                    <div class="stats-title">Em Execução</div>
-                    <div class="stats-value">{{ tarefas_em_execucao }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col">
-            <div class="stats-card">
-                <div class="card-body">
-                    <div class="stats-icon bg-light">
-                        <i class="bi bi-pause-circle text-warning fs-4"></i>
-                    </div>
-                    <div class="stats-title">Suspensas</div>
-                    <div class="stats-value">{{ tarefas_suspensas }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col">
-            <div class="stats-card">
-                <div class="card-body">
-                    <div class="stats-icon bg-light">
-                        <i class="bi bi-check-circle text-success fs-4"></i>
-                    </div>
-                    <div class="stats-title">Concluídas</div>
-                    <div class="stats-value">{{ tarefas_concluidas }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col">
-            <div class="stats-card">
-                <div class="card-body">
-                    <div class="stats-icon bg-light">
-                        <i class="bi bi-exclamation-circle text-danger fs-4"></i>
-                    </div>
-                    <div class="stats-title">Em Atraso</div>
-                    <div class="stats-value">{{ tarefas_em_atraso }}</div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Cabeçalho -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h5 class="mb-0">
-            <i class="bi bi-kanban me-2"></i>Quadro de Tarefas
-        </h5>
-        <div class="d-flex gap-2">
-            <a href="{{ url_for('tarefas.nova_tarefa') }}" class="btn btn-success btn-sm">
-                <i class="bi bi-plus-circle me-1"></i>Nova Tarefa
-            </a>
-        </div>
-    </div>
-    
-    <!-- Quadro Kanban -->
-    <div class="kanban-board">
-        <!-- Não Iniciada -->
-        <div class="kanban-column nao-iniciada">
-            <h6 class="d-flex align-items-center">
-                <i class="bi bi-hourglass me-2"></i>Não Iniciada
-                <span class="badge bg-secondary rounded-pill ms-auto">{{ tarefas_nao_iniciadas }}</span>
-            </h6>
-            {% for tarefa in tarefas if tarefa.status == 'Não iniciada' %}
-            <div class="kanban-card {{ tarefa.prioridade.lower() }}">
-                <div class="card-title">{{ tarefa.titulo }}</div>
-                {% if tarefa.numero_sei %}
-                <div class="card-subtitle">SEI: {{ tarefa.numero_sei }}</div>
-                {% endif %}
-                <div class="d-flex flex-wrap gap-1 mb-2">
-                    {% if tarefa.categoria %}
-                    <span class="badge categoria">{{ tarefa.categoria.nome }}</span>
-                    {% endif %}
-                    {% if tarefa.unidade_local %}
-                    <span class="badge unidade">{{ tarefa.unidade_local.nome }}</span>
-                    {% endif %}
-                    {% if tarefa.origem %}
-                    <span class="badge origem">{{ tarefa.origem.nome }}</span>
-                    {% endif %}
-                </div>
-                <div class="card-footer">
-                    <div>
-                        {% if tarefa.responsavel %}
-                        <span class="badge usuario">{{ tarefa.responsavel.nome }}</span>
-                        {% endif %}
-                    </div>
-                    <div class="btn-group">
-                        <a href="{{ url_for('tarefas.editar_tarefa', tarefa_id=tarefa.id) }}" 
-                           class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                        <button type="button" 
-                                class="btn btn-sm btn-outline-danger"
-                                onclick="confirmarExclusao('{{ url_for('tarefas.excluir_tarefa', tarefa_id=tarefa.id) }}', '{{ tarefa.titulo }}')">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        
-        <!-- Em Execução -->
-        <div class="kanban-column em-execucao">
-            <h6 class="d-flex align-items-center">
-                <i class="bi bi-play-circle me-2"></i>Em Execução
-                <span class="badge bg-primary rounded-pill ms-auto">{{ tarefas_em_execucao }}</span>
-            </h6>
-            {% for tarefa in tarefas if tarefa.status == 'Em execução' %}
-            <div class="kanban-card {{ tarefa.prioridade.lower() }}">
-                <div class="card-title">{{ tarefa.titulo }}</div>
-                {% if tarefa.numero_sei %}
-                <div class="card-subtitle">SEI: {{ tarefa.numero_sei }}</div>
-                {% endif %}
-                <div class="d-flex flex-wrap gap-1 mb-2">
-                    {% if tarefa.categoria %}
-                    <span class="badge categoria">{{ tarefa.categoria.nome }}</span>
-                    {% endif %}
-                    {% if tarefa.unidade_local %}
-                    <span class="badge unidade">{{ tarefa.unidade_local.nome }}</span>
-                    {% endif %}
-                    {% if tarefa.origem %}
-                    <span class="badge origem">{{ tarefa.origem.nome }}</span>
-                    {% endif %}
-                </div>
-                <div class="card-footer">
-                    <div>
-                        {% if tarefa.responsavel %}
-                        <span class="badge usuario">{{ tarefa.responsavel.nome }}</span>
-                        {% endif %}
-                    </div>
-                    <div class="btn-group">
-                        <a href="{{ url_for('tarefas.editar_tarefa', tarefa_id=tarefa.id) }}" 
-                           class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                        <button type="button" 
-                                class="btn btn-sm btn-outline-danger"
-                                onclick="confirmarExclusao('{{ url_for('tarefas.excluir_tarefa', tarefa_id=tarefa.id) }}', '{{ tarefa.titulo }}')">
-                            <i class="bi bi-trash"></i>
-                        </button>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="titulo" name="titulo" required>
+                                    <label for="titulo" class="required-field">Título</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="form-floating">
+                                    <textarea class="form-control" id="resumo" name="resumo" style="height: 100px"></textarea>
+                                    <label for="resumo">Resumo</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="numero_sei" name="numero_sei">
+                                    <label for="numero_sei">Número SEI</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <select class="form-select" id="categoria" name="categoria" required>
+                                        <option value="" disabled selected>Selecione...</option>
+                                        {% for categoria in categorias %}
+                                        <option value="{{ categoria.id }}">{{ categoria.nome }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <label for="categoria" class="required-field">Categoria</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <select class="form-select" id="unidade_local" name="unidade_local" required>
+                                        <option value="" disabled selected>Selecione...</option>
+                                        {% for unidade in unidades_locais %}
+                                        <option value="{{ unidade.id }}">{{ unidade.nome }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <label for="unidade_local" class="required-field">Unidade Local</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <select class="form-select" id="origem" name="origem" required>
+                                        <option value="" disabled selected>Selecione...</option>
+                                        {% for origem in origens %}
+                                        <option value="{{ origem.id }}">{{ origem.nome }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <label for="origem" class="required-field">Origem</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <select class="form-select" id="prioridade" name="prioridade" required>
+                                        <option value="" disabled selected>Selecione...</option>
+                                        <option value="Alta">Alta</option>
+                                        <option value="Média">Média</option>
+                                        <option value="Baixa">Baixa</option>
+                                    </select>
+                                    <label for="prioridade" class="required-field">Prioridade</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <select class="form-select select2" id="responsavel" name="responsavel" required>
+                                        <option value="">Selecione...</option>
+                                        {% for usuario in usuarios %}
+                                        <option value="{{ usuario.id }}">{{ usuario.nome }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <label for="responsavel" class="required-field">Responsável</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <select class="form-select select2" id="solicitante" name="solicitante" required>
+                                        <option value="">Selecione...</option>
+                                        {% for usuario in usuarios %}
+                                        <option value="{{ usuario.id }}">{{ usuario.nome }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <label for="solicitante" class="required-field">Solicitante</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input type="number" class="form-control" id="quantidade_acoes" name="quantidade_acoes" min="1" value="1">
+                                    <label for="quantidade_acoes">Quantidade de Ações</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input type="date" class="form-control" id="data_inicio" name="data_inicio">
+                                    <label for="data_inicio">Data de Início</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input type="date" class="form-control" id="data_termino" name="data_termino">
+                                    <label for="data_termino">Data de Término</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="form-floating">
+                                    <textarea class="form-control" id="observacoes" name="observacoes" style="height: 100px"></textarea>
+                                    <label for="observacoes">Observações</label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            {% endfor %}
-        </div>
-        
-        <!-- Suspensa -->
-        <div class="kanban-column suspensa">
-            <h6 class="d-flex align-items-center">
-                <i class="bi bi-pause-circle me-2"></i>Suspensa
-                <span class="badge bg-warning rounded-pill ms-auto">{{ tarefas_suspensas }}</span>
-            </h6>
-            {% for tarefa in tarefas if tarefa.status == 'Suspensa' %}
-            <div class="kanban-card {{ tarefa.prioridade.lower() }}">
-                <div class="card-title">{{ tarefa.titulo }}</div>
-                {% if tarefa.numero_sei %}
-                <div class="card-subtitle">SEI: {{ tarefa.numero_sei }}</div>
-                {% endif %}
-                <div class="d-flex flex-wrap gap-1 mb-2">
-                    {% if tarefa.categoria %}
-                    <span class="badge categoria">{{ tarefa.categoria.nome }}</span>
-                    {% endif %}
-                    {% if tarefa.unidade_local %}
-                    <span class="badge unidade">{{ tarefa.unidade_local.nome }}</span>
-                    {% endif %}
-                    {% if tarefa.origem %}
-                    <span class="badge origem">{{ tarefa.origem.nome }}</span>
-                    {% endif %}
+
+                <!-- Botões de Ação -->
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle me-1"></i>Salvar Tarefa
+                    </button>
+                    <a href="{{ url_for('tarefas.lista_tarefas') }}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle me-1"></i>Cancelar
+                    </a>
                 </div>
-                <div class="card-footer">
-                    <div>
-                        {% if tarefa.responsavel %}
-                        <span class="badge usuario">{{ tarefa.responsavel.nome }}</span>
-                        {% endif %}
-                    </div>
-                    <div class="btn-group">
-                        <a href="{{ url_for('tarefas.editar_tarefa', tarefa_id=tarefa.id) }}" 
-                           class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                        <button type="button" 
-                                class="btn btn-sm btn-outline-danger"
-                                onclick="confirmarExclusao('{{ url_for('tarefas.excluir_tarefa', tarefa_id=tarefa.id) }}', '{{ tarefa.titulo }}')">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        
-        <!-- Concluída -->
-        <div class="kanban-column concluida">
-            <h6 class="d-flex align-items-center">
-                <i class="bi bi-check-circle me-2"></i>Concluída
-                <span class="badge bg-success rounded-pill ms-auto">{{ tarefas_concluidas }}</span>
-            </h6>
-            {% for tarefa in tarefas if tarefa.status == 'Concluída' %}
-            <div class="kanban-card {{ tarefa.prioridade.lower() }}">
-                <div class="card-title">{{ tarefa.titulo }}</div>
-                {% if tarefa.numero_sei %}
-                <div class="card-subtitle">SEI: {{ tarefa.numero_sei }}</div>
-                {% endif %}
-                <div class="d-flex flex-wrap gap-1 mb-2">
-                    {% if tarefa.categoria %}
-                    <span class="badge categoria">{{ tarefa.categoria.nome }}</span>
-                    {% endif %}
-                    {% if tarefa.unidade_local %}
-                    <span class="badge unidade">{{ tarefa.unidade_local.nome }}</span>
-                    {% endif %}
-                    {% if tarefa.origem %}
-                    <span class="badge origem">{{ tarefa.origem.nome }}</span>
-                    {% endif %}
-                </div>
-                <div class="card-footer">
-                    <div>
-                        {% if tarefa.responsavel %}
-                        <span class="badge usuario">{{ tarefa.responsavel.nome }}</span>
-                        {% endif %}
-                    </div>
-                    <div class="btn-group">
-                        <a href="{{ url_for('tarefas.editar_tarefa', tarefa_id=tarefa.id) }}" 
-                           class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                        <button type="button" 
-                                class="btn btn-sm btn-outline-danger"
-                                onclick="confirmarExclusao('{{ url_for('tarefas.excluir_tarefa', tarefa_id=tarefa.id) }}', '{{ tarefa.titulo }}')">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        
-        <!-- Em Atraso -->
-        <div class="kanban-column em-atraso">
-            <h6 class="d-flex align-items-center">
-                <i class="bi bi-exclamation-circle me-2"></i>Em Atraso
-                <span class="badge bg-danger rounded-pill ms-auto">{{ tarefas_em_atraso }}</span>
-            </h6>
-            {% for tarefa in tarefas if tarefa.status == 'Em atraso' %}
-            <div class="kanban-card {{ tarefa.prioridade.lower() }}">
-                <div class="card-title">{{ tarefa.titulo }}</div>
-                {% if tarefa.numero_sei %}
-                <div class="card-subtitle">SEI: {{ tarefa.numero_sei }}</div>
-                {% endif %}
-                <div class="d-flex flex-wrap gap-1 mb-2">
-                    {% if tarefa.categoria %}
-                    <span class="badge categoria">{{ tarefa.categoria.nome }}</span>
-                    {% endif %}
-                    {% if tarefa.unidade_local %}
-                    <span class="badge unidade">{{ tarefa.unidade_local.nome }}</span>
-                    {% endif %}
-                    {% if tarefa.origem %}
-                    <span class="badge origem">{{ tarefa.origem.nome }}</span>
-                    {% endif %}
-                </div>
-                <div class="card-footer">
-                    <div>
-                        {% if tarefa.responsavel %}
-                        <span class="badge usuario">{{ tarefa.responsavel.nome }}</span>
-                        {% endif %}
-                    </div>
-                    <div class="btn-group">
-                        <a href="{{ url_for('tarefas.editar_tarefa', tarefa_id=tarefa.id) }}" 
-                           class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                        <button type="button" 
-                                class="btn btn-sm btn-outline-danger"
-                                onclick="confirmarExclusao('{{ url_for('tarefas.excluir_tarefa', tarefa_id=tarefa.id) }}', '{{ tarefa.titulo }}')">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
+            </form>
         </div>
     </div>
 </div>
 {% endblock %}
 
-{% block extra_js %}
+{% block tarefas_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-// SweetAlert2 para confirmação de exclusão
-function confirmarExclusao(url, titulo) {
-    Swal.fire({
-        title: 'Confirmar exclusão?',
-        text: `Deseja realmente excluir a tarefa "${titulo}"?`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Sim, excluir!',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = url;
+$(document).ready(function() {
+    // Inicializa Select2
+    $('.select2').select2({
+        theme: 'bootstrap-5',
+        width: '100%',
+        dropdownParent: $('body')
+    });
+
+    // Validação do formulário
+    $('#formTarefa').on('submit', function(e) {
+        e.preventDefault();
+        
+        if (!validarFormulario()) {
+            return;
+        }
+
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+
+        // Adiciona o status inicial
+        data.status = 'Não iniciada';
+
+        $.ajax({
+            url: '/api/tarefas',
+            method: 'POST',
+            contentType: 'application/json',
+            headers: {
+                'X-CSRF-TOKEN': $('input[name="csrf_token"]').val()
+            },
+            data: JSON.stringify(data),
+            success: function(response) {
+                console.log('Resposta da API:', response);  // Log para debug
+                
+                // Mostra o alerta de sucesso
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sucesso!',
+                    text: response.message || 'Tarefa criada com sucesso.',
+                    showConfirmButton: true,
+                    confirmButtonText: 'OK',
+                    timer: 2000,
+                    timerProgressBar: true
+                }).then(() => {
+                    // Redireciona mesmo se o usuário fechar o alerta
+                    window.location.href = "{{ url_for('tarefas.lista_tarefas') }}";
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error('Erro completo:', {xhr, status, error});  // Log detalhado do erro
+                
+                // Tenta extrair a mensagem de erro da resposta
+                let mensagemErro = 'Erro ao criar tarefa';
+                try {
+                    if (xhr.responseJSON && xhr.responseJSON.error) {
+                        mensagemErro = xhr.responseJSON.error;
+                    } else if (xhr.responseText) {
+                        const resposta = JSON.parse(xhr.responseText);
+                        mensagemErro = resposta.error || mensagemErro;
+                    }
+                } catch (e) {
+                    console.error('Erro ao processar resposta:', e);
+                }
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: mensagemErro,
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+    });
+});
+
+function validarFormulario() {
+    const campos = [
+        'titulo', 
+        'categoria', 
+        'unidade_local', 
+        'origem',
+        'prioridade',
+        'responsavel',
+        'solicitante'
+    ];
+    let valido = true;
+    const mensagens = [];
+
+    campos.forEach(campo => {
+        const elemento = document.getElementById(campo);
+        if (!elemento.value) {
+            mensagens.push(`O campo ${elemento.labels[0].textContent.replace('*', '')} é obrigatório`);
+            valido = false;
         }
     });
-}
 
-// Exibe mensagens flash com SweetAlert2
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-            const Toast = Swal.mixin({
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true
-            });
-            
-            Toast.fire({
-                icon: '{{ "success" if category == "success" else "error" }}',
-                title: '{{ message }}'
-            });
-        {% endfor %}
-    {% endif %}
-{% endwith %}
+    if (!valido) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Atenção',
+            html: 'Por favor, corrija os seguintes erros:<br><br>' + mensagens.join('<br>')
+        });
+    }
+
+    return valido;
+}
 </script>
 {% endblock %} 

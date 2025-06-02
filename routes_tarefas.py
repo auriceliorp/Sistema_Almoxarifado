@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
 from flask_login import login_required, current_user
-from models import db, Tarefa, CategoriaTarefa, OrigemTarefa, UnidadeLocal, Usuario  # Alterado Area para UnidadeLocal
+from models import db, Tarefa, CategoriaTarefa, OrigemTarefa, UnidadeLocal, Usuario
 from datetime import datetime
 from extensoes import csrf
 
@@ -26,7 +26,7 @@ def lista_tarefas():
     # Buscar dados para os selects
     categorias = CategoriaTarefa.query.order_by(CategoriaTarefa.nome).all()
     origens = OrigemTarefa.query.order_by(OrigemTarefa.nome).all()
-    unidades_locais = UnidadeLocal.query.order_by(UnidadeLocal.descricao).all()  # Alterado
+    unidades_locais = UnidadeLocal.query.order_by(UnidadeLocal.descricao).all()
     usuarios = Usuario.query.order_by(Usuario.nome).all()
     
     # Estatísticas
@@ -41,7 +41,7 @@ def lista_tarefas():
                          tarefas=tarefas,
                          categorias=categorias,
                          origens=origens,
-                         unidades_locais=unidades_locais,  # Alterado
+                         unidades_locais=unidades_locais,
                          usuarios=usuarios,
                          total_tarefas=total_tarefas,
                          tarefas_nao_iniciadas=tarefas_nao_iniciadas,
@@ -59,19 +59,18 @@ def nova_tarefa():
             # Obter dados do formulário
             titulo = request.form.get('titulo')
             numero_sei = request.form.get('numero_sei')
-            categoria_id = request.form.get('categoria_id')
+            categoria_id = request.form.get('categoria')
             resumo = request.form.get('resumo')
-            unidade_local_id = request.form.get('unidade_local_id')  # Alterado
-            origem_id = request.form.get('origem_id')
+            unidade_local_id = request.form.get('unidade_local')
+            origem_id = request.form.get('origem')
             responsavel_id = request.form.get('responsavel_id')
             solicitante_id = request.form.get('solicitante_id')
             quantidade_acoes = request.form.get('quantidade_acoes', type=int)
             prioridade = request.form.get('prioridade')
-            status = request.form.get('status')
+            status = 'Não iniciada'  # Status inicial padrão
             data_inicio = request.form.get('data_inicio')
             data_termino = request.form.get('data_termino')
             observacoes = request.form.get('observacoes')
-            unidades_locais = UnidadeLocal.query.all()  # Adicione esta linha
             
             # Validar campos obrigatórios
             if not titulo:
@@ -88,7 +87,7 @@ def nova_tarefa():
                 numero_sei=numero_sei,
                 categoria_id=categoria_id,
                 resumo=resumo,
-                unidade_local_id=unidade_local_id,  # Alterado
+                unidade_local_id=unidade_local_id,
                 origem_id=origem_id,
                 responsavel_id=responsavel_id,
                 solicitante_id=solicitante_id or current_user.id,
@@ -98,7 +97,6 @@ def nova_tarefa():
                 data_inicio=data_inicio,
                 data_termino=data_termino,
                 observacoes=observacoes
-                unidades_locais=unidades_locais)  # Adicione esta variável
             )
             
             db.session.add(tarefa)
@@ -115,13 +113,13 @@ def nova_tarefa():
     # GET: Renderizar formulário
     categorias = CategoriaTarefa.query.order_by(CategoriaTarefa.nome).all()
     origens = OrigemTarefa.query.order_by(OrigemTarefa.nome).all()
-    unidades_locais = UnidadeLocal.query.order_by(UnidadeLocal.descricao).all()  # Alterado
+    unidades_locais = UnidadeLocal.query.order_by(UnidadeLocal.descricao).all()
     usuarios = Usuario.query.order_by(Usuario.nome).all()
     
     return render_template('tarefas/nova_tarefa.html',
                          categorias=categorias,
                          origens=origens,
-                         unidades_locais=unidades_locais,  # Alterado
+                         unidades_locais=unidades_locais,
                          usuarios=usuarios)
 
 @bp.route('/editar/<int:tarefa_id>', methods=['GET', 'POST'])
@@ -135,10 +133,10 @@ def editar_tarefa(tarefa_id):
             # Obter dados do formulário
             tarefa.titulo = request.form.get('titulo')
             tarefa.numero_sei = request.form.get('numero_sei')
-            tarefa.categoria_id = request.form.get('categoria_id')
+            tarefa.categoria_id = request.form.get('categoria')
             tarefa.resumo = request.form.get('resumo')
-            tarefa.unidade_local_id = request.form.get('unidade_local_id')  # Alterado
-            tarefa.origem_id = request.form.get('origem_id')
+            tarefa.unidade_local_id = request.form.get('unidade_local')
+            tarefa.origem_id = request.form.get('origem')
             tarefa.responsavel_id = request.form.get('responsavel_id')
             tarefa.solicitante_id = request.form.get('solicitante_id')
             tarefa.quantidade_acoes = request.form.get('quantidade_acoes', type=int)
@@ -166,14 +164,14 @@ def editar_tarefa(tarefa_id):
     # GET: Renderizar formulário
     categorias = CategoriaTarefa.query.order_by(CategoriaTarefa.nome).all()
     origens = OrigemTarefa.query.order_by(OrigemTarefa.nome).all()
-    unidades_locais = UnidadeLocal.query.order_by(UnidadeLocal.descricao).all()  # Alterado
+    unidades_locais = UnidadeLocal.query.order_by(UnidadeLocal.descricao).all()
     usuarios = Usuario.query.order_by(Usuario.nome).all()
     
     return render_template('tarefas/nova_tarefa.html',
                          tarefa=tarefa,
                          categorias=categorias,
                          origens=origens,
-                         unidades_locais=unidades_locais,  # Alterado
+                         unidades_locais=unidades_locais,
                          usuarios=usuarios)
 
 @bp.route('/excluir/<int:tarefa_id>')
@@ -203,14 +201,14 @@ def get_tarefas():
 @login_required
 def get_tarefas():
     try:
-        unidade_local = request.args.get('unidade_local')  # Alterado
+        unidade_local = request.args.get('unidade_local')
         prioridade = request.args.get('prioridade')
         status = request.args.get('status')
         responsavel = request.args.get('responsavel')
         
         query = Tarefa.query
         
-        if unidade_local:  # Alterado
+        if unidade_local:
             query = query.filter_by(unidade_local_id=unidade_local)
         if prioridade:
             query = query.filter_by(prioridade=prioridade)
@@ -241,10 +239,10 @@ def criar_tarefa():
         tarefa = Tarefa(
             titulo=data['titulo'],
             numero_sei=data.get('numero_sei'),
-            categoria_id=data.get('categoria_id'),
+            categoria_id=data.get('categoria'),
             resumo=data.get('resumo'),
-            unidade_local_id=data.get('unidade_local_id'),  # Alterado
-            origem_id=data.get('origem_id'),
+            unidade_local_id=data.get('unidade_local'),
+            origem_id=data.get('origem'),
             responsavel_id=data.get('responsavel_id'),
             solicitante_id=data.get('solicitante_id', current_user.id),
             quantidade_acoes=data.get('quantidade_acoes', 0),
@@ -285,7 +283,7 @@ def atualizar_tarefa(tarefa_id):
             tarefa.categoria_id = data['categoria_id']
         if 'resumo' in data:
             tarefa.resumo = data['resumo']
-        if 'unidade_local_id' in data:  # Alterado
+        if 'unidade_local_id' in data:
             tarefa.unidade_local_id = data['unidade_local_id']
         if 'origem_id' in data:
             tarefa.origem_id = data['origem_id']

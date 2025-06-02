@@ -74,6 +74,20 @@ def editar_categoria(categoria_id):
             
     return render_template('config_tarefas/form_categoria.html', categoria=categoria)
 
+@bp.route('/excluir_categoria/<int:categoria_id>', methods=['POST'])
+@login_required
+def excluir_categoria(categoria_id):
+    categoria = Categoria.query.get_or_404(categoria_id)
+    try:
+        db.session.delete(categoria)
+        db.session.commit()
+        flash('Categoria excluída com sucesso!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Erro ao excluir categoria. Verifique se não existem tarefas vinculadas.', 'danger')
+    
+    return redirect(url_for('config_tarefas.lista_categorias'))
+
 # Rotas para Origens
 @bp.route('/origens')
 @login_required

@@ -1,9 +1,57 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_login import login_required
-from models import db, Publicacao, Usuario, Fornecedor
+from flask_login import login_required, current_user
+from models import db, Publicacao, Usuario, Fornecedor, Tarefa
 from datetime import datetime
 
 bp = Blueprint('publicacao_bp', __name__)
+
+def criar_tarefa_publicacao(publicacao):
+    """Cria uma tarefa automaticamente a partir de uma publicação."""
+    titulo = f"Publicação - {publicacao.especie}"
+    resumo = f"""
+    Objeto: {publicacao.objeto}
+    Contrato SAIC: {publicacao.contrato_saic}
+    Modalidade: {publicacao.modalidade_licitacao}
+    Valor Global: {publicacao.valor_global}
+    """
+    
+    tarefa = Tarefa(
+        titulo=titulo,
+        resumo=resumo,
+        status='Não iniciada',
+        prioridade='Alta',
+        data_inicio=datetime.now().date(),
+        data_termino=publicacao.vigencia_inicio if publicacao.vigencia_inicio else None,
+        solicitante_id=current_user.id,
+        responsavel_id=current_user.id,
+        observacoes=f"Tarefa gerada automaticamente para acompanhamento da publicação ID: {publicacao.id}"
+    )
+    
+    return tarefa
+
+def atualizar_tarefa_publicacao(publicacao):
+    """Atualiza ou cria uma tarefa relacionada à publicação."""
+    # Procura por uma tarefa existente relacionada à publicação
+    tarefa = Tarefa.query.filter(
+        Tarefa.observacoes.like(f"%publicação ID: {publicacao.id}%")
+    ).first()
+    
+    if not tarefa:
+        # Se não existir, cria uma nova
+        tarefa = criar_tarefa_publicacao(publicacao)
+        db.session.add(tarefa)
+    else:
+        # Se existir, atualiza
+        tarefa.titulo = f"Publicação - {publicacao.especie}"
+        tarefa.resumo = f"""
+        Objeto: {publicacao.objeto}
+        Contrato SAIC: {publicacao.contrato_saic}
+        Modalidade: {publicacao.modalidade_licitacao}
+        Valor Global: {publicacao.valor_global}
+        """
+        tarefa.data_termino = publicacao.vigencia_inicio if publicacao.vigencia_inicio else None
+    
+    return tarefa
 
 @bp.route('/publicacoes')
 @login_required
@@ -109,7 +157,13 @@ def nova_publicacao():
 
             db.session.add(publicacao)
             db.session.commit()
-            flash('Publicação cadastrada com sucesso!', 'success')
+
+            # Cria e salva a tarefa automaticamente
+            tarefa = criar_tarefa_publicacao(publicacao)
+            db.session.add(tarefa)
+            db.session.commit()
+
+            flash('Publicação cadastrada com sucesso! Uma tarefa foi criada automaticamente.', 'success')
             return redirect(url_for('publicacao_bp.listar'))
         except Exception as e:
             db.session.rollback()
@@ -164,8 +218,11 @@ def editar_publicacao(id):
             publicacao.signatarios_embrapa = signatarios_embrapa
             publicacao.signatarios_externos = signatarios_externos
 
+            # Atualiza a tarefa relacionada
+            atualizar_tarefa_publicacao(publicacao)
+            
             db.session.commit()
-            flash('Publicação atualizada com sucesso!', 'success')
+            flash('Publicação e tarefa relacionada atualizadas com sucesso!', 'success')
             return redirect(url_for('publicacao_bp.listar'))
         except Exception as e:
             db.session.rollback()
@@ -186,10 +243,20 @@ def editar_publicacao(id):
 def excluir_publicacao(id):
     publicacao = Publicacao.query.get_or_404(id)
     try:
-        # Exclusão lógica
+        # Exclusão lógica da publicação
         publicacao.excluido = True
+        
+        # Atualiza o status da tarefa relacionada
+        tarefa = Tarefa.query.filter(
+            Tarefa.observacoes.like(f"%publicação ID: {publicacao.id}%")
+        ).first()
+        
+        if tarefa:
+            tarefa.status = 'Concluída'
+            tarefa.observacoes += "\nPublicação excluída em " + datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        
         db.session.commit()
-        flash('Publicação excluída com sucesso!', 'success')
+        flash('Publicação excluída com sucesso! A tarefa relacionada foi marcada como concluída.', 'success')
     except Exception as e:
         db.session.rollback()
         flash('Erro ao excluir publicação. Por favor, tente novamente.', 'danger')

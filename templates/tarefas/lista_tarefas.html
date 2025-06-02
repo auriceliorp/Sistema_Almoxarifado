@@ -310,7 +310,7 @@
                             </a>
                             <button type="button" 
                                     class="btn btn-sm btn-outline-danger"
-                                    onclick="confirmarExclusao('{{ url_for('tarefas.excluir_tarefa', tarefa_id=tarefa.id) }}', '{{ tarefa.titulo }}')">
+                                    onclick="confirmarExclusao('{{ url_for('tarefas.excluir_tarefa', id=tarefa.id) }}', '{{ tarefa.titulo }}')">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </div>

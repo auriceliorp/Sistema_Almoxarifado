@@ -119,6 +119,47 @@
         font-weight: 500;
         margin-bottom: 0;
     }
+    
+    .status-select {
+        min-width: 120px;
+        margin-right: 0.5rem;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        border-radius: 0.2rem;
+        border: 1px solid #dee2e6;
+        background-color: white;
+    }
+    
+    .status-select:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    }
+    
+    .status-select option {
+        padding: 0.5rem;
+    }
+    
+    /* Cores para os diferentes status */
+    .status-select option[value="Não iniciada"] {
+        color: #6c757d;
+    }
+    
+    .status-select option[value="Em execução"] {
+        color: #0d6efd;
+    }
+    
+    .status-select option[value="Suspensa"] {
+        color: #ffc107;
+    }
+    
+    .status-select option[value="Concluída"] {
+        color: #198754;
+    }
+    
+    .status-select option[value="Em atraso"] {
+        color: #dc3545;
+    }
 </style>
 {% endblock %}
 
@@ -238,6 +279,15 @@
                         {% endif %}
                     </div>
                     <div class="btn-group">
+                        <select class="form-select form-select-sm status-select" 
+                                data-tarefa-id="{{ tarefa.id }}"
+                                data-status-atual="{{ tarefa.status }}">
+                            <option value="Não iniciada" {% if tarefa.status == 'Não iniciada' %}selected{% endif %}>Não iniciada</option>
+                            <option value="Em execução" {% if tarefa.status == 'Em execução' %}selected{% endif %}>Em execução</option>
+                            <option value="Suspensa" {% if tarefa.status == 'Suspensa' %}selected{% endif %}>Suspensa</option>
+                            <option value="Concluída" {% if tarefa.status == 'Concluída' %}selected{% endif %}>Concluída</option>
+                            <option value="Em atraso" {% if tarefa.status == 'Em atraso' %}selected{% endif %}>Em atraso</option>
+                        </select>
                         <a href="{{ url_for('tarefas.editar_tarefa', tarefa_id=tarefa.id) }}" 
                            class="btn btn-sm btn-outline-primary">
                             <i class="bi bi-pencil"></i>
@@ -283,6 +333,15 @@
                         {% endif %}
                     </div>
                     <div class="btn-group">
+                        <select class="form-select form-select-sm status-select" 
+                                data-tarefa-id="{{ tarefa.id }}"
+                                data-status-atual="{{ tarefa.status }}">
+                            <option value="Não iniciada" {% if tarefa.status == 'Não iniciada' %}selected{% endif %}>Não iniciada</option>
+                            <option value="Em execução" {% if tarefa.status == 'Em execução' %}selected{% endif %}>Em execução</option>
+                            <option value="Suspensa" {% if tarefa.status == 'Suspensa' %}selected{% endif %}>Suspensa</option>
+                            <option value="Concluída" {% if tarefa.status == 'Concluída' %}selected{% endif %}>Concluída</option>
+                            <option value="Em atraso" {% if tarefa.status == 'Em atraso' %}selected{% endif %}>Em atraso</option>
+                        </select>
                         <a href="{{ url_for('tarefas.editar_tarefa', tarefa_id=tarefa.id) }}" 
                            class="btn btn-sm btn-outline-primary">
                             <i class="bi bi-pencil"></i>
@@ -328,6 +387,15 @@
                         {% endif %}
                     </div>
                     <div class="btn-group">
+                        <select class="form-select form-select-sm status-select" 
+                                data-tarefa-id="{{ tarefa.id }}"
+                                data-status-atual="{{ tarefa.status }}">
+                            <option value="Não iniciada" {% if tarefa.status == 'Não iniciada' %}selected{% endif %}>Não iniciada</option>
+                            <option value="Em execução" {% if tarefa.status == 'Em execução' %}selected{% endif %}>Em execução</option>
+                            <option value="Suspensa" {% if tarefa.status == 'Suspensa' %}selected{% endif %}>Suspensa</option>
+                            <option value="Concluída" {% if tarefa.status == 'Concluída' %}selected{% endif %}>Concluída</option>
+                            <option value="Em atraso" {% if tarefa.status == 'Em atraso' %}selected{% endif %}>Em atraso</option>
+                        </select>
                         <a href="{{ url_for('tarefas.editar_tarefa', tarefa_id=tarefa.id) }}" 
                            class="btn btn-sm btn-outline-primary">
                             <i class="bi bi-pencil"></i>
@@ -373,6 +441,15 @@
                         {% endif %}
                     </div>
                     <div class="btn-group">
+                        <select class="form-select form-select-sm status-select" 
+                                data-tarefa-id="{{ tarefa.id }}"
+                                data-status-atual="{{ tarefa.status }}">
+                            <option value="Não iniciada" {% if tarefa.status == 'Não iniciada' %}selected{% endif %}>Não iniciada</option>
+                            <option value="Em execução" {% if tarefa.status == 'Em execução' %}selected{% endif %}>Em execução</option>
+                            <option value="Suspensa" {% if tarefa.status == 'Suspensa' %}selected{% endif %}>Suspensa</option>
+                            <option value="Concluída" {% if tarefa.status == 'Concluída' %}selected{% endif %}>Concluída</option>
+                            <option value="Em atraso" {% if tarefa.status == 'Em atraso' %}selected{% endif %}>Em atraso</option>
+                        </select>
                         <a href="{{ url_for('tarefas.editar_tarefa', tarefa_id=tarefa.id) }}" 
                            class="btn btn-sm btn-outline-primary">
                             <i class="bi bi-pencil"></i>
@@ -418,6 +495,15 @@
                         {% endif %}
                     </div>
                     <div class="btn-group">
+                        <select class="form-select form-select-sm status-select" 
+                                data-tarefa-id="{{ tarefa.id }}"
+                                data-status-atual="{{ tarefa.status }}">
+                            <option value="Não iniciada" {% if tarefa.status == 'Não iniciada' %}selected{% endif %}>Não iniciada</option>
+                            <option value="Em execução" {% if tarefa.status == 'Em execução' %}selected{% endif %}>Em execução</option>
+                            <option value="Suspensa" {% if tarefa.status == 'Suspensa' %}selected{% endif %}>Suspensa</option>
+                            <option value="Concluída" {% if tarefa.status == 'Concluída' %}selected{% endif %}>Concluída</option>
+                            <option value="Em atraso" {% if tarefa.status == 'Em atraso' %}selected{% endif %}>Em atraso</option>
+                        </select>
                         <a href="{{ url_for('tarefas.editar_tarefa', tarefa_id=tarefa.id) }}" 
                            class="btn btn-sm btn-outline-primary">
                             <i class="bi bi-pencil"></i>
@@ -438,51 +524,82 @@
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
-// Função para atualizar o status da tarefa
-async function atualizarStatusTarefa(tarefaId, novoStatus) {
-    try {
-        const response = await fetch('/api/tarefas/' + tarefaId + '/status', {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ status: novoStatus })
+document.addEventListener('DOMContentLoaded', function() {
+    // Manipulador de mudança de status
+    document.querySelectorAll('.status-select').forEach(select => {
+        select.addEventListener('change', async function() {
+            const tarefaId = this.dataset.tarefaId;
+            const novoStatus = this.value;
+            const statusAtual = this.dataset.statusAtual;
+            
+            if (novoStatus === statusAtual) return;
+            
+            try {
+                // Mostrar loading
+                Swal.fire({
+                    title: 'Atualizando status...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                const response = await fetch(`/api/tarefas/${tarefaId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ status: novoStatus })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Erro ao atualizar status');
+                }
+                
+                // Atualizar os contadores
+                await atualizarContadores();
+                
+                // Mover o cartão para a nova coluna
+                const cartao = this.closest('.kanban-card');
+                const novaColuna = document.querySelector(`.kanban-column[data-status="${novoStatus}"]`);
+                novaColuna.appendChild(cartao);
+                
+                // Atualizar o status atual no select
+                this.dataset.statusAtual = novoStatus;
+                
+                // Mostrar mensagem de sucesso
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+                
+                Toast.fire({
+                    icon: 'success',
+                    title: 'Status atualizado com sucesso'
+                });
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: error.message,
+                    confirmButtonText: 'OK'
+                });
+                
+                // Reverter o select para o status anterior em caso de erro
+                this.value = statusAtual;
+            }
         });
-
-        const data = await response.json();
-        
-        if (!response.ok) {
-            throw new Error(data.error || 'Erro ao atualizar status');
-        }
-
-        // Atualiza os contadores
-        atualizarContadores();
-        
-        const Toast = Swal.mixin({
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true
-        });
-        
-        Toast.fire({
-            icon: 'success',
-            title: 'Status atualizado com sucesso'
-        });
-    } catch (error) {
-        console.error('Erro:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Erro',
-            text: error.message,
-            confirmButtonText: 'OK'
-        });
-    }
-}
+    });
+});
 
 // Função para atualizar os contadores
 async function atualizarContadores() {
@@ -508,23 +625,6 @@ async function atualizarContadores() {
         console.error('Erro ao atualizar contadores:', error);
     }
 }
-
-// Inicializa o Sortable em cada coluna
-document.querySelectorAll('.kanban-column').forEach(coluna => {
-    new Sortable(coluna, {
-        group: 'tarefas',
-        animation: 150,
-        ghostClass: 'ghost',
-        onEnd: function(evt) {
-            const tarefaId = evt.item.querySelector('[data-tarefa-id]').dataset.tarefaId;
-            const novoStatus = evt.to.dataset.status;
-            
-            if (evt.from !== evt.to) {
-                atualizarStatusTarefa(tarefaId, novoStatus);
-            }
-        }
-    });
-});
 
 // Confirmação de exclusão
 function confirmarExclusao(url, titulo) {

@@ -116,7 +116,7 @@ def nova_tarefa():
     unidades_locais = UnidadeLocal.query.order_by(UnidadeLocal.descricao).all()  # Alterado
     usuarios = Usuario.query.order_by(Usuario.nome).all()
     
-    return render_template('tarefas/form_tarefa.html',
+    return render_template('tarefas/nova_tarefa.html',
                          categorias=categorias,
                          origens=origens,
                          unidades_locais=unidades_locais,  # Alterado

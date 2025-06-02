@@ -37,7 +37,7 @@ def lista_tarefas():
     tarefas_concluidas = sum(1 for t in tarefas if t.status == 'Concluída')
     tarefas_em_atraso = sum(1 for t in tarefas if t.status == 'Em atraso')
     
-    return render_template('lista_tarefas.html',
+    return render_template('tarefas/lista_tarefas.html',
                          tarefas=tarefas,
                          categorias=categorias,
                          origens=origens,

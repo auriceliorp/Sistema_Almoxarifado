@@ -37,7 +37,7 @@ def lista_tarefas():
     tarefas_concluidas = sum(1 for t in tarefas if t.status == 'Concluída')
     tarefas_em_atraso = sum(1 for t in tarefas if t.status == 'Em atraso')
     
-    return render_template('tarefas/lista_tarefas.html',
+    return render_template('lista_tarefas.html',
                          tarefas=tarefas,
                          categorias=categorias,
                          origens=origens,
@@ -116,7 +116,7 @@ def nova_tarefa():
     unidades_locais = UnidadeLocal.query.order_by(UnidadeLocal.descricao).all()
     usuarios = Usuario.query.order_by(Usuario.nome).all()
     
-    return render_template('tarefas/nova_tarefa.html',
+    return render_template('nova_tarefa.html',
                          categorias=categorias,
                          origens=origens,
                          unidades_locais=unidades_locais,
@@ -167,7 +167,7 @@ def editar_tarefa(tarefa_id):
     unidades_locais = UnidadeLocal.query.order_by(UnidadeLocal.descricao).all()
     usuarios = Usuario.query.order_by(Usuario.nome).all()
     
-    return render_template('tarefas/nova_tarefa.html',
+    return render_template('nova_tarefa.html',
                          tarefa=tarefa,
                          categorias=categorias,
                          origens=origens,
@@ -190,13 +190,6 @@ def excluir_tarefa(tarefa_id):
     return redirect(url_for('tarefas.lista_tarefas'))
 
 # API Routes
-@bp.route('/api/tarefas')
-@login_required
-def get_tarefas():
-    """Retorna todas as tarefas em formato JSON."""
-    tarefas = Tarefa.query.all()
-    return jsonify([t.to_dict() for t in tarefas])
-
 @api_bp.route('/tarefas', methods=['GET'])
 @login_required
 def get_tarefas():
@@ -221,6 +214,17 @@ def get_tarefas():
         return jsonify([tarefa.to_dict() for tarefa in tarefas])
     except Exception as e:
         print(f"Erro ao buscar tarefas: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@api_bp.route('/tarefas/<int:tarefa_id>/detalhes', methods=['GET'])
+@login_required
+def get_detalhes_tarefa(tarefa_id):
+    """Retorna os detalhes de uma tarefa específica."""
+    try:
+        tarefa = Tarefa.query.get_or_404(tarefa_id)
+        return jsonify(tarefa.to_dict())
+    except Exception as e:
+        print(f"Erro ao buscar detalhes da tarefa: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @api_bp.route('/tarefas', methods=['POST'])
@@ -315,32 +319,6 @@ def atualizar_tarefa(tarefa_id):
         print(f"Erro ao atualizar tarefa: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
-@api_bp.route('/tarefas/<int:tarefa_id>', methods=['DELETE'])
-@login_required
-def deletar_tarefa(tarefa_id):
-    """Deleta uma tarefa."""
-    try:
-        tarefa = Tarefa.query.get_or_404(tarefa_id)
-        db.session.delete(tarefa)
-        db.session.commit()
-        return '', 204
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
-
-@api_bp.route('/<int:tarefa_id>', methods=['DELETE'])
-@login_required
-def excluir_tarefa(tarefa_id):
-    try:
-        tarefa = Tarefa.query.get_or_404(tarefa_id)
-        db.session.delete(tarefa)
-        db.session.commit()
-        return jsonify({'message': 'Tarefa excluída com sucesso'}), 200
-    except Exception as e:
-        db.session.rollback()
-        print(f"Erro ao excluir tarefa: {str(e)}")
-        return jsonify({'error': str(e)}), 500
-
 @api_bp.route('/tarefas/<int:tarefa_id>/status', methods=['PUT'])
 @login_required
 def atualizar_status_tarefa(tarefa_id):
@@ -379,7 +357,6 @@ def atualizar_status_tarefa(tarefa_id):
         print(f"Erro ao atualizar status da tarefa: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
-# Nova rota para obter os contadores
 @api_bp.route('/tarefas/contadores')
 @login_required
 def get_contadores():
@@ -417,4 +394,4 @@ def get_contadores():
 # Registrar os blueprints
 def init_app(app):
     app.register_blueprint(bp)
-    app.register_blueprint(api_bp)
+    app.register_blueprint(api_bp) 

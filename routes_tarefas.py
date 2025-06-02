@@ -216,12 +216,12 @@ def get_tarefas():
         print(f"Erro ao buscar tarefas: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
-@api_bp.route('/tarefas/<int:tarefa_id>/detalhes', methods=['GET'])
+@api_bp.route('/tarefas/<int:id>/detalhes', methods=['GET'])
 @login_required
-def get_detalhes_tarefa(tarefa_id):
+def get_detalhes_tarefa(id):
     """Retorna os detalhes de uma tarefa específica."""
     try:
-        tarefa = Tarefa.query.get_or_404(tarefa_id)
+        tarefa = Tarefa.query.get_or_404(id)
         return jsonify(tarefa.to_dict())
     except Exception as e:
         print(f"Erro ao buscar detalhes da tarefa: {str(e)}")
@@ -270,12 +270,12 @@ def criar_tarefa():
         print(f"Erro ao criar tarefa: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
-@api_bp.route('/tarefas/<int:tarefa_id>', methods=['PUT'])
+@api_bp.route('/tarefas/<int:id>', methods=['PUT'])
 @login_required
-def atualizar_tarefa(tarefa_id):
+def atualizar_tarefa(id):
     """Atualiza uma tarefa existente."""
     try:
-        tarefa = Tarefa.query.get_or_404(tarefa_id)
+        tarefa = Tarefa.query.get_or_404(id)
         data = request.get_json()
         
         # Atualiza os campos se fornecidos
@@ -319,12 +319,12 @@ def atualizar_tarefa(tarefa_id):
         print(f"Erro ao atualizar tarefa: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
-@api_bp.route('/tarefas/<int:tarefa_id>/status', methods=['PUT'])
+@api_bp.route('/tarefas/<int:id>/status', methods=['PUT'])
 @login_required
-def atualizar_status_tarefa(tarefa_id):
+def atualizar_status_tarefa(id):
     """Atualiza apenas o status de uma tarefa."""
     try:
-        tarefa = Tarefa.query.get_or_404(tarefa_id)
+        tarefa = Tarefa.query.get_or_404(id)
         data = request.get_json()
         
         if 'status' not in data:
@@ -394,4 +394,4 @@ def get_contadores():
 # Registrar os blueprints
 def init_app(app):
     app.register_blueprint(bp)
-    app.register_blueprint(api_bp)
+    app.register_blueprint(api_bp) 

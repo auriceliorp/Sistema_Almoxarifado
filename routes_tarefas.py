@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
 from flask_login import login_required, current_user
-from models import db, Tarefa, CategoriaTarefa, OrigemTarefa, Area, Usuario
+from models import db, Tarefa, CategoriaTarefa, OrigemTarefa, UnidadeLocal, Usuario  # Alterado Area para UnidadeLocal
 from datetime import datetime
 from extensoes import csrf
 
@@ -26,7 +26,7 @@ def lista_tarefas():
     # Buscar dados para os selects
     categorias = CategoriaTarefa.query.order_by(CategoriaTarefa.nome).all()
     origens = OrigemTarefa.query.order_by(OrigemTarefa.nome).all()
-    areas = Area.query.order_by(Area.nome).all()
+    unidades_locais = UnidadeLocal.query.order_by(UnidadeLocal.descricao).all()  # Alterado
     usuarios = Usuario.query.order_by(Usuario.nome).all()
     
     # Estatísticas
@@ -41,7 +41,7 @@ def lista_tarefas():
                          tarefas=tarefas,
                          categorias=categorias,
                          origens=origens,
-                         areas=areas,
+                         unidades_locais=unidades_locais,  # Alterado
                          usuarios=usuarios,
                          total_tarefas=total_tarefas,
                          tarefas_nao_iniciadas=tarefas_nao_iniciadas,
@@ -61,7 +61,7 @@ def nova_tarefa():
             numero_sei = request.form.get('numero_sei')
             categoria_id = request.form.get('categoria_id')
             resumo = request.form.get('resumo')
-            area_id = request.form.get('area_id')
+            unidade_local_id = request.form.get('unidade_local_id')  # Alterado
             origem_id = request.form.get('origem_id')
             responsavel_id = request.form.get('responsavel_id')
             solicitante_id = request.form.get('solicitante_id')
@@ -87,10 +87,10 @@ def nova_tarefa():
                 numero_sei=numero_sei,
                 categoria_id=categoria_id,
                 resumo=resumo,
-                area_id=area_id,
+                unidade_local_id=unidade_local_id,  # Alterado
                 origem_id=origem_id,
                 responsavel_id=responsavel_id,
-                solicitante_id=solicitante_id or current_user.id,  # Se não especificado, usar usuário atual
+                solicitante_id=solicitante_id or current_user.id,
                 quantidade_acoes=quantidade_acoes,
                 prioridade=prioridade,
                 status=status,
@@ -113,13 +113,13 @@ def nova_tarefa():
     # GET: Renderizar formulário
     categorias = CategoriaTarefa.query.order_by(CategoriaTarefa.nome).all()
     origens = OrigemTarefa.query.order_by(OrigemTarefa.nome).all()
-    areas = Area.query.order_by(Area.nome).all()
+    unidades_locais = UnidadeLocal.query.order_by(UnidadeLocal.descricao).all()  # Alterado
     usuarios = Usuario.query.order_by(Usuario.nome).all()
     
     return render_template('tarefas/form_tarefa.html',
                          categorias=categorias,
                          origens=origens,
-                         areas=areas,
+                         unidades_locais=unidades_locais,  # Alterado
                          usuarios=usuarios)
 
 @bp.route('/editar/<int:tarefa_id>', methods=['GET', 'POST'])
@@ -135,7 +135,7 @@ def editar_tarefa(tarefa_id):
             tarefa.numero_sei = request.form.get('numero_sei')
             tarefa.categoria_id = request.form.get('categoria_id')
             tarefa.resumo = request.form.get('resumo')
-            tarefa.area_id = request.form.get('area_id')
+            tarefa.unidade_local_id = request.form.get('unidade_local_id')  # Alterado
             tarefa.origem_id = request.form.get('origem_id')
             tarefa.responsavel_id = request.form.get('responsavel_id')
             tarefa.solicitante_id = request.form.get('solicitante_id')
@@ -164,14 +164,14 @@ def editar_tarefa(tarefa_id):
     # GET: Renderizar formulário
     categorias = CategoriaTarefa.query.order_by(CategoriaTarefa.nome).all()
     origens = OrigemTarefa.query.order_by(OrigemTarefa.nome).all()
-    areas = Area.query.order_by(Area.nome).all()
+    unidades_locais = UnidadeLocal.query.order_by(UnidadeLocal.descricao).all()  # Alterado
     usuarios = Usuario.query.order_by(Usuario.nome).all()
     
     return render_template('tarefas/form_tarefa.html',
                          tarefa=tarefa,
                          categorias=categorias,
                          origens=origens,
-                         areas=areas,
+                         unidades_locais=unidades_locais,  # Alterado
                          usuarios=usuarios)
 
 @bp.route('/excluir/<int:tarefa_id>')
@@ -201,26 +201,26 @@ def get_tarefas():
 @login_required
 def get_tarefas():
     try:
-        area = request.args.get('area')
+        unidade_local = request.args.get('unidade_local')  # Alterado
         prioridade = request.args.get('prioridade')
         status = request.args.get('status')
         responsavel = request.args.get('responsavel')
         
         query = Tarefa.query
         
-        if area:
-            query = query.filter_by(area=area)
+        if unidade_local:  # Alterado
+            query = query.filter_by(unidade_local_id=unidade_local)
         if prioridade:
             query = query.filter_by(prioridade=prioridade)
         if status:
             query = query.filter_by(status=status)
         if responsavel:
-            query = query.filter_by(responsavel=responsavel)
+            query = query.filter_by(responsavel_id=responsavel)
             
         tarefas = query.all()
         return jsonify([tarefa.to_dict() for tarefa in tarefas])
     except Exception as e:
-        print(f"Erro ao buscar tarefas: {str(e)}")  # Log do erro
+        print(f"Erro ao buscar tarefas: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @api_bp.route('/tarefas', methods=['POST'])
@@ -231,27 +231,31 @@ def criar_tarefa():
         if not data:
             return jsonify({'error': 'Dados não fornecidos'}), 400
             
-        print(f"Dados recebidos: {data}")  # Log dos dados recebidos
+        print(f"Dados recebidos: {data}")
             
         if not data.get('titulo'):
             return jsonify({'error': 'Título é obrigatório'}), 400
             
         tarefa = Tarefa(
             titulo=data['titulo'],
-            descricao=data.get('descricao', ''),
-            area=data.get('area', ''),
+            numero_sei=data.get('numero_sei'),
+            categoria_id=data.get('categoria_id'),
+            resumo=data.get('resumo'),
+            unidade_local_id=data.get('unidade_local_id'),  # Alterado
+            origem_id=data.get('origem_id'),
+            responsavel_id=data.get('responsavel_id'),
+            solicitante_id=data.get('solicitante_id', current_user.id),
+            quantidade_acoes=data.get('quantidade_acoes', 0),
             prioridade=data.get('prioridade', 'Média'),
-            status=data.get('status', 'A Fazer'),
-            responsavel=data.get('responsavel', ''),
+            status=data.get('status', 'Não iniciada'),
+            data_inicio=data.get('data_inicio'),
+            data_termino=data.get('data_termino'),
+            observacoes=data.get('observacoes'),
             data_criacao=datetime.utcnow()
         )
         
-        print(f"Tarefa a ser criada: {tarefa}")  # Log do objeto antes de salvar
-        
         db.session.add(tarefa)
         db.session.commit()
-        
-        print(f"Tarefa criada com ID: {tarefa.id}")  # Log após salvar
         
         return jsonify({
             'message': 'Tarefa criada com sucesso',
@@ -259,7 +263,7 @@ def criar_tarefa():
         }), 201
     except Exception as e:
         db.session.rollback()
-        print(f"Erro ao criar tarefa: {str(e)}")  # Log do erro
+        print(f"Erro ao criar tarefa: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @api_bp.route('/tarefas/<int:tarefa_id>', methods=['PUT'])
@@ -270,28 +274,34 @@ def atualizar_tarefa(tarefa_id):
         tarefa = Tarefa.query.get_or_404(tarefa_id)
         data = request.get_json()
         
-        # Atualiza os campos básicos se fornecidos
+        # Atualiza os campos se fornecidos
         if 'titulo' in data:
             tarefa.titulo = data['titulo']
-        if 'descricao' in data:
-            tarefa.descricao = data['descricao']
-        if 'area' in data:
-            tarefa.area = data['area']
+        if 'numero_sei' in data:
+            tarefa.numero_sei = data['numero_sei']
+        if 'categoria_id' in data:
+            tarefa.categoria_id = data['categoria_id']
+        if 'resumo' in data:
+            tarefa.resumo = data['resumo']
+        if 'unidade_local_id' in data:  # Alterado
+            tarefa.unidade_local_id = data['unidade_local_id']
+        if 'origem_id' in data:
+            tarefa.origem_id = data['origem_id']
+        if 'responsavel_id' in data:
+            tarefa.responsavel_id = data['responsavel_id']
         if 'prioridade' in data:
             tarefa.prioridade = data['prioridade']
-        if 'responsavel' in data:
-            tarefa.responsavel = data['responsavel']
+        if 'quantidade_acoes' in data:
+            tarefa.quantidade_acoes = data['quantidade_acoes']
         
         # Atualiza o status e a data de conclusão
         if 'status' in data:
             old_status = tarefa.status
             tarefa.status = data['status']
             
-            # Se a tarefa foi concluída agora, adiciona a data de conclusão
-            if data['status'] == 'Concluído' and old_status != 'Concluído':
+            if data['status'] == 'Concluída' and old_status != 'Concluída':
                 tarefa.data_conclusao = datetime.utcnow()
-            # Se a tarefa foi movida de Concluído para outro status, remove a data de conclusão
-            elif data['status'] != 'Concluído' and old_status == 'Concluído':
+            elif data['status'] != 'Concluída' and old_status == 'Concluída':
                 tarefa.data_conclusao = None
         
         db.session.commit()
@@ -302,7 +312,7 @@ def atualizar_tarefa(tarefa_id):
         })
     except Exception as e:
         db.session.rollback()
-        print(f"Erro ao atualizar tarefa: {str(e)}")  # Log do erro
+        print(f"Erro ao atualizar tarefa: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @api_bp.route('/tarefas/<int:tarefa_id>', methods=['DELETE'])
@@ -328,5 +338,5 @@ def excluir_tarefa(tarefa_id):
         return jsonify({'message': 'Tarefa excluída com sucesso'}), 200
     except Exception as e:
         db.session.rollback()
-        print(f"Erro ao excluir tarefa: {str(e)}")  # Log do erro
-        return jsonify({'error': str(e)}), 500 
+        print(f"Erro ao excluir tarefa: {str(e)}")
+        return jsonify({'error': str(e)}), 500

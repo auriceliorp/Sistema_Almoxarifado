@@ -11,7 +11,7 @@ def get_detalhes_tarefa(tarefa_id):
         return jsonify({
             'id': tarefa.id,
             'titulo': tarefa.titulo,
-            'descricao': tarefa.descricao,
+            'resumo': tarefa.resumo,
             'status': tarefa.status,
             'prioridade': tarefa.prioridade,
             'numero_sei': tarefa.numero_sei,

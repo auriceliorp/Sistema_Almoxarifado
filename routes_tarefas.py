@@ -59,15 +59,15 @@ def nova_tarefa():
             # Obter dados do formulário
             titulo = request.form.get('titulo')
             numero_sei = request.form.get('numero_sei')
-            categoria_id = request.form.get('categoria')
+            categoria_id = request.form.get('categoria_id')
             resumo = request.form.get('resumo')
-            unidade_local_id = request.form.get('unidade_local')
-            origem_id = request.form.get('origem')
+            unidade_local_id = request.form.get('unidade_local_id')
+            origem_id = request.form.get('origem_id')
             responsavel_id = request.form.get('responsavel_id')
             solicitante_id = request.form.get('solicitante_id')
             quantidade_acoes = request.form.get('quantidade_acoes', type=int)
             prioridade = request.form.get('prioridade')
-            status = 'Não iniciada'  # Status inicial padrão
+            status = request.form.get('status')  # Agora pegamos o status do formulário
             data_inicio = request.form.get('data_inicio')
             data_termino = request.form.get('data_termino')
             observacoes = request.form.get('observacoes')
@@ -133,10 +133,10 @@ def editar_tarefa(id):
             # Obter dados do formulário
             tarefa.titulo = request.form.get('titulo')
             tarefa.numero_sei = request.form.get('numero_sei')
-            tarefa.categoria_id = request.form.get('categoria')
+            tarefa.categoria_id = request.form.get('categoria_id')
             tarefa.resumo = request.form.get('resumo')
-            tarefa.unidade_local_id = request.form.get('unidade_local')
-            tarefa.origem_id = request.form.get('origem')
+            tarefa.unidade_local_id = request.form.get('unidade_local_id')
+            tarefa.origem_id = request.form.get('origem_id')
             tarefa.responsavel_id = request.form.get('responsavel_id')
             tarefa.solicitante_id = request.form.get('solicitante_id')
             tarefa.quantidade_acoes = request.form.get('quantidade_acoes', type=int)
@@ -243,10 +243,10 @@ def criar_tarefa():
         tarefa = Tarefa(
             titulo=data['titulo'],
             numero_sei=data.get('numero_sei'),
-            categoria_id=data.get('categoria'),
+            categoria_id=data.get('categoria_id'),
             resumo=data.get('resumo'),
-            unidade_local_id=data.get('unidade_local'),
-            origem_id=data.get('origem'),
+            unidade_local_id=data.get('unidade_local_id'),
+            origem_id=data.get('origem_id'),
             responsavel_id=data.get('responsavel_id'),
             solicitante_id=data.get('solicitante_id', current_user.id),
             quantidade_acoes=data.get('quantidade_acoes', 0),

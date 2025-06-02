@@ -1,6 +1,6 @@
 {% extends 'tarefas/base_tarefas.html' %}
 
-{% block title %}Nova Tarefa{% endblock %}
+{% block title %}{% if tarefa %}Editar Tarefa{% else %}Nova Tarefa{% endif %}{% endblock %}
 
 {% block tarefas_css %}
 <style>
@@ -36,8 +36,8 @@
             <!-- Cabeçalho -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h4 class="card-title mb-0">
-                    <i class="bi bi-plus-circle me-2"></i>
-                    Nova Tarefa
+                    <i class="bi bi-{% if tarefa %}pencil{% else %}plus-circle{% endif %} me-2"></i>
+                    {% if tarefa %}Editar Tarefa{% else %}Nova Tarefa{% endif %}
                 </h4>
                 <a href="{{ url_for('tarefas.lista_tarefas') }}" class="btn btn-secondary">
                     <i class="bi bi-arrow-left me-1"></i>Voltar
@@ -58,21 +58,21 @@
                         <div class="row g-3">
                             <div class="col-md-12">
                                 <div class="form-floating">
-                                    <input type="text" class="form-control" id="titulo" name="titulo" required>
+                                    <input type="text" class="form-control" id="titulo" name="titulo" required value="{{ tarefa.titulo if tarefa else '' }}">
                                     <label for="titulo" class="required-field">Título</label>
                                 </div>
                             </div>
 
                             <div class="col-md-12">
                                 <div class="form-floating">
-                                    <textarea class="form-control" id="resumo" name="resumo" style="height: 100px"></textarea>
+                                    <textarea class="form-control" id="resumo" name="resumo" style="height: 100px">{{ tarefa.resumo if tarefa else '' }}</textarea>
                                     <label for="resumo">Resumo</label>
                                 </div>
                             </div>
 
                             <div class="col-md-4">
                                 <div class="form-floating">
-                                    <input type="text" class="form-control" id="numero_sei" name="numero_sei">
+                                    <input type="text" class="form-control" id="numero_sei" name="numero_sei" value="{{ tarefa.numero_sei if tarefa else '' }}">
                                     <label for="numero_sei">Número SEI</label>
                                 </div>
                             </div>
@@ -80,9 +80,9 @@
                             <div class="col-md-4">
                                 <div class="form-floating">
                                     <select class="form-select" id="categoria_id" name="categoria_id" required>
-                                        <option value="" disabled selected>Selecione...</option>
+                                        <option value="" disabled {% if not tarefa %}selected{% endif %}>Selecione...</option>
                                         {% for categoria in categorias %}
-                                        <option value="{{ categoria.id }}">{{ categoria.nome }}</option>
+                                        <option value="{{ categoria.id }}" {% if tarefa and tarefa.categoria_id == categoria.id %}selected{% endif %}>{{ categoria.nome }}</option>
                                         {% endfor %}
                                     </select>
                                     <label for="categoria_id" class="required-field">Categoria</label>
@@ -92,9 +92,9 @@
                             <div class="col-md-4">
                                 <div class="form-floating">
                                     <select class="form-select" id="unidade_local_id" name="unidade_local_id" required>
-                                        <option value="" disabled selected>Selecione...</option>
+                                        <option value="" disabled {% if not tarefa %}selected{% endif %}>Selecione...</option>
                                         {% for unidade in unidades_locais %}
-                                        <option value="{{ unidade.id }}">{{ unidade.descricao }}</option>
+                                        <option value="{{ unidade.id }}" {% if tarefa and tarefa.unidade_local_id == unidade.id %}selected{% endif %}>{{ unidade.descricao }}</option>
                                         {% endfor %}
                                     </select>
                                     <label for="unidade_local_id" class="required-field">Unidade Local</label>
@@ -104,9 +104,9 @@
                             <div class="col-md-4">
                                 <div class="form-floating">
                                     <select class="form-select" id="origem_id" name="origem_id" required>
-                                        <option value="" disabled selected>Selecione...</option>
+                                        <option value="" disabled {% if not tarefa %}selected{% endif %}>Selecione...</option>
                                         {% for origem in origens %}
-                                        <option value="{{ origem.id }}">{{ origem.nome }}</option>
+                                        <option value="{{ origem.id }}" {% if tarefa and tarefa.origem_id == origem.id %}selected{% endif %}>{{ origem.nome }}</option>
                                         {% endfor %}
                                     </select>
                                     <label for="origem_id" class="required-field">Origem</label>
@@ -116,10 +116,10 @@
                             <div class="col-md-4">
                                 <div class="form-floating">
                                     <select class="form-select" id="prioridade" name="prioridade" required>
-                                        <option value="" disabled selected>Selecione...</option>
-                                        <option value="Alta">Alta</option>
-                                        <option value="Média">Média</option>
-                                        <option value="Baixa">Baixa</option>
+                                        <option value="" disabled {% if not tarefa %}selected{% endif %}>Selecione...</option>
+                                        {% for p in ['Alta', 'Média', 'Baixa'] %}
+                                        <option value="{{ p }}" {% if tarefa and tarefa.prioridade == p %}selected{% endif %}>{{ p }}</option>
+                                        {% endfor %}
                                     </select>
                                     <label for="prioridade" class="required-field">Prioridade</label>
                                 </div>
@@ -130,7 +130,7 @@
                                     <select class="form-select select2" id="responsavel_id" name="responsavel_id" required>
                                         <option value="">Selecione...</option>
                                         {% for usuario in usuarios %}
-                                        <option value="{{ usuario.id }}">{{ usuario.nome }}</option>
+                                        <option value="{{ usuario.id }}" {% if tarefa and tarefa.responsavel_id == usuario.id %}selected{% endif %}>{{ usuario.nome }}</option>
                                         {% endfor %}
                                     </select>
                                     <label for="responsavel_id" class="required-field">Responsável</label>
@@ -142,7 +142,7 @@
                                     <select class="form-select select2" id="solicitante_id" name="solicitante_id" required>
                                         <option value="">Selecione...</option>
                                         {% for usuario in usuarios %}
-                                        <option value="{{ usuario.id }}">{{ usuario.nome }}</option>
+                                        <option value="{{ usuario.id }}" {% if tarefa and tarefa.solicitante_id == usuario.id %}selected{% endif %}>{{ usuario.nome }}</option>
                                         {% endfor %}
                                     </select>
                                     <label for="solicitante_id" class="required-field">Solicitante</label>
@@ -151,28 +151,42 @@
 
                             <div class="col-md-4">
                                 <div class="form-floating">
-                                    <input type="number" class="form-control" id="quantidade_acoes" name="quantidade_acoes" min="1" value="1">
+                                    <input type="number" class="form-control" id="quantidade_acoes" name="quantidade_acoes" min="1" value="{{ tarefa.quantidade_acoes if tarefa else 1 }}">
                                     <label for="quantidade_acoes">Quantidade de Ações</label>
                                 </div>
                             </div>
 
                             <div class="col-md-4">
                                 <div class="form-floating">
-                                    <input type="date" class="form-control" id="data_inicio" name="data_inicio">
+                                    <input type="date" class="form-control" id="data_inicio" name="data_inicio" value="{{ tarefa.data_inicio.strftime('%Y-%m-%d') if tarefa and tarefa.data_inicio else '' }}">
                                     <label for="data_inicio">Data de Início</label>
                                 </div>
                             </div>
 
                             <div class="col-md-4">
                                 <div class="form-floating">
-                                    <input type="date" class="form-control" id="data_termino" name="data_termino">
+                                    <input type="date" class="form-control" id="data_termino" name="data_termino" value="{{ tarefa.data_termino.strftime('%Y-%m-%d') if tarefa and tarefa.data_termino else '' }}">
                                     <label for="data_termino">Data de Término</label>
                                 </div>
                             </div>
 
+                            {% if tarefa %}
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <select class="form-select" id="status" name="status" required>
+                                        <option value="" disabled>Selecione...</option>
+                                        {% for s in ['Não iniciada', 'Em execução', 'Suspensa', 'Concluída', 'Em atraso'] %}
+                                        <option value="{{ s }}" {% if tarefa and tarefa.status == s %}selected{% endif %}>{{ s }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <label for="status" class="required-field">Status</label>
+                                </div>
+                            </div>
+                            {% endif %}
+
                             <div class="col-md-12">
                                 <div class="form-floating">
-                                    <textarea class="form-control" id="observacoes" name="observacoes" style="height: 100px"></textarea>
+                                    <textarea class="form-control" id="observacoes" name="observacoes" style="height: 100px">{{ tarefa.observacoes if tarefa else '' }}</textarea>
                                     <label for="observacoes">Observações</label>
                                 </div>
                             </div>
@@ -183,7 +197,7 @@
                 <!-- Botões de Ação -->
                 <div class="d-flex justify-content-end gap-2">
                     <button type="submit" class="btn btn-success">
-                        <i class="bi bi-check-circle me-1"></i>Salvar Tarefa
+                        <i class="bi bi-check-circle me-1"></i>{% if tarefa %}Atualizar{% else %}Salvar{% endif %} Tarefa
                     </button>
                     <a href="{{ url_for('tarefas.lista_tarefas') }}" class="btn btn-secondary">
                         <i class="bi bi-x-circle me-1"></i>Cancelar
@@ -198,159 +212,13 @@
 {% block tarefas_js %}
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 $(document).ready(function() {
-    console.log('Página carregada - Iniciando configurações...');  // Debug log
-    
-    // Inicializa Select2
-    try {
-        $('.select2').select2({
-            theme: 'bootstrap-5',
-            width: '100%',
-            dropdownParent: $('body')
-        });
-        console.log('Select2 inicializado com sucesso');  // Debug log
-    } catch (error) {
-        console.error('Erro ao inicializar Select2:', error);
-    }
-
-    // Validação do formulário
-    $('#formTarefa').on('submit', function(e) {
-        console.log('Formulário submetido - Iniciando validação...');  // Debug log
-        e.preventDefault();
-        
-        if (!validarFormulario()) {
-            console.log('Validação falhou');  // Debug log
-            return;
-        }
-        console.log('Validação bem-sucedida - Preparando dados...');  // Debug log
-
-        const formData = new FormData(this);
-        const data = Object.fromEntries(formData.entries());
-
-        // Adiciona o status inicial
-        data.status = 'Não iniciada';
-
-        // Log para debug
-        console.log('Dados a serem enviados:', data);
-
-        // Teste do SweetAlert2
-        console.log('Testando SweetAlert2...');
-        try {
-            Swal.fire({
-                title: 'Processando...',
-                text: 'Salvando a tarefa...',
-                icon: 'info',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-            console.log('SweetAlert2 funcionando corretamente');
-        } catch (error) {
-            console.error('Erro ao mostrar SweetAlert:', error);
-        }
-
-        $.ajax({
-            url: '/api/tarefas',
-            method: 'POST',
-            contentType: 'application/json',
-            headers: {
-                'X-CSRF-TOKEN': $('input[name="csrf_token"]').val()
-            },
-            data: JSON.stringify({
-                titulo: data.titulo,
-                numero_sei: data.numero_sei,
-                categoria_id: data.categoria_id,
-                resumo: data.resumo,
-                unidade_local_id: data.unidade_local_id,
-                origem_id: data.origem_id,
-                responsavel_id: data.responsavel_id,
-                solicitante_id: data.solicitante_id,
-                quantidade_acoes: data.quantidade_acoes,
-                prioridade: data.prioridade,
-                status: 'Não iniciada',
-                data_inicio: data.data_inicio,
-                data_termino: data.data_termino,
-                observacoes: data.observacoes
-            }),
-            success: function(response) {
-                console.log('Resposta da API:', response);
-                
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Sucesso!',
-                    text: response.message || 'Tarefa criada com sucesso.',
-                    showConfirmButton: true,
-                    confirmButtonText: 'OK',
-                    timer: 2000,
-                    timerProgressBar: true
-                }).then(() => {
-                    window.location.href = "{{ url_for('tarefas.lista_tarefas') }}";
-                });
-            },
-            error: function(xhr, status, error) {
-                console.error('Erro completo:', {xhr, status, error});
-                
-                let mensagemErro = 'Erro ao criar tarefa';
-                try {
-                    if (xhr.responseJSON && xhr.responseJSON.error) {
-                        mensagemErro = xhr.responseJSON.error;
-                    } else if (xhr.responseText) {
-                        const resposta = JSON.parse(xhr.responseText);
-                        mensagemErro = resposta.error || mensagemErro;
-                    }
-                } catch (e) {
-                    console.error('Erro ao processar resposta:', e);
-                }
-
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erro',
-                    text: mensagemErro,
-                    confirmButtonText: 'OK'
-                });
-            }
-        });
+    // Inicializa o Select2 para os campos de seleção
+    $('.select2').select2({
+        theme: 'bootstrap-5',
+        width: '100%'
     });
 });
-
-function validarFormulario() {
-    console.log('Iniciando validação do formulário...');  // Debug log
-    const campos = [
-        { id: 'titulo', label: 'Título' },
-        { id: 'categoria_id', label: 'Categoria' },
-        { id: 'unidade_local_id', label: 'Unidade Local' },
-        { id: 'origem_id', label: 'Origem' },
-        { id: 'prioridade', label: 'Prioridade' },
-        { id: 'responsavel_id', label: 'Responsável' },
-        { id: 'solicitante_id', label: 'Solicitante' }
-    ];
-
-    let valido = true;
-    const mensagens = [];
-
-    campos.forEach(campo => {
-        const elemento = document.getElementById(campo.id);
-        console.log(`Validando campo ${campo.id}:`, elemento?.value);  // Debug log
-        if (!elemento || !elemento.value) {
-            mensagens.push(`O campo ${campo.label} é obrigatório`);
-            valido = false;
-        }
-    });
-
-    if (!valido) {
-        console.log('Campos com erro:', mensagens);  // Debug log
-        Swal.fire({
-            icon: 'warning',
-            title: 'Atenção',
-            html: 'Por favor, corrija os seguintes erros:<br><br>' + mensagens.join('<br>')
-        });
-    }
-
-    return valido;
-}
 </script>
 {% endblock %} 

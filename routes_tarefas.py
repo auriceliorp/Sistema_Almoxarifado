@@ -167,7 +167,7 @@ def editar_tarefa(tarefa_id):
     unidades_locais = UnidadeLocal.query.order_by(UnidadeLocal.descricao).all()  # Alterado
     usuarios = Usuario.query.order_by(Usuario.nome).all()
     
-    return render_template('tarefas/form_tarefa.html',
+    return render_template('tarefas/nova_tarefa.html',
                          tarefa=tarefa,
                          categorias=categorias,
                          origens=origens,

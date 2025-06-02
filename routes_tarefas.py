@@ -340,3 +340,81 @@ def excluir_tarefa(tarefa_id):
         db.session.rollback()
         print(f"Erro ao excluir tarefa: {str(e)}")
         return jsonify({'error': str(e)}), 500
+
+@api_bp.route('/tarefas/<int:tarefa_id>/status', methods=['PUT'])
+@login_required
+def atualizar_status_tarefa(tarefa_id):
+    """Atualiza apenas o status de uma tarefa."""
+    try:
+        tarefa = Tarefa.query.get_or_404(tarefa_id)
+        data = request.get_json()
+        
+        if 'status' not in data:
+            return jsonify({'error': 'Status não fornecido'}), 400
+            
+        old_status = tarefa.status
+        novo_status = data['status']
+        
+        # Validar status permitidos
+        status_permitidos = ['Não iniciada', 'Em execução', 'Suspensa', 'Concluída', 'Em atraso']
+        if novo_status not in status_permitidos:
+            return jsonify({'error': 'Status inválido'}), 400
+        
+        tarefa.status = novo_status
+        
+        # Atualizar data de conclusão se necessário
+        if novo_status == 'Concluída' and old_status != 'Concluída':
+            tarefa.data_conclusao = datetime.utcnow()
+        elif novo_status != 'Concluída' and old_status == 'Concluída':
+            tarefa.data_conclusao = None
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Status atualizado com sucesso',
+            'data': tarefa.to_dict()
+        })
+    except Exception as e:
+        db.session.rollback()
+        print(f"Erro ao atualizar status da tarefa: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+# Nova rota para obter os contadores
+@api_bp.route('/tarefas/contadores')
+@login_required
+def get_contadores():
+    """Retorna os contadores de tarefas por status."""
+    try:
+        # Query base
+        query = Tarefa.query
+        
+        # Calcular contadores
+        total = query.count()
+        nao_iniciadas = query.filter_by(status='Não iniciada').count()
+        em_execucao = query.filter_by(status='Em execução').count()
+        suspensas = query.filter_by(status='Suspensa').count()
+        concluidas = query.filter_by(status='Concluída').count()
+        
+        # Lógica para tarefas em atraso
+        hoje = datetime.now().date()
+        em_atraso = query.filter(
+            Tarefa.data_termino < hoje,
+            Tarefa.status.notin_(['Concluída', 'Suspensa'])
+        ).count()
+        
+        return jsonify({
+            'total': total,
+            'nao_iniciadas': nao_iniciadas,
+            'em_execucao': em_execucao,
+            'suspensas': suspensas,
+            'concluidas': concluidas,
+            'em_atraso': em_atraso
+        })
+    except Exception as e:
+        print(f"Erro ao buscar contadores: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+# Registrar os blueprints
+def init_app(app):
+    app.register_blueprint(bp)
+    app.register_blueprint(api_bp)

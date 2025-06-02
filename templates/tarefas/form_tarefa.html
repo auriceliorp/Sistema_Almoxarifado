@@ -16,12 +16,31 @@
     .form-floating > .form-control:not(:placeholder-shown) ~ label {
         color: #2c3e50;
     }
-    .select2-container .select2-selection--single {
+    /* Ajustes para o Select2 */
+    .form-floating > .select2-container {
         height: 58px;
-        padding: 15px 5px;
     }
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 56px;
+    .select2-container--bootstrap-5 .select2-selection {
+        min-height: 58px;
+        padding: 1rem 0.75rem;
+        font-size: 1rem;
+        border-radius: 0.375rem;
+    }
+    .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+        padding-left: 0;
+        line-height: 1.5;
+        color: #212529;
+    }
+    .form-floating > .select2-container ~ label {
+        opacity: 0.65;
+        transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+        background-color: white;
+        height: auto;
+        padding: 0 5px;
+        margin-left: -5px;
+    }
+    .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow {
+        height: 58px;
     }
 </style>
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -72,7 +91,7 @@
 
                             <div class="col-md-4">
                                 <div class="form-floating">
-                                    <input type="text" class="form-control" id="numero_sei" name="numero_sei" value="{{ tarefa.numero_sei if tarefa else '' }}">
+                                    <input type="text" class="form-control" id="numero_sei" name="numero_sei" value="{{ tarefa.numero_sei if tarefa else '' }}" data-mask="00000.000000/0000-00">
                                     <label for="numero_sei">Número SEI</label>
                                 </div>
                             </div>
@@ -212,12 +231,19 @@
 {% block tarefas_js %}
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
 <script>
 $(document).ready(function() {
     // Inicializa o Select2 para os campos de seleção
     $('.select2').select2({
         theme: 'bootstrap-5',
-        width: '100%'
+        width: '100%',
+        dropdownParent: $('#formTarefa')
+    });
+
+    // Aplica a máscara ao campo SEI
+    $('#numero_sei').mask('00000.000000/0000-00', {
+        placeholder: "_____._______/____-__"
     });
 });
 </script>

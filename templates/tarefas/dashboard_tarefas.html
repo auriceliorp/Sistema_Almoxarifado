@@ -1,0 +1,471 @@
+{% extends 'tarefas/base_tarefas.html' %}
+
+{% block extra_css %}
+<style>
+    .dashboard-card {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        padding: 20px;
+        height: 100%;
+    }
+
+    .dashboard-title {
+        color: #333;
+        font-size: 1.2rem;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #eee;
+        display: flex;
+        align-items: center;
+    }
+
+    .dashboard-title i {
+        margin-right: 10px;
+        color: #0d6efd;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+
+    .stats-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .stat-card {
+        background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        text-align: center;
+        transition: transform 0.2s;
+        border-left: 4px solid #0d6efd;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stat-card.em-andamento { border-color: #0d6efd; }
+    .stat-card.concluidas { border-color: #198754; }
+    .stat-card.atrasadas { border-color: #dc3545; }
+    .stat-card.total { border-color: #6c757d; }
+
+    .stat-icon {
+        font-size: 2rem;
+        margin-bottom: 10px;
+    }
+
+    .stat-card.em-andamento .stat-icon { color: #0d6efd; }
+    .stat-card.concluidas .stat-icon { color: #198754; }
+    .stat-card.atrasadas .stat-icon { color: #dc3545; }
+    .stat-card.total .stat-icon { color: #6c757d; }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        margin: 10px 0;
+    }
+
+    .stat-card.em-andamento .stat-value { color: #0d6efd; }
+    .stat-card.concluidas .stat-value { color: #198754; }
+    .stat-card.atrasadas .stat-value { color: #dc3545; }
+    .stat-card.total .stat-value { color: #6c757d; }
+
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .chart-legend {
+        font-size: 0.8rem;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 4px;
+        margin-top: 10px;
+    }
+
+    .chart-legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
+    }
+
+    .chart-legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        margin-right: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="bi bi-graph-up-arrow text-primary me-2"></i>
+            Dashboard de Tarefas
+        </h2>
+        <div class="btn-group">
+            <button class="btn btn-outline-primary active" data-period="week">
+                <i class="bi bi-calendar-week me-1"></i>Semana
+            </button>
+            <button class="btn btn-outline-primary" data-period="month">
+                <i class="bi bi-calendar-month me-1"></i>Mês
+            </button>
+            <button class="btn btn-outline-primary" data-period="year">
+                <i class="bi bi-calendar4 me-1"></i>Ano
+            </button>
+        </div>
+    </div>
+
+    <!-- Resumo Estatístico -->
+    <div class="stats-summary mb-4">
+        <div class="stat-card total">
+            <div class="stat-icon">
+                <i class="bi bi-list-task"></i>
+            </div>
+            <div class="stat-value">{{ total_tarefas }}</div>
+            <div class="stat-label">Total de Tarefas</div>
+        </div>
+        <div class="stat-card em-andamento">
+            <div class="stat-icon">
+                <i class="bi bi-play-circle"></i>
+            </div>
+            <div class="stat-value">{{ tarefas_em_andamento }}</div>
+            <div class="stat-label">Em Andamento</div>
+        </div>
+        <div class="stat-card concluidas">
+            <div class="stat-icon">
+                <i class="bi bi-check-circle"></i>
+            </div>
+            <div class="stat-value">{{ tarefas_concluidas }}</div>
+            <div class="stat-label">Concluídas</div>
+        </div>
+        <div class="stat-card atrasadas">
+            <div class="stat-icon">
+                <i class="bi bi-exclamation-circle"></i>
+            </div>
+            <div class="stat-value">{{ tarefas_atrasadas }}</div>
+            <div class="stat-label">Atrasadas</div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Gráfico por Categoria -->
+        <div class="col-md-6 mb-4">
+            <div class="dashboard-card">
+                <h3 class="dashboard-title">
+                    <i class="bi bi-tag"></i>
+                    Tarefas por Categoria
+                </h3>
+                <div class="chart-container">
+                    <canvas id="categoriasChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico por Unidade Local -->
+        <div class="col-md-6 mb-4">
+            <div class="dashboard-card">
+                <h3 class="dashboard-title">
+                    <i class="bi bi-building"></i>
+                    Tarefas por Unidade Local
+                </h3>
+                <div class="chart-container">
+                    <canvas id="unidadesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico por Origem -->
+        <div class="col-md-6 mb-4">
+            <div class="dashboard-card">
+                <h3 class="dashboard-title">
+                    <i class="bi bi-folder"></i>
+                    Tarefas por Origem
+                </h3>
+                <div class="chart-container">
+                    <canvas id="origensChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico por Responsável -->
+        <div class="col-md-6 mb-4">
+            <div class="dashboard-card">
+                <h3 class="dashboard-title">
+                    <i class="bi bi-person"></i>
+                    Tarefas por Responsável
+                </h3>
+                <div class="chart-container">
+                    <canvas id="responsaveisChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico por Solicitante -->
+        <div class="col-md-6 mb-4">
+            <div class="dashboard-card">
+                <h3 class="dashboard-title">
+                    <i class="bi bi-person-badge"></i>
+                    Tarefas por Solicitante
+                </h3>
+                <div class="chart-container">
+                    <canvas id="solicitantesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Função para gerar cores aleatórias com opacidade
+    function generateColors(count, opacity = 0.8) {
+        const colors = [];
+        for (let i = 0; i < count; i++) {
+            colors.push(`hsla(${(i * 360) / count}, 70%, 60%, ${opacity})`);
+        }
+        return colors;
+    }
+
+    // Configuração comum para todos os gráficos
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'right',
+                labels: {
+                    boxWidth: 12,
+                    padding: 15,
+                    font: {
+                        size: 11
+                    }
+                }
+            },
+            tooltip: {
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                titleColor: '#333',
+                titleFont: {
+                    size: 13,
+                    weight: 'bold'
+                },
+                bodyColor: '#666',
+                bodyFont: {
+                    size: 12
+                },
+                borderColor: '#ddd',
+                borderWidth: 1,
+                padding: 10,
+                boxPadding: 5,
+                usePointStyle: true
+            }
+        }
+    };
+
+    // Gráfico de Categorias
+    new Chart(document.getElementById('categoriasChart'), {
+        type: 'doughnut',
+        data: {
+            labels: {{ categorias_labels | tojson }},
+            datasets: [{
+                data: {{ categorias_data | tojson }},
+                backgroundColor: generateColors({{ categorias_data | length }}),
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            ...commonOptions,
+            cutout: '60%',
+            plugins: {
+                ...commonOptions.plugins,
+                legend: {
+                    ...commonOptions.plugins.legend,
+                    position: 'right'
+                }
+            }
+        }
+    });
+
+    // Gráfico de Unidades
+    new Chart(document.getElementById('unidadesChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ unidades_labels | tojson }},
+            datasets: [{
+                label: 'Quantidade de Tarefas',
+                data: {{ unidades_data | tojson }},
+                backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            ...commonOptions,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    },
+                    grid: {
+                        drawBorder: false
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // Gráfico de Origens
+    new Chart(document.getElementById('origensChart'), {
+        type: 'pie',
+        data: {
+            labels: {{ origens_labels | tojson }},
+            datasets: [{
+                data: {{ origens_data | tojson }},
+                backgroundColor: generateColors({{ origens_data | length }}),
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: commonOptions
+    });
+
+    // Gráfico de Responsáveis
+    new Chart(document.getElementById('responsaveisChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ responsaveis_labels | tojson }},
+            datasets: [{
+                label: 'Tarefas Atribuídas',
+                data: {{ responsaveis_data | tojson }},
+                backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            ...commonOptions,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    },
+                    grid: {
+                        drawBorder: false
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // Gráfico de Solicitantes
+    new Chart(document.getElementById('solicitantesChart'), {
+        type: 'pie',
+        data: {
+            labels: {{ solicitantes_labels | tojson }},
+            datasets: [{
+                data: {{ solicitantes_data | tojson }},
+                backgroundColor: generateColors({{ solicitantes_data | length }}),
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: commonOptions
+    });
+
+    // Manipuladores de eventos para os botões de período
+    document.querySelectorAll('[data-period]').forEach(button => {
+        button.addEventListener('click', function() {
+            // Remove a classe active de todos os botões
+            document.querySelectorAll('[data-period]').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Adiciona a classe active ao botão clicado
+            this.classList.add('active');
+            
+            // Aqui você pode adicionar a lógica para atualizar os dados
+            const period = this.dataset.period;
+            updateChartData(period);
+        });
+    });
+
+    // Função para atualizar os dados dos gráficos
+    function updateChartData(period) {
+        fetch(`/api/tarefas/dashboard-data?period=${period}`)
+            .then(response => response.json())
+            .then(data => {
+                // Atualizar os valores estatísticos
+                updateStats(data.stats);
+                
+                // Atualizar os gráficos
+                updateCharts(data.charts);
+            })
+            .catch(error => {
+                console.error('Erro ao atualizar dados:', error);
+                // Adicione aqui a lógica para mostrar mensagem de erro ao usuário
+            });
+    }
+
+    // Função para atualizar as estatísticas
+    function updateStats(stats) {
+        document.querySelector('.stat-card.total .stat-value').textContent = stats.total;
+        document.querySelector('.stat-card.em-andamento .stat-value').textContent = stats.em_andamento;
+        document.querySelector('.stat-card.concluidas .stat-value').textContent = stats.concluidas;
+        document.querySelector('.stat-card.atrasadas .stat-value').textContent = stats.atrasadas;
+    }
+
+    // Função para atualizar os gráficos
+    function updateCharts(chartsData) {
+        // Atualizar cada gráfico com os novos dados
+        Object.keys(chartsData).forEach(chartId => {
+            const chart = Chart.getChart(chartId);
+            if (chart) {
+                chart.data.labels = chartsData[chartId].labels;
+                chart.data.datasets[0].data = chartsData[chartId].data;
+                chart.update();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

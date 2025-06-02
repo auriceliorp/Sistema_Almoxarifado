@@ -4,7 +4,7 @@
 <div class="card config-card">
     <div class="card-header">
         <h5 class="mb-0">
-            <i class="bi bi-tag me-2"></i>{{ categoria is defined and categoria.id ? 'Editar' : 'Nova' }} Categoria
+            <i class="bi bi-tag me-2"></i>{% if categoria is defined and categoria.id %}Editar{% else %}Nova{% endif %} Categoria
         </h5>
     </div>
     <div class="card-body">

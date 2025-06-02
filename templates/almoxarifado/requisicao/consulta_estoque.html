@@ -1,0 +1,148 @@
+{% extends 'base_simplificada.html' %}
+{% block title %}Consulta de Estoque - Requisição de Materiais{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Consulta de Estoque</h2>
+        <a href="{{ url_for('requisicao_bp.minhas_requisicoes') }}" class="btn btn-outline-primary">
+            <i class="bi bi-list-check me-2"></i>Minhas Requisições
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form id="formRequisicao" method="POST" action="{{ url_for('requisicao_bp.nova_requisicao') }}" class="needs-validation" novalidate>
+                <div class="table-responsive mb-4">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Unidade</th>
+                                <th>Estoque Atual</th>
+                                <th style="width: 150px;">Quantidade</th>
+                                <th style="width: 100px;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in itens %}
+                            <tr>
+                                <td>{{ item.nome }}</td>
+                                <td>{{ item.unidade }}</td>
+                                <td>{{ "%.2f"|format(item.estoque_atual) }}</td>
+                                <td>
+                                    <div class="input-group" style="width: 150px;">
+                                        <input type="number" 
+                                               class="form-control quantidade-input" 
+                                               data-item-id="{{ item.id }}"
+                                               data-max-estoque="{{ item.estoque_atual }}"
+                                               min="1" 
+                                               max="{{ item.estoque_atual }}"
+                                               step="1">
+                                    </div>
+                                </td>
+                                <td>
+                                    <button type="button" 
+                                            class="btn btn-sm btn-primary adicionar-item"
+                                            data-item-id="{{ item.id }}"
+                                            data-item-nome="{{ item.nome }}">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Itens Selecionados</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="itensSelecionados" class="mb-3">
+                            <!-- Itens selecionados serão inseridos aqui via JavaScript -->
+                        </div>
+                        <div class="mb-3">
+                            <label for="observacao" class="form-label">Observações</label>
+                            <textarea class="form-control" id="observacao" name="observacao" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success" id="btnSubmit" disabled>
+                            <i class="bi bi-check-lg me-2"></i>Enviar Requisição
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const itensSelecionados = new Set();
+    
+    // Função para atualizar o botão de submit
+    function atualizarBotaoSubmit() {
+        document.getElementById('btnSubmit').disabled = itensSelecionados.size === 0;
+    }
+    
+    // Função para adicionar item à requisição
+    document.querySelectorAll('.adicionar-item').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const itemId = this.dataset.itemId;
+            const itemNome = this.dataset.itemNome;
+            const quantidadeInput = document.querySelector(`.quantidade-input[data-item-id="${itemId}"]`);
+            const quantidade = parseInt(quantidadeInput.value);
+            const maxEstoque = parseFloat(quantidadeInput.dataset.maxEstoque);
+            
+            if (!quantidade || quantidade <= 0) {
+                alert('Por favor, informe uma quantidade válida.');
+                return;
+            }
+            
+            if (quantidade > maxEstoque) {
+                alert('Quantidade não pode ser maior que o estoque disponível.');
+                return;
+            }
+            
+            if (itensSelecionados.has(itemId)) {
+                alert('Este item já foi adicionado à requisição.');
+                return;
+            }
+            
+            // Adicionar item à lista de selecionados
+            const itemHtml = `
+                <div class="alert alert-info alert-dismissible fade show" role="alert" id="item-${itemId}">
+                    <strong>${itemNome}</strong> - Quantidade: ${quantidade}
+                    <input type="hidden" name="item_id[]" value="${itemId}">
+                    <input type="hidden" name="quantidade[]" value="${quantidade}">
+                    <button type="button" class="btn-close remover-item" data-item-id="${itemId}"></button>
+                </div>
+            `;
+            
+            document.getElementById('itensSelecionados').insertAdjacentHTML('beforeend', itemHtml);
+            itensSelecionados.add(itemId);
+            quantidadeInput.value = '';
+            atualizarBotaoSubmit();
+            
+            // Adicionar evento para remover item
+            document.querySelector(`#item-${itemId} .remover-item`).addEventListener('click', function() {
+                document.getElementById(`item-${itemId}`).remove();
+                itensSelecionados.delete(itemId);
+                atualizarBotaoSubmit();
+            });
+        });
+    });
+    
+    // Validação do formulário
+    document.getElementById('formRequisicao').addEventListener('submit', function(event) {
+        if (itensSelecionados.size === 0) {
+            event.preventDefault();
+            alert('Adicione pelo menos um item à requisição.');
+        }
+    });
+});
+</script>
+{% endblock %} 

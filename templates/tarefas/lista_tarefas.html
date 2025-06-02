@@ -76,11 +76,22 @@
     
     .kanban-card .card-footer {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
+        flex-direction: column;
+        gap: 0.5rem;
         margin-top: 1rem;
         padding-top: 0.5rem;
         border-top: 1px solid #dee2e6;
+    }
+    
+    .kanban-card .card-footer .user-info {
+        display: flex;
+        align-items: center;
+    }
+    
+    .kanban-card .card-footer .actions {
+        display: flex;
+        gap: 0.25rem;
+        align-items: center;
     }
     
     .badge.categoria { background-color: #e3f2fd !important; color: #0d6efd; }
@@ -121,8 +132,8 @@
     }
     
     .status-select {
+        flex: 1;
         min-width: 120px;
-        margin-right: 0.5rem;
         padding: 0.25rem 0.5rem;
         font-size: 0.875rem;
         border-radius: 0.2rem;
@@ -130,14 +141,13 @@
         background-color: white;
     }
     
-    .status-select:focus {
-        border-color: #80bdff;
-        outline: 0;
-        box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    .btn-group {
+        display: flex;
+        gap: 0.25rem;
     }
     
-    .status-select option {
-        padding: 0.5rem;
+    .btn-group .btn {
+        padding: 0.25rem 0.5rem;
     }
     
     /* Cores para os diferentes status */
@@ -273,12 +283,12 @@
                     {% endif %}
                 </div>
                 <div class="card-footer">
-                    <div>
+                    <div class="user-info">
                         {% if tarefa.responsavel %}
                         <span class="badge usuario">{{ tarefa.responsavel.nome }}</span>
                         {% endif %}
                     </div>
-                    <div class="btn-group">
+                    <div class="actions">
                         <select class="form-select form-select-sm status-select" 
                                 data-tarefa-id="{{ tarefa.id }}"
                                 data-status-atual="{{ tarefa.status }}">
@@ -288,15 +298,17 @@
                             <option value="Concluída" {% if tarefa.status == 'Concluída' %}selected{% endif %}>Concluída</option>
                             <option value="Em atraso" {% if tarefa.status == 'Em atraso' %}selected{% endif %}>Em atraso</option>
                         </select>
-                        <a href="{{ url_for('tarefas.editar_tarefa', tarefa_id=tarefa.id) }}" 
-                           class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                        <button type="button" 
-                                class="btn btn-sm btn-outline-danger"
-                                onclick="confirmarExclusao('{{ url_for('tarefas.excluir_tarefa', tarefa_id=tarefa.id) }}', '{{ tarefa.titulo }}')">
-                            <i class="bi bi-trash"></i>
-                        </button>
+                        <div class="btn-group">
+                            <a href="{{ url_for('tarefas.editar_tarefa', tarefa_id=tarefa.id) }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button type="button" 
+                                    class="btn btn-sm btn-outline-danger"
+                                    onclick="confirmarExclusao('{{ url_for('tarefas.excluir_tarefa', tarefa_id=tarefa.id) }}', '{{ tarefa.titulo }}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -327,12 +339,12 @@
                     {% endif %}
                 </div>
                 <div class="card-footer">
-                    <div>
+                    <div class="user-info">
                         {% if tarefa.responsavel %}
                         <span class="badge usuario">{{ tarefa.responsavel.nome }}</span>
                         {% endif %}
                     </div>
-                    <div class="btn-group">
+                    <div class="actions">
                         <select class="form-select form-select-sm status-select" 
                                 data-tarefa-id="{{ tarefa.id }}"
                                 data-status-atual="{{ tarefa.status }}">
@@ -342,15 +354,17 @@
                             <option value="Concluída" {% if tarefa.status == 'Concluída' %}selected{% endif %}>Concluída</option>
                             <option value="Em atraso" {% if tarefa.status == 'Em atraso' %}selected{% endif %}>Em atraso</option>
                         </select>
-                        <a href="{{ url_for('tarefas.editar_tarefa', tarefa_id=tarefa.id) }}" 
-                           class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                        <button type="button" 
-                                class="btn btn-sm btn-outline-danger"
-                                onclick="confirmarExclusao('{{ url_for('tarefas.excluir_tarefa', tarefa_id=tarefa.id) }}', '{{ tarefa.titulo }}')">
-                            <i class="bi bi-trash"></i>
-                        </button>
+                        <div class="btn-group">
+                            <a href="{{ url_for('tarefas.editar_tarefa', tarefa_id=tarefa.id) }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button type="button" 
+                                    class="btn btn-sm btn-outline-danger"
+                                    onclick="confirmarExclusao('{{ url_for('tarefas.excluir_tarefa', tarefa_id=tarefa.id) }}', '{{ tarefa.titulo }}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -381,12 +395,12 @@
                     {% endif %}
                 </div>
                 <div class="card-footer">
-                    <div>
+                    <div class="user-info">
                         {% if tarefa.responsavel %}
                         <span class="badge usuario">{{ tarefa.responsavel.nome }}</span>
                         {% endif %}
                     </div>
-                    <div class="btn-group">
+                    <div class="actions">
                         <select class="form-select form-select-sm status-select" 
                                 data-tarefa-id="{{ tarefa.id }}"
                                 data-status-atual="{{ tarefa.status }}">
@@ -396,15 +410,17 @@
                             <option value="Concluída" {% if tarefa.status == 'Concluída' %}selected{% endif %}>Concluída</option>
                             <option value="Em atraso" {% if tarefa.status == 'Em atraso' %}selected{% endif %}>Em atraso</option>
                         </select>
-                        <a href="{{ url_for('tarefas.editar_tarefa', tarefa_id=tarefa.id) }}" 
-                           class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                        <button type="button" 
-                                class="btn btn-sm btn-outline-danger"
-                                onclick="confirmarExclusao('{{ url_for('tarefas.excluir_tarefa', tarefa_id=tarefa.id) }}', '{{ tarefa.titulo }}')">
-                            <i class="bi bi-trash"></i>
-                        </button>
+                        <div class="btn-group">
+                            <a href="{{ url_for('tarefas.editar_tarefa', tarefa_id=tarefa.id) }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button type="button" 
+                                    class="btn btn-sm btn-outline-danger"
+                                    onclick="confirmarExclusao('{{ url_for('tarefas.excluir_tarefa', tarefa_id=tarefa.id) }}', '{{ tarefa.titulo }}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -435,12 +451,12 @@
                     {% endif %}
                 </div>
                 <div class="card-footer">
-                    <div>
+                    <div class="user-info">
                         {% if tarefa.responsavel %}
                         <span class="badge usuario">{{ tarefa.responsavel.nome }}</span>
                         {% endif %}
                     </div>
-                    <div class="btn-group">
+                    <div class="actions">
                         <select class="form-select form-select-sm status-select" 
                                 data-tarefa-id="{{ tarefa.id }}"
                                 data-status-atual="{{ tarefa.status }}">
@@ -450,15 +466,17 @@
                             <option value="Concluída" {% if tarefa.status == 'Concluída' %}selected{% endif %}>Concluída</option>
                             <option value="Em atraso" {% if tarefa.status == 'Em atraso' %}selected{% endif %}>Em atraso</option>
                         </select>
-                        <a href="{{ url_for('tarefas.editar_tarefa', tarefa_id=tarefa.id) }}" 
-                           class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                        <button type="button" 
-                                class="btn btn-sm btn-outline-danger"
-                                onclick="confirmarExclusao('{{ url_for('tarefas.excluir_tarefa', tarefa_id=tarefa.id) }}', '{{ tarefa.titulo }}')">
-                            <i class="bi bi-trash"></i>
-                        </button>
+                        <div class="btn-group">
+                            <a href="{{ url_for('tarefas.editar_tarefa', tarefa_id=tarefa.id) }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button type="button" 
+                                    class="btn btn-sm btn-outline-danger"
+                                    onclick="confirmarExclusao('{{ url_for('tarefas.excluir_tarefa', tarefa_id=tarefa.id) }}', '{{ tarefa.titulo }}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -489,12 +507,12 @@
                     {% endif %}
                 </div>
                 <div class="card-footer">
-                    <div>
+                    <div class="user-info">
                         {% if tarefa.responsavel %}
                         <span class="badge usuario">{{ tarefa.responsavel.nome }}</span>
                         {% endif %}
                     </div>
-                    <div class="btn-group">
+                    <div class="actions">
                         <select class="form-select form-select-sm status-select" 
                                 data-tarefa-id="{{ tarefa.id }}"
                                 data-status-atual="{{ tarefa.status }}">
@@ -504,15 +522,17 @@
                             <option value="Concluída" {% if tarefa.status == 'Concluída' %}selected{% endif %}>Concluída</option>
                             <option value="Em atraso" {% if tarefa.status == 'Em atraso' %}selected{% endif %}>Em atraso</option>
                         </select>
-                        <a href="{{ url_for('tarefas.editar_tarefa', tarefa_id=tarefa.id) }}" 
-                           class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                        <button type="button" 
-                                class="btn btn-sm btn-outline-danger"
-                                onclick="confirmarExclusao('{{ url_for('tarefas.excluir_tarefa', tarefa_id=tarefa.id) }}', '{{ tarefa.titulo }}')">
-                            <i class="bi bi-trash"></i>
-                        </button>
+                        <div class="btn-group">
+                            <a href="{{ url_for('tarefas.editar_tarefa', tarefa_id=tarefa.id) }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button type="button" 
+                                    class="btn btn-sm btn-outline-danger"
+                                    onclick="confirmarExclusao('{{ url_for('tarefas.excluir_tarefa', tarefa_id=tarefa.id) }}', '{{ tarefa.titulo }}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -566,23 +586,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Mover o cartão para a nova coluna
                 const cartao = this.closest('.kanban-card');
                 const novaColuna = document.querySelector(`.kanban-column[data-status="${novoStatus}"]`);
-                novaColuna.appendChild(cartao);
+                if (novaColuna) {
+                    novaColuna.appendChild(cartao);
+                }
                 
                 // Atualizar o status atual no select
                 this.dataset.statusAtual = novoStatus;
                 
-                // Mostrar mensagem de sucesso
-                const Toast = Swal.mixin({
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true
-                });
-                
-                Toast.fire({
+                // Fechar o loading e mostrar sucesso
+                Swal.fire({
                     icon: 'success',
-                    title: 'Status atualizado com sucesso'
+                    title: 'Status atualizado com sucesso',
+                    showConfirmButton: false,
+                    timer: 1500
                 });
                 
             } catch (error) {
@@ -607,22 +623,38 @@ async function atualizarContadores() {
         const response = await fetch('/api/tarefas/contadores');
         const contadores = await response.json();
         
-        // Atualiza os números nas estatísticas
-        document.querySelector('.stats-value:nth-child(1)').textContent = contadores.total;
-        document.querySelector('.stats-value:nth-child(2)').textContent = contadores.nao_iniciadas;
-        document.querySelector('.stats-value:nth-child(3)').textContent = contadores.em_execucao;
-        document.querySelector('.stats-value:nth-child(4)').textContent = contadores.suspensas;
-        document.querySelector('.stats-value:nth-child(5)').textContent = contadores.concluidas;
-        document.querySelector('.stats-value:nth-child(6)').textContent = contadores.em_atraso;
+        // Atualiza os números nas estatísticas do dashboard
+        const statsCards = document.querySelectorAll('.stats-card .stats-value');
+        statsCards[0].textContent = contadores.total;
+        statsCards[1].textContent = contadores.nao_iniciadas;
+        statsCards[2].textContent = contadores.em_execucao;
+        statsCards[3].textContent = contadores.suspensas;
+        statsCards[4].textContent = contadores.concluidas;
+        statsCards[5].textContent = contadores.em_atraso;
         
         // Atualiza os badges nas colunas
-        document.querySelector('.nao-iniciada .badge').textContent = contadores.nao_iniciadas;
-        document.querySelector('.em-execucao .badge').textContent = contadores.em_execucao;
-        document.querySelector('.suspensa .badge').textContent = contadores.suspensas;
-        document.querySelector('.concluida .badge').textContent = contadores.concluidas;
-        document.querySelector('.em-atraso .badge').textContent = contadores.em_atraso;
+        const badges = {
+            'Não iniciada': document.querySelector('.nao-iniciada .badge'),
+            'Em execução': document.querySelector('.em-execucao .badge'),
+            'Suspensa': document.querySelector('.suspensa .badge'),
+            'Concluída': document.querySelector('.concluida .badge'),
+            'Em atraso': document.querySelector('.em-atraso .badge')
+        };
+        
+        badges['Não iniciada'].textContent = contadores.nao_iniciadas;
+        badges['Em execução'].textContent = contadores.em_execucao;
+        badges['Suspensa'].textContent = contadores.suspensas;
+        badges['Concluída'].textContent = contadores.concluidas;
+        badges['Em atraso'].textContent = contadores.em_atraso;
+        
     } catch (error) {
         console.error('Erro ao atualizar contadores:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Erro',
+            text: 'Não foi possível atualizar os contadores',
+            confirmButtonText: 'OK'
+        });
     }
 }
 

@@ -77,7 +77,7 @@ def editar_categoria(categoria_id):
 @bp.route('/excluir_categoria/<int:categoria_id>', methods=['POST'])
 @login_required
 def excluir_categoria(categoria_id):
-    categoria = Categoria.query.get_or_404(categoria_id)
+    categoria = CategoriaTarefa.query.get_or_404(categoria_id)
     try:
         db.session.delete(categoria)
         db.session.commit()

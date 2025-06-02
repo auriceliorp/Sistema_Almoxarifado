@@ -1,8 +1,9 @@
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
 from flask_login import login_required, current_user
 from models import db, Tarefa, CategoriaTarefa, OrigemTarefa, UnidadeLocal, Usuario
-from datetime import datetime
+from datetime import datetime, timedelta
 from extensoes import csrf
+from sqlalchemy import func
 
 bp = Blueprint('tarefas', __name__, url_prefix='/tarefas')
 api_bp = Blueprint('tarefas_api', __name__, url_prefix='/api')
@@ -389,6 +390,180 @@ def get_contadores():
         })
     except Exception as e:
         print(f"Erro ao buscar contadores: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/dashboard')
+@login_required
+def dashboard_tarefas():
+    """Renderiza a página do dashboard de tarefas."""
+    # Contagem total de tarefas
+    total_tarefas = Tarefa.query.count()
+    
+    # Contagem por status
+    tarefas_em_andamento = Tarefa.query.filter_by(status='Em execução').count()
+    tarefas_concluidas = Tarefa.query.filter_by(status='Concluída').count()
+    tarefas_atrasadas = Tarefa.query.filter_by(status='Em atraso').count()
+    
+    # Dados para os gráficos
+    # Categorias
+    categorias = db.session.query(
+        CategoriaTarefa.nome,
+        func.count(Tarefa.id)
+    ).join(Tarefa).group_by(CategoriaTarefa.nome).all()
+    categorias_labels = [cat[0] for cat in categorias]
+    categorias_data = [cat[1] for cat in categorias]
+    
+    # Unidades
+    unidades = db.session.query(
+        UnidadeLocal.descricao,
+        func.count(Tarefa.id)
+    ).join(Tarefa).group_by(UnidadeLocal.descricao).all()
+    unidades_labels = [uni[0] for uni in unidades]
+    unidades_data = [uni[1] for uni in unidades]
+    
+    # Origens
+    origens = db.session.query(
+        OrigemTarefa.nome,
+        func.count(Tarefa.id)
+    ).join(Tarefa).group_by(OrigemTarefa.nome).all()
+    origens_labels = [orig[0] for orig in origens]
+    origens_data = [orig[1] for orig in origens]
+    
+    # Responsáveis
+    responsaveis = db.session.query(
+        Usuario.nome,
+        func.count(Tarefa.id)
+    ).join(Tarefa, Tarefa.responsavel_id == Usuario.id)\
+    .group_by(Usuario.nome).all()
+    responsaveis_labels = [resp[0] for resp in responsaveis]
+    responsaveis_data = [resp[1] for resp in responsaveis]
+    
+    # Solicitantes
+    solicitantes = db.session.query(
+        Usuario.nome,
+        func.count(Tarefa.id)
+    ).join(Tarefa, Tarefa.solicitante_id == Usuario.id)\
+    .group_by(Usuario.nome).all()
+    solicitantes_labels = [solic[0] for solic in solicitantes]
+    solicitantes_data = [solic[1] for solic in solicitantes]
+    
+    return render_template('tarefas/dashboard_tarefas.html',
+        total_tarefas=total_tarefas,
+        tarefas_em_andamento=tarefas_em_andamento,
+        tarefas_concluidas=tarefas_concluidas,
+        tarefas_atrasadas=tarefas_atrasadas,
+        categorias_labels=categorias_labels,
+        categorias_data=categorias_data,
+        unidades_labels=unidades_labels,
+        unidades_data=unidades_data,
+        origens_labels=origens_labels,
+        origens_data=origens_data,
+        responsaveis_labels=responsaveis_labels,
+        responsaveis_data=responsaveis_data,
+        solicitantes_labels=solicitantes_labels,
+        solicitantes_data=solicitantes_data
+    )
+
+@api_bp.route('/tarefas/dashboard-data')
+@login_required
+def get_dashboard_data():
+    """Retorna dados do dashboard filtrados por período."""
+    try:
+        period = request.args.get('period', 'week')
+        
+        # Definir data inicial baseada no período
+        hoje = datetime.now()
+        if period == 'week':
+            data_inicial = hoje - timedelta(days=7)
+        elif period == 'month':
+            data_inicial = hoje - timedelta(days=30)
+        elif period == 'year':
+            data_inicial = hoje - timedelta(days=365)
+        else:
+            return jsonify({'error': 'Período inválido'}), 400
+            
+        # Query base filtrada por período
+        base_query = Tarefa.query.filter(Tarefa.data_criacao >= data_inicial)
+        
+        # Estatísticas
+        stats = {
+            'total': base_query.count(),
+            'em_andamento': base_query.filter_by(status='Em execução').count(),
+            'concluidas': base_query.filter_by(status='Concluída').count(),
+            'atrasadas': base_query.filter_by(status='Em atraso').count()
+        }
+        
+        # Dados dos gráficos
+        # Categorias
+        categorias = db.session.query(
+            CategoriaTarefa.nome,
+            func.count(Tarefa.id)
+        ).join(Tarefa).filter(
+            Tarefa.data_criacao >= data_inicial
+        ).group_by(CategoriaTarefa.nome).all()
+        
+        # Unidades
+        unidades = db.session.query(
+            UnidadeLocal.descricao,
+            func.count(Tarefa.id)
+        ).join(Tarefa).filter(
+            Tarefa.data_criacao >= data_inicial
+        ).group_by(UnidadeLocal.descricao).all()
+        
+        # Origens
+        origens = db.session.query(
+            OrigemTarefa.nome,
+            func.count(Tarefa.id)
+        ).join(Tarefa).filter(
+            Tarefa.data_criacao >= data_inicial
+        ).group_by(OrigemTarefa.nome).all()
+        
+        # Responsáveis
+        responsaveis = db.session.query(
+            Usuario.nome,
+            func.count(Tarefa.id)
+        ).join(Tarefa, Tarefa.responsavel_id == Usuario.id).filter(
+            Tarefa.data_criacao >= data_inicial
+        ).group_by(Usuario.nome).all()
+        
+        # Solicitantes
+        solicitantes = db.session.query(
+            Usuario.nome,
+            func.count(Tarefa.id)
+        ).join(Tarefa, Tarefa.solicitante_id == Usuario.id).filter(
+            Tarefa.data_criacao >= data_inicial
+        ).group_by(Usuario.nome).all()
+        
+        charts = {
+            'categoriasChart': {
+                'labels': [cat[0] for cat in categorias],
+                'data': [cat[1] for cat in categorias]
+            },
+            'unidadesChart': {
+                'labels': [uni[0] for uni in unidades],
+                'data': [uni[1] for uni in unidades]
+            },
+            'origensChart': {
+                'labels': [orig[0] for orig in origens],
+                'data': [orig[1] for orig in origens]
+            },
+            'responsaveisChart': {
+                'labels': [resp[0] for resp in responsaveis],
+                'data': [resp[1] for resp in responsaveis]
+            },
+            'solicitantesChart': {
+                'labels': [solic[0] for solic in solicitantes],
+                'data': [solic[1] for solic in solicitantes]
+            }
+        }
+        
+        return jsonify({
+            'stats': stats,
+            'charts': charts
+        })
+        
+    except Exception as e:
+        print(f"Erro ao buscar dados do dashboard: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 # Registrar os blueprints

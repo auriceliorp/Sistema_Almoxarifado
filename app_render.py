@@ -10,6 +10,7 @@ from flask_login import login_required
 
 # Importa extensões globais (db, login_manager, migrate, csrf)
 from extensoes import db, login_manager, migrate, csrf
+
 # -------------------- Carrega variáveis de ambiente do arquivo .env (para uso local) --------------------
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))
@@ -104,6 +105,7 @@ def create_app():
     from routes_publicacao import bp as publicacoes_bp
     from routes_tarefas import bp as tarefas_bp, api_bp as tarefas_api_bp
     from routes_config_tarefas import bp as config_tarefas_bp
+    from routes_api import bp as api_bp  # Novo import para API de detalhes
 
     # Registro dos blueprints
     app.register_blueprint(main)
@@ -127,9 +129,11 @@ def create_app():
     app.register_blueprint(tarefas_bp)
     app.register_blueprint(tarefas_api_bp)
     app.register_blueprint(config_tarefas_bp)
+    app.register_blueprint(api_bp)  # Registro do novo blueprint
 
     # Configuração do CSRF para rotas da API
     csrf.exempt(tarefas_api_bp)
+    csrf.exempt(api_bp)  # Exempta as novas rotas da API da proteção CSRF
 
     return app
 
@@ -139,4 +143,4 @@ app = create_app()
 # -------------------- Executa servidor local se rodar diretamente --------------------
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port) 

@@ -174,12 +174,12 @@ def editar_tarefa(id):
                          unidades_locais=unidades_locais,
                          usuarios=usuarios)
 
-@bp.route('/excluir/<int:tarefa_id>')
+@bp.route('/excluir/<int:id>')
 @login_required
-def excluir_tarefa(tarefa_id):
+def excluir_tarefa(id):
     """Exclui uma tarefa."""
     try:
-        tarefa = Tarefa.query.get_or_404(tarefa_id)
+        tarefa = Tarefa.query.get_or_404(id)
         db.session.delete(tarefa)
         db.session.commit()
         flash('Tarefa excluída com sucesso!', 'success')
@@ -394,4 +394,4 @@ def get_contadores():
 # Registrar os blueprints
 def init_app(app):
     app.register_blueprint(bp)
-    app.register_blueprint(api_bp) 
+    app.register_blueprint(api_bp)

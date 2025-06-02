@@ -525,3 +525,35 @@ class PublicacaoSignatariosExternos(db.Model):
     __tablename__ = 'publicacao_signatarios_externos'
     publicacao_id = db.Column(db.Integer, db.ForeignKey('publicacoes.id'), primary_key=True)
     fornecedor_id = db.Column(db.Integer, db.ForeignKey('fornecedores.id'), primary_key=True)
+
+# ------------------- REQUISIÇÃO DE MATERIAL -------------------
+class RequisicaoMaterial(db.Model):
+    __tablename__ = 'requisicao_material'
+    id = db.Column(db.Integer, primary_key=True)
+    data_requisicao = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    status = db.Column(db.String(20), nullable=False, default='PENDENTE')  # PENDENTE, APROVADA, REJEITADA, ATENDIDA
+    observacao = db.Column(db.Text, nullable=True)
+    
+    solicitante_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    solicitante = db.relationship('Usuario', backref='requisicoes')
+    
+    tarefa_id = db.Column(db.Integer, db.ForeignKey('tarefas.id'), nullable=True)
+    tarefa = db.relationship('Tarefa', backref='requisicao')
+    
+    saida_id = db.Column(db.Integer, db.ForeignKey('saida_material.id'), nullable=True)
+    saida = db.relationship('SaidaMaterial', backref='requisicao')
+    
+    itens = db.relationship(
+        'RequisicaoItem',
+        backref='requisicao',
+        cascade='all, delete-orphan'
+    )
+
+class RequisicaoItem(db.Model):
+    __tablename__ = 'requisicao_item'
+    id = db.Column(db.Integer, primary_key=True)
+    requisicao_id = db.Column(db.Integer, db.ForeignKey('requisicao_material.id'), nullable=False)
+    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
+    quantidade = db.Column(db.Integer, nullable=False)
+    
+    item = db.relationship('Item', backref='requisicoes')

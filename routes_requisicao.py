@@ -11,7 +11,7 @@ requisicao_bp = Blueprint('requisicao_bp', __name__)
 def consulta_estoque():
     """Página para consulta de estoque e criação de requisição"""
     itens = Item.query.filter(Item.estoque_atual > 0).order_by(Item.nome).all()
-    return render_template('requisicao/consulta_estoque.html', itens=itens)
+    return render_template('almoxarifado/requisicao/consulta_estoque.html', itens=itens)
 
 @requisicao_bp.route('/requisicao/nova', methods=['POST'])
 @login_required
@@ -91,7 +91,7 @@ def minhas_requisicoes():
         .filter_by(solicitante_id=current_user.id)\
         .order_by(desc(RequisicaoMaterial.data_requisicao))\
         .all()
-    return render_template('requisicao/minhas_requisicoes.html', requisicoes=requisicoes)
+    return render_template('almoxarifado/requisicao/minhas_requisicoes.html', requisicoes=requisicoes)
 
 @requisicao_bp.route('/requisicao/pendentes')
 @login_required
@@ -101,7 +101,7 @@ def requisicoes_pendentes():
         .filter_by(status='PENDENTE')\
         .order_by(desc(RequisicaoMaterial.data_requisicao))\
         .all()
-    return render_template('requisicao/requisicoes_pendentes.html', requisicoes=requisicoes)
+    return render_template('almoxarifado/requisicao/requisicoes_pendentes.html', requisicoes=requisicoes)
 
 @requisicao_bp.route('/requisicao/<int:requisicao_id>/atender', methods=['POST'])
 @login_required

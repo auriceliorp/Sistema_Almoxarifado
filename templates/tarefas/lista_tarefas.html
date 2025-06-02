@@ -1,6 +1,7 @@
 {% extends 'tarefas/base_tarefas.html' %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 <style>
     .kanban-board {
         display: flex;
@@ -208,13 +209,13 @@
     <!-- Quadro Kanban -->
     <div class="kanban-board">
         <!-- Não Iniciada -->
-        <div class="kanban-column nao-iniciada">
+        <div class="kanban-column nao-iniciada" data-status="Não iniciada">
             <h6 class="d-flex align-items-center">
                 <i class="bi bi-hourglass me-2"></i>Não Iniciada
                 <span class="badge bg-secondary rounded-pill ms-auto">{{ tarefas_nao_iniciadas }}</span>
             </h6>
             {% for tarefa in tarefas if tarefa.status == 'Não iniciada' %}
-            <div class="kanban-card {{ tarefa.prioridade.lower() }}">
+            <div class="kanban-card {{ tarefa.prioridade.lower() }}" data-tarefa-id="{{ tarefa.id }}">
                 <div class="card-title">{{ tarefa.titulo }}</div>
                 {% if tarefa.numero_sei %}
                 <div class="card-subtitle">SEI: {{ tarefa.numero_sei }}</div>
@@ -253,13 +254,13 @@
         </div>
         
         <!-- Em Execução -->
-        <div class="kanban-column em-execucao">
+        <div class="kanban-column em-execucao" data-status="Em execução">
             <h6 class="d-flex align-items-center">
                 <i class="bi bi-play-circle me-2"></i>Em Execução
                 <span class="badge bg-primary rounded-pill ms-auto">{{ tarefas_em_execucao }}</span>
             </h6>
             {% for tarefa in tarefas if tarefa.status == 'Em execução' %}
-            <div class="kanban-card {{ tarefa.prioridade.lower() }}">
+            <div class="kanban-card {{ tarefa.prioridade.lower() }}" data-tarefa-id="{{ tarefa.id }}">
                 <div class="card-title">{{ tarefa.titulo }}</div>
                 {% if tarefa.numero_sei %}
                 <div class="card-subtitle">SEI: {{ tarefa.numero_sei }}</div>
@@ -298,13 +299,13 @@
         </div>
         
         <!-- Suspensa -->
-        <div class="kanban-column suspensa">
+        <div class="kanban-column suspensa" data-status="Suspensa">
             <h6 class="d-flex align-items-center">
                 <i class="bi bi-pause-circle me-2"></i>Suspensa
                 <span class="badge bg-warning rounded-pill ms-auto">{{ tarefas_suspensas }}</span>
             </h6>
             {% for tarefa in tarefas if tarefa.status == 'Suspensa' %}
-            <div class="kanban-card {{ tarefa.prioridade.lower() }}">
+            <div class="kanban-card {{ tarefa.prioridade.lower() }}" data-tarefa-id="{{ tarefa.id }}">
                 <div class="card-title">{{ tarefa.titulo }}</div>
                 {% if tarefa.numero_sei %}
                 <div class="card-subtitle">SEI: {{ tarefa.numero_sei }}</div>
@@ -343,13 +344,13 @@
         </div>
         
         <!-- Concluída -->
-        <div class="kanban-column concluida">
+        <div class="kanban-column concluida" data-status="Concluída">
             <h6 class="d-flex align-items-center">
                 <i class="bi bi-check-circle me-2"></i>Concluída
                 <span class="badge bg-success rounded-pill ms-auto">{{ tarefas_concluidas }}</span>
             </h6>
             {% for tarefa in tarefas if tarefa.status == 'Concluída' %}
-            <div class="kanban-card {{ tarefa.prioridade.lower() }}">
+            <div class="kanban-card {{ tarefa.prioridade.lower() }}" data-tarefa-id="{{ tarefa.id }}">
                 <div class="card-title">{{ tarefa.titulo }}</div>
                 {% if tarefa.numero_sei %}
                 <div class="card-subtitle">SEI: {{ tarefa.numero_sei }}</div>
@@ -388,13 +389,13 @@
         </div>
         
         <!-- Em Atraso -->
-        <div class="kanban-column em-atraso">
+        <div class="kanban-column em-atraso" data-status="Em atraso">
             <h6 class="d-flex align-items-center">
                 <i class="bi bi-exclamation-circle me-2"></i>Em Atraso
                 <span class="badge bg-danger rounded-pill ms-auto">{{ tarefas_em_atraso }}</span>
             </h6>
             {% for tarefa in tarefas if tarefa.status == 'Em atraso' %}
-            <div class="kanban-card {{ tarefa.prioridade.lower() }}">
+            <div class="kanban-card {{ tarefa.prioridade.lower() }}" data-tarefa-id="{{ tarefa.id }}">
                 <div class="card-title">{{ tarefa.titulo }}</div>
                 {% if tarefa.numero_sei %}
                 <div class="card-subtitle">SEI: {{ tarefa.numero_sei }}</div>
@@ -436,8 +437,96 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
-// SweetAlert2 para confirmação de exclusão
+// Função para atualizar o status da tarefa
+async function atualizarStatusTarefa(tarefaId, novoStatus) {
+    try {
+        const response = await fetch('/api/tarefas/' + tarefaId + '/status', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ status: novoStatus })
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Erro ao atualizar status');
+        }
+
+        // Atualiza os contadores
+        atualizarContadores();
+        
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+        });
+        
+        Toast.fire({
+            icon: 'success',
+            title: 'Status atualizado com sucesso'
+        });
+    } catch (error) {
+        console.error('Erro:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Erro',
+            text: error.message,
+            confirmButtonText: 'OK'
+        });
+    }
+}
+
+// Função para atualizar os contadores
+async function atualizarContadores() {
+    try {
+        const response = await fetch('/api/tarefas/contadores');
+        const contadores = await response.json();
+        
+        // Atualiza os números nas estatísticas
+        document.querySelector('.stats-value:nth-child(1)').textContent = contadores.total;
+        document.querySelector('.stats-value:nth-child(2)').textContent = contadores.nao_iniciadas;
+        document.querySelector('.stats-value:nth-child(3)').textContent = contadores.em_execucao;
+        document.querySelector('.stats-value:nth-child(4)').textContent = contadores.suspensas;
+        document.querySelector('.stats-value:nth-child(5)').textContent = contadores.concluidas;
+        document.querySelector('.stats-value:nth-child(6)').textContent = contadores.em_atraso;
+        
+        // Atualiza os badges nas colunas
+        document.querySelector('.nao-iniciada .badge').textContent = contadores.nao_iniciadas;
+        document.querySelector('.em-execucao .badge').textContent = contadores.em_execucao;
+        document.querySelector('.suspensa .badge').textContent = contadores.suspensas;
+        document.querySelector('.concluida .badge').textContent = contadores.concluidas;
+        document.querySelector('.em-atraso .badge').textContent = contadores.em_atraso;
+    } catch (error) {
+        console.error('Erro ao atualizar contadores:', error);
+    }
+}
+
+// Inicializa o Sortable em cada coluna
+document.querySelectorAll('.kanban-column').forEach(coluna => {
+    new Sortable(coluna, {
+        group: 'tarefas',
+        animation: 150,
+        ghostClass: 'ghost',
+        onEnd: function(evt) {
+            const tarefaId = evt.item.querySelector('[data-tarefa-id]').dataset.tarefaId;
+            const novoStatus = evt.to.dataset.status;
+            
+            if (evt.from !== evt.to) {
+                atualizarStatusTarefa(tarefaId, novoStatus);
+            }
+        }
+    });
+});
+
+// Confirmação de exclusão
 function confirmarExclusao(url, titulo) {
     Swal.fire({
         title: 'Confirmar exclusão?',
@@ -455,7 +544,7 @@ function confirmarExclusao(url, titulo) {
     });
 }
 
-// Exibe mensagens flash com SweetAlert2
+// Exibe mensagens flash
 {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
         {% for category, message in messages %}

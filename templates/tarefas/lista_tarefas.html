@@ -170,6 +170,149 @@
     .status-select option[value="Em atraso"] {
         color: #dc3545;
     }
+
+    /* Estilos para a Timeline */
+    .timeline-section {
+        padding: 2rem 0;
+        background: #fff;
+        margin-bottom: 2rem;
+    }
+
+    .timeline-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .timeline-container {
+        position: relative;
+        padding: 1rem;
+    }
+
+    .timeline-item {
+        position: relative;
+        padding: 1.5rem;
+        background: #fff;
+        border-radius: 0.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border-left: 4px solid #dee2e6;
+        transition: all 0.3s ease;
+    }
+
+    .timeline-item:hover {
+        transform: translateX(5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -2.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 1rem;
+        height: 1rem;
+        border-radius: 50%;
+        background: #fff;
+        border: 2px solid;
+    }
+
+    .timeline-item::after {
+        content: '';
+        position: absolute;
+        left: -1.95rem;
+        top: 0;
+        height: 100%;
+        width: 2px;
+        background: #dee2e6;
+        z-index: -1;
+    }
+
+    .timeline-item:last-child::after {
+        display: none;
+    }
+
+    .timeline-item.nao-iniciada { border-left-color: #6c757d; }
+    .timeline-item.nao-iniciada::before { border-color: #6c757d; }
+
+    .timeline-item.em-execucao { border-left-color: #0d6efd; }
+    .timeline-item.em-execucao::before { border-color: #0d6efd; }
+
+    .timeline-item.suspensa { border-left-color: #ffc107; }
+    .timeline-item.suspensa::before { border-color: #ffc107; }
+
+    .timeline-item.concluida { border-left-color: #198754; }
+    .timeline-item.concluida::before { border-color: #198754; }
+
+    .timeline-item.em-atraso { border-left-color: #dc3545; }
+    .timeline-item.em-atraso::before { border-color: #dc3545; }
+
+    .timeline-date {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-bottom: 0.5rem;
+    }
+
+    .timeline-title {
+        font-size: 1.1rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: #2c3e50;
+    }
+
+    .timeline-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .timeline-info {
+        flex: 1;
+    }
+
+    .timeline-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .timeline-progress {
+        margin-top: 1rem;
+        height: 0.5rem;
+        background: #e9ecef;
+        border-radius: 0.25rem;
+        overflow: hidden;
+    }
+
+    .timeline-progress-bar {
+        height: 100%;
+        background: #0d6efd;
+        border-radius: 0.25rem;
+        transition: width 0.3s ease;
+    }
+
+    .timeline-badges {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .view-toggle {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .view-toggle .btn {
+        padding: 0.375rem 1rem;
+    }
+
+    .view-toggle .btn.active {
+        background-color: #0d6efd;
+        color: white;
+    }
 </style>
 {% endblock %}
 
@@ -252,318 +395,411 @@
         </div>
     </div>
     
-    <!-- Cabeçalho -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h5 class="mb-0">
-            <i class="bi bi-kanban me-2"></i>Quadro de Tarefas
-        </h5>
+    <!-- Alternador de Visualização -->
+    <div class="view-toggle mb-4">
+        <button class="btn btn-outline-primary active" data-view="kanban">
+            <i class="bi bi-kanban me-1"></i>Kanban
+        </button>
+        <button class="btn btn-outline-primary" data-view="timeline">
+            <i class="bi bi-clock-history me-1"></i>Timeline
+        </button>
     </div>
-    
-    <!-- Quadro Kanban -->
-    <div class="kanban-board">
-        <!-- Não Iniciada -->
-        <div class="kanban-column nao-iniciada" data-status="Não iniciada">
-            <h6 class="d-flex align-items-center">
-                <i class="bi bi-hourglass me-2"></i>Não Iniciada
-                <span class="badge bg-secondary rounded-pill ms-auto">{{ tarefas_nao_iniciadas }}</span>
-            </h6>
-            {% for tarefa in tarefas if tarefa.status == 'Não iniciada' %}
-            <div class="kanban-card {{ tarefa.prioridade.lower() }}" data-tarefa-id="{{ tarefa.id }}">
-                <div class="card-title">{{ tarefa.titulo }}</div>
-                {% if tarefa.numero_sei %}
-                <div class="card-subtitle">SEI: {{ tarefa.numero_sei }}</div>
-                {% endif %}
-                <div class="d-flex flex-wrap gap-1 mb-2">
-                    {% if tarefa.categoria %}
-                    <span class="badge categoria">{{ tarefa.categoria.nome }}</span>
-                    {% endif %}
-                    {% if tarefa.unidade_local %}
-                    <span class="badge unidade">{{ tarefa.unidade_local.descricao }}</span>
-                    {% endif %}
-                    {% if tarefa.origem %}
-                    <span class="badge origem">{{ tarefa.origem.nome }}</span>
+
+    <!-- Timeline View -->
+    <div class="timeline-section" id="timelineView" style="display: none;">
+        <div class="timeline-header">
+            <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Progresso das Tarefas</h5>
+            <div class="btn-group">
+                <button class="btn btn-sm btn-outline-secondary" id="expandAll">
+                    <i class="bi bi-arrows-expand me-1"></i>Expandir Todos
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" id="collapseAll">
+                    <i class="bi bi-arrows-collapse me-1"></i>Recolher Todos
+                </button>
+            </div>
+        </div>
+        <div class="timeline-container">
+            {% for tarefa in tarefas %}
+            <div class="timeline-item {{ tarefa.status.lower().replace(' ', '-') }}">
+                <div class="timeline-date">
+                    <i class="bi bi-calendar-event me-1"></i>
+                    Início: {{ tarefa.data_inicio.strftime('%d/%m/%Y') if tarefa.data_inicio else 'Não definido' }}
+                    {% if tarefa.data_termino %}
+                    <span class="ms-2">
+                        <i class="bi bi-calendar-check me-1"></i>
+                        Término: {{ tarefa.data_termino.strftime('%d/%m/%Y') }}
+                    </span>
                     {% endif %}
                 </div>
-                <div class="card-footer">
-                    <div class="user-info">
-                        {% if tarefa.responsavel %}
-                        <span class="badge usuario">{{ tarefa.responsavel.nome }}</span>
+                <div class="timeline-content">
+                    <div class="timeline-info">
+                        <h6 class="timeline-title">{{ tarefa.titulo }}</h6>
+                        <div class="timeline-badges">
+                            <span class="badge categoria">
+                                <i class="bi bi-tag me-1"></i>{{ tarefa.categoria.nome }}
+                            </span>
+                            <span class="badge unidade">
+                                <i class="bi bi-building me-1"></i>{{ tarefa.unidade_local.descricao }}
+                            </span>
+                            <span class="badge origem">
+                                <i class="bi bi-folder me-1"></i>{{ tarefa.origem.nome }}
+                            </span>
+                            <span class="badge usuario">
+                                <i class="bi bi-person me-1"></i>{{ tarefa.responsavel.nome }}
+                            </span>
+                        </div>
+                        {% if tarefa.resumo %}
+                        <p class="text-muted mb-0 mt-2">{{ tarefa.resumo }}</p>
                         {% endif %}
                     </div>
-                    <div class="actions">
-                        <select class="form-select form-select-sm status-select" 
-                                data-tarefa-id="{{ tarefa.id }}"
-                                data-status-atual="{{ tarefa.status }}">
-                            <option value="Não iniciada" {% if tarefa.status == 'Não iniciada' %}selected{% endif %}>Não iniciada</option>
-                            <option value="Em execução" {% if tarefa.status == 'Em execução' %}selected{% endif %}>Em execução</option>
-                            <option value="Suspensa" {% if tarefa.status == 'Suspensa' %}selected{% endif %}>Suspensa</option>
-                            <option value="Concluída" {% if tarefa.status == 'Concluída' %}selected{% endif %}>Concluída</option>
-                            <option value="Em atraso" {% if tarefa.status == 'Em atraso' %}selected{% endif %}>Em atraso</option>
+                    <div class="timeline-actions">
+                        <select class="status-select" data-tarefa-id="{{ tarefa.id }}">
+                            {% for status in ['Não iniciada', 'Em execução', 'Suspensa', 'Concluída', 'Em atraso'] %}
+                            <option value="{{ status }}" {% if tarefa.status == status %}selected{% endif %}>
+                                {{ status }}
+                            </option>
+                            {% endfor %}
                         </select>
                         <div class="btn-group">
-                            <button type="button" 
-                                    class="btn btn-sm btn-outline-info"
-                                    onclick="verDetalhes('{{ tarefa.id }}', '{{ tarefa.titulo }}')">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                            <a href="{{ url_for('tarefas.editar_tarefa', id=tarefa.id) }}" 
-                               class="btn btn-sm btn-outline-primary">
+                            <a href="{{ url_for('tarefas.editar_tarefa', id=tarefa.id) }}" class="btn btn-sm btn-outline-primary">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            <button type="button" 
-                                    class="btn btn-sm btn-outline-danger"
-                                    onclick="confirmarExclusao('{{ url_for('tarefas.excluir_tarefa', id=tarefa.id) }}', '{{ tarefa.titulo }}')">
+                            <button class="btn btn-sm btn-outline-danger delete-tarefa" data-tarefa-id="{{ tarefa.id }}">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </div>
                     </div>
+                </div>
+                <div class="timeline-progress">
+                    {% set progress = {
+                        'Não iniciada': 0,
+                        'Em execução': 50,
+                        'Suspensa': 25,
+                        'Concluída': 100,
+                        'Em atraso': 75
+                    } %}
+                    <div class="timeline-progress-bar" style="width: {{ progress[tarefa.status] }}%"></div>
                 </div>
             </div>
             {% endfor %}
         </div>
-        
-        <!-- Em Execução -->
-        <div class="kanban-column em-execucao" data-status="Em execução">
-            <h6 class="d-flex align-items-center">
-                <i class="bi bi-play-circle me-2"></i>Em Execução
-                <span class="badge bg-primary rounded-pill ms-auto">{{ tarefas_em_execucao }}</span>
-            </h6>
-            {% for tarefa in tarefas if tarefa.status == 'Em execução' %}
-            <div class="kanban-card {{ tarefa.prioridade.lower() }}" data-tarefa-id="{{ tarefa.id }}">
-                <div class="card-title">{{ tarefa.titulo }}</div>
-                {% if tarefa.numero_sei %}
-                <div class="card-subtitle">SEI: {{ tarefa.numero_sei }}</div>
-                {% endif %}
-                <div class="d-flex flex-wrap gap-1 mb-2">
-                    {% if tarefa.categoria %}
-                    <span class="badge categoria">{{ tarefa.categoria.nome }}</span>
-                    {% endif %}
-                    {% if tarefa.unidade_local %}
-                    <span class="badge unidade">{{ tarefa.unidade_local.descricao }}</span>
-                    {% endif %}
-                    {% if tarefa.origem %}
-                    <span class="badge origem">{{ tarefa.origem.nome }}</span>
-                    {% endif %}
-                </div>
-                <div class="card-footer">
-                    <div class="user-info">
-                        {% if tarefa.responsavel %}
-                        <span class="badge usuario">{{ tarefa.responsavel.nome }}</span>
-                        {% endif %}
-                    </div>
-                    <div class="actions">
-                        <select class="form-select form-select-sm status-select" 
-                                data-tarefa-id="{{ tarefa.id }}"
-                                data-status-atual="{{ tarefa.status }}">
-                            <option value="Não iniciada" {% if tarefa.status == 'Não iniciada' %}selected{% endif %}>Não iniciada</option>
-                            <option value="Em execução" {% if tarefa.status == 'Em execução' %}selected{% endif %}>Em execução</option>
-                            <option value="Suspensa" {% if tarefa.status == 'Suspensa' %}selected{% endif %}>Suspensa</option>
-                            <option value="Concluída" {% if tarefa.status == 'Concluída' %}selected{% endif %}>Concluída</option>
-                            <option value="Em atraso" {% if tarefa.status == 'Em atraso' %}selected{% endif %}>Em atraso</option>
-                        </select>
-                        <div class="btn-group">
-                            <button type="button" 
-                                    class="btn btn-sm btn-outline-info"
-                                    onclick="verDetalhes('{{ tarefa.id }}', '{{ tarefa.titulo }}')">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                            <a href="{{ url_for('tarefas.editar_tarefa', id=tarefa.id) }}" 
-                               class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <button type="button" 
-                                    class="btn btn-sm btn-outline-danger"
-                                    onclick="confirmarExclusao('{{ url_for('tarefas.excluir_tarefa', id=tarefa.id) }}', '{{ tarefa.titulo }}')">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
+    </div>
+
+    <!-- Kanban Board -->
+    <div id="kanbanView">
+        <!-- Cabeçalho -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="mb-0">
+                <i class="bi bi-kanban me-2"></i>Quadro de Tarefas
+            </h5>
         </div>
         
-        <!-- Suspensa -->
-        <div class="kanban-column suspensa" data-status="Suspensa">
-            <h6 class="d-flex align-items-center">
-                <i class="bi bi-pause-circle me-2"></i>Suspensa
-                <span class="badge bg-warning rounded-pill ms-auto">{{ tarefas_suspensas }}</span>
-            </h6>
-            {% for tarefa in tarefas if tarefa.status == 'Suspensa' %}
-            <div class="kanban-card {{ tarefa.prioridade.lower() }}" data-tarefa-id="{{ tarefa.id }}">
-                <div class="card-title">{{ tarefa.titulo }}</div>
-                {% if tarefa.numero_sei %}
-                <div class="card-subtitle">SEI: {{ tarefa.numero_sei }}</div>
-                {% endif %}
-                <div class="d-flex flex-wrap gap-1 mb-2">
-                    {% if tarefa.categoria %}
-                    <span class="badge categoria">{{ tarefa.categoria.nome }}</span>
+        <!-- Quadro Kanban -->
+        <div class="kanban-board">
+            <!-- Não Iniciada -->
+            <div class="kanban-column nao-iniciada" data-status="Não iniciada">
+                <h6 class="d-flex align-items-center">
+                    <i class="bi bi-hourglass me-2"></i>Não Iniciada
+                    <span class="badge bg-secondary rounded-pill ms-auto">{{ tarefas_nao_iniciadas }}</span>
+                </h6>
+                {% for tarefa in tarefas if tarefa.status == 'Não iniciada' %}
+                <div class="kanban-card {{ tarefa.prioridade.lower() }}" data-tarefa-id="{{ tarefa.id }}">
+                    <div class="card-title">{{ tarefa.titulo }}</div>
+                    {% if tarefa.numero_sei %}
+                    <div class="card-subtitle">SEI: {{ tarefa.numero_sei }}</div>
                     {% endif %}
-                    {% if tarefa.unidade_local %}
-                    <span class="badge unidade">{{ tarefa.unidade_local.descricao }}</span>
-                    {% endif %}
-                    {% if tarefa.origem %}
-                    <span class="badge origem">{{ tarefa.origem.nome }}</span>
-                    {% endif %}
-                </div>
-                <div class="card-footer">
-                    <div class="user-info">
-                        {% if tarefa.responsavel %}
-                        <span class="badge usuario">{{ tarefa.responsavel.nome }}</span>
+                    <div class="d-flex flex-wrap gap-1 mb-2">
+                        {% if tarefa.categoria %}
+                        <span class="badge categoria">{{ tarefa.categoria.nome }}</span>
+                        {% endif %}
+                        {% if tarefa.unidade_local %}
+                        <span class="badge unidade">{{ tarefa.unidade_local.descricao }}</span>
+                        {% endif %}
+                        {% if tarefa.origem %}
+                        <span class="badge origem">{{ tarefa.origem.nome }}</span>
                         {% endif %}
                     </div>
-                    <div class="actions">
-                        <select class="form-select form-select-sm status-select" 
-                                data-tarefa-id="{{ tarefa.id }}"
-                                data-status-atual="{{ tarefa.status }}">
-                            <option value="Não iniciada" {% if tarefa.status == 'Não iniciada' %}selected{% endif %}>Não iniciada</option>
-                            <option value="Em execução" {% if tarefa.status == 'Em execução' %}selected{% endif %}>Em execução</option>
-                            <option value="Suspensa" {% if tarefa.status == 'Suspensa' %}selected{% endif %}>Suspensa</option>
-                            <option value="Concluída" {% if tarefa.status == 'Concluída' %}selected{% endif %}>Concluída</option>
-                            <option value="Em atraso" {% if tarefa.status == 'Em atraso' %}selected{% endif %}>Em atraso</option>
-                        </select>
-                        <div class="btn-group">
-                            <button type="button" 
-                                    class="btn btn-sm btn-outline-info"
-                                    onclick="verDetalhes('{{ tarefa.id }}', '{{ tarefa.titulo }}')">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                            <a href="{{ url_for('tarefas.editar_tarefa', id=tarefa.id) }}" 
-                               class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <button type="button" 
-                                    class="btn btn-sm btn-outline-danger"
-                                    onclick="confirmarExclusao('{{ url_for('tarefas.excluir_tarefa', id=tarefa.id) }}', '{{ tarefa.titulo }}')">
-                                <i class="bi bi-trash"></i>
-                            </button>
+                    <div class="card-footer">
+                        <div class="user-info">
+                            {% if tarefa.responsavel %}
+                            <span class="badge usuario">{{ tarefa.responsavel.nome }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="actions">
+                            <select class="form-select form-select-sm status-select" 
+                                    data-tarefa-id="{{ tarefa.id }}"
+                                    data-status-atual="{{ tarefa.status }}">
+                                <option value="Não iniciada" {% if tarefa.status == 'Não iniciada' %}selected{% endif %}>Não iniciada</option>
+                                <option value="Em execução" {% if tarefa.status == 'Em execução' %}selected{% endif %}>Em execução</option>
+                                <option value="Suspensa" {% if tarefa.status == 'Suspensa' %}selected{% endif %}>Suspensa</option>
+                                <option value="Concluída" {% if tarefa.status == 'Concluída' %}selected{% endif %}>Concluída</option>
+                                <option value="Em atraso" {% if tarefa.status == 'Em atraso' %}selected{% endif %}>Em atraso</option>
+                            </select>
+                            <div class="btn-group">
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-info"
+                                        onclick="verDetalhes('{{ tarefa.id }}', '{{ tarefa.titulo }}')">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <a href="{{ url_for('tarefas.editar_tarefa', id=tarefa.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-danger"
+                                        onclick="confirmarExclusao('{{ url_for('tarefas.excluir_tarefa', id=tarefa.id) }}', '{{ tarefa.titulo }}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
+                {% endfor %}
             </div>
-            {% endfor %}
-        </div>
-        
-        <!-- Concluída -->
-        <div class="kanban-column concluida" data-status="Concluída">
-            <h6 class="d-flex align-items-center">
-                <i class="bi bi-check-circle me-2"></i>Concluída
-                <span class="badge bg-success rounded-pill ms-auto">{{ tarefas_concluidas }}</span>
-            </h6>
-            {% for tarefa in tarefas if tarefa.status == 'Concluída' %}
-            <div class="kanban-card {{ tarefa.prioridade.lower() }}" data-tarefa-id="{{ tarefa.id }}">
-                <div class="card-title">{{ tarefa.titulo }}</div>
-                {% if tarefa.numero_sei %}
-                <div class="card-subtitle">SEI: {{ tarefa.numero_sei }}</div>
-                {% endif %}
-                <div class="d-flex flex-wrap gap-1 mb-2">
-                    {% if tarefa.categoria %}
-                    <span class="badge categoria">{{ tarefa.categoria.nome }}</span>
+            
+            <!-- Em Execução -->
+            <div class="kanban-column em-execucao" data-status="Em execução">
+                <h6 class="d-flex align-items-center">
+                    <i class="bi bi-play-circle me-2"></i>Em Execução
+                    <span class="badge bg-primary rounded-pill ms-auto">{{ tarefas_em_execucao }}</span>
+                </h6>
+                {% for tarefa in tarefas if tarefa.status == 'Em execução' %}
+                <div class="kanban-card {{ tarefa.prioridade.lower() }}" data-tarefa-id="{{ tarefa.id }}">
+                    <div class="card-title">{{ tarefa.titulo }}</div>
+                    {% if tarefa.numero_sei %}
+                    <div class="card-subtitle">SEI: {{ tarefa.numero_sei }}</div>
                     {% endif %}
-                    {% if tarefa.unidade_local %}
-                    <span class="badge unidade">{{ tarefa.unidade_local.descricao }}</span>
-                    {% endif %}
-                    {% if tarefa.origem %}
-                    <span class="badge origem">{{ tarefa.origem.nome }}</span>
-                    {% endif %}
-                </div>
-                <div class="card-footer">
-                    <div class="user-info">
-                        {% if tarefa.responsavel %}
-                        <span class="badge usuario">{{ tarefa.responsavel.nome }}</span>
+                    <div class="d-flex flex-wrap gap-1 mb-2">
+                        {% if tarefa.categoria %}
+                        <span class="badge categoria">{{ tarefa.categoria.nome }}</span>
+                        {% endif %}
+                        {% if tarefa.unidade_local %}
+                        <span class="badge unidade">{{ tarefa.unidade_local.descricao }}</span>
+                        {% endif %}
+                        {% if tarefa.origem %}
+                        <span class="badge origem">{{ tarefa.origem.nome }}</span>
                         {% endif %}
                     </div>
-                    <div class="actions">
-                        <select class="form-select form-select-sm status-select" 
-                                data-tarefa-id="{{ tarefa.id }}"
-                                data-status-atual="{{ tarefa.status }}">
-                            <option value="Não iniciada" {% if tarefa.status == 'Não iniciada' %}selected{% endif %}>Não iniciada</option>
-                            <option value="Em execução" {% if tarefa.status == 'Em execução' %}selected{% endif %}>Em execução</option>
-                            <option value="Suspensa" {% if tarefa.status == 'Suspensa' %}selected{% endif %}>Suspensa</option>
-                            <option value="Concluída" {% if tarefa.status == 'Concluída' %}selected{% endif %}>Concluída</option>
-                            <option value="Em atraso" {% if tarefa.status == 'Em atraso' %}selected{% endif %}>Em atraso</option>
-                        </select>
-                        <div class="btn-group">
-                            <button type="button" 
-                                    class="btn btn-sm btn-outline-info"
-                                    onclick="verDetalhes('{{ tarefa.id }}', '{{ tarefa.titulo }}')">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                            <a href="{{ url_for('tarefas.editar_tarefa', id=tarefa.id) }}" 
-                               class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <button type="button" 
-                                    class="btn btn-sm btn-outline-danger"
-                                    onclick="confirmarExclusao('{{ url_for('tarefas.excluir_tarefa', id=tarefa.id) }}', '{{ tarefa.titulo }}')">
-                                <i class="bi bi-trash"></i>
-                            </button>
+                    <div class="card-footer">
+                        <div class="user-info">
+                            {% if tarefa.responsavel %}
+                            <span class="badge usuario">{{ tarefa.responsavel.nome }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="actions">
+                            <select class="form-select form-select-sm status-select" 
+                                    data-tarefa-id="{{ tarefa.id }}"
+                                    data-status-atual="{{ tarefa.status }}">
+                                <option value="Não iniciada" {% if tarefa.status == 'Não iniciada' %}selected{% endif %}>Não iniciada</option>
+                                <option value="Em execução" {% if tarefa.status == 'Em execução' %}selected{% endif %}>Em execução</option>
+                                <option value="Suspensa" {% if tarefa.status == 'Suspensa' %}selected{% endif %}>Suspensa</option>
+                                <option value="Concluída" {% if tarefa.status == 'Concluída' %}selected{% endif %}>Concluída</option>
+                                <option value="Em atraso" {% if tarefa.status == 'Em atraso' %}selected{% endif %}>Em atraso</option>
+                            </select>
+                            <div class="btn-group">
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-info"
+                                        onclick="verDetalhes('{{ tarefa.id }}', '{{ tarefa.titulo }}')">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <a href="{{ url_for('tarefas.editar_tarefa', id=tarefa.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-danger"
+                                        onclick="confirmarExclusao('{{ url_for('tarefas.excluir_tarefa', id=tarefa.id) }}', '{{ tarefa.titulo }}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
+                {% endfor %}
             </div>
-            {% endfor %}
-        </div>
-        
-        <!-- Em Atraso -->
-        <div class="kanban-column em-atraso" data-status="Em atraso">
-            <h6 class="d-flex align-items-center">
-                <i class="bi bi-exclamation-circle me-2"></i>Em Atraso
-                <span class="badge bg-danger rounded-pill ms-auto">{{ tarefas_em_atraso }}</span>
-            </h6>
-            {% for tarefa in tarefas if tarefa.status == 'Em atraso' %}
-            <div class="kanban-card {{ tarefa.prioridade.lower() }}" data-tarefa-id="{{ tarefa.id }}">
-                <div class="card-title">{{ tarefa.titulo }}</div>
-                {% if tarefa.numero_sei %}
-                <div class="card-subtitle">SEI: {{ tarefa.numero_sei }}</div>
-                {% endif %}
-                <div class="d-flex flex-wrap gap-1 mb-2">
-                    {% if tarefa.categoria %}
-                    <span class="badge categoria">{{ tarefa.categoria.nome }}</span>
+            
+            <!-- Suspensa -->
+            <div class="kanban-column suspensa" data-status="Suspensa">
+                <h6 class="d-flex align-items-center">
+                    <i class="bi bi-pause-circle me-2"></i>Suspensa
+                    <span class="badge bg-warning rounded-pill ms-auto">{{ tarefas_suspensas }}</span>
+                </h6>
+                {% for tarefa in tarefas if tarefa.status == 'Suspensa' %}
+                <div class="kanban-card {{ tarefa.prioridade.lower() }}" data-tarefa-id="{{ tarefa.id }}">
+                    <div class="card-title">{{ tarefa.titulo }}</div>
+                    {% if tarefa.numero_sei %}
+                    <div class="card-subtitle">SEI: {{ tarefa.numero_sei }}</div>
                     {% endif %}
-                    {% if tarefa.unidade_local %}
-                    <span class="badge unidade">{{ tarefa.unidade_local.descricao }}</span>
-                    {% endif %}
-                    {% if tarefa.origem %}
-                    <span class="badge origem">{{ tarefa.origem.nome }}</span>
-                    {% endif %}
-                </div>
-                <div class="card-footer">
-                    <div class="user-info">
-                        {% if tarefa.responsavel %}
-                        <span class="badge usuario">{{ tarefa.responsavel.nome }}</span>
+                    <div class="d-flex flex-wrap gap-1 mb-2">
+                        {% if tarefa.categoria %}
+                        <span class="badge categoria">{{ tarefa.categoria.nome }}</span>
+                        {% endif %}
+                        {% if tarefa.unidade_local %}
+                        <span class="badge unidade">{{ tarefa.unidade_local.descricao }}</span>
+                        {% endif %}
+                        {% if tarefa.origem %}
+                        <span class="badge origem">{{ tarefa.origem.nome }}</span>
                         {% endif %}
                     </div>
-                    <div class="actions">
-                        <select class="form-select form-select-sm status-select" 
-                                data-tarefa-id="{{ tarefa.id }}"
-                                data-status-atual="{{ tarefa.status }}">
-                            <option value="Não iniciada" {% if tarefa.status == 'Não iniciada' %}selected{% endif %}>Não iniciada</option>
-                            <option value="Em execução" {% if tarefa.status == 'Em execução' %}selected{% endif %}>Em execução</option>
-                            <option value="Suspensa" {% if tarefa.status == 'Suspensa' %}selected{% endif %}>Suspensa</option>
-                            <option value="Concluída" {% if tarefa.status == 'Concluída' %}selected{% endif %}>Concluída</option>
-                            <option value="Em atraso" {% if tarefa.status == 'Em atraso' %}selected{% endif %}>Em atraso</option>
-                        </select>
-                        <div class="btn-group">
-                            <button type="button" 
-                                    class="btn btn-sm btn-outline-info"
-                                    onclick="verDetalhes('{{ tarefa.id }}', '{{ tarefa.titulo }}')">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                            <a href="{{ url_for('tarefas.editar_tarefa', id=tarefa.id) }}" 
-                               class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <button type="button" 
-                                    class="btn btn-sm btn-outline-danger"
-                                    onclick="confirmarExclusao('{{ url_for('tarefas.excluir_tarefa', id=tarefa.id) }}', '{{ tarefa.titulo }}')">
-                                <i class="bi bi-trash"></i>
-                            </button>
+                    <div class="card-footer">
+                        <div class="user-info">
+                            {% if tarefa.responsavel %}
+                            <span class="badge usuario">{{ tarefa.responsavel.nome }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="actions">
+                            <select class="form-select form-select-sm status-select" 
+                                    data-tarefa-id="{{ tarefa.id }}"
+                                    data-status-atual="{{ tarefa.status }}">
+                                <option value="Não iniciada" {% if tarefa.status == 'Não iniciada' %}selected{% endif %}>Não iniciada</option>
+                                <option value="Em execução" {% if tarefa.status == 'Em execução' %}selected{% endif %}>Em execução</option>
+                                <option value="Suspensa" {% if tarefa.status == 'Suspensa' %}selected{% endif %}>Suspensa</option>
+                                <option value="Concluída" {% if tarefa.status == 'Concluída' %}selected{% endif %}>Concluída</option>
+                                <option value="Em atraso" {% if tarefa.status == 'Em atraso' %}selected{% endif %}>Em atraso</option>
+                            </select>
+                            <div class="btn-group">
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-info"
+                                        onclick="verDetalhes('{{ tarefa.id }}', '{{ tarefa.titulo }}')">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <a href="{{ url_for('tarefas.editar_tarefa', id=tarefa.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-danger"
+                                        onclick="confirmarExclusao('{{ url_for('tarefas.excluir_tarefa', id=tarefa.id) }}', '{{ tarefa.titulo }}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
+                {% endfor %}
             </div>
-            {% endfor %}
+            
+            <!-- Concluída -->
+            <div class="kanban-column concluida" data-status="Concluída">
+                <h6 class="d-flex align-items-center">
+                    <i class="bi bi-check-circle me-2"></i>Concluída
+                    <span class="badge bg-success rounded-pill ms-auto">{{ tarefas_concluidas }}</span>
+                </h6>
+                {% for tarefa in tarefas if tarefa.status == 'Concluída' %}
+                <div class="kanban-card {{ tarefa.prioridade.lower() }}" data-tarefa-id="{{ tarefa.id }}">
+                    <div class="card-title">{{ tarefa.titulo }}</div>
+                    {% if tarefa.numero_sei %}
+                    <div class="card-subtitle">SEI: {{ tarefa.numero_sei }}</div>
+                    {% endif %}
+                    <div class="d-flex flex-wrap gap-1 mb-2">
+                        {% if tarefa.categoria %}
+                        <span class="badge categoria">{{ tarefa.categoria.nome }}</span>
+                        {% endif %}
+                        {% if tarefa.unidade_local %}
+                        <span class="badge unidade">{{ tarefa.unidade_local.descricao }}</span>
+                        {% endif %}
+                        {% if tarefa.origem %}
+                        <span class="badge origem">{{ tarefa.origem.nome }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer">
+                        <div class="user-info">
+                            {% if tarefa.responsavel %}
+                            <span class="badge usuario">{{ tarefa.responsavel.nome }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="actions">
+                            <select class="form-select form-select-sm status-select" 
+                                    data-tarefa-id="{{ tarefa.id }}"
+                                    data-status-atual="{{ tarefa.status }}">
+                                <option value="Não iniciada" {% if tarefa.status == 'Não iniciada' %}selected{% endif %}>Não iniciada</option>
+                                <option value="Em execução" {% if tarefa.status == 'Em execução' %}selected{% endif %}>Em execução</option>
+                                <option value="Suspensa" {% if tarefa.status == 'Suspensa' %}selected{% endif %}>Suspensa</option>
+                                <option value="Concluída" {% if tarefa.status == 'Concluída' %}selected{% endif %}>Concluída</option>
+                                <option value="Em atraso" {% if tarefa.status == 'Em atraso' %}selected{% endif %}>Em atraso</option>
+                            </select>
+                            <div class="btn-group">
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-info"
+                                        onclick="verDetalhes('{{ tarefa.id }}', '{{ tarefa.titulo }}')">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <a href="{{ url_for('tarefas.editar_tarefa', id=tarefa.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-danger"
+                                        onclick="confirmarExclusao('{{ url_for('tarefas.excluir_tarefa', id=tarefa.id) }}', '{{ tarefa.titulo }}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Em Atraso -->
+            <div class="kanban-column em-atraso" data-status="Em atraso">
+                <h6 class="d-flex align-items-center">
+                    <i class="bi bi-exclamation-circle me-2"></i>Em Atraso
+                    <span class="badge bg-danger rounded-pill ms-auto">{{ tarefas_em_atraso }}</span>
+                </h6>
+                {% for tarefa in tarefas if tarefa.status == 'Em atraso' %}
+                <div class="kanban-card {{ tarefa.prioridade.lower() }}" data-tarefa-id="{{ tarefa.id }}">
+                    <div class="card-title">{{ tarefa.titulo }}</div>
+                    {% if tarefa.numero_sei %}
+                    <div class="card-subtitle">SEI: {{ tarefa.numero_sei }}</div>
+                    {% endif %}
+                    <div class="d-flex flex-wrap gap-1 mb-2">
+                        {% if tarefa.categoria %}
+                        <span class="badge categoria">{{ tarefa.categoria.nome }}</span>
+                        {% endif %}
+                        {% if tarefa.unidade_local %}
+                        <span class="badge unidade">{{ tarefa.unidade_local.descricao }}</span>
+                        {% endif %}
+                        {% if tarefa.origem %}
+                        <span class="badge origem">{{ tarefa.origem.nome }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer">
+                        <div class="user-info">
+                            {% if tarefa.responsavel %}
+                            <span class="badge usuario">{{ tarefa.responsavel.nome }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="actions">
+                            <select class="form-select form-select-sm status-select" 
+                                    data-tarefa-id="{{ tarefa.id }}"
+                                    data-status-atual="{{ tarefa.status }}">
+                                <option value="Não iniciada" {% if tarefa.status == 'Não iniciada' %}selected{% endif %}>Não iniciada</option>
+                                <option value="Em execução" {% if tarefa.status == 'Em execução' %}selected{% endif %}>Em execução</option>
+                                <option value="Suspensa" {% if tarefa.status == 'Suspensa' %}selected{% endif %}>Suspensa</option>
+                                <option value="Concluída" {% if tarefa.status == 'Concluída' %}selected{% endif %}>Concluída</option>
+                                <option value="Em atraso" {% if tarefa.status == 'Em atraso' %}selected{% endif %}>Em atraso</option>
+                            </select>
+                            <div class="btn-group">
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-info"
+                                        onclick="verDetalhes('{{ tarefa.id }}', '{{ tarefa.titulo }}')">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <a href="{{ url_for('tarefas.editar_tarefa', id=tarefa.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-danger"
+                                        onclick="confirmarExclusao('{{ url_for('tarefas.excluir_tarefa', id=tarefa.id) }}', '{{ tarefa.titulo }}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
         </div>
     </div>
 </div>
@@ -572,232 +808,176 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Manipulador de mudança de status
-    document.querySelectorAll('.status-select').forEach(select => {
-        select.addEventListener('change', async function() {
-            const tarefaId = this.dataset.tarefaId;
-            const novoStatus = this.value;
-            const statusAtual = this.dataset.statusAtual;
-            
-            if (novoStatus === statusAtual) return;
-            
-            try {
-                // Mostrar loading
-                Swal.fire({
-                    title: 'Atualizando status...',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-                
-                const response = await fetch(`/api/tarefas/${tarefaId}/status`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({ status: novoStatus })
-                });
-                
-                const data = await response.json();
-                
-                if (!response.ok) {
-                    throw new Error(data.error || 'Erro ao atualizar status');
-                }
-                
-                // Atualizar os contadores
-                await atualizarContadores();
-                
-                // Mover o cartão para a nova coluna
-                const cartao = this.closest('.kanban-card');
-                const novaColuna = document.querySelector(`.kanban-column[data-status="${novoStatus}"]`);
-                if (novaColuna) {
-                    novaColuna.appendChild(cartao);
-                }
-                
-                // Atualizar o status atual no select
-                this.dataset.statusAtual = novoStatus;
-                
-                // Fechar o loading e mostrar sucesso
+$(document).ready(function() {
+    // View Toggle
+    $('.view-toggle .btn').click(function() {
+        $('.view-toggle .btn').removeClass('active');
+        $(this).addClass('active');
+        
+        const view = $(this).data('view');
+        if (view === 'kanban') {
+            $('#kanbanView').show();
+            $('#timelineView').hide();
+        } else {
+            $('#kanbanView').hide();
+            $('#timelineView').show();
+        }
+    });
+
+    // Expand/Collapse Timeline
+    $('#expandAll').click(function() {
+        $('.timeline-item').addClass('expanded');
+    });
+
+    $('#collapseAll').click(function() {
+        $('.timeline-item').removeClass('expanded');
+    });
+
+    // Status Change Handler (both for Kanban and Timeline)
+    $('.status-select').change(function() {
+        const tarefaId = $(this).data('tarefa-id');
+        const novoStatus = $(this).val();
+        
+        $.ajax({
+            url: `/api/tarefas/${tarefaId}/status`,
+            method: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify({ status: novoStatus }),
+            success: function(response) {
                 Swal.fire({
                     icon: 'success',
-                    title: 'Status atualizado com sucesso',
+                    title: 'Status atualizado!',
                     showConfirmButton: false,
                     timer: 1500
+                }).then(() => {
+                    location.reload();
                 });
-                
-            } catch (error) {
-                console.error('Erro:', error);
+            },
+            error: function(xhr, status, error) {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Erro',
-                    text: error.message,
-                    confirmButtonText: 'OK'
+                    title: 'Erro ao atualizar status',
+                    text: 'Por favor, tente novamente.'
+                });
+            }
+        });
+    });
+
+    // Confirmação de exclusão
+    function confirmarExclusao(url, titulo) {
+        Swal.fire({
+            title: 'Confirmar exclusão?',
+            text: `Deseja realmente excluir a tarefa "${titulo}"?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sim, excluir!',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = url;
+            }
+        });
+    }
+
+    // Exibe mensagens flash
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
                 });
                 
-                // Reverter o select para o status anterior em caso de erro
-                this.value = statusAtual;
-            }
-        });
-    });
-});
+                Toast.fire({
+                    icon: '{{ "success" if category == "success" else "error" }}',
+                    title: '{{ message }}'
+                });
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
 
-// Função para atualizar os contadores
-async function atualizarContadores() {
-    try {
-        const response = await fetch('/api/tarefas/contadores');
-        const contadores = await response.json();
-        
-        // Atualiza os números nas estatísticas do dashboard
-        const statsCards = document.querySelectorAll('.stats-card .stats-value');
-        statsCards[0].textContent = contadores.total;
-        statsCards[1].textContent = contadores.nao_iniciadas;
-        statsCards[2].textContent = contadores.em_execucao;
-        statsCards[3].textContent = contadores.suspensas;
-        statsCards[4].textContent = contadores.concluidas;
-        statsCards[5].textContent = contadores.em_atraso;
-        
-        // Atualiza os badges nas colunas
-        const badges = {
-            'Não iniciada': document.querySelector('.nao-iniciada .badge'),
-            'Em execução': document.querySelector('.em-execucao .badge'),
-            'Suspensa': document.querySelector('.suspensa .badge'),
-            'Concluída': document.querySelector('.concluida .badge'),
-            'Em atraso': document.querySelector('.em-atraso .badge')
-        };
-        
-        badges['Não iniciada'].textContent = contadores.nao_iniciadas;
-        badges['Em execução'].textContent = contadores.em_execucao;
-        badges['Suspensa'].textContent = contadores.suspensas;
-        badges['Concluída'].textContent = contadores.concluidas;
-        badges['Em atraso'].textContent = contadores.em_atraso;
-        
-    } catch (error) {
-        console.error('Erro ao atualizar contadores:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Erro',
-            text: 'Não foi possível atualizar os contadores',
-            confirmButtonText: 'OK'
-        });
-    }
-}
-
-// Confirmação de exclusão
-function confirmarExclusao(url, titulo) {
-    Swal.fire({
-        title: 'Confirmar exclusão?',
-        text: `Deseja realmente excluir a tarefa "${titulo}"?`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Sim, excluir!',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = url;
-        }
-    });
-}
-
-// Exibe mensagens flash
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-            const Toast = Swal.mixin({
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true
+    // Função para visualizar detalhes da tarefa
+    async function verDetalhes(tarefaId, titulo) {
+        try {
+            // Mostrar loading
+            Swal.fire({
+                title: 'Carregando detalhes...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
             });
             
-            Toast.fire({
-                icon: '{{ "success" if category == "success" else "error" }}',
-                title: '{{ message }}'
+            const response = await fetch(`/api/tarefas/${tarefaId}/detalhes`);
+            const tarefa = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(tarefa.error || 'Erro ao carregar detalhes');
+            }
+            
+            // Formatar datas
+            const dataInicio = tarefa.data_inicio ? new Date(tarefa.data_inicio).toLocaleDateString('pt-BR') : 'Não definida';
+            const dataFim = tarefa.data_fim ? new Date(tarefa.data_fim).toLocaleDateString('pt-BR') : 'Não definida';
+            const dataConclusao = tarefa.data_conclusao ? new Date(tarefa.data_conclusao).toLocaleDateString('pt-BR') : 'Não concluída';
+            
+            // Montar HTML dos detalhes
+            const detalhesHtml = `
+                <div class="text-start">
+                    <h6 class="mb-3">Informações Gerais</h6>
+                    <p><strong>Título:</strong> ${tarefa.titulo}</p>
+                    <p><strong>Resumo:</strong> ${tarefa.resumo || 'Não informado'}</p>
+                    <p><strong>Status:</strong> ${tarefa.status}</p>
+                    <p><strong>Prioridade:</strong> ${tarefa.prioridade}</p>
+                    <p><strong>Número SEI:</strong> ${tarefa.numero_sei || 'Não informado'}</p>
+                    
+                    <h6 class="mt-4 mb-3">Datas</h6>
+                    <p><strong>Data Início:</strong> ${dataInicio}</p>
+                    <p><strong>Data Fim:</strong> ${dataFim}</p>
+                    <p><strong>Data Conclusão:</strong> ${dataConclusao}</p>
+                    
+                    <h6 class="mt-4 mb-3">Classificação</h6>
+                    <p><strong>Categoria:</strong> ${tarefa.categoria?.nome || 'Não informada'}</p>
+                    <p><strong>Origem:</strong> ${tarefa.origem?.nome || 'Não informada'}</p>
+                    <p><strong>Unidade:</strong> ${tarefa.unidade_local?.descricao || 'Não informada'}</p>
+                    
+                    <h6 class="mt-4 mb-3">Responsáveis</h6>
+                    <p><strong>Responsável:</strong> ${tarefa.responsavel?.nome || 'Não atribuído'}</p>
+                    <p><strong>Criado por:</strong> ${tarefa.criado_por?.nome || 'Não informado'}</p>
+                    
+                    ${tarefa.observacoes ? `
+                        <h6 class="mt-4 mb-3">Observações</h6>
+                        <p>${tarefa.observacoes}</p>
+                    ` : ''}
+                </div>
+            `;
+            
+            // Mostrar modal com os detalhes
+            Swal.fire({
+                title: titulo,
+                html: detalhesHtml,
+                width: '600px',
+                confirmButtonText: 'Fechar',
+                customClass: {
+                    container: 'swal-detail-container'
+                }
             });
-        {% endfor %}
-    {% endif %}
-{% endwith %}
-
-// Função para visualizar detalhes da tarefa
-async function verDetalhes(tarefaId, titulo) {
-    try {
-        // Mostrar loading
-        Swal.fire({
-            title: 'Carregando detalhes...',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-        
-        const response = await fetch(`/api/tarefas/${tarefaId}/detalhes`);
-        const tarefa = await response.json();
-        
-        if (!response.ok) {
-            throw new Error(tarefa.error || 'Erro ao carregar detalhes');
+            
+        } catch (error) {
+            console.error('Erro:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro',
+                text: error.message,
+                confirmButtonText: 'OK'
+            });
         }
-        
-        // Formatar datas
-        const dataInicio = tarefa.data_inicio ? new Date(tarefa.data_inicio).toLocaleDateString('pt-BR') : 'Não definida';
-        const dataFim = tarefa.data_fim ? new Date(tarefa.data_fim).toLocaleDateString('pt-BR') : 'Não definida';
-        const dataConclusao = tarefa.data_conclusao ? new Date(tarefa.data_conclusao).toLocaleDateString('pt-BR') : 'Não concluída';
-        
-        // Montar HTML dos detalhes
-        const detalhesHtml = `
-            <div class="text-start">
-                <h6 class="mb-3">Informações Gerais</h6>
-                <p><strong>Título:</strong> ${tarefa.titulo}</p>
-                <p><strong>Resumo:</strong> ${tarefa.resumo || 'Não informado'}</p>
-                <p><strong>Status:</strong> ${tarefa.status}</p>
-                <p><strong>Prioridade:</strong> ${tarefa.prioridade}</p>
-                <p><strong>Número SEI:</strong> ${tarefa.numero_sei || 'Não informado'}</p>
-                
-                <h6 class="mt-4 mb-3">Datas</h6>
-                <p><strong>Data Início:</strong> ${dataInicio}</p>
-                <p><strong>Data Fim:</strong> ${dataFim}</p>
-                <p><strong>Data Conclusão:</strong> ${dataConclusao}</p>
-                
-                <h6 class="mt-4 mb-3">Classificação</h6>
-                <p><strong>Categoria:</strong> ${tarefa.categoria?.nome || 'Não informada'}</p>
-                <p><strong>Origem:</strong> ${tarefa.origem?.nome || 'Não informada'}</p>
-                <p><strong>Unidade:</strong> ${tarefa.unidade_local?.descricao || 'Não informada'}</p>
-                
-                <h6 class="mt-4 mb-3">Responsáveis</h6>
-                <p><strong>Responsável:</strong> ${tarefa.responsavel?.nome || 'Não atribuído'}</p>
-                <p><strong>Criado por:</strong> ${tarefa.criado_por?.nome || 'Não informado'}</p>
-                
-                ${tarefa.observacoes ? `
-                    <h6 class="mt-4 mb-3">Observações</h6>
-                    <p>${tarefa.observacoes}</p>
-                ` : ''}
-            </div>
-        `;
-        
-        // Mostrar modal com os detalhes
-        Swal.fire({
-            title: titulo,
-            html: detalhesHtml,
-            width: '600px',
-            confirmButtonText: 'Fechar',
-            customClass: {
-                container: 'swal-detail-container'
-            }
-        });
-        
-    } catch (error) {
-        console.error('Erro:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Erro',
-            text: error.message,
-            confirmButtonText: 'OK'
-        });
     }
-}
+});
 </script>
 {% endblock %} 
+

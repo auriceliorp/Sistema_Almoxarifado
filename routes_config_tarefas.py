@@ -157,6 +157,20 @@ def editar_origem(origem_id):
             
     return render_template('config_tarefas/form_origem.html', origem=origem)
 
+@bp.route('/excluir_origem/<int:origem_id>', methods=['POST'])
+@login_required
+def excluir_origem(origem_id):
+    origem = OrigemTarefa.query.get_or_404(origem_id)
+    try:
+        db.session.delete(origem)
+        db.session.commit()
+        flash('Origem excluída com sucesso!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Erro ao excluir origem. Verifique se não existem tarefas vinculadas.', 'danger')
+    
+    return redirect(url_for('config_tarefas.lista_origens'))
+
 # API Routes
 @bp.route('/api/categorias')
 @login_required

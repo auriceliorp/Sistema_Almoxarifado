@@ -78,37 +78,37 @@
 
                             <div class="col-md-4">
                                 <div class="form-floating">
-                                    <select class="form-select" id="categoria" name="categoria" required>
+                                    <select class="form-select" id="categoria_id" name="categoria_id" required>
                                         <option value="" disabled selected>Selecione...</option>
                                         {% for categoria in categorias %}
                                         <option value="{{ categoria.id }}">{{ categoria.nome }}</option>
                                         {% endfor %}
                                     </select>
-                                    <label for="categoria" class="required-field">Categoria</label>
+                                    <label for="categoria_id" class="required-field">Categoria</label>
                                 </div>
                             </div>
 
                             <div class="col-md-4">
                                 <div class="form-floating">
-                                    <select class="form-select" id="unidade_local" name="unidade_local" required>
+                                    <select class="form-select" id="unidade_local_id" name="unidade_local_id" required>
                                         <option value="" disabled selected>Selecione...</option>
                                         {% for unidade in unidades_locais %}
                                         <option value="{{ unidade.id }}">{{ unidade.descricao }}</option>
                                         {% endfor %}
                                     </select>
-                                    <label for="unidade_local" class="required-field">Unidade Local</label>
+                                    <label for="unidade_local_id" class="required-field">Unidade Local</label>
                                 </div>
                             </div>
 
                             <div class="col-md-4">
                                 <div class="form-floating">
-                                    <select class="form-select" id="origem" name="origem" required>
+                                    <select class="form-select" id="origem_id" name="origem_id" required>
                                         <option value="" disabled selected>Selecione...</option>
                                         {% for origem in origens %}
                                         <option value="{{ origem.id }}">{{ origem.nome }}</option>
                                         {% endfor %}
                                     </select>
-                                    <label for="origem" class="required-field">Origem</label>
+                                    <label for="origem_id" class="required-field">Origem</label>
                                 </div>
                             </div>
 
@@ -220,6 +220,9 @@ $(document).ready(function() {
         // Adiciona o status inicial
         data.status = 'Não iniciada';
 
+        // Log para debug
+        console.log('Dados a serem enviados:', data);
+
         $.ajax({
             url: '/api/tarefas',
             method: 'POST',
@@ -227,11 +230,25 @@ $(document).ready(function() {
             headers: {
                 'X-CSRF-TOKEN': $('input[name="csrf_token"]').val()
             },
-            data: JSON.stringify(data),
+            data: JSON.stringify({
+                titulo: data.titulo,
+                numero_sei: data.numero_sei,
+                categoria_id: data.categoria_id,
+                resumo: data.resumo,
+                unidade_local_id: data.unidade_local_id,
+                origem_id: data.origem_id,
+                responsavel_id: data.responsavel_id,
+                solicitante_id: data.solicitante_id,
+                quantidade_acoes: data.quantidade_acoes,
+                prioridade: data.prioridade,
+                status: 'Não iniciada',
+                data_inicio: data.data_inicio,
+                data_termino: data.data_termino,
+                observacoes: data.observacoes
+            }),
             success: function(response) {
-                console.log('Resposta da API:', response);  // Log para debug
+                console.log('Resposta da API:', response);
                 
-                // Mostra o alerta de sucesso
                 Swal.fire({
                     icon: 'success',
                     title: 'Sucesso!',
@@ -241,14 +258,12 @@ $(document).ready(function() {
                     timer: 2000,
                     timerProgressBar: true
                 }).then(() => {
-                    // Redireciona mesmo se o usuário fechar o alerta
                     window.location.href = "{{ url_for('tarefas.lista_tarefas') }}";
                 });
             },
             error: function(xhr, status, error) {
-                console.error('Erro completo:', {xhr, status, error});  // Log detalhado do erro
+                console.error('Erro completo:', {xhr, status, error});
                 
-                // Tenta extrair a mensagem de erro da resposta
                 let mensagemErro = 'Erro ao criar tarefa';
                 try {
                     if (xhr.responseJSON && xhr.responseJSON.error) {
@@ -274,21 +289,22 @@ $(document).ready(function() {
 
 function validarFormulario() {
     const campos = [
-        'titulo', 
-        'categoria_id', 
-        'unidade_local_id', 
-        'origem_id',
-        'prioridade',
-        'responsavel_id',
-        'solicitante_id'
+        { id: 'titulo', label: 'Título' },
+        { id: 'categoria_id', label: 'Categoria' },
+        { id: 'unidade_local_id', label: 'Unidade Local' },
+        { id: 'origem_id', label: 'Origem' },
+        { id: 'prioridade', label: 'Prioridade' },
+        { id: 'responsavel_id', label: 'Responsável' },
+        { id: 'solicitante_id', label: 'Solicitante' }
     ];
+
     let valido = true;
     const mensagens = [];
 
     campos.forEach(campo => {
-        const elemento = document.getElementById(campo);
-        if (!elemento.value) {
-            mensagens.push(`O campo ${elemento.labels[0].textContent.replace('*', '')} é obrigatório`);
+        const elemento = document.getElementById(campo.id);
+        if (!elemento || !elemento.value) {
+            mensagens.push(`O campo ${campo.label} é obrigatório`);
             valido = false;
         }
     });

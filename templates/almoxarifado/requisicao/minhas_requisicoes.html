@@ -52,7 +52,7 @@
                                 <td>{{ req.observacao or '-' }}</td>
                                 <td>
                                     {% if req.tarefa %}
-                                        <a href="{{ url_for('tarefas_bp.visualizar_tarefa', tarefa_id=req.tarefa.id) }}" 
+                                        <a href="{{ url_for('tarefas.editar_tarefa', id=req.tarefa.id) }}" 
                                            class="btn btn-sm btn-outline-primary">
                                             Ver Tarefa
                                         </a>

@@ -60,7 +60,7 @@ def nova_requisicao():
             status="Pendente",
             prioridade="Normal",
             data_criacao=datetime.now(),
-            criador_id=current_user.id,
+            solicitante_id=current_user.id,
             responsavel_id=None  # Será atribuído pelo almoxarifado
         )
         db.session.add(tarefa)

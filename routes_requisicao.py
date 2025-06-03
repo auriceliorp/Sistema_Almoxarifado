@@ -57,11 +57,14 @@ def nova_requisicao():
         tarefa = Tarefa(
             titulo=f"Requisição de Materiais #{requisicao.id}",
             resumo=f"Atender requisição de materiais do solicitante {current_user.nome}",
-            status="Pendente",
-            prioridade="Normal",
+            status="Não iniciada",
+            prioridade="Média",
             data_criacao=datetime.now(),
             solicitante_id=current_user.id,
-            responsavel_id=None  # Será atribuído pelo almoxarifado
+            categoria_id=1,  # Categoria "Requisição de Materiais"
+            unidade_local_id=current_user.unidade_local_id,
+            quantidade_acoes=len(itens),  # Número de itens na requisição
+            observacoes=f"Requisição de materiais com {len(itens)} itens.\nObservação do solicitante: {request.form.get('observacao', '')}"
         )
         db.session.add(tarefa)
         db.session.flush()

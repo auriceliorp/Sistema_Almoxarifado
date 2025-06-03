@@ -13,6 +13,7 @@
     <div class="card shadow-sm">
         <div class="card-body">
             <form id="formRequisicao" method="POST" action="{{ url_for('requisicao_bp.nova_requisicao') }}" class="needs-validation" novalidate>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="table-responsive mb-4">
                     <table class="table table-hover">
                         <thead>

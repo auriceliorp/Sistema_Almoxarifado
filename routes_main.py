@@ -4,7 +4,7 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_required, logout_user, current_user, login_user
 from werkzeug.security import check_password_hash
-from models import Usuario
+from models import Usuario, RequisicaoMaterial
 from functools import wraps
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField
@@ -101,7 +101,10 @@ def index():
 @main.route('/almoxarifado')
 @login_required
 def almoxarifado():
-    return render_template('almoxarifado.html', usuario=current_user)
+    requisicoes_pendentes_count = RequisicaoMaterial.query.filter_by(status='PENDENTE').count()
+    return render_template('almoxarifado.html', 
+                         usuario=current_user,
+                         requisicoes_pendentes_count=requisicoes_pendentes_count)
 
 # --- Página ND / Grupos / UL ---
 @main.route('/nd_grupos_ul')

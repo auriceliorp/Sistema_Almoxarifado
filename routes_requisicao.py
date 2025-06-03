@@ -56,8 +56,7 @@ def nova_requisicao():
         # Criar tarefa associada
         tarefa = Tarefa(
             titulo=f"Requisição de Materiais #{requisicao.id}",
-            descricao=f"Atender requisição de materiais do solicitante {current_user.nome}",
-            tipo="Requisição de Materiais",
+            resumo=f"Atender requisição de materiais do solicitante {current_user.nome}",
             status="Pendente",
             prioridade="Normal",
             data_criacao=datetime.now(),

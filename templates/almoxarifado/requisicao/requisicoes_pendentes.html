@@ -9,62 +9,65 @@
 
     <div class="card shadow-sm">
         <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Data</th>
-                            <th>Solicitante</th>
-                            <th>Itens</th>
-                            <th>Observação</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for req in requisicoes %}
-                        <tr>
-                            <td>{{ req.id }}</td>
-                            <td>{{ req.data_requisicao.strftime('%d/%m/%Y %H:%M') }}</td>
-                            <td>{{ req.solicitante.nome }}</td>
-                            <td>
-                                <ul class="list-unstyled mb-0">
-                                    {% for item in req.itens %}
-                                    <li>
-                                        {{ item.item.nome }} ({{ item.quantidade }})
-                                        {% if item.item.estoque_atual < item.quantidade %}
-                                        <span class="badge bg-danger">Estoque Insuficiente</span>
-                                        {% endif %}
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-                            </td>
-                            <td>{{ req.observacao or '-' }}</td>
-                            <td>
-                                <form method="POST" action="{{ url_for('requisicao_bp.atender_requisicao', requisicao_id=req.id) }}"
-                                      onsubmit="return confirm('Confirma o atendimento desta requisição?');">
-                                    <button type="submit" 
-                                            class="btn btn-success btn-sm"
-                                            {% if req.itens|selectattr('item.estoque_atual', '<', 'quantidade')|list %}
-                                            disabled
-                                            title="Estoque insuficiente para alguns itens"
-                                            {% endif %}>
-                                        <i class="bi bi-check-lg me-1"></i>Atender
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="6" class="text-center py-4">
-                                <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
-                                <p class="text-muted mb-0">Nenhuma requisição pendente.</p>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+            <form id="formAcao" method="POST" class="needs-validation" novalidate>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Data</th>
+                                <th>Solicitante</th>
+                                <th>Itens</th>
+                                <th>Observação</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for req in requisicoes %}
+                            <tr>
+                                <td>{{ req.id }}</td>
+                                <td>{{ req.data_requisicao.strftime('%d/%m/%Y %H:%M') }}</td>
+                                <td>{{ req.solicitante.nome }}</td>
+                                <td>
+                                    <ul class="list-unstyled mb-0">
+                                        {% for item in req.itens %}
+                                        <li>
+                                            {{ item.item.nome }} ({{ item.quantidade }})
+                                            {% if item.item.estoque_atual < item.quantidade %}
+                                            <span class="badge bg-danger">Estoque Insuficiente</span>
+                                            {% endif %}
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </td>
+                                <td>{{ req.observacao or '-' }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('requisicao_bp.atender_requisicao', requisicao_id=req.id) }}"
+                                          onsubmit="return confirm('Confirma o atendimento desta requisição?');">
+                                        <button type="submit" 
+                                                class="btn btn-success btn-sm"
+                                                {% if req.itens|selectattr('item.estoque_atual', '<', 'quantidade')|list %}
+                                                disabled
+                                                title="Estoque insuficiente para alguns itens"
+                                                {% endif %}>
+                                            <i class="bi bi-check-lg me-1"></i>Atender
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
+                                    <p class="text-muted mb-0">Nenhuma requisição pendente.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </form>
         </div>
     </div>
 </div>

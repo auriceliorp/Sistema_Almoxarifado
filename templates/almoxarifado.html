@@ -92,6 +92,28 @@
       </div>
     </div>
 
+    <!-- Requisições -->
+    <div class="col">
+      <div class="dashboard-card">
+        <i class="bi bi-clipboard-check"></i>
+        <h6>Requisição de Materiais</h6>
+        <div class="d-grid gap-2">
+          <a href="{{ url_for('requisicao_bp.consulta_estoque') }}" class="btn btn-outline-primary">
+            <i class="bi bi-plus-lg me-1"></i>Nova Requisição
+          </a>
+          <a href="{{ url_for('requisicao_bp.minhas_requisicoes') }}" class="btn btn-outline-primary">
+            <i class="bi bi-list-check me-1"></i>Minhas Requisições
+          </a>
+          <a href="{{ url_for('requisicao_bp.requisicoes_pendentes') }}" class="btn btn-outline-primary">
+            <i class="bi bi-clock-history me-1"></i>Requisições Pendentes
+            {% if requisicoes_pendentes_count > 0 %}
+            <span class="badge bg-danger ms-1">{{ requisicoes_pendentes_count }}</span>
+            {% endif %}
+          </a>
+        </div>
+      </div>
+    </div>
+
     <!-- Relatório -->
     <div class="col">
       <div class="dashboard-card">
@@ -106,3 +128,4 @@
   </div>
 </div>
 {% endblock %}
+

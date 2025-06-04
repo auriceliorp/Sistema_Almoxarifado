@@ -45,7 +45,12 @@
                                 <td>{{ req.observacao or '-' }}</td>
                                 <td>
                                     {% if req.tarefa %}
-                                        <a href="{{ url_for('tarefas.editar_tarefa', id=req.tarefa.id) }}" 
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-info me-2"
+                                                onclick="verDetalhes('{{ req.tarefa.id }}', '{{ req.tarefa.titulo }}')">
+                                            <i class="bi bi-eye me-1"></i>Visualizar
+                                        </button>
+                                        <a href="{{ url_for('projetos.editar_tarefa', tarefa_id=req.tarefa.id) }}" 
                                            class="btn btn-sm {% if req.tarefa.status == 'Concluída' %}btn-success{% elif req.tarefa.status == 'Não iniciada' %}btn-warning{% else %}btn-info{% endif %}">
                                             <i class="bi {% if req.tarefa.status == 'Concluída' %}bi-check-circle{% elif req.tarefa.status == 'Não iniciada' %}bi-clock{% else %}bi-gear{% endif %} me-1"></i>
                                             {{ req.tarefa.status }}
@@ -83,6 +88,85 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    // Função para visualizar detalhes da tarefa
+    async function verDetalhes(tarefaId, titulo) {
+        try {
+            // Mostrar loading
+            Swal.fire({
+                title: 'Carregando detalhes...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            const response = await fetch(`/api/tarefas/${tarefaId}/detalhes`);
+            const tarefa = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(tarefa.error || 'Erro ao carregar detalhes');
+            }
+            
+            // Formatar datas
+            const dataInicio = tarefa.data_inicio ? new Date(tarefa.data_inicio).toLocaleDateString('pt-BR') : 'Não definida';
+            const dataTermino = tarefa.data_termino ? new Date(tarefa.data_termino).toLocaleDateString('pt-BR') : 'Não definida';
+            const dataConclusao = tarefa.data_conclusao ? new Date(tarefa.data_conclusao).toLocaleDateString('pt-BR') : 'Não concluída';
+            
+            // Montar HTML dos detalhes
+            const detalhesHtml = `
+                <div class="text-start">
+                    <h6 class="mb-3">Informações Gerais</h6>
+                    <p><strong>Título:</strong> ${tarefa.titulo}</p>
+                    <p><strong>Resumo:</strong> ${tarefa.resumo || 'Não informado'}</p>
+                    <p><strong>Status:</strong> ${tarefa.status}</p>
+                    <p><strong>Prioridade:</strong> ${tarefa.prioridade}</p>
+                    <p><strong>Número SEI:</strong> ${tarefa.numero_sei || 'Não informado'}</p>
+                    
+                    <h6 class="mt-4 mb-3">Datas</h6>
+                    <p><strong>Data Início:</strong> ${dataInicio}</p>
+                    <p><strong>Data Término:</strong> ${dataTermino}</p>
+                    <p><strong>Data Conclusão:</strong> ${dataConclusao}</p>
+                    
+                    <h6 class="mt-4 mb-3">Classificação</h6>
+                    <p><strong>Categoria:</strong> ${tarefa.categoria?.nome || 'Não informada'}</p>
+                    <p><strong>Origem:</strong> ${tarefa.origem?.nome || 'Não informada'}</p>
+                    <p><strong>Unidade:</strong> ${tarefa.unidade_local?.descricao || 'Não informada'}</p>
+                    
+                    <h6 class="mt-4 mb-3">Responsáveis</h6>
+                    <p><strong>Responsável:</strong> ${tarefa.responsavel?.nome || 'Não atribuído'}</p>
+                    <p><strong>Solicitante:</strong> ${tarefa.solicitante?.nome || 'Não informado'}</p>
+                    
+                    ${tarefa.observacoes ? `
+                        <h6 class="mt-4 mb-3">Observações</h6>
+                        <p>${tarefa.observacoes}</p>
+                    ` : ''}
+                </div>
+            `;
+            
+            // Mostrar modal com os detalhes
+            Swal.fire({
+                title: titulo,
+                html: detalhesHtml,
+                width: '600px',
+                confirmButtonText: 'Fechar'
+            });
+            
+        } catch (error) {
+            console.error('Erro:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro',
+                text: 'Ocorreu um erro ao carregar os detalhes da tarefa.'
+            });
+        }
+    }
+</script>
 {% endblock %} 
+
 
 

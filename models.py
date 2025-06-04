@@ -276,6 +276,9 @@ class SaidaMaterial(db.Model):
         overlaps="saida,itens_relacionados"
     )
 
+    # Relacionamento com RequisicaoMaterial
+    requisicao = db.relationship('RequisicaoMaterial', backref='saida_material', uselist=False)
+
 # ------------------- ITEM DA SAÍDA -------------------
 class SaidaItem(db.Model):
     __tablename__ = 'saida_item'

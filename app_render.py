@@ -11,6 +11,15 @@ from flask_login import login_required
 # Importa extensões globais (db, login_manager, migrate, csrf)
 from extensoes import db, login_manager, migrate, csrf
 
+# Importa modelos necessários
+from models import (
+    Usuario, Perfil, UnidadeLocal, NaturezaDespesa, Grupo, Item,
+    Fornecedor, EntradaMaterial, EntradaItem, SaidaMaterial, SaidaItem, 
+    BemPatrimonial, Publicacao, PublicacaoPartesEmbrapa, PublicacaoPartesFornecedor,
+    PublicacaoSignatariosEmbrapa, PublicacaoSignatariosExternos, Tarefa,
+    CategoriaTarefa, OrigemTarefa, RequisicaoMaterial, RequisicaoItem
+)
+
 # -------------------- Carrega variáveis de ambiente do arquivo .env (para uso local) --------------------
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))
@@ -57,25 +66,21 @@ def create_app():
     migrate.init_app(app, db)
     csrf.init_app(app)  # Inicializa o CSRF
 
+    # -------------------- Define função de carregamento do usuário --------------------
+    @login_manager.user_loader
+    def load_user(user_id):
+        if user_id is None:
+            return None
+        try:
+            return Usuario.query.get(int(user_id))
+        except:
+            return None
+
     # -------------------- Handler para erros de CSRF --------------------
     @app.errorhandler(CSRFError)
     def handle_csrf_error(e):
         return render_template('error.html', 
                              message="Token de segurança expirado. Por favor, tente novamente."), 400
-
-    # -------------------- Importa modelos após init_app para evitar import circular --------------------
-    from models import (
-        Usuario, Perfil, UnidadeLocal, NaturezaDespesa, Grupo, Item,
-        Fornecedor, EntradaMaterial, EntradaItem, SaidaMaterial, SaidaItem, 
-        BemPatrimonial, Publicacao, PublicacaoPartesEmbrapa, PublicacaoPartesFornecedor,
-        PublicacaoSignatariosEmbrapa, PublicacaoSignatariosExternos, Tarefa,
-        CategoriaTarefa, OrigemTarefa, RequisicaoMaterial, RequisicaoItem
-    )
-
-    # -------------------- Define função de carregamento do usuário --------------------
-    @login_manager.user_loader
-    def load_user(user_id):
-        return Usuario.query.get(int(user_id))
 
     # -------------------- Registra todos os blueprints (rotas do sistema) --------------------
     from routes_main import main
@@ -98,8 +103,8 @@ def create_app():
     from routes_publicacao import bp as publicacoes_bp
     from routes_tarefas import bp as tarefas_bp, api_bp as tarefas_api_bp
     from routes_config_tarefas import bp as config_tarefas_bp
-    from routes_api import bp as api_bp  # Novo import para API de detalhes
-    from routes_requisicao import requisicao_bp  # Import do blueprint de requisições
+    from routes_api import bp as api_bp
+    from routes_requisicao import requisicao_bp
 
     # Registro dos blueprints
     app.register_blueprint(main)
@@ -123,26 +128,17 @@ def create_app():
     app.register_blueprint(tarefas_bp)
     app.register_blueprint(tarefas_api_bp)
     app.register_blueprint(config_tarefas_bp)
-    app.register_blueprint(api_bp)  # Registro do novo blueprint
-    app.register_blueprint(requisicao_bp)  # Registro do blueprint de requisições
+    app.register_blueprint(api_bp)
+    app.register_blueprint(requisicao_bp)
 
     # Configuração do CSRF para rotas da API
     csrf.exempt(tarefas_api_bp)
-    csrf.exempt(api_bp)  # Exempta as novas rotas da API da proteção CSRF
+    csrf.exempt(api_bp)
 
     return app
 
 # -------------------- Cria a instância final do app --------------------
 app = create_app()
-
-# -------------------- Importa modelos após criar o app --------------------
-from models import (
-    Usuario, Perfil, UnidadeLocal, NaturezaDespesa, Grupo, Item,
-    Fornecedor, EntradaMaterial, EntradaItem, SaidaMaterial, SaidaItem, 
-    BemPatrimonial, Publicacao, PublicacaoPartesEmbrapa, PublicacaoPartesFornecedor,
-    PublicacaoSignatariosEmbrapa, PublicacaoSignatariosExternos, Tarefa,
-    CategoriaTarefa, OrigemTarefa, RequisicaoMaterial, RequisicaoItem
-)
 
 # -------------------- Cria tabelas e dados iniciais se ainda não existirem --------------------
 def init_db():

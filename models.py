@@ -549,6 +549,14 @@ class RequisicaoMaterial(db.Model):
         cascade='all, delete-orphan'
     )
 
+    @property
+    def tem_estoque_suficiente(self):
+        """Verifica se há estoque suficiente para todos os itens da requisição."""
+        for item in self.itens:
+            if item.item.estoque_atual < item.quantidade:
+                return False
+        return True
+
 class RequisicaoItem(db.Model):
     __tablename__ = 'requisicao_item'
     id = db.Column(db.Integer, primary_key=True)

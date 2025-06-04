@@ -203,15 +203,15 @@
                                     </a>
 
                                     <!-- Botão Atender (apenas para saídas pendentes com requisição) -->
-                                    {% if saida.status == 'PENDENTE' and saida.requisicao_material %}
-                                    <form action="{{ url_for('requisicao_bp.atender_requisicao', requisicao_id=saida.requisicao_material.id) }}"
+                                    {% if saida.status == 'PENDENTE' and saida.requisicao %}
+                                    <form action="{{ url_for('requisicao_bp.atender_requisicao', requisicao_id=saida.requisicao.id) }}"
                                           method="POST"
                                           onsubmit="return confirm('Deseja realmente atender esta requisição?')">
                                         <button type="submit" 
                                                 class="btn btn-outline-success btn-sm"
                                                 data-bs-toggle="tooltip" 
                                                 title="Atender Requisição"
-                                                {% if not saida.requisicao_material.tem_estoque_suficiente %}
+                                                {% if not saida.requisicao.tem_estoque_suficiente %}
                                                 disabled
                                                 title="Estoque insuficiente para alguns itens"
                                                 {% endif %}>

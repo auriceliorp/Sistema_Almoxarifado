@@ -277,7 +277,7 @@ class SaidaMaterial(db.Model):
     )
 
     # Relacionamento com RequisicaoMaterial
-    requisicao = db.relationship('RequisicaoMaterial', backref='saida_material', uselist=False)
+    requisicao_material = db.relationship('RequisicaoMaterial', backref='saida_material', uselist=False)
 
 # ------------------- ITEM DA SAÍDA -------------------
 class SaidaItem(db.Model):
@@ -544,7 +544,7 @@ class RequisicaoMaterial(db.Model):
     tarefa = db.relationship('Tarefa', backref='requisicao')
     
     saida_id = db.Column(db.Integer, db.ForeignKey('saida_material.id'), nullable=True)
-    saida = db.relationship('SaidaMaterial', backref='requisicao', uselist=False)
+    saida = db.relationship('SaidaMaterial', backref='requisicao_material', uselist=False)
     
     itens = db.relationship(
         'RequisicaoItem',

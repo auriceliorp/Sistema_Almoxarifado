@@ -56,15 +56,20 @@ def nova_requisicao():
         # Criar tarefa associada
         tarefa = Tarefa(
             titulo=f"Requisição de Materiais #{requisicao.id}",
-            resumo=f"Atender requisição de materiais do solicitante {current_user.nome}",
+            resumo=f"Nova requisição de materiais do solicitante {current_user.nome}",
             status="Não iniciada",
-            prioridade="Média",
+            prioridade="Alta",
             data_criacao=datetime.now(),
             solicitante_id=current_user.id,
             categoria_id=1,  # Categoria "Requisição de Materiais"
             unidade_local_id=current_user.unidade_local_id,
-            quantidade_acoes=len(itens),  # Número de itens na requisição
-            observacoes=f"Requisição de materiais com {len(itens)} itens.\nObservação do solicitante: {request.form.get('observacao', '')}"
+            quantidade_acoes=len(itens),
+            observacoes=(
+                f"Requisição de materiais com {len(itens)} itens.\n\n"
+                f"Itens solicitados:\n" + 
+                "\n".join([f"- {Item.query.get(item_id).nome}: {qtd} unidades" for item_id, qtd in zip(itens, quantidades)]) +
+                f"\n\nObservação do solicitante: {request.form.get('observacao', '')}"
+            )
         )
         db.session.add(tarefa)
         db.session.flush()

@@ -76,6 +76,31 @@ def nova_requisicao():
 
         # Associar tarefa à requisição
         requisicao.tarefa_id = tarefa.id
+
+        # Criar saída pendente
+        saida = SaidaMaterial(
+            data_movimento=datetime.now().date(),
+            solicitante_id=current_user.id,
+            usuario_id=current_user.id,  # Será atualizado quando a saída for efetivada
+            observacao=f"Saída pendente - Requisição #{requisicao.id}",
+            numero_documento=f"REQ{requisicao.id:04d}/{datetime.now().year}"
+        )
+        db.session.add(saida)
+        db.session.flush()
+
+        # Criar itens da saída
+        for item_id, qtd in zip(itens, quantidades):
+            item = Item.query.get(item_id)
+            saida_item = SaidaItem(
+                saida_id=saida.id,
+                item_id=item_id,
+                quantidade=int(qtd),
+                valor_unitario=item.valor_unitario
+            )
+            db.session.add(saida_item)
+
+        # Associar saída à requisição
+        requisicao.saida_id = saida.id
         
         db.session.commit()
         flash('Requisição registrada com sucesso!', 'success')
@@ -120,15 +145,14 @@ def atender_requisicao(requisicao_id):
         if requisicao.status != 'PENDENTE':
             raise ValueError("Esta requisição não está pendente")
 
-        # Criar saída de material
-        saida = SaidaMaterial(
-            data_movimento=datetime.now().date(),
-            solicitante_id=requisicao.solicitante_id,
-            usuario_id=current_user.id,
-            observacao=f"Atendimento da requisição #{requisicao.id}"
-        )
-        db.session.add(saida)
-        db.session.flush()
+        # Atualizar a saída existente
+        saida = requisicao.saida
+        if not saida:
+            raise ValueError("Saída não encontrada para esta requisição")
+
+        saida.usuario_id = current_user.id  # Atualizar usuário que efetivou a saída
+        saida.data_movimento = datetime.now().date()  # Atualizar data do movimento
+        saida.status = 'EFETIVADA'  # Atualizar status da saída
 
         # Processar itens
         for req_item in requisicao.itens:
@@ -136,21 +160,12 @@ def atender_requisicao(requisicao_id):
             if item.estoque_atual < req_item.quantidade:
                 raise ValueError(f"Estoque insuficiente para o item {item.nome}")
 
-            saida_item = SaidaItem(
-                saida_id=saida.id,
-                item_id=req_item.item_id,
-                quantidade=req_item.quantidade,
-                valor_unitario=item.valor_unitario
-            )
-            db.session.add(saida_item)
-
             # Atualizar estoque
             item.estoque_atual -= req_item.quantidade
             item.saldo_financeiro -= (req_item.quantidade * item.valor_unitario)
 
         # Atualizar status da requisição
         requisicao.status = 'ATENDIDA'
-        requisicao.saida_id = saida.id
 
         # Atualizar status da tarefa
         if requisicao.tarefa:

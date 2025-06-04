@@ -188,9 +188,9 @@
                                     <span class="badge bg-danger">Cancelada</span>
                                 {% endif %}
                             </td>
-                            <td>{{ saida.usuario.nome }}</td>
-                            <td>{{ saida.solicitante.nome }}</td>
-                            <td>{{ saida.solicitante.unidade_local.descricao if saida.solicitante.unidade_local }}</td>
+                            <td>{{ saida.usuario.nome if saida.usuario else 'Não definido' }}</td>
+                            <td>{{ saida.solicitante.nome if saida.solicitante else 'Não definido' }}</td>
+                            <td>{{ saida.solicitante.unidade_local.descricao if saida.solicitante and saida.solicitante.unidade_local else 'Não definido' }}</td>
                             <td>
                                 <div class="d-flex justify-content-center gap-2">
                                     <!-- Botão Requisição -->
@@ -330,3 +330,4 @@ $(document).ready(function() {
 });
 </script>
 {% endblock %}
+

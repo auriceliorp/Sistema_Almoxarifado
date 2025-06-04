@@ -1,9 +1,11 @@
 from flask import Blueprint, jsonify
+from flask_login import login_required
 from models import Tarefa
 
 bp = Blueprint('api', __name__, url_prefix='/api')
 
 @bp.route('/tarefas/<int:tarefa_id>/detalhes')
+@login_required
 def get_detalhes_tarefa(tarefa_id):
     try:
         tarefa = Tarefa.query.get_or_404(tarefa_id)
@@ -16,7 +18,7 @@ def get_detalhes_tarefa(tarefa_id):
             'prioridade': tarefa.prioridade,
             'numero_sei': tarefa.numero_sei,
             'data_inicio': tarefa.data_inicio.isoformat() if tarefa.data_inicio else None,
-            'data_fim': tarefa.data_fim.isoformat() if tarefa.data_fim else None,
+            'data_termino': tarefa.data_termino.isoformat() if tarefa.data_termino else None,
             'data_conclusao': tarefa.data_conclusao.isoformat() if tarefa.data_conclusao else None,
             'categoria': {
                 'id': tarefa.categoria.id,
@@ -34,10 +36,10 @@ def get_detalhes_tarefa(tarefa_id):
                 'id': tarefa.responsavel.id,
                 'nome': tarefa.responsavel.nome
             } if tarefa.responsavel else None,
-            'criado_por': {
-                'id': tarefa.criado_por.id,
-                'nome': tarefa.criado_por.nome
-            } if tarefa.criado_por else None,
+            'solicitante': {
+                'id': tarefa.solicitante.id,
+                'nome': tarefa.solicitante.nome
+            } if tarefa.solicitante else None,
             'observacoes': tarefa.observacoes
         })
         

@@ -21,6 +21,7 @@
                                 <th>Itens</th>
                                 <th>Observação</th>
                                 <th>Tarefa</th>
+                                <th>Saída</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
@@ -60,13 +61,26 @@
                                     {% endif %}
                                 </td>
                                 <td>
+                                    {% if req.saida %}
+                                        {% if req.saida.status == 'PENDENTE' %}
+                                            <span class="badge bg-warning">Saída Pendente</span>
+                                        {% elif req.saida.status == 'EFETIVADA' %}
+                                            <span class="badge bg-success">Saída Efetivada</span>
+                                        {% elif req.saida.status == 'CANCELADA' %}
+                                            <span class="badge bg-danger">Saída Cancelada</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="badge bg-secondary">Sem saída</span>
+                                    {% endif %}
+                                </td>
+                                <td>
                                     <form method="POST" action="{{ url_for('requisicao_bp.atender_requisicao', requisicao_id=req.id) }}"
                                           onsubmit="return confirm('Confirma o atendimento desta requisição?');">
                                         <button type="submit" 
                                                 class="btn btn-success btn-sm"
-                                                {% if not req.tem_estoque_suficiente %}
+                                                {% if not req.tem_estoque_suficiente or req.status != 'PENDENTE' or (req.saida and req.saida.status != 'PENDENTE') %}
                                                 disabled
-                                                title="Estoque insuficiente para alguns itens"
+                                                title="{% if not req.tem_estoque_suficiente %}Estoque insuficiente para alguns itens{% elif req.status != 'PENDENTE' %}Requisição não está pendente{% else %}Saída não está pendente{% endif %}"
                                                 {% endif %}>
                                             <i class="bi bi-check-lg me-1"></i>Atender
                                         </button>
@@ -75,7 +89,7 @@
                             </tr>
                             {% else %}
                             <tr>
-                                <td colspan="6" class="text-center py-4">
+                                <td colspan="8" class="text-center py-4">
                                     <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
                                     <p class="text-muted mb-0">Nenhuma requisição pendente.</p>
                                 </td>
@@ -161,12 +175,12 @@
             Swal.fire({
                 icon: 'error',
                 title: 'Erro',
-                text: 'Ocorreu um erro ao carregar os detalhes da tarefa.'
+                text: error.message,
+                confirmButtonText: 'OK'
             });
         }
     }
 </script>
 {% endblock %} 
-
 
 

@@ -259,6 +259,7 @@ class SaidaMaterial(db.Model):
     data_movimento = db.Column(db.Date, nullable=False)
     numero_documento = db.Column(db.String(50), nullable=True)
     observacao = db.Column(db.Text, nullable=True)
+    status = db.Column(db.String(20), nullable=False, default='PENDENTE')  # PENDENTE, EFETIVADA, CANCELADA
 
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
     usuario = db.relationship('Usuario', foreign_keys=[usuario_id], backref='saidas')
@@ -274,7 +275,6 @@ class SaidaMaterial(db.Model):
         cascade='all, delete-orphan',
         overlaps="saida,itens_relacionados"
     )
-
 
 # ------------------- ITEM DA SAÍDA -------------------
 class SaidaItem(db.Model):
@@ -531,7 +531,7 @@ class RequisicaoMaterial(db.Model):
     __tablename__ = 'requisicao_material'
     id = db.Column(db.Integer, primary_key=True)
     data_requisicao = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    status = db.Column(db.String(20), nullable=False, default='PENDENTE')  # PENDENTE, APROVADA, REJEITADA, ATENDIDA
+    status = db.Column(db.String(20), nullable=False, default='PENDENTE')  # PENDENTE, APROVADA, REJEITADA, ATENDIDA, CANCELADA, ESTORNADA
     observacao = db.Column(db.Text, nullable=True)
     
     solicitante_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)

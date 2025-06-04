@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, jsonify, flash, redirect,
 from flask_login import login_required, current_user
 from datetime import datetime, date, timedelta
 from decimal import Decimal
-from models import db, Item, SaidaMaterial, SaidaItem, Usuario, UnidadeLocal
+from models import db, Item, SaidaMaterial, SaidaItem, Usuario, UnidadeLocal, RequisicaoMaterial
 from sqlalchemy import desc, and_, or_, func
 import pandas as pd
 import io
@@ -54,9 +54,12 @@ def listar_saidas():
     data_fim = request.args.get('data_fim')
     solicitante_id = request.args.get('solicitante_id', type=int)
     item_id = request.args.get('item_id', type=int)
+    status = request.args.get('status', 'EFETIVADA')  # Por padrão, mostra apenas saídas efetivadas
     
     query = SaidaMaterial.query.filter_by(estornada=False)
     
+    if status:
+        query = query.filter(SaidaMaterial.status == status)
     if data_inicio:
         query = query.filter(SaidaMaterial.data_movimento >= parse_date(data_inicio))
     if data_fim:
@@ -79,7 +82,8 @@ def listar_saidas():
                          data_inicio=data_inicio,
                          data_fim=data_fim,
                          solicitante_id=solicitante_id,
-                         item_id=item_id)
+                         item_id=item_id,
+                         status=status)
 
 @saida_bp.route('/saida/nova', methods=['GET', 'POST'])
 @login_required
@@ -200,6 +204,9 @@ def estornar_saida(saida_id):
         if saida.estornada:
             return jsonify({'success': False, 'message': 'Esta saída já foi estornada'}), 400
 
+        if saida.status != 'EFETIVADA':
+            return jsonify({'success': False, 'message': 'Apenas saídas efetivadas podem ser estornadas'}), 400
+
         # Validar data do estorno
         if (date.today() - saida.data_movimento) > timedelta(days=30):
             return jsonify({
@@ -214,6 +221,14 @@ def estornar_saida(saida_id):
             item.saldo_financeiro += (saida_item.quantidade * saida_item.valor_unitario)
 
         saida.estornada = True
+        
+        # Se a saída está vinculada a uma requisição, também atualizar a requisição
+        requisicao = RequisicaoMaterial.query.filter_by(saida_id=saida.id).first()
+        if requisicao:
+            requisicao.status = 'ESTORNADA'
+            if requisicao.tarefa:
+                requisicao.tarefa.status = 'Cancelada'
+        
         db.session.commit()
         
         return jsonify({'success': True, 'message': 'Saída estornada com sucesso'})
@@ -433,3 +448,31 @@ def requisicao_saida(saida_id):
     return render_template('requisicao_saida.html', 
                          saida=saida,
                          format_currency=format_currency)
+
+@saida_bp.route('/saida/cancelar/<int:saida_id>', methods=['POST'])
+@login_required
+def cancelar_saida(saida_id):
+    try:
+        saida = SaidaMaterial.query.get_or_404(saida_id)
+        
+        if saida.status != 'PENDENTE':
+            return jsonify({'success': False, 'message': 'Esta saída não está pendente'}), 400
+
+        # Atualizar status da saída
+        saida.status = 'CANCELADA'
+        
+        # Se a saída está vinculada a uma requisição, também atualizar a requisição
+        requisicao = RequisicaoMaterial.query.filter_by(saida_id=saida.id).first()
+        if requisicao:
+            requisicao.status = 'CANCELADA'
+            if requisicao.tarefa:
+                requisicao.tarefa.status = 'Cancelada'
+        
+        db.session.commit()
+        flash('Saída cancelada com sucesso!', 'success')
+        return redirect(url_for('saida_bp.listar_saidas'))
+    
+    except Exception as e:
+        db.session.rollback()
+        flash('Erro ao cancelar saída: ' + str(e), 'error')
+        return redirect(url_for('saida_bp.listar_saidas'))

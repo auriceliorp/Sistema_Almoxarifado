@@ -202,6 +202,24 @@
                                         <i class="bi bi-eye"></i>
                                     </a>
 
+                                    <!-- Botão Atender (apenas para saídas pendentes com requisição) -->
+                                    {% if saida.status == 'PENDENTE' and saida.requisicao %}
+                                    <form action="{{ url_for('requisicao_bp.atender_requisicao', requisicao_id=saida.requisicao.id) }}"
+                                          method="POST"
+                                          onsubmit="return confirm('Deseja realmente atender esta requisição?')">
+                                        <button type="submit" 
+                                                class="btn btn-outline-success btn-sm"
+                                                data-bs-toggle="tooltip" 
+                                                title="Atender Requisição"
+                                                {% if not saida.requisicao.tem_estoque_suficiente %}
+                                                disabled
+                                                title="Estoque insuficiente para alguns itens"
+                                                {% endif %}>
+                                            <i class="bi bi-check-circle"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+
                                     <!-- Botão Estornar (apenas para saídas efetivadas) -->
                                     {% if saida.status == 'EFETIVADA' and not saida.estornada %}
                                     <form action="{{ url_for('saida_bp.estornar_saida', saida_id=saida.id) }}"

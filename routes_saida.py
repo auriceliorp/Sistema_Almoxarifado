@@ -55,8 +55,33 @@ def listar_saidas():
     solicitante_id = request.args.get('solicitante_id', type=int)
     item_id = request.args.get('item_id', type=int)
     status = request.args.get('status', 'EFETIVADA')  # Por padrão, mostra apenas saídas efetivadas
+    filtro = request.args.get('filtro', 'data')
+    busca = request.args.get('busca', '')
     
-    query = SaidaMaterial.query.filter_by(estornada=False)
+    # Query base com joins necessários
+    query = SaidaMaterial.query\
+        .outerjoin(Usuario, SaidaMaterial.usuario_id == Usuario.id)\
+        .outerjoin(Usuario, SaidaMaterial.solicitante_id == Usuario.id)\
+        .outerjoin(UnidadeLocal, Usuario.unidade_local_id == UnidadeLocal.id)\
+        .filter(SaidaMaterial.estornada == False)
+    
+    # Aplicar filtros de busca
+    if busca:
+        if filtro == 'data':
+            try:
+                data_busca = datetime.strptime(busca, '%d/%m/%Y').date()
+                query = query.filter(SaidaMaterial.data_movimento == data_busca)
+            except:
+                flash('Formato de data inválido. Use dd/mm/aaaa', 'error')
+        elif filtro == 'responsavel':
+            query = query.filter(Usuario.nome.ilike(f'%{busca}%'))
+        elif filtro == 'solicitante':
+            query = query.filter(Usuario.nome.ilike(f'%{busca}%'))
+        elif filtro == 'setor':
+            query = query.filter(UnidadeLocal.descricao.ilike(f'%{busca}%'))
+        elif filtro == 'id':
+            if busca.isdigit():
+                query = query.filter(SaidaMaterial.id == int(busca))
     
     if status:
         query = query.filter(SaidaMaterial.status == status)
@@ -68,6 +93,18 @@ def listar_saidas():
         query = query.filter(SaidaMaterial.solicitante_id == solicitante_id)
     if item_id:
         query = query.join(SaidaItem).filter(SaidaItem.item_id == item_id)
+    
+    # Estatísticas
+    hoje = date.today()
+    primeiro_dia_mes = date(hoje.year, hoje.month, 1)
+    
+    total_saidas = SaidaMaterial.query.filter_by(estornada=False).count()
+    saidas_mes = SaidaMaterial.query.filter(
+        SaidaMaterial.data_movimento >= primeiro_dia_mes,
+        SaidaMaterial.estornada == False
+    ).count()
+    solicitantes_unicos = db.session.query(SaidaMaterial.solicitante_id).distinct().count()
+    saidas_estornadas = SaidaMaterial.query.filter_by(estornada=True).count()
     
     saidas = query.order_by(desc(SaidaMaterial.data_movimento)).paginate(page=page, per_page=per_page)
     
@@ -83,7 +120,13 @@ def listar_saidas():
                          data_fim=data_fim,
                          solicitante_id=solicitante_id,
                          item_id=item_id,
-                         status=status)
+                         status=status,
+                         total_saidas=total_saidas,
+                         saidas_mes=saidas_mes,
+                         solicitantes_unicos=solicitantes_unicos,
+                         saidas_estornadas=saidas_estornadas,
+                         filtro=filtro,
+                         busca=busca)
 
 @saida_bp.route('/saida/nova', methods=['GET', 'POST'])
 @login_required

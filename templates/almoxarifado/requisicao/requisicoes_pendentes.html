@@ -59,13 +59,10 @@
                                           onsubmit="return confirm('Confirma o atendimento desta requisição?');">
                                         <button type="submit" 
                                                 class="btn btn-success btn-sm"
-                                                {% for item in req.itens %}
-                                                    {% if item.item.estoque_atual < item.quantidade %}
-                                                        disabled
-                                                        title="Estoque insuficiente para alguns itens"
-                                                        {% break %}
-                                                    {% endif %}
-                                                {% endfor %}>
+                                                {% if not req.tem_estoque_suficiente %}
+                                                disabled
+                                                title="Estoque insuficiente para alguns itens"
+                                                {% endif %}>
                                             <i class="bi bi-check-lg me-1"></i>Atender
                                         </button>
                                     </form>
@@ -87,4 +84,5 @@
     </div>
 </div>
 {% endblock %} 
+
 

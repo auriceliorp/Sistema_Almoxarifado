@@ -276,6 +276,9 @@ class SaidaMaterial(db.Model):
         overlaps="saida,itens_relacionados"
     )
 
+    # Relacionamento reverso com RequisicaoMaterial
+    requisicao = db.relationship('RequisicaoMaterial', backref='saida', uselist=False)
+
 # ------------------- ITEM DA SAÍDA -------------------
 class SaidaItem(db.Model):
     __tablename__ = 'saida_item'
@@ -565,3 +568,4 @@ class RequisicaoItem(db.Model):
     quantidade = db.Column(db.Integer, nullable=False)
     
     item = db.relationship('Item', backref='requisicoes')
+

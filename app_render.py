@@ -27,13 +27,29 @@ def create_app():
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'chave-secreta-padrao'
     app.config['WTF_CSRF_SECRET_KEY'] = os.environ.get('WTF_CSRF_SECRET_KEY') or 'csrf-chave-secreta-padrao'
 
-    # Corrige URL de banco de dados caso venha com prefixo postgres:// (incompatível com SQLAlchemy)
-    database_url = os.getenv('DATABASE_URL')
+    # Tenta usar DATABASE_URL do Railway primeiro
+    database_url = os.environ.get('DATABASE_URL')
+    
+    # Se não houver DATABASE_URL, monta a partir das configurações individuais
+    if not database_url:
+        db_user = os.environ.get('DB_USER')
+        db_password = os.environ.get('DB_PASSWORD')
+        db_host = os.environ.get('DB_HOST', 'localhost')
+        db_port = os.environ.get('DB_PORT', '5432')
+        db_name = os.environ.get('DB_NAME')
+        database_url = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+    
+    # Corrige URL se necessário (Railway às vezes usa postgres:// ao invés de postgresql://)
     if database_url and database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql://", 1)
 
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_size': 10,
+        'pool_recycle': 60,
+        'pool_pre_ping': True
+    }
 
     # -------------------- Inicializa extensões com o app --------------------
     db.init_app(app)
@@ -48,21 +64,21 @@ def create_app():
                              message="Token de segurança expirado. Por favor, tente novamente."), 400
 
     # -------------------- Importa modelos após init_app para evitar import circular --------------------
-    from models import (
-        Usuario, Perfil, UnidadeLocal, NaturezaDespesa, Grupo, Item,
-        Fornecedor, EntradaMaterial, EntradaItem, SaidaMaterial, SaidaItem, 
-        BemPatrimonial, Publicacao, PublicacaoPartesEmbrapa, PublicacaoPartesFornecedor,
-        PublicacaoSignatariosEmbrapa, PublicacaoSignatariosExternos, Tarefa,
-        CategoriaTarefa, OrigemTarefa, RequisicaoMaterial, RequisicaoItem
-    )
-
-    # -------------------- Define função de carregamento do usuário --------------------
-    @login_manager.user_loader
-    def load_user(user_id):
-        return Usuario.query.get(int(user_id))
-
-    # -------------------- Cria tabelas e dados iniciais se ainda não existirem --------------------
     with app.app_context():
+        from models import (
+            Usuario, Perfil, UnidadeLocal, NaturezaDespesa, Grupo, Item,
+            Fornecedor, EntradaMaterial, EntradaItem, SaidaMaterial, SaidaItem, 
+            BemPatrimonial, Publicacao, PublicacaoPartesEmbrapa, PublicacaoPartesFornecedor,
+            PublicacaoSignatariosEmbrapa, PublicacaoSignatariosExternos, Tarefa,
+            CategoriaTarefa, OrigemTarefa, RequisicaoMaterial, RequisicaoItem
+        )
+
+        # -------------------- Define função de carregamento do usuário --------------------
+        @login_manager.user_loader
+        def load_user(user_id):
+            return Usuario.query.get(int(user_id))
+
+        # -------------------- Cria tabelas e dados iniciais se ainda não existirem --------------------
         db.create_all()
 
         # Cria perfis padrão se não existirem

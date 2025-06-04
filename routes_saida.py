@@ -9,6 +9,7 @@ import io
 import csv
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill
+from sqlalchemy.orm import aliased
 
 saida_bp = Blueprint('saida_bp', __name__)
 
@@ -58,11 +59,14 @@ def listar_saidas():
     filtro = request.args.get('filtro', 'data')
     busca = request.args.get('busca', '')
     
-    # Query base com joins necessários
+    # Query base com joins necessários usando aliases
+    usuario_responsavel = aliased(Usuario)
+    usuario_solicitante = aliased(Usuario)
+    
     query = SaidaMaterial.query\
-        .outerjoin(Usuario, SaidaMaterial.usuario_id == Usuario.id)\
-        .outerjoin(Usuario, SaidaMaterial.solicitante_id == Usuario.id)\
-        .outerjoin(UnidadeLocal, Usuario.unidade_local_id == UnidadeLocal.id)\
+        .outerjoin(usuario_responsavel, SaidaMaterial.usuario_id == usuario_responsavel.id)\
+        .outerjoin(usuario_solicitante, SaidaMaterial.solicitante_id == usuario_solicitante.id)\
+        .outerjoin(UnidadeLocal, usuario_solicitante.unidade_local_id == UnidadeLocal.id)\
         .filter(SaidaMaterial.estornada == False)
     
     # Aplicar filtros de busca
@@ -74,9 +78,9 @@ def listar_saidas():
             except:
                 flash('Formato de data inválido. Use dd/mm/aaaa', 'error')
         elif filtro == 'responsavel':
-            query = query.filter(Usuario.nome.ilike(f'%{busca}%'))
+            query = query.filter(usuario_responsavel.nome.ilike(f'%{busca}%'))
         elif filtro == 'solicitante':
-            query = query.filter(Usuario.nome.ilike(f'%{busca}%'))
+            query = query.filter(usuario_solicitante.nome.ilike(f'%{busca}%'))
         elif filtro == 'setor':
             query = query.filter(UnidadeLocal.descricao.ilike(f'%{busca}%'))
         elif filtro == 'id':
@@ -519,3 +523,4 @@ def cancelar_saida(saida_id):
         db.session.rollback()
         flash('Erro ao cancelar saída: ' + str(e), 'error')
         return redirect(url_for('saida_bp.listar_saidas'))
+

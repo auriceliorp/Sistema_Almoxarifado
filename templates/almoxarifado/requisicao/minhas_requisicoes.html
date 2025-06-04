@@ -53,11 +53,12 @@
                                 <td>
                                     {% if req.tarefa %}
                                         <a href="{{ url_for('tarefas.editar_tarefa', id=req.tarefa.id) }}" 
-                                           class="btn btn-sm btn-outline-primary">
-                                            Ver Tarefa
+                                           class="btn btn-sm {% if req.tarefa.status == 'Concluída' %}btn-success{% elif req.tarefa.status == 'Não iniciada' %}btn-warning{% else %}btn-info{% endif %}">
+                                            <i class="bi {% if req.tarefa.status == 'Concluída' %}bi-check-circle{% elif req.tarefa.status == 'Não iniciada' %}bi-clock{% else %}bi-gear{% endif %} me-1"></i>
+                                            {{ req.tarefa.status }}
                                         </a>
                                     {% else %}
-                                        -
+                                        <span class="badge bg-secondary">Sem tarefa</span>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -77,3 +78,4 @@
     </div>
 </div>
 {% endblock %} 
+

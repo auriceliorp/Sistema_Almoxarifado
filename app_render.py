@@ -64,41 +64,18 @@ def create_app():
                              message="Token de segurança expirado. Por favor, tente novamente."), 400
 
     # -------------------- Importa modelos após init_app para evitar import circular --------------------
-    with app.app_context():
-        from models import (
-            Usuario, Perfil, UnidadeLocal, NaturezaDespesa, Grupo, Item,
-            Fornecedor, EntradaMaterial, EntradaItem, SaidaMaterial, SaidaItem, 
-            BemPatrimonial, Publicacao, PublicacaoPartesEmbrapa, PublicacaoPartesFornecedor,
-            PublicacaoSignatariosEmbrapa, PublicacaoSignatariosExternos, Tarefa,
-            CategoriaTarefa, OrigemTarefa, RequisicaoMaterial, RequisicaoItem
-        )
+    from models import (
+        Usuario, Perfil, UnidadeLocal, NaturezaDespesa, Grupo, Item,
+        Fornecedor, EntradaMaterial, EntradaItem, SaidaMaterial, SaidaItem, 
+        BemPatrimonial, Publicacao, PublicacaoPartesEmbrapa, PublicacaoPartesFornecedor,
+        PublicacaoSignatariosEmbrapa, PublicacaoSignatariosExternos, Tarefa,
+        CategoriaTarefa, OrigemTarefa, RequisicaoMaterial, RequisicaoItem
+    )
 
-        # -------------------- Define função de carregamento do usuário --------------------
-        @login_manager.user_loader
-        def load_user(user_id):
-            return Usuario.query.get(int(user_id))
-
-        # -------------------- Cria tabelas e dados iniciais se ainda não existirem --------------------
-        db.create_all()
-
-        # Cria perfis padrão se não existirem
-        perfis_padrao = ['Administrador', 'Solicitante', 'Consultor']
-        for nome in perfis_padrao:
-            if not Perfil.query.filter_by(nome=nome).first():
-                db.session.add(Perfil(nome=nome))
-        db.session.commit()
-
-        # Cria usuário admin se não existir
-        if not Usuario.query.filter_by(email='admin@admin.com').first():
-            perfil_admin = Perfil.query.filter_by(nome='Administrador').first()
-            admin = Usuario(
-                nome='Administrador',
-                email='admin@admin.com',
-                senha=generate_password_hash('admin'),
-                perfil_id=perfil_admin.id
-            )
-            db.session.add(admin)
-            db.session.commit()
+    # -------------------- Define função de carregamento do usuário --------------------
+    @login_manager.user_loader
+    def load_user(user_id):
+        return Usuario.query.get(int(user_id))
 
     # -------------------- Registra todos os blueprints (rotas do sistema) --------------------
     from routes_main import main
@@ -158,7 +135,48 @@ def create_app():
 # -------------------- Cria a instância final do app --------------------
 app = create_app()
 
-# -------------------- Executa servidor local se rodar diretamente --------------------
+# -------------------- Importa modelos após criar o app --------------------
+from models import (
+    Usuario, Perfil, UnidadeLocal, NaturezaDespesa, Grupo, Item,
+    Fornecedor, EntradaMaterial, EntradaItem, SaidaMaterial, SaidaItem, 
+    BemPatrimonial, Publicacao, PublicacaoPartesEmbrapa, PublicacaoPartesFornecedor,
+    PublicacaoSignatariosEmbrapa, PublicacaoSignatariosExternos, Tarefa,
+    CategoriaTarefa, OrigemTarefa, RequisicaoMaterial, RequisicaoItem
+)
+
+# -------------------- Cria tabelas e dados iniciais se ainda não existirem --------------------
+def init_db():
+    with app.app_context():
+        db.create_all()
+
+        # Cria perfis padrão se não existirem
+        perfis_padrao = ['Administrador', 'Solicitante', 'Consultor']
+        for nome in perfis_padrao:
+            if not Perfil.query.filter_by(nome=nome).first():
+                db.session.add(Perfil(nome=nome))
+        try:
+            db.session.commit()
+        except:
+            db.session.rollback()
+
+        # Cria usuário admin se não existir
+        if not Usuario.query.filter_by(email='admin@admin.com').first():
+            perfil_admin = Perfil.query.filter_by(nome='Administrador').first()
+            if perfil_admin:
+                admin = Usuario(
+                    nome='Administrador',
+                    email='admin@admin.com',
+                    senha=generate_password_hash('admin'),
+                    perfil_id=perfil_admin.id
+                )
+                db.session.add(admin)
+                try:
+                    db.session.commit()
+                except:
+                    db.session.rollback()
+
+# Inicializa o banco de dados apenas se estiver rodando diretamente
 if __name__ == '__main__':
+    init_db()
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port) 

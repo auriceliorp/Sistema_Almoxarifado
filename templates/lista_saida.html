@@ -119,6 +119,16 @@
     <div class="card filter-card shadow-sm mb-4">
         <div class="card-body">
             <form method="GET" class="row g-3 align-items-end">
+                <div class="col-md-2">
+                    <label for="status" class="form-label">
+                        <i class="bi bi-flag me-1"></i>Status
+                    </label>
+                    <select id="status" name="status" class="form-select">
+                        <option value="EFETIVADA" {% if status == 'EFETIVADA' %}selected{% endif %}>Efetivadas</option>
+                        <option value="PENDENTE" {% if status == 'PENDENTE' %}selected{% endif %}>Pendentes</option>
+                        <option value="CANCELADA" {% if status == 'CANCELADA' %}selected{% endif %}>Canceladas</option>
+                    </select>
+                </div>
                 <div class="col-md-3">
                     <label for="filtro" class="form-label">
                         <i class="bi bi-funnel me-1"></i>Buscar por
@@ -131,7 +141,7 @@
                         <option value="id" {% if filtro == 'id' %}selected{% endif %}>ID</option>
                     </select>
                 </div>
-                <div class="col-md-7">
+                <div class="col-md-5">
                     <label for="busca" class="form-label">
                         <i class="bi bi-search me-1"></i>Valor
                     </label>
@@ -157,6 +167,7 @@
                         <tr>
                             <th>ID</th>
                             <th>Data</th>
+                            <th>Status</th>
                             <th>Responsável</th>
                             <th>Solicitante</th>
                             <th>Setor</th>
@@ -168,6 +179,15 @@
                         <tr class="{% if saida.estornada %}table-danger{% endif %}">
                             <td>{{ saida.id }}</td>
                             <td>{{ saida.data_movimento.strftime('%d/%m/%Y') }}</td>
+                            <td>
+                                {% if saida.status == 'PENDENTE' %}
+                                    <span class="badge bg-warning">Pendente</span>
+                                {% elif saida.status == 'EFETIVADA' %}
+                                    <span class="badge bg-success">Efetivada</span>
+                                {% elif saida.status == 'CANCELADA' %}
+                                    <span class="badge bg-danger">Cancelada</span>
+                                {% endif %}
+                            </td>
                             <td>{{ saida.usuario.nome }}</td>
                             <td>{{ saida.solicitante.nome }}</td>
                             <td>{{ saida.solicitante.unidade_local.descricao if saida.solicitante.unidade_local }}</td>
@@ -182,8 +202,8 @@
                                         <i class="bi bi-eye"></i>
                                     </a>
 
-                                    <!-- Botão Estornar -->
-                                    {% if not saida.estornada %}
+                                    <!-- Botão Estornar (apenas para saídas efetivadas) -->
+                                    {% if saida.status == 'EFETIVADA' and not saida.estornada %}
                                     <form action="{{ url_for('saida_bp.estornar_saida', saida_id=saida.id) }}"
                                           method="POST"
                                           onsubmit="return confirm('Deseja realmente estornar esta saída?')">
@@ -194,8 +214,20 @@
                                             <i class="bi bi-x-circle"></i>
                                         </button>
                                     </form>
-                                    {% else %}
-                                    <span class="badge bg-danger">Estornada</span>
+                                    {% endif %}
+
+                                    <!-- Botão Cancelar (apenas para saídas pendentes) -->
+                                    {% if saida.status == 'PENDENTE' %}
+                                    <form action="{{ url_for('saida_bp.cancelar_saida', saida_id=saida.id) }}"
+                                          method="POST"
+                                          onsubmit="return confirm('Deseja realmente cancelar esta saída?')">
+                                        <button type="submit" 
+                                                class="btn btn-outline-danger btn-sm"
+                                                data-bs-toggle="tooltip" 
+                                                title="Cancelar Saída">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
                                     {% endif %}
                                 </div>
                             </td>
@@ -212,7 +244,7 @@
         <ul class="pagination justify-content-center">
             {% if saidas.has_prev %}
             <li class="page-item">
-                <a class="page-link" href="{{ url_for('saida_bp.listar_saidas', page=saidas.prev_num, filtro=filtro, busca=busca) }}">
+                <a class="page-link" href="{{ url_for('saida_bp.listar_saidas', page=saidas.prev_num, filtro=filtro, busca=busca, status=status) }}">
                     <i class="bi bi-chevron-left"></i>
                 </a>
             </li>
@@ -230,7 +262,7 @@
                 </li>
                 {% else %}
                 <li class="page-item">
-                    <a class="page-link" href="{{ url_for('saida_bp.listar_saidas', page=page_num, filtro=filtro, busca=busca) }}">
+                    <a class="page-link" href="{{ url_for('saida_bp.listar_saidas', page=page_num, filtro=filtro, busca=busca, status=status) }}">
                         {{ page_num }}
                     </a>
                 </li>
@@ -242,7 +274,7 @@
 
             {% if saidas.has_next %}
             <li class="page-item">
-                <a class="page-link" href="{{ url_for('saida_bp.listar_saidas', page=saidas.next_num, filtro=filtro, busca=busca) }}">
+                <a class="page-link" href="{{ url_for('saida_bp.listar_saidas', page=saidas.next_num, filtro=filtro, busca=busca, status=status) }}">
                     <i class="bi bi-chevron-right"></i>
                 </a>
             </li>

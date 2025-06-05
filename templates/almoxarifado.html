@@ -4,124 +4,173 @@
 
 {% block content %}
 <style>
-  .dashboard-card {
-    background-color: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+    padding: 1.5rem 0;
+  }
+
+  .service-card {
+    background: #f8f9fa;
+    border-radius: 8px;
     padding: 1.5rem;
     text-align: center;
-    transition: all 0.2s ease-in-out;
-    height: 100%;
+    transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    align-items: center;
+    justify-content: center;
+    min-height: 180px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border: 1px solid #e9ecef;
   }
 
-  .dashboard-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  .service-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    background: #fff;
   }
 
-  .dashboard-card i {
-    font-size: 2.2rem;
+  .service-card i {
+    font-size: 2.5rem;
     color: #004b5b;
     margin-bottom: 1rem;
   }
 
-  .dashboard-card h6 {
+  .service-card h6 {
+    color: #343a40;
     font-weight: 600;
-    color: #004b5b;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
   }
 
-  .dashboard-card .btn {
+  .service-card .btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
     margin-top: auto;
   }
 
-  .card-grid {
-    margin-top: 2rem;
+  .service-card .btn {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  .service-card .btn i {
+    font-size: 1rem;
+    margin: 0;
+  }
+
+  .service-card .badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    padding: 0.35rem 0.5rem;
+  }
+
+  .page-title {
+    color: #004b5b;
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-top: 2rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
   }
 </style>
 
-<div class="container py-4">
-  <h4 class="text-center fw-bold text-uppercase">Almoxarifado</h4>
+<div class="container">
+  <h2 class="page-title">Almoxarifado</h2>
 
-  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 card-grid">
-
+  <div class="dashboard-grid">
     <!-- Itens -->
-    <div class="col">
-      <div class="dashboard-card">
-        <i class="bi bi-box"></i>
-        <h6>Itens</h6>
-        <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-outline-primary w-100">
+    <div class="service-card">
+      <i class="bi bi-box"></i>
+      <h6>Itens</h6>
+      <div class="btn-group">
+        <a href="{{ url_for('item_bp.lista_itens') }}" class="btn btn-outline-primary">
+          <i class="bi bi-arrow-right-circle"></i>
           Acessar
         </a>
       </div>
     </div>
 
     <!-- Fornecedores -->
-    <div class="col">
-      <div class="dashboard-card">
-        <i class="bi bi-person-check"></i>
-        <h6>Fornecedores</h6>
-        <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="btn btn-outline-primary w-100">
+    <div class="service-card">
+      <i class="bi bi-person-check"></i>
+      <h6>Fornecedores</h6>
+      <div class="btn-group">
+        <a href="{{ url_for('fornecedor_bp.lista_fornecedor') }}" class="btn btn-outline-primary">
+          <i class="bi bi-arrow-right-circle"></i>
           Acessar
         </a>
       </div>
     </div>
 
     <!-- Entradas -->
-    <div class="col">
-      <div class="dashboard-card">
-        <i class="bi bi-box-arrow-in-down"></i>
-        <h6>Entrada de Materiais</h6>
-        <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="btn btn-outline-primary w-100">
+    <div class="service-card">
+      <i class="bi bi-box-arrow-in-down"></i>
+      <h6>Entrada de Materiais</h6>
+      <div class="btn-group">
+        <a href="{{ url_for('entrada_bp.lista_entradas') }}" class="btn btn-outline-primary">
+          <i class="bi bi-arrow-right-circle"></i>
           Acessar
         </a>
       </div>
     </div>
 
     <!-- Saídas -->
-    <div class="col">
-      <div class="dashboard-card">
-        <i class="bi bi-box-arrow-up"></i>
-        <h6>Saída de Materiais</h6>
-        <a href="{{ url_for('saida_bp.listar_saidas') }}" class="btn btn-outline-primary w-100">
+    <div class="service-card">
+      <i class="bi bi-box-arrow-up"></i>
+      <h6>Saída de Materiais</h6>
+      <div class="btn-group">
+        <a href="{{ url_for('saida_bp.listar_saidas') }}" class="btn btn-outline-primary">
+          <i class="bi bi-arrow-right-circle"></i>
           Acessar
         </a>
       </div>
     </div>
 
     <!-- Requisições -->
-    <div class="col">
-      <div class="dashboard-card">
-        <i class="bi bi-clipboard-check"></i>
-        <h6>Requisição de Materiais</h6>
-        <div class="d-grid gap-2">
-          <a href="{{ url_for('requisicao_bp.consulta_estoque') }}" class="btn btn-outline-primary">
-            <i class="bi bi-plus-lg me-1"></i>Nova Requisição
-          </a>
-          <a href="{{ url_for('requisicao_bp.minhas_requisicoes') }}" class="btn btn-outline-primary">
-            <i class="bi bi-list-check me-1"></i>Minhas Requisições
-          </a>
-          {% if current_user.perfil and current_user.perfil.nome == 'Administrador' %}
-          <a href="{{ url_for('requisicao_bp.requisicoes_pendentes') }}" class="btn btn-outline-primary">
-            <i class="bi bi-clock-history me-1"></i>Requisições Pendentes
-            {% if requisicoes_pendentes_count > 0 %}
-            <span class="badge bg-danger ms-1">{{ requisicoes_pendentes_count }}</span>
-            {% endif %}
-          </a>
+    <div class="service-card">
+      <i class="bi bi-clipboard-check"></i>
+      <h6>Requisição de Materiais</h6>
+      <div class="btn-group">
+        <a href="{{ url_for('requisicao_bp.consulta_estoque') }}" class="btn btn-outline-primary">
+          <i class="bi bi-plus-lg"></i>
+          Nova Requisição
+        </a>
+        <a href="{{ url_for('requisicao_bp.minhas_requisicoes') }}" class="btn btn-outline-primary">
+          <i class="bi bi-list-check"></i>
+          Minhas Requisições
+        </a>
+        {% if current_user.perfil and current_user.perfil.nome == 'Administrador' %}
+        <a href="{{ url_for('requisicao_bp.requisicoes_pendentes') }}" class="btn btn-outline-primary position-relative">
+          <i class="bi bi-clock-history"></i>
+          Requisições Pendentes
+          {% if requisicoes_pendentes_count > 0 %}
+          <span class="badge bg-danger">{{ requisicoes_pendentes_count }}</span>
           {% endif %}
-        </div>
+        </a>
+        {% endif %}
       </div>
     </div>
 
     <!-- Relatório -->
-    <div class="col">
-      <div class="dashboard-card">
-        <i class="bi bi-bar-chart-line"></i>
-        <h6>Mapa de Fechamento</h6>
-        <a href="{{ url_for('relatorio_bp.mapa_fechamento') }}" class="btn btn-outline-primary w-100">
+    <div class="service-card">
+      <i class="bi bi-bar-chart-line"></i>
+      <h6>Mapa de Fechamento</h6>
+      <div class="btn-group">
+        <a href="{{ url_for('relatorio_bp.mapa_fechamento') }}" class="btn btn-outline-primary">
+          <i class="bi bi-arrow-right-circle"></i>
           Acessar
         </a>
       </div>
@@ -130,3 +179,4 @@
   </div>
 </div>
 {% endblock %}
+

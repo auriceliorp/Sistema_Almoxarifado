@@ -51,7 +51,7 @@
                                                 onclick="verDetalhes('{{ req.tarefa.id }}', '{{ req.tarefa.titulo }}')">
                                             <i class="bi bi-eye me-1"></i>Visualizar
                                         </button>
-                                        <a href="{{ url_for('projetos.editar_tarefa', tarefa_id=req.tarefa.id) }}" 
+                                        <a href="{{ url_for('tarefas.editar_tarefa', id=req.tarefa.id) }}" 
                                            class="btn btn-sm {% if req.tarefa.status == 'Concluída' %}btn-success{% elif req.tarefa.status == 'Não iniciada' %}btn-warning{% else %}btn-info{% endif %}">
                                             <i class="bi {% if req.tarefa.status == 'Concluída' %}bi-check-circle{% elif req.tarefa.status == 'Não iniciada' %}bi-clock{% else %}bi-gear{% endif %} me-1"></i>
                                             {{ req.tarefa.status }}
@@ -182,5 +182,3 @@
     }
 </script>
 {% endblock %} 
-
-

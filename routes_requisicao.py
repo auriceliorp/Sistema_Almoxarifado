@@ -4,16 +4,16 @@ from datetime import datetime
 from models import db, RequisicaoMaterial, RequisicaoItem, Item, Tarefa, SaidaMaterial, SaidaItem
 from sqlalchemy import desc
 
-requisicao_bp = Blueprint('requisicao_bp', __name__)
+requisicao_bp = Blueprint('requisicao_bp', __name__, url_prefix='/requisicao')
 
-@requisicao_bp.route('/requisicao/consulta-estoque')
+@requisicao_bp.route('/consulta-estoque')
 @login_required
 def consulta_estoque():
     """Página para consulta de estoque e criação de requisição"""
     itens = Item.query.filter(Item.estoque_atual > 0).order_by(Item.nome).all()
     return render_template('almoxarifado/requisicao/consulta_estoque.html', itens=itens)
 
-@requisicao_bp.route('/requisicao/nova', methods=['POST'])
+@requisicao_bp.route('/nova', methods=['POST'])
 @login_required
 def nova_requisicao():
     """Cria uma nova requisição de material"""
@@ -115,7 +115,7 @@ def nova_requisicao():
         flash('Erro ao registrar requisição: ' + str(e), 'error')
         return redirect(url_for('requisicao_bp.consulta_estoque'))
 
-@requisicao_bp.route('/requisicao/minhas')
+@requisicao_bp.route('/minhas')
 @login_required
 def minhas_requisicoes():
     """Lista as requisições do usuário atual"""
@@ -125,7 +125,7 @@ def minhas_requisicoes():
         .all()
     return render_template('almoxarifado/requisicao/minhas_requisicoes.html', requisicoes=requisicoes)
 
-@requisicao_bp.route('/requisicao/pendentes')
+@requisicao_bp.route('/pendentes')
 @login_required
 def requisicoes_pendentes():
     """Lista as requisições pendentes (para o almoxarifado)"""
@@ -135,7 +135,7 @@ def requisicoes_pendentes():
         .all()
     return render_template('almoxarifado/requisicao/requisicoes_pendentes.html', requisicoes=requisicoes)
 
-@requisicao_bp.route('/requisicao/<int:requisicao_id>/atender', methods=['POST'])
+@requisicao_bp.route('/<int:requisicao_id>/atender', methods=['POST'])
 @login_required
 def atender_requisicao(requisicao_id):
     """Atende uma requisição gerando uma saída de material"""

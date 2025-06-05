@@ -134,6 +134,7 @@ def create_app():
     # Configuração do CSRF para rotas da API
     csrf.exempt(tarefas_api_bp)
     csrf.exempt(api_bp)
+    csrf.exempt(requisicao_bp)  # Isenta o blueprint de requisições do CSRF
 
     return app
 

@@ -76,11 +76,12 @@
                                 <td>
                                     <form method="POST" action="{{ url_for('requisicao_bp.atender_requisicao', requisicao_id=req.id) }}"
                                           onsubmit="return confirm('Confirma o atendimento desta requisição?');">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <button type="submit" 
                                                 class="btn btn-success btn-sm"
-                                                {% if not req.tem_estoque_suficiente or req.status != 'PENDENTE' or (req.saida and req.saida.status != 'PENDENTE') %}
+                                                {% if not req.tem_estoque_suficiente or req.status != 'PENDENTE' or not req.saida or req.saida.status != 'PENDENTE' %}
                                                 disabled
-                                                title="{% if not req.tem_estoque_suficiente %}Estoque insuficiente para alguns itens{% elif req.status != 'PENDENTE' %}Requisição não está pendente{% else %}Saída não está pendente{% endif %}"
+                                                title="{% if not req.tem_estoque_suficiente %}Estoque insuficiente para alguns itens{% elif req.status != 'PENDENTE' %}Requisição não está pendente{% elif not req.saida %}Requisição sem saída associada{% else %}Saída não está pendente{% endif %}"
                                                 {% endif %}>
                                             <i class="bi bi-check-lg me-1"></i>Atender
                                         </button>

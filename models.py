@@ -4,11 +4,109 @@ from extensoes import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
+# ------------------- AUTORIZAÇÃO OPERAÇÃO -------------------
+class AutorizacaoOperacao(db.Model):
+    __tablename__ = 'autorizacoes_operacao'
+    id = db.Column(db.Integer, primary_key=True)
+    operacao = db.Column(db.String(100), nullable=False)
+    data_solicitacao = db.Column(db.DateTime, default=datetime.utcnow)
+    data_autorizacao = db.Column(db.DateTime)
+    solicitante_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    autorizador_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
+    status = db.Column(db.String(20), default='PENDENTE')  # PENDENTE, APROVADA, REJEITADA
+    justificativa = db.Column(db.Text)
+    observacoes = db.Column(db.Text)
+    dados_operacao = db.Column(db.JSON)
+
+    solicitante = db.relationship('Usuario', foreign_keys=[solicitante_id], backref='solicitacoes')
+    autorizador = db.relationship('Usuario', foreign_keys=[autorizador_id], backref='autorizacoes')
+
+    def __repr__(self):
+        return f"<AutorizacaoOperacao {self.id} - {self.operacao}>"
+
 # ------------------- PERFIL -------------------
 class Perfil(db.Model):
     __tablename__ = 'perfil'
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(50), nullable=False, unique=True)
+    descricao = db.Column(db.String(200))
+    nivel_acesso = db.Column(db.Integer, default=1)  # 1: Normal, 2: Autorizador, 3: Admin, 4: SuperAdmin
+    requer_autorizacao = db.Column(db.Boolean, default=False)
+    pode_autorizar = db.Column(db.Boolean, default=False)
+    permissoes = db.Column(db.JSON)  # Lista de permissões específicas
+
+    def __init__(self, nome, descricao=None, nivel_acesso=1, requer_autorizacao=False, pode_autorizar=False, permissoes=None):
+        self.nome = nome
+        self.descricao = descricao
+        self.nivel_acesso = nivel_acesso
+        self.requer_autorizacao = requer_autorizacao
+        self.pode_autorizar = pode_autorizar
+        self.permissoes = permissoes or {}
+
+    def __repr__(self):
+        return f"<Perfil {self.nome}>"
+
+    @staticmethod
+    def criar_perfis_padrao():
+        perfis = [
+            {
+                'nome': 'Super Administrador',
+                'descricao': 'Acesso total ao sistema, incluindo logs de auditoria',
+                'nivel_acesso': 4,
+                'requer_autorizacao': False,
+                'pode_autorizar': True,
+                'permissoes': {
+                    'auditoria': True,
+                    'usuarios': True,
+                    'configuracoes': True,
+                    'todas_rotinas': True
+                }
+            },
+            {
+                'nome': 'Administrador',
+                'descricao': 'Acesso administrativo ao sistema',
+                'nivel_acesso': 3,
+                'requer_autorizacao': False,
+                'pode_autorizar': True,
+                'permissoes': {
+                    'usuarios': True,
+                    'configuracoes': True,
+                    'todas_rotinas': True
+                }
+            },
+            {
+                'nome': 'Autorizador',
+                'descricao': 'Pode executar e autorizar operações',
+                'nivel_acesso': 2,
+                'requer_autorizacao': False,
+                'pode_autorizar': True,
+                'permissoes': {
+                    'autorizar_operacoes': True,
+                    'rotinas_basicas': True
+                }
+            },
+            {
+                'nome': 'Operador',
+                'descricao': 'Usuário que requer autorização para certas operações',
+                'nivel_acesso': 1,
+                'requer_autorizacao': True,
+                'pode_autorizar': False,
+                'permissoes': {
+                    'rotinas_basicas': True
+                }
+            }
+        ]
+
+        for perfil_data in perfis:
+            if not Perfil.query.filter_by(nome=perfil_data['nome']).first():
+                perfil = Perfil(**perfil_data)
+                db.session.add(perfil)
+        
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print(f"Erro ao criar perfis padrão: {e}")
 
 # ------------------- LOCAL -------------------
 class Local(db.Model):
@@ -39,12 +137,39 @@ class Usuario(UserMixin, db.Model):
     perfil_id = db.Column(db.Integer, db.ForeignKey('perfil.id'))
     perfil = db.relationship('Perfil', backref='usuarios')
     senha_temporaria = db.Column(db.Boolean, default=True)
+    ativo = db.Column(db.Boolean, default=True)
+    data_ultimo_acesso = db.Column(db.DateTime)
+    permissoes_especiais = db.Column(db.JSON)
 
     def set_senha(self, senha):
         self.senha = generate_password_hash(senha)
         
     def check_senha(self, senha):
         return check_password_hash(self.senha, senha)
+
+    def is_super_admin(self):
+        return self.perfil and self.perfil.nivel_acesso == 4
+
+    def is_admin(self):
+        return self.perfil and self.perfil.nivel_acesso >= 3
+
+    def is_autorizador(self):
+        return self.perfil and self.perfil.pode_autorizar
+
+    def requer_autorizacao(self):
+        return self.perfil and self.perfil.requer_autorizacao
+
+    def tem_permissao(self, permissao):
+        if self.is_super_admin():
+            return True
+        
+        if self.permissoes_especiais and permissao in self.permissoes_especiais:
+            return self.permissoes_especiais[permissao]
+            
+        return self.perfil and self.perfil.permissoes and permissao in self.perfil.permissoes
+
+    def __repr__(self):
+        return f"<Usuario {self.email}>"
 
 # ------------------- ÁREA -------------------
 class Area(db.Model):
@@ -366,11 +491,8 @@ class PainelContratacao(db.Model):
     solicitante_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
     solicitante = db.relationship('Usuario', foreign_keys=[solicitante_id])
 
-
-
     def __repr__(self):
         return f"<PainelContratacao {self.numero_sei}>"
-
 
 # ------------------- CONTROLE DE BENS -------------------
 from extensoes import db
@@ -398,7 +520,6 @@ class BemPatrimonial(db.Model):
     situacao = db.Column(db.String(50), default='Em uso')
     data_cadastro = db.Column(db.DateTime, default=datetime.utcnow)
     observacoes = db.Column(db.Text, nullable=True)
-
 
     def __repr__(self):
         return f"<BemPatrimonial {self.numero_ul} - {self.nome}>"

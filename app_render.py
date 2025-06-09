@@ -3,15 +3,15 @@
 
 import os
 import logging
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
 from flask_wtf.csrf import CSRFError
 from flask_login import login_required
 from datetime import datetime
 
-# Importa extensões globais (db, login_manager, migrate, csrf)
-from extensoes import db, login_manager, migrate, csrf
+# Importa extensões globais (db, login_manager, csrf)
+from extensoes import db, login_manager, csrf
 
 # Importa modelos necessários
 from models import (
@@ -278,3 +278,4 @@ if __name__ == '__main__':
     init_db()
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port) 
+

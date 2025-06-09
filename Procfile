@@ -1,1 +1,2 @@
-web: gunicorn app_render:app --log-file -
+release: flask db upgrade
+web: gunicorn wsgi:app --log-file -

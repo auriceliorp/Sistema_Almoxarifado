@@ -190,7 +190,6 @@ def create_app():
     from routes_movimentos import movimentos_bp as movimentos_blueprint
     from routes_projetos import projetos_bp as projetos_blueprint
     from routes_api import api_bp as api_blueprint
-    from test_blueprint import test_bp as test_blueprint
     from routes_tarefas import tarefas_bp as tarefas_blueprint
 
     # Registra os blueprints principais

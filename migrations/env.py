@@ -35,7 +35,17 @@ target_metadata = db.metadata
 def get_url():
     load_dotenv()
     
-    # Tenta usar PGDATABASE e outras variáveis do Railway primeiro
+    # Verifica se estamos em fase de build
+    is_build = os.environ.get('RAILWAY_ENVIRONMENT') == 'BUILD'
+    
+    # Se estiver em build, usa a URL pública
+    if is_build:
+        database_url = os.environ.get('DATABASE_PUBLIC_URL')
+        if database_url:
+            print("Using public database URL during build phase")
+            return database_url
+    
+    # Caso contrário, tenta usar as variáveis do Railway
     if os.environ.get('PGDATABASE'):
         db_user = os.environ.get('PGUSER')
         db_password = os.environ.get('PGPASSWORD')

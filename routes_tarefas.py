@@ -1,14 +1,7 @@
-from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
-from flask_login import login_required, current_user
-from models import db, Tarefa, CategoriaTarefa, OrigemTarefa, UnidadeLocal, Usuario
-from datetime import datetime, timedelta
-from extensoes import csrf
-from sqlalchemy import func
-
-bp = Blueprint('tarefas', __name__, url_prefix='/tarefas')
+tarefas_bp = Blueprint('tarefas', __name__, url_prefix='/tarefas')
 api_bp = Blueprint('tarefas_api', __name__, url_prefix='/api')
 
-@bp.route('/')
+@tarefas_bp.route('/')
 @login_required
 def lista_tarefas():
     """Lista todas as tarefas."""
@@ -51,7 +44,7 @@ def lista_tarefas():
                          tarefas_concluidas=tarefas_concluidas,
                          tarefas_em_atraso=tarefas_em_atraso)
 
-@bp.route('/nova', methods=['GET', 'POST'])
+@tarefas_bp.route('/nova', methods=['GET', 'POST'])
 @login_required
 def nova_tarefa():
     """Cria uma nova tarefa."""
@@ -123,7 +116,7 @@ def nova_tarefa():
                          unidades_locais=unidades_locais,
                          usuarios=usuarios)
 
-@bp.route('/editar/<int:id>', methods=['GET', 'POST'])
+@tarefas_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
 def editar_tarefa(id):
     """Edita uma tarefa existente."""
@@ -175,7 +168,7 @@ def editar_tarefa(id):
                          unidades_locais=unidades_locais,
                          usuarios=usuarios)
 
-@bp.route('/excluir/<int:id>')
+@tarefas_bp.route('/excluir/<int:id>')
 @login_required
 def excluir_tarefa(id):
     """Exclui uma tarefa."""
@@ -392,7 +385,7 @@ def get_contadores():
         print(f"Erro ao buscar contadores: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
-@bp.route('/dashboard')
+@tarefas_bp.route('/dashboard')
 @login_required
 def dashboard_tarefas():
     """Renderiza a página do dashboard de tarefas."""
@@ -568,5 +561,5 @@ def get_dashboard_data():
 
 # Registrar os blueprints
 def init_app(app):
-    app.register_blueprint(bp)
+    app.register_blueprint(tarefas_bp)
     app.register_blueprint(api_bp) 

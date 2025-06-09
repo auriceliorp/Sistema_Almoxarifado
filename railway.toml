@@ -1,9 +1,9 @@
 [build]
 builder = "nixpacks"
-buildCommand = "pip install -r requirements.txt && flask db upgrade"
+buildCommand = "pip install -r requirements.txt"
 
 [deploy]
-startCommand = "gunicorn wsgi:app"
+startCommand = "flask db upgrade && gunicorn wsgi:app"
 healthcheckPath = "/"
 healthcheckTimeout = 100
 restartPolicyType = "on_failure"
@@ -12,3 +12,4 @@ restartPolicyMaxRetries = 10
 [env]
 PYTHON_VERSION = "3.10"
 FLASK_APP = "wsgi.py"
+FLASK_ENV = "production" 

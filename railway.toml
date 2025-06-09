@@ -5,9 +5,9 @@ buildCommand = "pip install -r requirements.txt"
 [deploy]
 startCommand = "gunicorn wsgi:app --log-level debug --workers=1 --timeout=120"
 healthcheckPath = "/health"
-healthcheckTimeout = 300
+healthcheckTimeout = 600
 restartPolicyType = "on_failure"
-restartPolicyMaxRetries = 10
+restartPolicyMaxRetries = 20
 
 [env]
 PYTHON_VERSION = "3.10"

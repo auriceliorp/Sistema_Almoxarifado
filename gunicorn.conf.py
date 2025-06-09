@@ -9,7 +9,7 @@ logconfig_dict = {
     'disable_existing_loggers': False,
     'formatters': {
         'standard': {
-            'format': '%(asctime)s [%(levelname)s] %(message)s',
+            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s',
         },
     },
     'handlers': {
@@ -23,35 +23,37 @@ logconfig_dict = {
         'gunicorn.error': {
             'handlers': ['console'],
             'level': 'DEBUG',
-            'propagate': False,
+            'propagate': True,
         },
         'gunicorn.access': {
             'handlers': ['console'],
             'level': 'DEBUG',
-            'propagate': False,
+            'propagate': True,
         }
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
     }
 }
 
-# Configurações do Gunicorn
-bind = f"0.0.0.0:{os.environ.get('PORT', '8000')}"
+# Configurações básicas
+bind = "0.0.0.0:8000"
 workers = 1
-threads = int(os.environ.get('GUNICORN_THREADS', '4'))
-worker_class = os.environ.get('GUNICORN_WORKER_CLASS', 'gthread')
-worker_tmp_dir = os.environ.get('GUNICORN_WORKER_TMP_DIR', '/dev/shm')
-timeout = int(os.environ.get('GUNICORN_TIMEOUT', '120'))
-keepalive = 65
-max_requests = 1000
-max_requests_jitter = 50
-graceful_timeout = 120
-log_level = os.environ.get('GUNICORN_LOG_LEVEL', 'debug')
+threads = 1
+worker_class = 'sync'
+timeout = 120
+keepalive = 2
 
-# Hooks
+# Configurações de debug
+capture_output = True
+enable_stdio_inheritance = True
+preload_app = False
+reload = False
+
+# Hooks para logging
 def on_starting(server):
     logging.info("Gunicorn está iniciando...")
-
-def on_reload(server):
-    logging.info("Gunicorn está recarregando...")
 
 def when_ready(server):
     logging.info("Gunicorn está pronto para receber conexões")
@@ -61,9 +63,6 @@ def pre_fork(server, worker):
 
 def post_fork(server, worker):
     logging.info(f"Worker {worker.pid} criado")
-
-def pre_exec(server):
-    logging.info("Gunicorn master está re-executando")
 
 def worker_abort(worker):
     logging.error(f"Worker {worker.pid} foi abortado!") 

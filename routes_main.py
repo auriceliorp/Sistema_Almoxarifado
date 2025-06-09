@@ -97,6 +97,11 @@ def logout():
 def index():
     return redirect(url_for('main.login'))
 
+# --- Rota de healthcheck ---
+@main.route('/health')
+def health():
+    return '', 204
+
 # --- Página Almoxarifado ---
 @main.route('/almoxarifado')
 @login_required

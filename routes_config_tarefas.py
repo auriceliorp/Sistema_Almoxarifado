@@ -3,17 +3,17 @@ from flask_login import login_required
 from models import db, CategoriaTarefa, OrigemTarefa
 from datetime import datetime
 
-bp = Blueprint('config_tarefas', __name__, url_prefix='/config/tarefas')
+config_tarefas_bp = Blueprint('config_tarefas', __name__, url_prefix='/config/tarefas')
 
 # Rotas para Categorias
-@bp.route('/categorias')
+@config_tarefas_bp.route('/categorias')
 @login_required
 def lista_categorias():
     """Lista todas as categorias de tarefas."""
     categorias = CategoriaTarefa.query.all()
     return render_template('config_tarefas/lista_categorias.html', categorias=categorias)
 
-@bp.route('/categorias/nova', methods=['GET', 'POST'])
+@config_tarefas_bp.route('/categorias/nova', methods=['GET', 'POST'])
 @login_required
 def nova_categoria():
     """Cria uma nova categoria de tarefa."""
@@ -44,7 +44,7 @@ def nova_categoria():
             
     return render_template('config_tarefas/form_categoria.html')
 
-@bp.route('/categorias/editar/<int:categoria_id>', methods=['GET', 'POST'])
+@config_tarefas_bp.route('/categorias/editar/<int:categoria_id>', methods=['GET', 'POST'])
 @login_required
 def editar_categoria(categoria_id):
     """Edita uma categoria existente."""
@@ -74,7 +74,7 @@ def editar_categoria(categoria_id):
             
     return render_template('config_tarefas/form_categoria.html', categoria=categoria)
 
-@bp.route('/excluir_categoria/<int:categoria_id>', methods=['POST'])
+@config_tarefas_bp.route('/excluir_categoria/<int:categoria_id>', methods=['POST'])
 @login_required
 def excluir_categoria(categoria_id):
     categoria = CategoriaTarefa.query.get_or_404(categoria_id)
@@ -89,14 +89,14 @@ def excluir_categoria(categoria_id):
     return redirect(url_for('config_tarefas.lista_categorias'))
 
 # Rotas para Origens
-@bp.route('/origens')
+@config_tarefas_bp.route('/origens')
 @login_required
 def lista_origens():
     """Lista todas as origens de tarefas."""
     origens = OrigemTarefa.query.all()
     return render_template('config_tarefas/lista_origens.html', origens=origens)
 
-@bp.route('/origens/nova', methods=['GET', 'POST'])
+@config_tarefas_bp.route('/origens/nova', methods=['GET', 'POST'])
 @login_required
 def nova_origem():
     """Cria uma nova origem de tarefa."""
@@ -127,7 +127,7 @@ def nova_origem():
             
     return render_template('config_tarefas/form_origem.html')
 
-@bp.route('/origens/editar/<int:origem_id>', methods=['GET', 'POST'])
+@config_tarefas_bp.route('/origens/editar/<int:origem_id>', methods=['GET', 'POST'])
 @login_required
 def editar_origem(origem_id):
     """Edita uma origem existente."""
@@ -157,7 +157,7 @@ def editar_origem(origem_id):
             
     return render_template('config_tarefas/form_origem.html', origem=origem)
 
-@bp.route('/excluir_origem/<int:origem_id>', methods=['POST'])
+@config_tarefas_bp.route('/excluir_origem/<int:origem_id>', methods=['POST'])
 @login_required
 def excluir_origem(origem_id):
     origem = OrigemTarefa.query.get_or_404(origem_id)
@@ -172,7 +172,7 @@ def excluir_origem(origem_id):
     return redirect(url_for('config_tarefas.lista_origens'))
 
 # API Routes
-@bp.route('/api/categorias')
+@config_tarefas_bp.route('/api/categorias')
 @login_required
 def get_categorias():
     """Retorna todas as categorias em formato JSON."""
@@ -183,7 +183,7 @@ def get_categorias():
         'descricao': c.descricao
     } for c in categorias])
 
-@bp.route('/api/origens')
+@config_tarefas_bp.route('/api/origens')
 @login_required
 def get_origens():
     """Retorna todas as origens em formato JSON."""

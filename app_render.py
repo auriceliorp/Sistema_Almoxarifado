@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
 from flask_wtf.csrf import CSRFError
 from flask_login import login_required
+from datetime import datetime
 
 # Importa extensões globais (db, login_manager, migrate, csrf)
 from extensoes import db, login_manager, migrate, csrf
@@ -129,7 +130,23 @@ def create_app():
     # -------------------- Rota de healthcheck --------------------
     @app.route('/health')
     def health():
-        return '', 204
+        try:
+            logger.info("Iniciando healthcheck")
+            # Testa a conexão com o banco
+            db.session.execute('SELECT 1')
+            db.session.commit()
+            logger.info("Healthcheck concluído com sucesso")
+            return jsonify({
+                'status': 'healthy',
+                'timestamp': datetime.now().isoformat()
+            }), 200
+        except Exception as e:
+            logger.error(f"Erro no healthcheck: {str(e)}")
+            return jsonify({
+                'status': 'unhealthy',
+                'error': str(e),
+                'timestamp': datetime.now().isoformat()
+            }), 500
 
     # -------------------- Rota de diagnóstico --------------------
     @app.route('/diagnostic')

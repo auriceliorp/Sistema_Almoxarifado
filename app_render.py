@@ -182,16 +182,16 @@ def create_app():
     from routes_fornecedor import fornecedor_bp as fornecedor_blueprint
     from routes_nd import nd_bp as nd_blueprint
     from routes_patrimonio import patrimonio_bp as patrimonio_blueprint
-    from routes_tarefas import tarefas_bp as tarefas_blueprint
     from routes_relatorio import relatorio_bp as relatorio_blueprint
     from routes_dashboard import dashboard_bp as dashboard_blueprint
     from routes_painel import painel_bp as painel_blueprint
-    from routes_area_setor import area_setor_bp as area_setor_blueprint
     from routes_area_ul import area_ul_bp as area_ul_blueprint
     from routes_config_tarefas import config_tarefas_bp as config_tarefas_blueprint
     from routes_movimentos import movimentos_bp as movimentos_blueprint
     from routes_projetos import projetos_bp as projetos_blueprint
     from routes_api import api_bp as api_blueprint
+    from test_blueprint import test_bp as test_blueprint
+    from routes_tarefas import tarefas_bp as tarefas_blueprint
 
     # Registra os blueprints principais
     app.register_blueprint(main_blueprint)
@@ -209,9 +209,8 @@ def create_app():
     app.register_blueprint(fornecedor_blueprint)
     app.register_blueprint(nd_blueprint)
 
-    # Registra os blueprints de patrimônio e tarefas
+    # Registra os blueprints de patrimônio
     app.register_blueprint(patrimonio_blueprint)
-    app.register_blueprint(tarefas_blueprint)
 
     # Registra os blueprints de relatórios e dashboards
     app.register_blueprint(relatorio_blueprint)
@@ -219,7 +218,6 @@ def create_app():
     app.register_blueprint(painel_blueprint)
 
     # Registra os blueprints de estrutura organizacional
-    app.register_blueprint(area_setor_blueprint)
     app.register_blueprint(area_ul_blueprint)
 
     # Registra os blueprints de configuração e utilitários
@@ -227,6 +225,12 @@ def create_app():
     app.register_blueprint(movimentos_blueprint)
     app.register_blueprint(projetos_blueprint)
     app.register_blueprint(api_blueprint)
+
+    # Registra o blueprint de teste
+    app.register_blueprint(test_blueprint)
+
+    # Registra o blueprint de tarefas por último
+    app.register_blueprint(tarefas_blueprint)
 
     # -------------------- Cria perfis padrão --------------------
     with app.app_context():

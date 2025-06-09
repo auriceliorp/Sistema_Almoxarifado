@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from models import db, Publicacao, Usuario, Fornecedor, Tarefa
 from datetime import datetime
 
-bp = Blueprint('publicacao_bp', __name__)
+publicacao_bp = Blueprint('publicacao_bp', __name__)
 
 def criar_tarefa_publicacao(publicacao):
     """Cria uma tarefa automaticamente a partir de uma publicação."""
@@ -53,7 +53,7 @@ def atualizar_tarefa_publicacao(publicacao):
     
     return tarefa
 
-@bp.route('/publicacoes')
+@publicacao_bp.route('/publicacoes')
 @login_required
 def listar():
     page = request.args.get('page', 1, type=int)
@@ -85,7 +85,7 @@ def listar():
                          filtro=filtro,
                          busca=busca)
 
-@bp.route('/publicacao/<int:id>/visualizar')
+@publicacao_bp.route('/publicacao/<int:id>/visualizar')
 @login_required
 def visualizar_publicacao(id):
     publicacao = Publicacao.query.get_or_404(id)
@@ -101,7 +101,7 @@ def visualizar_publicacao(id):
                          publicacao=publicacao,
                          texto_vigencia=texto_vigencia)
 
-@bp.route('/publicacao/nova', methods=['GET', 'POST'])
+@publicacao_bp.route('/publicacao/nova', methods=['GET', 'POST'])
 @login_required
 def nova_publicacao():
     if request.method == 'POST':
@@ -178,7 +178,7 @@ def nova_publicacao():
                          usuarios=usuarios,
                          fornecedores=fornecedores)
 
-@bp.route('/publicacao/<int:id>/editar', methods=['GET', 'POST'])
+@publicacao_bp.route('/publicacao/<int:id>/editar', methods=['GET', 'POST'])
 @login_required
 def editar_publicacao(id):
     publicacao = Publicacao.query.get_or_404(id)
@@ -238,7 +238,7 @@ def editar_publicacao(id):
                          usuarios=usuarios,
                          fornecedores=fornecedores)
 
-@bp.route('/publicacao/<int:id>/excluir', methods=['POST'])
+@publicacao_bp.route('/publicacao/<int:id>/excluir', methods=['POST'])
 @login_required
 def excluir_publicacao(id):
     publicacao = Publicacao.query.get_or_404(id)

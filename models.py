@@ -180,6 +180,18 @@ class Area(db.Model):
     responsavel_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True)
     responsavel = db.relationship('Usuario', backref='areas_responsavel')
 
+# ------------------- SETOR -------------------
+class Setor(db.Model):
+    __tablename__ = 'setores'
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False)
+    descricao = db.Column(db.Text, nullable=True)
+    area_id = db.Column(db.Integer, db.ForeignKey('areas.id'), nullable=True)
+    area = db.relationship('Area', backref='setores')
+
+    def __repr__(self):
+        return f"<Setor {self.nome}>"
+
 # ------------------- CATEGORIA TAREFA -------------------
 class CategoriaTarefa(db.Model):
     """Modelo para categorias de tarefas."""
@@ -689,3 +701,26 @@ class RequisicaoItem(db.Model):
     quantidade = db.Column(db.Integer, nullable=False)
     
     item = db.relationship('Item', backref='requisicoes')
+
+# ------------------- MOVIMENTO DE ESTOQUE -------------------
+class MovimentoEstoque(db.Model):
+    __tablename__ = 'movimento_estoque'
+    id = db.Column(db.Integer, primary_key=True)
+    data_movimento = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    tipo = db.Column(db.String(50), nullable=False)  # ENTRADA, SAIDA_AJUSTE, ENTRADA_AJUSTE, INVENTARIO_INICIAL, SAIDA_REQUISICAO
+    quantidade = db.Column(db.Integer, nullable=False)
+    saldo_anterior = db.Column(db.Numeric(10, 2), nullable=False)
+    saldo_posterior = db.Column(db.Numeric(10, 2), nullable=False)
+    observacao = db.Column(db.Text, nullable=True)
+
+    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
+    item = db.relationship('Item', backref='movimentos')
+
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    usuario = db.relationship('Usuario', backref='movimentos_registrados')
+
+    requisicao_item_id = db.Column(db.Integer, db.ForeignKey('requisicao_item.id'), nullable=True)
+    requisicao_item = db.relationship('RequisicaoItem', backref='movimentos')
+
+    def __repr__(self):
+        return f"<MovimentoEstoque {self.tipo} - Item {self.item_id}>"

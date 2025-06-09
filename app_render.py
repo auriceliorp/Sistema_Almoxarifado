@@ -36,21 +36,32 @@ def create_app():
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'chave-secreta-padrao'
     app.config['WTF_CSRF_SECRET_KEY'] = os.environ.get('WTF_CSRF_SECRET_KEY') or 'csrf-chave-secreta-padrao'
 
-    # Tenta usar DATABASE_URL do Railway primeiro
-    database_url = os.environ.get('DATABASE_URL')
-    
-    # Se não houver DATABASE_URL, monta a partir das configurações individuais
-    if not database_url:
-        db_user = os.environ.get('DB_USER')
-        db_password = os.environ.get('DB_PASSWORD')
-        db_host = os.environ.get('DB_HOST', 'localhost')
-        db_port = os.environ.get('DB_PORT', '5432')
-        db_name = os.environ.get('DB_NAME')
+    # Tenta usar variáveis do Railway primeiro
+    if os.environ.get('PGDATABASE'):
+        db_user = os.environ.get('PGUSER')
+        db_password = os.environ.get('PGPASSWORD')
+        db_host = os.environ.get('PGHOST')
+        db_port = os.environ.get('PGPORT')
+        db_name = os.environ.get('PGDATABASE')
         database_url = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+    else:
+        # Se não houver variáveis do Railway, tenta DATABASE_URL
+        database_url = os.environ.get('DATABASE_URL')
+        
+        # Se ainda não houver, usa as variáveis locais
+        if not database_url:
+            db_user = os.environ.get('DB_USER')
+            db_password = os.environ.get('DB_PASSWORD')
+            db_host = os.environ.get('DB_HOST', 'localhost')
+            db_port = os.environ.get('DB_PORT', '5432')
+            db_name = os.environ.get('DB_NAME')
+            database_url = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
     
     # Corrige URL se necessário (Railway às vezes usa postgres:// ao invés de postgresql://)
     if database_url and database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+    print(f"Using database URL: {database_url}")  # Para debug
 
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -82,59 +93,25 @@ def create_app():
         return render_template('error.html', 
                              message="Token de segurança expirado. Por favor, tente novamente."), 400
 
-    # -------------------- Registra todos os blueprints (rotas do sistema) --------------------
-    from routes_main import main
-    from routes_usuario import usuario_bp
-    from routes_area_ul import area_ul_bp
-    from routes_nd import nd_bp
-    from routes_grupo import grupo_bp
-    from routes_item import item_bp
-    from routes_fornecedor import fornecedor_bp
-    from routes_entrada import entrada_bp
-    from routes_saida import saida_bp
-    from routes_relatorio import relatorio_bp
-    from routes_dashboard import dashboard_bp
-    from routes_popular import popular_bp
-    from limpar_dados import limpar_bp
-    from routes_auditoria import auditoria_bp
-    from routes_painel import painel_bp
-    from routes_patrimonio import patrimonio_bp
-    from routes_links import links_bp
-    from routes_publicacao import bp as publicacoes_bp
-    from routes_tarefas import bp as tarefas_bp, api_bp as tarefas_api_bp
-    from routes_config_tarefas import bp as config_tarefas_bp
-    from routes_api import bp as api_bp
-    from routes_requisicao import requisicao_bp
+    # -------------------- Registra os blueprints --------------------
+    from routes_main import main as main_blueprint
+    from routes_usuario import usuario_bp as usuario_blueprint
+    from routes_requisicao import requisicao_bp as requisicao_blueprint
+    from routes_auditoria import auditoria_bp as auditoria_blueprint
+    from routes_publicacao import publicacao_bp as publicacao_blueprint
+    from routes_autorizacao import autorizacao_bp as autorizacao_blueprint
 
-    # Registro dos blueprints
-    app.register_blueprint(main)
-    app.register_blueprint(usuario_bp)
-    app.register_blueprint(area_ul_bp)
-    app.register_blueprint(nd_bp)
-    app.register_blueprint(grupo_bp)
-    app.register_blueprint(item_bp)
-    app.register_blueprint(fornecedor_bp)
-    app.register_blueprint(entrada_bp)
-    app.register_blueprint(saida_bp)
-    app.register_blueprint(relatorio_bp)
-    app.register_blueprint(dashboard_bp)
-    app.register_blueprint(popular_bp)
-    app.register_blueprint(limpar_bp)
-    app.register_blueprint(auditoria_bp)
-    app.register_blueprint(painel_bp)
-    app.register_blueprint(patrimonio_bp)
-    app.register_blueprint(links_bp)
-    app.register_blueprint(publicacoes_bp)
-    app.register_blueprint(tarefas_bp)
-    app.register_blueprint(tarefas_api_bp)
-    app.register_blueprint(config_tarefas_bp)
-    app.register_blueprint(api_bp)
-    app.register_blueprint(requisicao_bp)
+    app.register_blueprint(main_blueprint)
+    app.register_blueprint(usuario_blueprint)
+    app.register_blueprint(requisicao_blueprint)
+    app.register_blueprint(auditoria_blueprint)
+    app.register_blueprint(publicacao_blueprint)
+    app.register_blueprint(autorizacao_blueprint)
 
-    # Configuração do CSRF para rotas da API
-    csrf.exempt(tarefas_api_bp)
-    csrf.exempt(api_bp)
-    csrf.exempt(requisicao_bp)  # Isenta o blueprint de requisições do CSRF
+    # -------------------- Cria perfis padrão --------------------
+    with app.app_context():
+        db.create_all()  # Cria todas as tabelas
+        Perfil.criar_perfis_padrao()  # Cria os perfis padrão
 
     return app
 

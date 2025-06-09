@@ -2,7 +2,8 @@
 # Arquivo principal do sistema Flask para o Almoxarifado e Patrimônio
 
 import os
-from flask import Flask, render_template
+import logging
+from flask import Flask, render_template, jsonify
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
 from flask_wtf.csrf import CSRFError
@@ -19,6 +20,10 @@ from models import (
     PublicacaoSignatariosEmbrapa, PublicacaoSignatariosExternos, Tarefa,
     CategoriaTarefa, OrigemTarefa, RequisicaoMaterial, RequisicaoItem
 )
+
+# Configura logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # -------------------- Carrega variáveis de ambiente do arquivo .env (para uso local) --------------------
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -37,31 +42,38 @@ def create_app():
     app.config['WTF_CSRF_SECRET_KEY'] = os.environ.get('WTF_CSRF_SECRET_KEY') or 'csrf-chave-secreta-padrao'
 
     # Tenta usar variáveis do Railway primeiro
-    if os.environ.get('PGDATABASE'):
-        db_user = os.environ.get('PGUSER')
-        db_password = os.environ.get('PGPASSWORD')
-        db_host = os.environ.get('PGHOST')
-        db_port = os.environ.get('PGPORT')
-        db_name = os.environ.get('PGDATABASE')
-        database_url = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
-    else:
-        # Se não houver variáveis do Railway, tenta DATABASE_URL
-        database_url = os.environ.get('DATABASE_URL')
-        
-        # Se ainda não houver, usa as variáveis locais
-        if not database_url:
-            db_user = os.environ.get('DB_USER')
-            db_password = os.environ.get('DB_PASSWORD')
-            db_host = os.environ.get('DB_HOST', 'localhost')
-            db_port = os.environ.get('DB_PORT', '5432')
-            db_name = os.environ.get('DB_NAME')
+    try:
+        if os.environ.get('PGDATABASE'):
+            db_user = os.environ.get('PGUSER')
+            db_password = os.environ.get('PGPASSWORD')
+            db_host = os.environ.get('PGHOST')
+            db_port = os.environ.get('PGPORT')
+            db_name = os.environ.get('PGDATABASE')
             database_url = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
-    
-    # Corrige URL se necessário (Railway às vezes usa postgres:// ao invés de postgresql://)
-    if database_url and database_url.startswith("postgres://"):
-        database_url = database_url.replace("postgres://", "postgresql://", 1)
+            logger.info("Usando configuração do Railway")
+        else:
+            # Se não houver variáveis do Railway, tenta DATABASE_URL
+            database_url = os.environ.get('DATABASE_URL')
+            
+            # Se ainda não houver, usa as variáveis locais
+            if not database_url:
+                db_user = os.environ.get('DB_USER')
+                db_password = os.environ.get('DB_PASSWORD')
+                db_host = os.environ.get('DB_HOST', 'localhost')
+                db_port = os.environ.get('DB_PORT', '5432')
+                db_name = os.environ.get('DB_NAME')
+                database_url = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+                logger.info("Usando configuração local")
+        
+        # Corrige URL se necessário (Railway às vezes usa postgres:// ao invés de postgresql://)
+        if database_url and database_url.startswith("postgres://"):
+            database_url = database_url.replace("postgres://", "postgresql://", 1)
 
-    print(f"Using database URL: {database_url}")  # Para debug
+        logger.info(f"Database URL configurada: {database_url.split('@')[0].split('://')[0]}://*****@{database_url.split('@')[1]}")
+    except Exception as e:
+        logger.error(f"Erro ao configurar database URL: {str(e)}")
+        database_url = "sqlite:///fallback.db"
+        logger.info("Usando banco SQLite de fallback")
 
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -72,10 +84,14 @@ def create_app():
     }
 
     # -------------------- Inicializa extensões com o app --------------------
-    db.init_app(app)
-    login_manager.init_app(app)
-    migrate.init_app(app, db)
-    csrf.init_app(app)  # Inicializa o CSRF
+    try:
+        db.init_app(app)
+        login_manager.init_app(app)
+        csrf.init_app(app)  # Inicializa o CSRF
+        logger.info("Extensões inicializadas com sucesso")
+    except Exception as e:
+        logger.error(f"Erro ao inicializar extensões: {str(e)}")
+        raise
 
     # -------------------- Define função de carregamento do usuário --------------------
     @login_manager.user_loader
@@ -84,7 +100,8 @@ def create_app():
             return None
         try:
             return Usuario.query.get(int(user_id))
-        except:
+        except Exception as e:
+            logger.error(f"Erro ao carregar usuário {user_id}: {str(e)}")
             return None
 
     # -------------------- Handler para erros de CSRF --------------------
@@ -92,6 +109,51 @@ def create_app():
     def handle_csrf_error(e):
         return render_template('error.html', 
                              message="Token de segurança expirado. Por favor, tente novamente."), 400
+
+    # -------------------- Handler para erros 404 --------------------
+    @app.errorhandler(404)
+    def not_found_error(error):
+        if request.is_xhr:
+            return jsonify(error="Página não encontrada"), 404
+        return render_template('error.html', message="Página não encontrada."), 404
+
+    # -------------------- Handler para erros 500 --------------------
+    @app.errorhandler(500)
+    def internal_error(error):
+        db.session.rollback()
+        logger.error(f"Erro interno do servidor: {str(error)}")
+        if request.is_xhr:
+            return jsonify(error="Erro interno do servidor"), 500
+        return render_template('error.html', message="Erro interno do servidor."), 500
+
+    # -------------------- Rota de healthcheck --------------------
+    @app.route('/health')
+    def health():
+        return '', 204
+
+    # -------------------- Rota de diagnóstico --------------------
+    @app.route('/diagnostic')
+    def diagnostic():
+        try:
+            # Testa a conexão com o banco
+            db.session.execute('SELECT 1')
+            db_status = "healthy"
+        except Exception as e:
+            logger.error(f"Erro na conexão com o banco: {str(e)}")
+            db_status = "unhealthy"
+
+        return jsonify({
+            'status': 'ok',
+            'database': db_status,
+            'env': {
+                'FLASK_ENV': os.environ.get('FLASK_ENV'),
+                'FLASK_APP': os.environ.get('FLASK_APP'),
+                'DATABASE_URL': os.environ.get('DATABASE_URL', '').split('@')[0].split('://')[0] + '://*****@' + os.environ.get('DATABASE_URL', '').split('@')[1] if os.environ.get('DATABASE_URL') else None,
+                'PGHOST': os.environ.get('PGHOST'),
+                'PGPORT': os.environ.get('PGPORT'),
+                'PGDATABASE': os.environ.get('PGDATABASE')
+            }
+        }), 200
 
     # -------------------- Registra os blueprints --------------------
     from routes_main import main as main_blueprint

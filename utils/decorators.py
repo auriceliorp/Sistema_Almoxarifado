@@ -1,7 +1,6 @@
 from functools import wraps
 from flask import redirect, url_for, flash, request, session
 from flask_login import current_user
-from models import AutorizacaoOperacao
 from datetime import datetime
 from extensoes import db
 
@@ -23,6 +22,9 @@ def permissao_required(permissao, requer_autorizacao=False):
 
             # Se a operação requer autorização e o usuário precisa de autorização
             if requer_autorizacao and current_user.requer_autorizacao():
+                # Importa AutorizacaoOperacao apenas quando necessário
+                from models import AutorizacaoOperacao
+                
                 # Verifica se já existe uma autorização pendente
                 autorizacao = AutorizacaoOperacao.query.filter_by(
                     solicitante_id=current_user.id,

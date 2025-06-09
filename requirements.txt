@@ -6,13 +6,13 @@ Flask-Migrate==4.0.5
 Flask-WTF==1.2.1
 
 # Banco de dados
-SQLAlchemy==2.0.23
+SQLAlchemy==2.0.21
 psycopg2-binary==2.9.9
 
 # Utilitários
 Werkzeug==3.0.1
 python-dotenv==1.0.0
-email-validator==2.1.0.post1
+email-validator==2.1.0
 gunicorn==21.2.0
 
 # Processamento de dados
@@ -33,5 +33,6 @@ MarkupSafe==2.1.3
 itsdangerous==2.1.2
 click==8.1.7
 
-# Alembic
-alembic==1.7.1
+# Alembic (versão compatível com Flask-Migrate 4.0.5)
+alembic>=1.9.0
+

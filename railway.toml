@@ -3,13 +3,14 @@ builder = "nixpacks"
 buildCommand = "pip install -r requirements.txt"
 
 [deploy]
-startCommand = "flask db upgrade && gunicorn wsgi:app"
+startCommand = "flask db upgrade && gunicorn wsgi:app --log-level debug --timeout 120"
 healthcheckPath = "/health"
-healthcheckTimeout = 100
+healthcheckTimeout = 300
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 10
 
 [env]
 PYTHON_VERSION = "3.10"
 FLASK_APP = "wsgi.py"
-FLASK_ENV = "production" 
+FLASK_ENV = "production"
+GUNICORN_CMD_ARGS = "--workers=2 --threads=4 --worker-class=gthread --worker-tmp-dir=/dev/shm" 

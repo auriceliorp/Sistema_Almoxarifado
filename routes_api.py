@@ -2,9 +2,9 @@ from flask import Blueprint, jsonify
 from flask_login import login_required
 from models import Tarefa
 
-bp = Blueprint('api', __name__, url_prefix='/api')
+api_bp = Blueprint('api', __name__, url_prefix='/api')
 
-@bp.route('/tarefas/<int:tarefa_id>/detalhes')
+@api_bp.route('/tarefas/<int:tarefa_id>/detalhes')
 @login_required
 def get_detalhes_tarefa(tarefa_id):
     try:
@@ -46,7 +46,7 @@ def get_detalhes_tarefa(tarefa_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@bp.route('/tarefas/contadores')
+@api_bp.route('/tarefas/contadores')
 def get_contadores():
     try:
         total = Tarefa.query.count()
@@ -67,3 +67,4 @@ def get_contadores():
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500 
+

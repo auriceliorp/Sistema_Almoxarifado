@@ -1,3 +1,16 @@
+# Importações do Flask
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
+from flask_login import login_required, current_user
+
+# Importações locais
+from models import db, Tarefa, CategoriaTarefa, OrigemTarefa, UnidadeLocal, Usuario
+from extensoes import csrf
+
+# Outras importações
+from datetime import datetime, timedelta
+from sqlalchemy import func
+
+# Definição dos blueprints
 tarefas_bp = Blueprint('tarefas', __name__, url_prefix='/tarefas')
 api_bp = Blueprint('tarefas_api', __name__, url_prefix='/api')
 

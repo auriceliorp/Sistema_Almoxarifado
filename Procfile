@@ -1,2 +1,2 @@
 release: flask db upgrade
-web: gunicorn wsgi:app --log-file -
+web: sleep 3 && flask db upgrade && gunicorn app_render:app

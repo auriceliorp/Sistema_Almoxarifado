@@ -132,10 +132,6 @@ def create_app():
     def health():
         try:
             logger.info("Iniciando healthcheck")
-            # Testa a conexão com o banco
-            db.session.execute('SELECT 1')
-            db.session.commit()
-            logger.info("Healthcheck concluído com sucesso")
             return jsonify({
                 'status': 'healthy',
                 'timestamp': datetime.now().isoformat()

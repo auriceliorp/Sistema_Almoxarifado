@@ -1,13 +1,9 @@
-from flask import Blueprint, request, render_template, flash, redirect, url_for
-# Alterar para importação absoluta, assumindo que os modelos e db estão acessíveis
-# a partir do módulo principal (app_render.py)
-# Se os modelos estiverem em models.py, use 'from models import ...'
-# Se db estiver em database.py, use 'from database import db'
-# Como eles estão definidos em app_render.py, vamos importá-los de lá:
-from app_render import db, Item, MovimentoEstoque, Usuario # Importar o necessário de app_render
-
+from flask import Blueprint, request, render_template, flash, redirect, url_for, jsonify
 from flask_login import login_required, current_user
-from datetime import datetime
+from datetime import datetime, timedelta
+from sqlalchemy import func, desc
+from extensoes import db
+from models import Item, MovimentoEstoque, Usuario
 from functools import wraps
 
 # Criar um Blueprint para as rotas de movimentações
@@ -166,4 +162,5 @@ def registrar_movimento():
 # Esta função não é necessária se o blueprint for importado diretamente em app_render.py
 # def init_app(app):
 #     app.register_blueprint(movimentos_bp)
+
 

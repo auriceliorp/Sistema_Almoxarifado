@@ -35,22 +35,32 @@ target_metadata = db.metadata
 def get_url():
     load_dotenv()
     
-    # Tenta usar DATABASE_URL do Railway primeiro
-    database_url = os.environ.get('DATABASE_URL')
-    
-    # Se não houver DATABASE_URL, monta a partir das configurações individuais
-    if not database_url:
-        db_user = os.environ.get('DB_USER')
-        db_password = os.environ.get('DB_PASSWORD')
-        db_host = os.environ.get('DB_HOST', 'localhost')
-        db_port = os.environ.get('DB_PORT', '5432')
-        db_name = os.environ.get('DB_NAME')
+    # Tenta usar PGDATABASE e outras variáveis do Railway primeiro
+    if os.environ.get('PGDATABASE'):
+        db_user = os.environ.get('PGUSER')
+        db_password = os.environ.get('PGPASSWORD')
+        db_host = os.environ.get('PGHOST')
+        db_port = os.environ.get('PGPORT')
+        db_name = os.environ.get('PGDATABASE')
         database_url = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+    else:
+        # Se não houver variáveis do Railway, tenta DATABASE_URL
+        database_url = os.environ.get('DATABASE_URL')
+        
+        # Se ainda não houver, usa as variáveis locais
+        if not database_url:
+            db_user = os.environ.get('DB_USER')
+            db_password = os.environ.get('DB_PASSWORD')
+            db_host = os.environ.get('DB_HOST', 'localhost')
+            db_port = os.environ.get('DB_PORT', '5432')
+            db_name = os.environ.get('DB_NAME')
+            database_url = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
     
     # Corrige URL se necessário (Railway às vezes usa postgres:// ao invés de postgresql://)
     if database_url and database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql://", 1)
     
+    print(f"Using database URL: {database_url}")  # Para debug
     return database_url
 
 def run_migrations_offline() -> None:

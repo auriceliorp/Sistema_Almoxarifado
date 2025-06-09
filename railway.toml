@@ -3,19 +3,14 @@ builder = "nixpacks"
 buildCommand = "pip install -r requirements.txt"
 
 [deploy]
-startCommand = "gunicorn --config gunicorn.conf.py wsgi:app"
+startCommand = "gunicorn wsgi:app --log-level debug --workers=1 --timeout=120"
 healthcheckPath = "/health"
-healthcheckTimeout = 600
+healthcheckTimeout = 300
 restartPolicyType = "on_failure"
-restartPolicyMaxRetries = 20
+restartPolicyMaxRetries = 10
 
 [env]
 PYTHON_VERSION = "3.10"
 FLASK_APP = "wsgi.py"
 FLASK_ENV = "production"
-GUNICORN_TIMEOUT = "120"
-GUNICORN_WORKERS = "1"
-GUNICORN_THREADS = "4"
-GUNICORN_WORKER_CLASS = "gthread"
-GUNICORN_WORKER_TMP_DIR = "/dev/shm"
-GUNICORN_LOG_LEVEL = "debug" 
+GUNICORN_CMD_ARGS = "--workers=2 --threads=4 --worker-class=gthread --worker-tmp-dir=/dev/shm" 

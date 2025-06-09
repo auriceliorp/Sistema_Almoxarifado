@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
-from models import AutorizacaoOperacao, Usuario
+from models import Usuario, AutorizacaoOperacao
 from extensoes import db
 from datetime import datetime
 from utils.decorators import autorizador_required

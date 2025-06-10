@@ -250,8 +250,13 @@ def requisicao_saida(requisicao_id):
     try:
         result = RequisicaoService.obter_detalhes_requisicao(requisicao_id)
         if result['success']:
-            return render_template('almoxarifado/requisicao/requisicao_saida.html',
-                                requisicao=result['requisicao'])
+            requisicao = result['requisicao']
+            if requisicao.saida:
+                # Redirecionar para a página de detalhes da saída
+                return redirect(url_for('saida_bp.detalhes_saida', saida_id=requisicao.saida.id))
+            else:
+                flash('Saída não encontrada para esta requisição.', 'error')
+                return redirect(url_for('requisicao_bp.requisicoes_atendidas'))
         else:
             flash(f'Erro ao carregar detalhes da requisição: {result["error"]}', 'error')
             return redirect(url_for('requisicao_bp.requisicoes_atendidas'))

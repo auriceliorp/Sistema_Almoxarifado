@@ -5,16 +5,13 @@ from flask_login import login_required
 from extensoes import db
 from models import Area, Local, UnidadeLocal, NaturezaDespesa, Grupo
 
-# Criação do blueprint
-area_ul_bp = Blueprint('area_ul', __name__, url_prefix='/organizacao')
+# Alterando o nome do blueprint para area_ul_bp
+area_ul_bp = Blueprint('area_ul_bp', __name__, url_prefix='/organizacao')
 
-# ------------------------- ROTA: DASHBOARD ORGANIZAÇÃO (não está mais em uso) ------------------------- #
+# ------------------------- ROTA: DASHBOARD ORGANIZAÇÃO ------------------------- #
 @area_ul_bp.route('/')
 @login_required
 def dashboard_organizacao():
-    """
-    (Obsoleta se não usar abas) Rota antiga de dashboard de organização administrativa.
-    """
     nds = NaturezaDespesa.query.all()
     grupos = Grupo.query.all()
     areas = Local.query.all()
@@ -22,12 +19,12 @@ def dashboard_organizacao():
     return render_template('organizacao/dashboard_organizacao.html',
                            nds=nds, grupos=grupos, areas=areas, uls=uls)
 
-# ------------------------- LISTA DE ÁREAS ------------------------- #
-@area_ul_bp.route('/areas')
+# ------------------------- LISTA DE LOCAIS ------------------------- #
+@area_ul_bp.route('/locais')
 @login_required
-def lista_areas():
-    areas = Area.query.all()
-    return render_template('partials/area/lista_area.html', areas=areas)
+def lista_locais():  # Mantendo o nome da função como lista_locais
+    locais = Local.query.all()
+    return render_template('partials/area/lista_area.html', areas=locais)
 
 # ------------------------- LISTA DE UNIDADES LOCAIS ------------------------- #
 @area_ul_bp.route('/uls')
@@ -36,32 +33,32 @@ def lista_uls():
     uls = Local.query.all()
     return render_template('partials/ul/lista_ul.html', uls=uls)
 
-# ------------------------- NOVA ÁREA ------------------------- #
-@area_ul_bp.route('/areas/novo', methods=['GET', 'POST'])
+# ------------------------- NOVO LOCAL ------------------------- #
+@area_ul_bp.route('/locais/novo', methods=['GET', 'POST'])
 @login_required
-def nova_area():
+def novo_local():
     if request.method == 'POST':
         nome = request.form.get('nome')
         if not nome:
-            flash('O nome da área é obrigatório.')
-            return redirect(url_for('area_ul.nova_area'))
-        db.session.add(Area(nome=nome))
+            flash('O nome do local é obrigatório.')
+            return redirect(url_for('area_ul_bp.novo_local'))
+        db.session.add(Local(descricao=nome))
         db.session.commit()
-        flash('Área cadastrada com sucesso!')
-        return redirect(url_for('area_ul.lista_areas'))
+        flash('Local cadastrado com sucesso!')
+        return redirect(url_for('area_ul_bp.lista_locais'))
     return render_template('partials/area/form_area.html')
 
-# ------------------------- EDITAR ÁREA ------------------------- #
-@area_ul_bp.route('/areas/editar/<int:id>', methods=['GET', 'POST'])
+# ------------------------- EDITAR LOCAL ------------------------- #
+@area_ul_bp.route('/locais/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
-def editar_area(id):
-    area = Area.query.get_or_404(id)
+def editar_local(id):
+    local = Local.query.get_or_404(id)
     if request.method == 'POST':
-        area.nome = request.form.get('nome')
+        local.descricao = request.form.get('nome')
         db.session.commit()
-        flash('Área atualizada com sucesso!')
-        return redirect(url_for('area_ul.lista_areas'))
-    return render_template('partials/area/form_area.html', area=area)
+        flash('Local atualizado com sucesso!')
+        return redirect(url_for('area_ul_bp.lista_locais'))
+    return render_template('partials/area/form_area.html', area=local)
 
 # ------------------------- NOVA UNIDADE LOCAL ------------------------- #
 @area_ul_bp.route('/uls/novo', methods=['GET', 'POST'])
@@ -71,11 +68,11 @@ def nova_ul():
         nome = request.form.get('nome')
         if not nome:
             flash('O nome da UL é obrigatório.')
-            return redirect(url_for('area_ul.nova_ul'))
+            return redirect(url_for('area_ul_bp.nova_ul'))
         db.session.add(Local(descricao=nome))
         db.session.commit()
         flash('Unidade Local cadastrada com sucesso!')
-        return redirect(url_for('area_ul.lista_uls'))
+        return redirect(url_for('area_ul_bp.lista_uls'))
     return render_template('partials/ul/form_ul.html')
 
 # ------------------------- EDITAR UNIDADE LOCAL ------------------------- #
@@ -89,22 +86,22 @@ def editar_ul(id):
         ul.local_id = request.form.get('local_id')
         db.session.commit()
         flash('Unidade Local atualizada com sucesso!')
-        return redirect(url_for('area_ul.lista_uls'))
+        return redirect(url_for('area_ul_bp.lista_uls'))
     return render_template('partials/ul/form_ul.html', ul=ul, locais=locais)
 
-# ------------------------- EXCLUIR LOCAL (Área) ------------------------- #
-@area_ul_bp.route('/areas/excluir/<int:id>', methods=['POST'])
+# ------------------------- EXCLUIR LOCAL ------------------------- #
+@area_ul_bp.route('/locais/excluir/<int:id>', methods=['POST'])
 @login_required
-def excluir_area(id):
-    area = Area.query.get_or_404(id)
+def excluir_local(id):
+    local = Local.query.get_or_404(id)
     try:
-        db.session.delete(area)
+        db.session.delete(local)
         db.session.commit()
-        flash('Área excluída com sucesso!', 'success')
+        flash('Local excluído com sucesso!', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Erro ao excluir Área: {e}', 'danger')
-    return redirect(url_for('area_ul.lista_areas'))
+        flash(f'Erro ao excluir Local: {e}', 'danger')
+    return redirect(url_for('area_ul_bp.lista_locais'))
 
 # ------------------------- EXCLUIR UNIDADE LOCAL ------------------------- #
 @area_ul_bp.route('/uls/excluir/<int:id>', methods=['POST'])
@@ -118,6 +115,5 @@ def excluir_ul(id):
     except Exception as e:
         db.session.rollback()
         flash(f'Erro ao excluir Unidade Local: {e}', 'danger')
-    return redirect(url_for('area_ul.lista_uls'))
-
+    return redirect(url_for('area_ul_bp.lista_uls'))
 

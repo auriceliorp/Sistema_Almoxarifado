@@ -195,15 +195,23 @@ class RequisicaoService:
                 .order_by(desc(RequisicaoMaterial.data_requisicao))\
                 .all()
             
+            # Em vez de atribuir a propriedade, vamos criar uma lista com os dados necessários
+            requisicoes_com_estoque = []
             for req in requisicoes:
-                req.tem_estoque_suficiente = all(
+                # Verificar estoque suficiente
+                tem_estoque = all(
                     item.quantidade <= item.item.estoque_atual 
                     for item in req.itens
                 )
+                # Adicionar a requisição e o status do estoque
+                requisicoes_com_estoque.append({
+                    'requisicao': req,
+                    'tem_estoque_suficiente': tem_estoque
+                })
             
             return {
                 'success': True,
-                'requisicoes': requisicoes
+                'requisicoes': requisicoes_com_estoque
             }
         except Exception as e:
             logger.error(f"Erro ao listar requisições atendidas: {str(e)}")

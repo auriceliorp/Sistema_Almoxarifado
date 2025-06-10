@@ -116,7 +116,7 @@ class RequisicaoService:
             
         except Exception as e:
             return {'success': False, 'error': str(e)}
-
+    
     @staticmethod
     def listar_requisicoes_atendidas():
         """Lista todas as requisições que foram atendidas"""
@@ -234,4 +234,4 @@ class RequisicaoService:
             
         except Exception as e:
             db.session.rollback()
-            return {'success': False, 'error': str(e)}
+            return {'success': False, 'error': str(e)} 

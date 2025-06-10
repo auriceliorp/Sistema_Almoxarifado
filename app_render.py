@@ -225,9 +225,6 @@ def create_app():
     app.register_blueprint(projetos_blueprint)
     app.register_blueprint(api_blueprint)
 
-    # Registra o blueprint de teste
-    app.register_blueprint(test_blueprint)
-
     # Registra o blueprint de tarefas por último
     app.register_blueprint(tarefas_blueprint)
 

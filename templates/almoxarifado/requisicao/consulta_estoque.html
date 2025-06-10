@@ -12,25 +12,48 @@
 
     <div class="card shadow-sm">
         <div class="card-body">
+            <!-- Filtros -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" 
+                               id="searchInput" 
+                               class="form-control" 
+                               placeholder="Buscar item..."
+                               aria-label="Buscar item">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select id="itemsPerPage" class="form-select">
+                        <option value="10">10 itens por página</option>
+                        <option value="25">25 itens por página</option>
+                        <option value="50">50 itens por página</option>
+                    </select>
+                </div>
+            </div>
+
             <form id="formRequisicao" method="POST" action="{{ url_for('requisicao_bp.nova_requisicao') }}" class="needs-validation" novalidate>
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="table-responsive mb-4">
-                    <table class="table table-hover">
+                    <table class="table table-hover" id="itemsTable">
                         <thead>
                             <tr>
-                                <th>Item</th>
-                                <th>Unidade</th>
-                                <th>Estoque Atual</th>
+                                <th class="sortable" data-sort="nome">Item <i class="bi bi-arrow-down-up"></i></th>
+                                <th class="sortable" data-sort="unidade">Unidade <i class="bi bi-arrow-down-up"></i></th>
+                                <th class="sortable" data-sort="estoque">Estoque Atual <i class="bi bi-arrow-down-up"></i></th>
                                 <th style="width: 150px;">Quantidade</th>
                                 <th style="width: 100px;">Ações</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for item in itens %}
-                            <tr>
+                            <tr class="item-row">
                                 <td>{{ item.nome }}</td>
                                 <td>{{ item.unidade }}</td>
-                                <td>{{ "%.2f"|format(item.estoque_atual) }}</td>
+                                <td data-value="{{ item.estoque_atual }}">{{ "%.2f"|format(item.estoque_atual) }}</td>
                                 <td>
                                     <div class="input-group" style="width: 150px;">
                                         <input type="number" 
@@ -54,6 +77,18 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Paginação -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="text-muted" id="itemCount">
+                        Mostrando <span id="showingItems">0</span> de <span id="totalItems">0</span> itens
+                    </div>
+                    <nav aria-label="Navegação de página">
+                        <ul class="pagination mb-0" id="pagination">
+                            <!-- Paginação será inserida via JavaScript -->
+                        </ul>
+                    </nav>
                 </div>
 
                 <div class="card mb-4">
@@ -83,11 +118,137 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const itensSelecionados = new Set();
+    let currentPage = 1;
+    let itemsPerPage = 10;
+    let currentSort = { column: 'nome', direction: 'asc' };
     
     // Função para atualizar o botão de submit
     function atualizarBotaoSubmit() {
         document.getElementById('btnSubmit').disabled = itensSelecionados.size === 0;
     }
+
+    // Função para filtrar itens
+    function filterItems() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const rows = document.querySelectorAll('.item-row');
+        let visibleCount = 0;
+        
+        rows.forEach(row => {
+            const itemName = row.querySelector('td').textContent.toLowerCase();
+            const shouldShow = itemName.includes(searchTerm);
+            row.classList.toggle('d-none', !shouldShow);
+            if (shouldShow) visibleCount++;
+        });
+
+        document.getElementById('showingItems').textContent = visibleCount;
+        document.getElementById('totalItems').textContent = rows.length;
+        updatePagination();
+    }
+
+    // Função para ordenar itens
+    function sortItems(column) {
+        const tbody = document.querySelector('#itemsTable tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        
+        if (currentSort.column === column) {
+            currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+            currentSort = { column, direction: 'asc' };
+        }
+
+        rows.sort((a, b) => {
+            let aValue = a.querySelector(`td[data-value]`)?.dataset.value || 
+                        a.querySelector('td').textContent;
+            let bValue = b.querySelector(`td[data-value]`)?.dataset.value || 
+                        b.querySelector('td').textContent;
+
+            if (column === 'estoque') {
+                aValue = parseFloat(aValue);
+                bValue = parseFloat(bValue);
+            }
+
+            if (currentSort.direction === 'asc') {
+                return aValue > bValue ? 1 : -1;
+            } else {
+                return aValue < bValue ? 1 : -1;
+            }
+        });
+
+        rows.forEach(row => tbody.appendChild(row));
+        updatePagination();
+    }
+
+    // Função para atualizar paginação
+    function updatePagination() {
+        const rows = Array.from(document.querySelectorAll('.item-row')).filter(
+            row => !row.classList.contains('d-none')
+        );
+        const totalPages = Math.ceil(rows.length / itemsPerPage);
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+
+        rows.forEach((row, index) => {
+            row.classList.toggle('d-none', index < startIndex || index >= endIndex);
+        });
+
+        // Atualizar navegação
+        const pagination = document.getElementById('pagination');
+        pagination.innerHTML = '';
+
+        // Botão anterior
+        pagination.innerHTML += `
+            <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${currentPage - 1}">Anterior</a>
+            </li>
+        `;
+
+        // Páginas
+        for (let i = 1; i <= totalPages; i++) {
+            pagination.innerHTML += `
+                <li class="page-item ${currentPage === i ? 'active' : ''}">
+                    <a class="page-link" href="#" data-page="${i}">${i}</a>
+                </li>
+            `;
+        }
+
+        // Botão próximo
+        pagination.innerHTML += `
+            <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${currentPage + 1}">Próximo</a>
+            </li>
+        `;
+
+        // Atualizar contadores
+        document.getElementById('showingItems').textContent = 
+            Math.min(rows.length, endIndex - startIndex);
+        document.getElementById('totalItems').textContent = rows.length;
+    }
+    
+    // Event Listeners
+    document.getElementById('searchInput').addEventListener('input', filterItems);
+    
+    document.getElementById('itemsPerPage').addEventListener('change', function() {
+        itemsPerPage = parseInt(this.value);
+        currentPage = 1;
+        updatePagination();
+    });
+
+    document.querySelectorAll('.sortable').forEach(header => {
+        header.addEventListener('click', () => {
+            sortItems(header.dataset.sort);
+        });
+    });
+
+    document.getElementById('pagination').addEventListener('click', function(e) {
+        if (e.target.classList.contains('page-link')) {
+            e.preventDefault();
+            const newPage = parseInt(e.target.dataset.page);
+            if (newPage && newPage !== currentPage) {
+                currentPage = newPage;
+                updatePagination();
+            }
+        }
+    });
     
     // Função para adicionar item à requisição
     document.querySelectorAll('.adicionar-item').forEach(btn => {
@@ -144,6 +305,9 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Adicione pelo menos um item à requisição.');
         }
     });
+
+    // Inicialização
+    updatePagination();
 });
 </script>
-{% endblock %} 
+{% endblock %}

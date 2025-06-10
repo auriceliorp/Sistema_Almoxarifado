@@ -241,3 +241,21 @@ def requisicoes_atendidas():
         logger.error(f"Erro ao listar requisições atendidas: {str(e)}")
         flash(f'Erro ao listar requisições atendidas: {str(e)}', 'error')
         return redirect(url_for('main.index'))
+
+@requisicao_bp.route('/<int:requisicao_id>/saida')
+@login_required
+@admin_required
+def requisicao_saida(requisicao_id):
+    """Exibe o formulário de requisição de saída"""
+    try:
+        result = RequisicaoService.obter_detalhes_requisicao(requisicao_id)
+        if result['success']:
+            return render_template('almoxarifado/requisicao/requisicao_saida.html',
+                                requisicao=result['requisicao'])
+        else:
+            flash(f'Erro ao carregar detalhes da requisição: {result["error"]}', 'error')
+            return redirect(url_for('requisicao_bp.requisicoes_atendidas'))
+    except Exception as e:
+        logger.error(f"Erro ao carregar formulário de saída da requisição {requisicao_id}: {str(e)}")
+        flash(f'Erro ao carregar formulário de saída: {str(e)}', 'error')
+        return redirect(url_for('requisicao_bp.requisicoes_atendidas'))

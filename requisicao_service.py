@@ -9,9 +9,7 @@ logger = logging.getLogger(__name__)
 class RequisicaoService:
     @staticmethod
     def criar_requisicao(solicitante_id, observacao, itens):
-        """
-        Cria uma nova requisição de material com seus itens
-        """
+        """Cria uma nova requisição de material com seus itens"""
         try:
             # Criar a requisição
             requisicao = RequisicaoMaterial(
@@ -93,9 +91,7 @@ class RequisicaoService:
     
     @staticmethod
     def listar_minhas_requisicoes(solicitante_id):
-        """
-        Lista as requisições do usuário atual
-        """
+        """Lista as requisições do usuário atual"""
         try:
             requisicoes = RequisicaoMaterial.query\
                 .filter_by(solicitante_id=solicitante_id)\
@@ -109,9 +105,7 @@ class RequisicaoService:
     
     @staticmethod
     def listar_requisicoes_pendentes():
-        """
-        Lista as requisições pendentes
-        """
+        """Lista as requisições pendentes"""
         try:
             requisicoes = RequisicaoMaterial.query\
                 .filter_by(status='PENDENTE')\
@@ -125,9 +119,7 @@ class RequisicaoService:
     
     @staticmethod
     def atender_requisicao(requisicao_id, usuario_id):
-        """
-        Atende uma requisição de material
-        """
+        """Atende uma requisição de material"""
         try:
             requisicao = RequisicaoMaterial.query.get_or_404(requisicao_id)
             
@@ -168,15 +160,41 @@ class RequisicaoService:
             return {'success': False, 'error': str(e)}
     
     @staticmethod
+    def obter_detalhes_requisicao(requisicao_id):
+        """Obtém os detalhes de uma requisição"""
+        try:
+            requisicao = RequisicaoMaterial.query.get(requisicao_id)
+            if not requisicao:
+                return {'success': False, 'error': 'Requisição não encontrada'}
+            
+            return {'success': True, 'requisicao': requisicao}
+            
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+
+    @staticmethod
+    def cancelar_requisicao(requisicao_id, usuario_id):
+        """Cancela uma requisição pendente"""
+        try:
+            requisicao = RequisicaoMaterial.query.get(requisicao_id)
+            if not requisicao:
+                return {'success': False, 'error': 'Requisição não encontrada'}
+            
+            # ... resto do método ...
+            
+        except Exception as e:
+            db.session.rollback()
+            return {'success': False, 'error': str(e)}
+
+    @staticmethod
     def listar_requisicoes_atendidas():
         """Lista todas as requisições que foram atendidas"""
         try:
-            # Busca requisições com status ATENDIDA e ordena por data de atendimento decrescente
-            requisicoes = RequisicaoMaterial.query.filter_by(status='ATENDIDA')\
+            requisicoes = RequisicaoMaterial.query\
+                .filter_by(status='ATENDIDA')\
                 .order_by(desc(RequisicaoMaterial.data_requisicao))\
                 .all()
             
-            # Para cada requisição, verifica se tem estoque suficiente para todos os itens
             for req in requisicoes:
                 req.tem_estoque_suficiente = all(
                     item.quantidade <= item.item.estoque_atual 

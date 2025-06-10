@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from services.requisicao_service import RequisicaoService
-from models import Item
+from models import Item, Grupo  # Adicionado import do Grupo
 from functools import wraps
 
 requisicao_bp = Blueprint('requisicao_bp', __name__, url_prefix='/requisicao')
@@ -21,7 +21,10 @@ def consulta_estoque():
     """Página para consulta de estoque e criação de requisição"""
     try:
         itens = Item.query.filter(Item.estoque_atual > 0).order_by(Item.nome).all()
-        return render_template('almoxarifado/requisicao/consulta_estoque.html', itens=itens)
+        grupos = Grupo.query.order_by(Grupo.nome).all()  # Busca todos os grupos
+        return render_template('almoxarifado/requisicao/consulta_estoque.html', 
+                             itens=itens,
+                             grupos=grupos)  # Passa os grupos para o template
     except Exception as e:
         flash(f'Erro ao carregar itens: {str(e)}', 'error')
         return redirect(url_for('index'))
@@ -196,4 +199,4 @@ def api_detalhes_requisicao(requisicao_id):
         else:
             return jsonify({'error': result['error']}), 400
     except Exception as e:
-        return jsonify({'error': str(e)}), 500 
+        return jsonify({'error': str(e)}), 500

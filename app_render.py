@@ -114,7 +114,7 @@ def create_app():
     # -------------------- Handler para erros 404 --------------------
     @app.errorhandler(404)
     def not_found_error(error):
-        if request.is_xhr:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify(error="Página não encontrada"), 404
         return render_template('error.html', message="Página não encontrada."), 404
 
@@ -123,7 +123,7 @@ def create_app():
     def internal_error(error):
         db.session.rollback()
         logger.error(f"Erro interno do servidor: {str(error)}")
-        if request.is_xhr:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify(error="Erro interno do servidor"), 500
         return render_template('error.html', message="Erro interno do servidor."), 500
 
@@ -273,5 +273,4 @@ def init_db():
 if __name__ == '__main__':
     init_db()
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port) 
-
+    app.run(host='0.0.0.0', port=port)

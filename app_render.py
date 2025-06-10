@@ -192,6 +192,8 @@ def create_app():
     from routes_api import api_bp as api_blueprint
     from routes_tarefas import tarefas_bp as tarefas_blueprint
     from routes_links import links_bp as links_blueprint
+    from routes_popular import popular_bp as popular_blueprint
+    from routes_limpar import limpar_bp as limpar_blueprint
 
     # Registra os blueprints principais
     app.register_blueprint(main_blueprint)
@@ -226,6 +228,8 @@ def create_app():
     app.register_blueprint(projetos_blueprint)
     app.register_blueprint(api_blueprint)
     app.register_blueprint(links_blueprint)
+    app.register_blueprint(popular_blueprint)
+    app.register_blueprint(limpar_blueprint)
 
     # Registra o blueprint de tarefas por último
     app.register_blueprint(tarefas_blueprint)

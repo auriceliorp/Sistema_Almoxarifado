@@ -129,24 +129,42 @@ class RequisicaoService:
             # Atualizar a saída
             saida = requisicao.saida
             if not saida:
-                return {'success': False, 'error': 'Saída não encontrada para esta requisição'}
-            
-            saida.usuario_id = usuario_id
-            saida.data_movimento = datetime.now().date()
-            saida.status = 'EFETIVADA'
-            
-            # Atualizar o estoque dos itens
-            for req_item in requisicao.itens:
-                item = req_item.item
-                if item.estoque_atual < req_item.quantidade:
-                    return {'success': False, 'error': f"Estoque insuficiente para o item {item.nome}"}
+                # Criar nova saída usando o sistema existente
+                saida = SaidaMaterial(
+                    data_movimento=datetime.now().date(),
+                    solicitante_id=requisicao.solicitante_id,
+                    usuario_id=usuario_id,
+                    observacao=f"Saída gerada pela Requisição #{requisicao.id}",
+                    numero_documento=gerar_numero_documento(),  # Usar a mesma função do sistema de saídas
+                    status='EFETIVADA'
+                )
+                db.session.add(saida)
+                db.session.flush()
                 
-                item.estoque_atual -= req_item.quantidade
-                item.saldo_financeiro -= (req_item.quantidade * item.valor_unitario)
+                # Criar os itens da saída
+                for req_item in requisicao.itens:
+                    item = req_item.item
+                    if item.estoque_atual < req_item.quantidade:
+                        return {'success': False, 'error': f"Estoque insuficiente para o item {item.nome}"}
+                    
+                    saida_item = SaidaItem(
+                        saida_id=saida.id,
+                        item_id=item.id,
+                        quantidade=req_item.quantidade,
+                        valor_unitario=item.valor_unitario
+                    )
+                    db.session.add(saida_item)
+                    
+                    # Atualizar estoque
+                    item.estoque_atual -= req_item.quantidade
+                    item.saldo_financeiro -= (req_item.quantidade * item.valor_unitario)
+                
+                # Associar saída à requisição
+                requisicao.saida_id = saida.id
             
             # Atualizar status da requisição e data de atendimento
             requisicao.status = 'ATENDIDA'
-            requisicao.data_atendimento = datetime.now()  # Adicionando data de atendimento
+            requisicao.data_atendimento = datetime.now()
             
             # Atualizar status da tarefa
             if requisicao.tarefa:
@@ -154,10 +172,6 @@ class RequisicaoService:
                 requisicao.tarefa.data_conclusao = datetime.now()
             
             db.session.commit()
-            
-            # Log para debug
-            logger.info(f"Requisição {requisicao_id} atendida com sucesso. Status: {requisicao.status}")
-            
             return {'success': True}
             
         except Exception as e:
@@ -199,34 +213,4 @@ class RequisicaoService:
             # Busca requisições com status ATENDIDA e ordena por data de atendimento decrescente
             requisicoes = RequisicaoMaterial.query\
                 .filter(RequisicaoMaterial.status == 'ATENDIDA')\
-                .order_by(desc(RequisicaoMaterial.data_requisicao))\
-                .all()
-            
-            # Em vez de atribuir a propriedade, vamos criar uma lista com os dados necessários
-            requisicoes_com_estoque = []
-            for req in requisicoes:
-                # Verificar estoque suficiente
-                tem_estoque = all(
-                    item.quantidade <= item.item.estoque_atual 
-                    for item in req.itens
-                )
-                # Adicionar a requisição e o status do estoque
-                requisicoes_com_estoque.append({
-                    'requisicao': req,
-                    'tem_estoque_suficiente': tem_estoque
-                })
-            
-            # Adicionar log para debug
-            logger.info(f"Requisições encontradas: {len(requisicoes_com_estoque)}")
-            logger.info(f"Status das requisições: {[req['requisicao'].status for req in requisicoes_com_estoque]}")
-            
-            return {
-                'success': True,
-                'requisicoes': requisicoes_com_estoque
-            }
-        except Exception as e:
-            logger.error(f"Erro ao listar requisições atendidas: {str(e)}")
-            return {
-                'success': False,
-                'error': f"Erro ao listar requisições atendidas: {str(e)}"
-            } 
+                .ord

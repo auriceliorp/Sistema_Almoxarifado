@@ -236,8 +236,8 @@ def requisicoes_atendidas():
                                 requisicoes=result['requisicoes'])
         else:
             flash(f'Erro ao listar requisições atendidas: {result["error"]}', 'error')
-            return redirect(url_for('index'))
+            return redirect(url_for('main.index'))
     except Exception as e:
         logger.error(f"Erro ao listar requisições atendidas: {str(e)}")
         flash(f'Erro ao listar requisições atendidas: {str(e)}', 'error')
-        return redirect(url_for('index'))
+        return redirect(url_for('main.index'))

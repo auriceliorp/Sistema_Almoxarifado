@@ -9,97 +9,94 @@
 
     <div class="card shadow-sm">
         <div class="card-body">
-            <form id="formAcao" method="POST" class="needs-validation" novalidate>
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Data</th>
-                                <th>Solicitante</th>
-                                <th>Itens</th>
-                                <th>Observação</th>
-                                <th>Tarefa</th>
-                                <th>Saída</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for req in requisicoes %}
-                            <tr>
-                                <td>{{ req.id }}</td>
-                                <td>{{ req.data_requisicao.strftime('%d/%m/%Y %H:%M') }}</td>
-                                <td>{{ req.solicitante.nome }}</td>
-                                <td>
-                                    <ul class="list-unstyled mb-0">
-                                        {% for item in req.itens %}
-                                        <li>
-                                            {{ item.item.nome }} ({{ item.quantidade }})
-                                            {% if item.item.estoque_atual < item.quantidade %}
-                                            <span class="badge bg-danger">Estoque Insuficiente</span>
-                                            {% endif %}
-                                        </li>
-                                        {% endfor %}
-                                    </ul>
-                                </td>
-                                <td>{{ req.observacao or '-' }}</td>
-                                <td>
-                                    {% if req.tarefa %}
-                                        <button type="button" 
-                                                class="btn btn-sm btn-outline-info me-2"
-                                                onclick="verDetalhes('{{ req.tarefa.id }}', '{{ req.tarefa.titulo }}')">
-                                            <i class="bi bi-eye me-1"></i>Visualizar
-                                        </button>
-                                        <a href="{{ url_for('tarefas.editar_tarefa', id=req.tarefa.id) }}" 
-                                           class="btn btn-sm {% if req.tarefa.status == 'Concluída' %}btn-success{% elif req.tarefa.status == 'Não iniciada' %}btn-warning{% else %}btn-info{% endif %}">
-                                            <i class="bi {% if req.tarefa.status == 'Concluída' %}bi-check-circle{% elif req.tarefa.status == 'Não iniciada' %}bi-clock{% else %}bi-gear{% endif %} me-1"></i>
-                                            {{ req.tarefa.status }}
-                                        </a>
-                                    {% else %}
-                                        <span class="badge bg-secondary">Sem tarefa</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if req.saida %}
-                                        {% if req.saida.status == 'PENDENTE' %}
-                                            <span class="badge bg-warning">Saída Pendente</span>
-                                        {% elif req.saida.status == 'EFETIVADA' %}
-                                            <span class="badge bg-success">Saída Efetivada</span>
-                                        {% elif req.saida.status == 'CANCELADA' %}
-                                            <span class="badge bg-danger">Saída Cancelada</span>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Data</th>
+                            <th>Solicitante</th>
+                            <th>Itens</th>
+                            <th>Observação</th>
+                            <th>Tarefa</th>
+                            <th>Saída</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in requisicoes %}
+                        <tr>
+                            <td>{{ req.id }}</td>
+                            <td>{{ req.data_requisicao.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>{{ req.solicitante.nome }}</td>
+                            <td>
+                                <ul class="list-unstyled mb-0">
+                                    {% for item in req.itens %}
+                                    <li>
+                                        {{ item.item.nome }} ({{ item.quantidade }})
+                                        {% if item.item.estoque_atual < item.quantidade %}
+                                        <span class="badge bg-danger">Estoque Insuficiente</span>
                                         {% endif %}
-                                    {% else %}
-                                        <span class="badge bg-secondary">Sem saída</span>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                            <td>{{ req.observacao or '-' }}</td>
+                            <td>
+                                {% if req.tarefa %}
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-info me-2"
+                                            onclick="verDetalhes('{{ req.tarefa.id }}', '{{ req.tarefa.titulo }}')">
+                                        <i class="bi bi-eye me-1"></i>Visualizar
+                                    </button>
+                                    <a href="{{ url_for('tarefas.editar_tarefa', id=req.tarefa.id) }}" 
+                                       class="btn btn-sm {% if req.tarefa.status == 'Concluída' %}btn-success{% elif req.tarefa.status == 'Não iniciada' %}btn-warning{% else %}btn-info{% endif %}">
+                                        <i class="bi {% if req.tarefa.status == 'Concluída' %}bi-check-circle{% elif req.tarefa.status == 'Não iniciada' %}bi-clock{% else %}bi-gear{% endif %} me-1"></i>
+                                        {{ req.tarefa.status }}
+                                    </a>
+                                {% else %}
+                                    <span class="badge bg-secondary">Sem tarefa</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if req.saida %}
+                                    {% if req.saida.status == 'PENDENTE' %}
+                                        <span class="badge bg-warning">Saída Pendente</span>
+                                    {% elif req.saida.status == 'EFETIVADA' %}
+                                        <span class="badge bg-success">Saída Efetivada</span>
+                                    {% elif req.saida.status == 'CANCELADA' %}
+                                        <span class="badge bg-danger">Saída Cancelada</span>
                                     {% endif %}
-                                </td>
-                                <td>
-                                    <form method="POST" action="{{ url_for('requisicao_bp.atender_requisicao', requisicao_id=req.id) }}"
-                                          onsubmit="return confirm('Confirma o atendimento desta requisição?');">
-                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                        <button type="submit" 
-                                                class="btn btn-success btn-sm"
-                                                {% if not req.tem_estoque_suficiente or req.status != 'PENDENTE' or not req.saida or req.saida.status != 'PENDENTE' %}
-                                                disabled
-                                                title="{% if not req.tem_estoque_suficiente %}Estoque insuficiente para alguns itens{% elif req.status != 'PENDENTE' %}Requisição não está pendente{% elif not req.saida %}Requisição sem saída associada{% else %}Saída não está pendente{% endif %}"
-                                                {% endif %}>
-                                            <i class="bi bi-check-lg me-1"></i>Atender
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% else %}
-                            <tr>
-                                <td colspan="8" class="text-center py-4">
-                                    <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
-                                    <p class="text-muted mb-0">Nenhuma requisição pendente.</p>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </form>
+                                {% else %}
+                                    <span class="badge bg-secondary">Sem saída</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="POST" action="{{ url_for('requisicao_bp.atender_requisicao', requisicao_id=req.id) }}"
+                                      onsubmit="return confirm('Confirma o atendimento desta requisição?');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" 
+                                            class="btn btn-success btn-sm"
+                                            {% if not req.tem_estoque_suficiente or req.status != 'PENDENTE' or not req.saida or req.saida.status != 'PENDENTE' %}
+                                            disabled
+                                            title="{% if not req.tem_estoque_suficiente %}Estoque insuficiente para alguns itens{% elif req.status != 'PENDENTE' %}Requisição não está pendente{% elif not req.saida %}Requisição sem saída associada{% else %}Saída não está pendente{% endif %}"
+                                            {% endif %}>
+                                        <i class="bi bi-check-lg me-1"></i>Atender
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center py-4">
+                                <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
+                                <p class="text-muted mb-0">Nenhuma requisição pendente.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -182,5 +179,4 @@
         }
     }
 </script>
-{% endblock %} 
-
+{% endblock %}

@@ -144,8 +144,9 @@ class RequisicaoService:
                 item.estoque_atual -= req_item.quantidade
                 item.saldo_financeiro -= (req_item.quantidade * item.valor_unitario)
             
-            # Atualizar status da requisição
+            # Atualizar status da requisição e data de atendimento
             requisicao.status = 'ATENDIDA'
+            requisicao.data_atendimento = datetime.now()  # Adicionando data de atendimento
             
             # Atualizar status da tarefa
             if requisicao.tarefa:
@@ -153,10 +154,15 @@ class RequisicaoService:
                 requisicao.tarefa.data_conclusao = datetime.now()
             
             db.session.commit()
+            
+            # Log para debug
+            logger.info(f"Requisição {requisicao_id} atendida com sucesso. Status: {requisicao.status}")
+            
             return {'success': True}
             
         except Exception as e:
             db.session.rollback()
+            logger.error(f"Erro ao atender requisição {requisicao_id}: {str(e)}")
             return {'success': False, 'error': str(e)}
     
     @staticmethod
@@ -190,8 +196,9 @@ class RequisicaoService:
     def listar_requisicoes_atendidas():
         """Lista todas as requisições que foram atendidas"""
         try:
+            # Busca requisições com status ATENDIDA e ordena por data de atendimento decrescente
             requisicoes = RequisicaoMaterial.query\
-                .filter_by(status='ATENDIDA')\
+                .filter(RequisicaoMaterial.status == 'ATENDIDA')\
                 .order_by(desc(RequisicaoMaterial.data_requisicao))\
                 .all()
             
@@ -208,6 +215,10 @@ class RequisicaoService:
                     'requisicao': req,
                     'tem_estoque_suficiente': tem_estoque
                 })
+            
+            # Adicionar log para debug
+            logger.info(f"Requisições encontradas: {len(requisicoes_com_estoque)}")
+            logger.info(f"Status das requisições: {[req['requisicao'].status for req in requisicoes_com_estoque]}")
             
             return {
                 'success': True,

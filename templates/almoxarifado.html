@@ -161,6 +161,10 @@
           <span class="badge bg-danger">{{ requisicoes_pendentes_count }}</span>
           {% endif %}
         </a>
+        <a href="{{ url_for('requisicao_bp.requisicoes_atendidas') }}" class="btn btn-outline-success">
+          <i class="bi bi-check-circle"></i>
+          Requisições Atendidas
+        </a>
         {% endif %}
       </div>
     </div>

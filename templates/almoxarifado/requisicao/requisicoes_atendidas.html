@@ -1,0 +1,179 @@
+{% extends 'base_simplificada.html' %}
+{% block title %}Requisições de Materiais Atendidas{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Requisições Atendidas</h2>
+        <div>
+            <a href="{{ url_for('requisicao_bp.requisicoes_pendentes') }}" class="btn btn-outline-primary me-2">
+                <i class="bi bi-clock-history me-2"></i>Requisições Pendentes
+            </a>
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Voltar
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Data Requisição</th>
+                            <th>Data Atendimento</th>
+                            <th>Solicitante</th>
+                            <th>Itens</th>
+                            <th>Observação</th>
+                            <th>Tarefa</th>
+                            <th>Saída</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in requisicoes %}
+                        <tr>
+                            <td>{{ req.id }}</td>
+                            <td>{{ req.data_requisicao.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>{{ req.data_atendimento.strftime('%d/%m/%Y %H:%M') if req.data_atendimento else '-' }}</td>
+                            <td>{{ req.solicitante.nome }}</td>
+                            <td>
+                                <ul class="list-unstyled mb-0">
+                                    {% for item in req.itens %}
+                                    <li>{{ item.item.nome }} ({{ item.quantidade }})</li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                            <td>{{ req.observacao or '-' }}</td>
+                            <td>
+                                {% if req.tarefa %}
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-info me-2"
+                                            onclick="verDetalhes('{{ req.tarefa.id }}', '{{ req.tarefa.titulo }}')">
+                                        <i class="bi bi-eye me-1"></i>Visualizar
+                                    </button>
+                                    <a href="{{ url_for('tarefas.editar_tarefa', id=req.tarefa.id) }}" 
+                                       class="btn btn-sm {% if req.tarefa.status == 'Concluída' %}btn-success{% elif req.tarefa.status == 'Não iniciada' %}btn-warning{% else %}btn-info{% endif %}">
+                                        <i class="bi {% if req.tarefa.status == 'Concluída' %}bi-check-circle{% elif req.tarefa.status == 'Não iniciada' %}bi-clock{% else %}bi-gear{% endif %} me-1"></i>
+                                        {{ req.tarefa.status }}
+                                    </a>
+                                {% else %}
+                                    <span class="badge bg-secondary">Sem tarefa</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if req.saida %}
+                                    {% if req.saida.status == 'PENDENTE' %}
+                                        <span class="badge bg-warning">Saída Pendente</span>
+                                    {% elif req.saida.status == 'EFETIVADA' %}
+                                        <span class="badge bg-success">Saída Efetivada</span>
+                                    {% elif req.saida.status == 'CANCELADA' %}
+                                        <span class="badge bg-danger">Saída Cancelada</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-secondary">Sem saída</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('requisicao_bp.requisicao_saida', requisicao_id=req.id) }}" 
+                                   class="btn btn-primary btn-sm">
+                                    <i class="bi bi-file-text me-1"></i>Ver Saída
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="9" class="text-center py-4">
+                                <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
+                                <p class="text-muted mb-0">Nenhuma requisição atendida.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    // Função para visualizar detalhes da tarefa
+    async function verDetalhes(tarefaId, titulo) {
+        try {
+            // Mostrar loading
+            Swal.fire({
+                title: 'Carregando detalhes...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            const response = await fetch(`/api/tarefas/${tarefaId}/detalhes`);
+            const tarefa = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(tarefa.error || 'Erro ao carregar detalhes');
+            }
+            
+            // Formatar datas
+            const dataInicio = tarefa.data_inicio ? new Date(tarefa.data_inicio).toLocaleDateString('pt-BR') : 'Não definida';
+            const dataTermino = tarefa.data_termino ? new Date(tarefa.data_termino).toLocaleDateString('pt-BR') : 'Não definida';
+            const dataConclusao = tarefa.data_conclusao ? new Date(tarefa.data_conclusao).toLocaleDateString('pt-BR') : 'Não concluída';
+            
+            // Montar HTML dos detalhes
+            const detalhesHtml = `
+                <div class="text-start">
+                    <h6 class="mb-3">Informações Gerais</h6>
+                    <p><strong>Título:</strong> ${tarefa.titulo}</p>
+                    <p><strong>Resumo:</strong> ${tarefa.resumo || 'Não informado'}</p>
+                    <p><strong>Status:</strong> ${tarefa.status}</p>
+                    <p><strong>Prioridade:</strong> ${tarefa.prioridade}</p>
+                    <p><strong>Número SEI:</strong> ${tarefa.numero_sei || 'Não informado'}</p>
+                    
+                    <h6 class="mt-4 mb-3">Datas</h6>
+                    <p><strong>Data Início:</strong> ${dataInicio}</p>
+                    <p><strong>Data Término:</strong> ${dataTermino}</p>
+                    <p><strong>Data Conclusão:</strong> ${dataConclusao}</p>
+                    
+                    <h6 class="mt-4 mb-3">Classificação</h6>
+                    <p><strong>Categoria:</strong> ${tarefa.categoria?.nome || 'Não informada'}</p>
+                    <p><strong>Origem:</strong> ${tarefa.origem?.nome || 'Não informada'}</p>
+                    <p><strong>Unidade:</strong> ${tarefa.unidade_local?.descricao || 'Não informada'}</p>
+                    
+                    <h6 class="mt-4 mb-3">Responsáveis</h6>
+                    <p><strong>Responsável:</strong> ${tarefa.responsavel?.nome || 'Não atribuído'}</p>
+                    <p><strong>Solicitante:</strong> ${tarefa.solicitante?.nome || 'Não informado'}</p>
+                    
+                    ${tarefa.observacoes ? `
+                        <h6 class="mt-4 mb-3">Observações</h6>
+                        <p>${tarefa.observacoes}</p>
+                    ` : ''}
+                </div>
+            `;
+            
+            // Mostrar modal com os detalhes
+            Swal.fire({
+                title: titulo,
+                html: detalhesHtml,
+                width: '600px',
+                confirmButtonText: 'Fechar'
+            });
+            
+        } catch (error) {
+            console.error('Erro:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro',
+                text: error.message,
+                confirmButtonText: 'OK'
+            });
+        }
+    }
+</script>
+{% endblock %}

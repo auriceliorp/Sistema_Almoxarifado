@@ -1,0 +1,101 @@
+{% extends 'base_simplificada.html' %}
+{% block title %}Requisição de Saída{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Requisição de Saída #{{ requisicao.id }}</h2>
+        <div>
+            <button onclick="gerarPDF()" class="btn btn-primary me-2">
+                <i class="bi bi-file-pdf me-2"></i>Gerar PDF
+            </button>
+            <a href="{{ url_for('requisicao_bp.requisicoes_pendentes') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Voltar
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">Informações da Requisição</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Data da Requisição:</strong> {{ requisicao.data_requisicao.strftime('%d/%m/%Y %H:%M') }}</p>
+                    <p><strong>Solicitante:</strong> {{ requisicao.solicitante.nome }}</p>
+                    <p><strong>Setor:</strong> {{ requisicao.solicitante.setor.nome if requisicao.solicitante.setor else 'Não informado' }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Status:</strong> <span class="badge bg-success">Atendida</span></p>
+                    <p><strong>Atendida por:</strong> {{ current_user.nome }}</p>
+                    <p><strong>Data do Atendimento:</strong> {{ requisicao.data_atendimento.strftime('%d/%m/%Y %H:%M') if requisicao.data_atendimento else 'Não atendida' }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">Itens da Requisição</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Quantidade</th>
+                            <th>Unidade</th>
+                            <th>Grupo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in requisicao.itens %}
+                        <tr>
+                            <td>{{ item.item.nome }}</td>
+                            <td>{{ item.quantidade }}</td>
+                            <td>{{ item.item.unidade }}</td>
+                            <td>{{ item.item.grupo.nome if item.item.grupo else 'Não informado' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% if requisicao.observacao %}
+    <div class="card shadow-sm mt-4">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">Observações</h5>
+        </div>
+        <div class="card-body">
+            <p class="mb-0">{{ requisicao.observacao }}</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+    function gerarPDF() {
+        // Configurações do PDF
+        const opt = {
+            margin: 1,
+            filename: `requisicao_saida_${{{ requisicao.id }}}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
+
+        // Elemento que será convertido em PDF
+        const element = document.body;
+
+        // Gerar PDF
+        html2pdf().set(opt).from(element).save();
+    }
+</script>
+{% endblock %}

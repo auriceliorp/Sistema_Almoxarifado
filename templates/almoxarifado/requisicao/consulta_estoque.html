@@ -46,64 +46,61 @@
                         </div>
                     </div>
 
-                    <form id="formRequisicao" method="POST" action="{{ url_for('requisicao_bp.nova_requisicao') }}" class="needs-validation" novalidate>
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <div class="table-responsive">
-                            <table class="table table-hover" id="itemsTable">
-                                <thead>
-                                    <tr>
-                                        <th class="sortable" data-sort="nome">Item <i class="bi bi-arrow-down-up"></i></th>
-                                        <th class="sortable" data-sort="grupo">Grupo <i class="bi bi-arrow-down-up"></i></th>
-                                        <th class="sortable" data-sort="unidade">Unidade <i class="bi bi-arrow-down-up"></i></th>
-                                        <th class="sortable" data-sort="estoque">Estoque <i class="bi bi-arrow-down-up"></i></th>
-                                        <th style="width: 150px;">Quantidade</th>
-                                        <th style="width: 100px;">Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for item in itens %}
-                                    <tr class="item-row" data-grupo-id="{{ item.grupo.id }}">
-                                        <td>{{ item.nome }}</td>
-                                        <td>{{ item.grupo.nome }}</td>
-                                        <td>{{ item.unidade }}</td>
-                                        <td data-value="{{ item.estoque_atual }}">{{ "%.2f"|format(item.estoque_atual) }}</td>
-                                        <td>
-                                            <div class="input-group" style="width: 150px;">
-                                                <input type="number" 
-                                                       class="form-control quantidade-input" 
-                                                       data-item-id="{{ item.id }}"
-                                                       data-max-estoque="{{ item.estoque_atual }}"
-                                                       min="1" 
-                                                       max="{{ item.estoque_atual }}"
-                                                       step="1">
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <button type="button" 
-                                                    class="btn btn-sm btn-primary adicionar-item"
-                                                    data-item-id="{{ item.id }}"
-                                                    data-item-nome="{{ item.nome }}">
-                                                <i class="bi bi-plus-lg"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="itemsTable">
+                            <thead>
+                                <tr>
+                                    <th class="sortable" data-sort="nome">Item <i class="bi bi-arrow-down-up"></i></th>
+                                    <th class="sortable" data-sort="grupo">Grupo <i class="bi bi-arrow-down-up"></i></th>
+                                    <th class="sortable" data-sort="unidade">Unidade <i class="bi bi-arrow-down-up"></i></th>
+                                    <th class="sortable" data-sort="estoque">Estoque <i class="bi bi-arrow-down-up"></i></th>
+                                    <th style="width: 150px;">Quantidade</th>
+                                    <th style="width: 100px;">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in itens %}
+                                <tr class="item-row" data-grupo-id="{{ item.grupo.id }}">
+                                    <td>{{ item.nome }}</td>
+                                    <td>{{ item.grupo.nome }}</td>
+                                    <td>{{ item.unidade }}</td>
+                                    <td data-value="{{ item.estoque_atual }}">{{ "%.2f"|format(item.estoque_atual) }}</td>
+                                    <td>
+                                        <div class="input-group" style="width: 150px;">
+                                            <input type="number" 
+                                                   class="form-control quantidade-input" 
+                                                   data-item-id="{{ item.id }}"
+                                                   data-max-estoque="{{ item.estoque_atual }}"
+                                                   min="1" 
+                                                   max="{{ item.estoque_atual }}"
+                                                   step="1">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <button type="button" 
+                                                class="btn btn-sm btn-primary adicionar-item"
+                                                data-item-id="{{ item.id }}"
+                                                data-item-nome="{{ item.nome }}">
+                                            <i class="bi bi-plus-lg"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
 
-                        <!-- Paginação -->
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <div class="text-muted" id="itemCount">
-                                Mostrando <span id="showingItems">0</span> de <span id="totalItems">0</span> itens
-                            </div>
-                            <nav aria-label="Navegação de página">
-                                <ul class="pagination mb-0" id="pagination">
-                                    <!-- Paginação será inserida via JavaScript -->
-                                </ul>
-                            </nav>
+                    <!-- Paginação -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="text-muted" id="itemCount">
+                            Mostrando <span id="showingItems">0</span> de <span id="totalItems">0</span> itens
                         </div>
-                    </form>
+                        <nav aria-label="Navegação de página">
+                            <ul class="pagination mb-0" id="pagination">
+                                <!-- Paginação será inserida via JavaScript -->
+                            </ul>
+                        </nav>
+                    </div>
                 </div>
             </div>
         </div>
@@ -117,22 +114,25 @@
                         <span class="badge bg-light text-primary float-end" id="itemCount">0</span>
                     </h5>
                 </div>
-                <div class="card-body">
-                    <div id="itensSelecionados" class="mb-3">
-                        <!-- Itens selecionados serão inseridos aqui via JavaScript -->
-                        <div class="text-muted text-center py-3" id="emptyMessage">
-                            <i class="bi bi-cart3 fs-1 d-block mb-2"></i>
-                            Nenhum item selecionado
+                <form id="formRequisicao" method="POST" action="{{ url_for('requisicao_bp.nova_requisicao') }}" class="needs-validation" novalidate>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="card-body">
+                        <div id="itensSelecionados" class="mb-3">
+                            <!-- Itens selecionados serão inseridos aqui via JavaScript -->
+                            <div class="text-muted text-center py-3" id="emptyMessage">
+                                <i class="bi bi-cart3 fs-1 d-block mb-2"></i>
+                                Nenhum item selecionado
+                            </div>
                         </div>
+                        <div class="mb-3">
+                            <label for="observacao" class="form-label">Observações</label>
+                            <textarea class="form-control" id="observacao" name="observacao" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100" id="btnSubmit" disabled>
+                            <i class="bi bi-check-lg me-2"></i>Enviar Requisição
+                        </button>
                     </div>
-                    <div class="mb-3">
-                        <label for="observacao" class="form-label">Observações</label>
-                        <textarea class="form-control" id="observacao" name="observacao" rows="3"></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-success w-100" id="btnSubmit" disabled>
-                        <i class="bi bi-check-lg me-2"></i>Enviar Requisição
-                    </button>
-                </div>
+                </form>
             </div>
         </div>
     </div>
@@ -359,7 +359,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (itensSelecionados.size === 0) {
             event.preventDefault();
             alert('Adicione pelo menos um item à requisição.');
+            return false;
         }
+        return true;
     });
 
     // Inicialização

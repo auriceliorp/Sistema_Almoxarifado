@@ -1,8 +1,13 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from services.requisicao_service import RequisicaoService
-from models import Item, Grupo  # Adicionado import do Grupo
+from models import Item, Grupo
 from functools import wraps
+import logging
+
+# Configuração de logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 requisicao_bp = Blueprint('requisicao_bp', __name__, url_prefix='/requisicao')
 
@@ -21,11 +26,12 @@ def consulta_estoque():
     """Página para consulta de estoque e criação de requisição"""
     try:
         itens = Item.query.filter(Item.estoque_atual > 0).order_by(Item.nome).all()
-        grupos = Grupo.query.order_by(Grupo.nome).all()  # Busca todos os grupos
+        grupos = Grupo.query.order_by(Grupo.nome).all()
         return render_template('almoxarifado/requisicao/consulta_estoque.html', 
                              itens=itens,
-                             grupos=grupos)  # Passa os grupos para o template
+                             grupos=grupos)
     except Exception as e:
+        logger.error(f"Erro ao carregar consulta de estoque: {str(e)}")
         flash(f'Erro ao carregar itens: {str(e)}', 'error')
         return redirect(url_for('index'))
 
@@ -34,10 +40,18 @@ def consulta_estoque():
 def nova_requisicao():
     """Cria uma nova requisição de material"""
     try:
+        # Log dos dados recebidos
+        logger.info("Dados do formulário recebidos:")
+        logger.info(f"Form data: {request.form}")
+        
         # Obter dados do formulário
         itens_ids = request.form.getlist('item_id[]')
         quantidades = request.form.getlist('quantidade[]')
         observacao = request.form.get('observacao', '')
+
+        logger.info(f"Itens IDs: {itens_ids}")
+        logger.info(f"Quantidades: {quantidades}")
+        logger.info(f"Observação: {observacao}")
 
         if not itens_ids:
             raise ValueError("É necessário incluir pelo menos um item")
@@ -75,13 +89,16 @@ def nova_requisicao():
             flash('Requisição criada com sucesso!', 'success')
             return redirect(url_for('requisicao_bp.minhas_requisicoes'))
         else:
+            logger.error(f"Erro ao criar requisição: {result['error']}")
             flash(f'Erro ao criar requisição: {result["error"]}', 'error')
             return redirect(url_for('requisicao_bp.consulta_estoque'))
 
     except ValueError as e:
+        logger.error(f"Erro de validação: {str(e)}")
         flash(str(e), 'error')
         return redirect(url_for('requisicao_bp.consulta_estoque'))
     except Exception as e:
+        logger.error(f"Erro não esperado: {str(e)}")
         flash(f'Erro ao criar requisição: {str(e)}', 'error')
         return redirect(url_for('requisicao_bp.consulta_estoque'))
 
@@ -98,6 +115,7 @@ def minhas_requisicoes():
             flash(f'Erro ao listar requisições: {result["error"]}', 'error')
             return redirect(url_for('index'))
     except Exception as e:
+        logger.error(f"Erro ao listar requisições: {str(e)}")
         flash(f'Erro ao listar requisições: {str(e)}', 'error')
         return redirect(url_for('index'))
 
@@ -115,6 +133,7 @@ def requisicoes_pendentes():
             flash(f'Erro ao listar requisições pendentes: {result["error"]}', 'error')
             return redirect(url_for('index'))
     except Exception as e:
+        logger.error(f"Erro ao listar requisições pendentes: {str(e)}")
         flash(f'Erro ao listar requisições pendentes: {str(e)}', 'error')
         return redirect(url_for('index'))
 
@@ -131,6 +150,7 @@ def atender_requisicao(requisicao_id):
             flash(result['error'], 'error')
         return redirect(url_for('requisicao_bp.requisicoes_pendentes'))
     except Exception as e:
+        logger.error(f"Erro ao atender requisição {requisicao_id}: {str(e)}")
         flash(f'Erro ao atender requisição: {str(e)}', 'error')
         return redirect(url_for('requisicao_bp.requisicoes_pendentes'))
 
@@ -150,6 +170,7 @@ def detalhes_requisicao(requisicao_id):
             flash(f'Erro ao carregar detalhes da requisição: {result["error"]}', 'error')
             return redirect(url_for('index'))
     except Exception as e:
+        logger.error(f"Erro ao carregar detalhes da requisição {requisicao_id}: {str(e)}")
         flash(f'Erro ao carregar detalhes da requisição: {str(e)}', 'error')
         return redirect(url_for('index'))
 
@@ -165,6 +186,7 @@ def cancelar_requisicao(requisicao_id):
             flash(result['error'], 'error')
         return redirect(url_for('requisicao_bp.minhas_requisicoes'))
     except Exception as e:
+        logger.error(f"Erro ao cancelar requisição {requisicao_id}: {str(e)}")
         flash(f'Erro ao cancelar requisição: {str(e)}', 'error')
         return redirect(url_for('requisicao_bp.minhas_requisicoes'))
 
@@ -199,4 +221,5 @@ def api_detalhes_requisicao(requisicao_id):
         else:
             return jsonify({'error': result['error']}), 400
     except Exception as e:
+        logger.error(f"Erro na API de detalhes da requisição {requisicao_id}: {str(e)}")
         return jsonify({'error': str(e)}), 500

@@ -146,12 +146,32 @@ def atender_requisicao(requisicao_id):
         result = RequisicaoService.atender_requisicao(requisicao_id, current_user.id)
         if result['success']:
             flash('Requisição atendida com sucesso!', 'success')
+            # Redireciona para o template de requisição de saída
+            return redirect(url_for('requisicao_bp.requisicao_saida', requisicao_id=requisicao_id))
         else:
             flash(result['error'], 'error')
-        return redirect(url_for('requisicao_bp.requisicoes_pendentes'))
+            return redirect(url_for('requisicao_bp.requisicoes_pendentes'))
     except Exception as e:
         logger.error(f"Erro ao atender requisição {requisicao_id}: {str(e)}")
         flash(f'Erro ao atender requisição: {str(e)}', 'error')
+        return redirect(url_for('requisicao_bp.requisicoes_pendentes'))
+
+@requisicao_bp.route('/<int:requisicao_id>/saida')
+@login_required
+@admin_required
+def requisicao_saida(requisicao_id):
+    """Exibe o formulário de requisição de saída"""
+    try:
+        result = RequisicaoService.obter_detalhes_requisicao(requisicao_id)
+        if result['success']:
+            return render_template('almoxarifado/requisicao/requisicao_saida.html',
+                                requisicao=result['requisicao'])
+        else:
+            flash(f'Erro ao carregar detalhes da requisição: {result["error"]}', 'error')
+            return redirect(url_for('requisicao_bp.requisicoes_pendentes'))
+    except Exception as e:
+        logger.error(f"Erro ao carregar formulário de saída da requisição {requisicao_id}: {str(e)}")
+        flash(f'Erro ao carregar formulário de saída: {str(e)}', 'error')
         return redirect(url_for('requisicao_bp.requisicoes_pendentes'))
 
 @requisicao_bp.route('/<int:requisicao_id>/detalhes')
@@ -199,27 +219,9 @@ def api_detalhes_requisicao(requisicao_id):
         if result['success']:
             if not current_user.perfil or (current_user.perfil.nome != 'Administrador' and result['requisicao'].solicitante_id != current_user.id):
                 return jsonify({'error': 'Acesso negado'}), 403
-            return jsonify({
-                'success': True,
-                'requisicao': {
-                    'id': result['requisicao'].id,
-                    'data_requisicao': result['requisicao'].data_requisicao.isoformat(),
-                    'status': result['requisicao'].status,
-                    'observacao': result['requisicao'].observacao,
-                    'solicitante': {
-                        'id': result['requisicao'].solicitante.id,
-                        'nome': result['requisicao'].solicitante.nome
-                    },
-                    'itens': [{
-                        'id': item.id,
-                        'item_id': item.item_id,
-                        'nome': item.item.nome,
-                        'quantidade': item.quantidade
-                    } for item in result['requisicao'].itens]
-                }
-            })
+            return jsonify(result['requisicao'].to_dict()), 200
         else:
-            return jsonify({'error': result['error']}), 400
+            return jsonify({'error': result['error']}), 404
     except Exception as e:
-        logger.error(f"Erro na API de detalhes da requisição {requisicao_id}: {str(e)}")
+        logger.error(f"Erro ao obter detalhes da requisição {requisicao_id}: {str(e)}")
         return jsonify({'error': str(e)}), 500

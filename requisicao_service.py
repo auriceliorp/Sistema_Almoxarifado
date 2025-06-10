@@ -1,6 +1,10 @@
 from datetime import datetime
 from models import db, RequisicaoMaterial, RequisicaoItem, Item, Tarefa, SaidaMaterial, SaidaItem
 from sqlalchemy import desc
+import logging
+
+# Configuração do logger
+logger = logging.getLogger(__name__)
 
 class RequisicaoService:
     @staticmethod

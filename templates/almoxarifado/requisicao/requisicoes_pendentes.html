@@ -113,23 +113,20 @@
                                         <i class="bi bi-eye"></i>
                                     </a>
 
-                                    <!-- Botões de Atendimento -->
-                                    {% set tem_itens_sem_estoque = false %}
-                                    {% set tem_itens_com_estoque = false %}
-                                    {% for item in req.itens %}
-                                        {% if item.item.estoque_atual >= item.quantidade %}
-                                            {% set tem_itens_com_estoque = true %}
-                                        {% else %}
-                                            {% set tem_itens_sem_estoque = true %}
-                                        {% endif %}
-                                    {% endfor %}
+                                    <!-- Debug info -->
+                                    <div class="text-muted small">
+                                        {% for item in req.itens %}
+                                            Item: {{ item.item.nome }} - 
+                                            Estoque: {{ item.item.estoque_atual }} - 
+                                            Solicitado: {{ item.quantidade }}<br>
+                                        {% endfor %}
+                                    </div>
 
-                                    <!-- Botão Atender Total (aparece se TODOS os itens têm estoque suficiente) -->
-                                    {% if not tem_itens_sem_estoque and tem_itens_com_estoque %}
+                                    <!-- Botão Atender Total -->
+                                    {% if req.tem_estoque_suficiente %}
                                     <form method="POST" 
                                           action="{{ url_for('requisicao_bp.atender_requisicao', requisicao_id=req.id) }}"
-                                          class="d-inline"
-                                          onsubmit="return confirm('Deseja realmente atender completamente esta requisição?');">
+                                          class="d-inline">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <input type="hidden" name="tipo_atendimento" value="total">
                                         <button type="submit" 
@@ -141,12 +138,11 @@
                                     </form>
                                     {% endif %}
 
-                                    <!-- Botão Atender Parcial (aparece se ALGUM item tem estoque insuficiente) -->
-                                    {% if tem_itens_sem_estoque %}
+                                    <!-- Botão Atender Parcial -->
+                                    {% if not req.tem_estoque_suficiente and req.tem_algum_estoque %}
                                     <form method="POST" 
                                           action="{{ url_for('requisicao_bp.atender_requisicao', requisicao_id=req.id) }}"
-                                          class="d-inline"
-                                          onsubmit="return confirm('Alguns itens serão atendidos parcialmente devido ao estoque insuficiente. Deseja continuar?');">
+                                          class="d-inline">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <input type="hidden" name="tipo_atendimento" value="parcial">
                                         <button type="submit" 
@@ -196,3 +192,4 @@ document.addEventListener('DOMContentLoaded', function() {
 {% endblock %}
 
 {% endblock %} 
+

@@ -1,5 +1,5 @@
-{% extends 'base_simplificada.html' %}
-{% block title %}Requisições de Materiais Pendentes{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Requisições Pendentes{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -11,6 +11,30 @@
         font-size: 1.2rem;
         font-weight: bold;
         color: #2c3e50;
+    }
+    .item-requisicao {
+        padding: 8px;
+        border-bottom: 1px solid #eee;
+    }
+    .item-requisicao:last-child {
+        border-bottom: none;
+    }
+    .item-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 4px;
+    }
+    .item-status {
+        font-size: 0.875rem;
+    }
+    .item-warning {
+        color: #dc3545;
+        font-size: 0.875rem;
+    }
+    .badge-quantidade {
+        min-width: 80px;
+        text-align: center;
     }
 </style>
 {% endblock %}
@@ -28,12 +52,11 @@
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Data</th>
+                            <th>Data Requisição</th>
                             <th>Solicitante</th>
                             <th>Itens</th>
                             <th>Observação</th>
-                            <th>Tarefa</th>
-                            <th>Saída</th>
+                            <th>Status</th>
                             <th>Ações</th>
                         </tr>
                     </thead>
@@ -46,13 +69,28 @@
                             <td>
                                 <ul class="list-unstyled mb-0">
                                     {% for item in req.itens %}
-                                    <li class="item-requisicao" 
-                                        data-item-id="{{ item.item.id }}"
-                                        data-quantidade="{{ item.quantidade }}"
-                                        data-estoque-atual="{{ item.item.estoque_atual }}">
-                                        {{ item.item.nome }} ({{ item.quantidade }})
-                                        {% if item.item.estoque_atual < item.quantidade %}
-                                        <span class="badge bg-danger">Estoque Insuficiente</span>
+                                    <li class="item-requisicao">
+                                        <div class="item-info">
+                                            <span class="item-nome">{{ item.item.nome }}</span>
+                                            <div class="item-badges">
+                                                <span class="badge bg-primary badge-quantidade">
+                                                    Solicitado: {{ item.quantidade }}
+                                                </span>
+                                                {% if item.quantidade_atendida %}
+                                                <span class="badge bg-success badge-quantidade">
+                                                    Atendido: {{ item.quantidade_atendida }}
+                                                </span>
+                                                {% endif %}
+                                                <span class="badge {% if item.item.estoque_atual >= (item.quantidade - (item.quantidade_atendida or 0)) %}bg-success{% else %}bg-warning{% endif %} badge-quantidade">
+                                                    Estoque: {{ item.item.estoque_atual }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        {% if item.item.estoque_atual < (item.quantidade - (item.quantidade_atendida or 0)) %}
+                                        <div class="item-warning">
+                                            <i class="bi bi-exclamation-triangle-fill"></i>
+                                            Estoque insuficiente (Faltam: {{ item.quantidade - (item.quantidade_atendida or 0) - item.item.estoque_atual }})
+                                        </div>
                                         {% endif %}
                                     </li>
                                     {% endfor %}
@@ -60,55 +98,47 @@
                             </td>
                             <td>{{ req.observacao or '-' }}</td>
                             <td>
-                                {% if req.tarefa %}
-                                    <button type="button" 
-                                            class="btn btn-sm btn-outline-info me-2"
-                                            onclick="verDetalhes('{{ req.tarefa.id }}', '{{ req.tarefa.titulo }}')">
-                                        <i class="bi bi-eye me-1"></i>Visualizar
-                                    </button>
-                                    <a href="{{ url_for('tarefas.editar_tarefa', id=req.tarefa.id) }}" 
-                                       class="btn btn-sm {% if req.tarefa.status == 'Concluída' %}btn-success{% elif req.tarefa.status == 'Não iniciada' %}btn-warning{% else %}btn-info{% endif %}">
-                                        <i class="bi {% if req.tarefa.status == 'Concluída' %}bi-check-circle{% elif req.tarefa.status == 'Não iniciada' %}bi-clock{% else %}bi-gear{% endif %} me-1"></i>
-                                        {{ req.tarefa.status }}
+                                {% if req.status == 'PENDENTE' %}
+                                    <span class="badge bg-warning text-dark">Pendente</span>
+                                {% elif req.status == 'PARCIALMENTE_ATENDIDA' %}
+                                    <span class="badge bg-info">Parcialmente Atendida</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <!-- Botão Detalhes -->
+                                    <a href="{{ url_for('requisicao_bp.detalhes_requisicao', requisicao_id=req.id) }}" 
+                                       class="btn btn-outline-secondary btn-sm"
+                                       title="Ver Detalhes">
+                                        <i class="bi bi-eye"></i>
                                     </a>
-                                {% else %}
-                                    <span class="badge bg-secondary">Sem tarefa</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if req.saida %}
-                                    {% if req.saida.status == 'PENDENTE' %}
-                                        <span class="badge bg-warning">Saída Pendente</span>
-                                    {% elif req.saida.status == 'EFETIVADA' %}
-                                        <span class="badge bg-success">Saída Efetivada</span>
-                                    {% elif req.saida.status == 'CANCELADA' %}
-                                        <span class="badge bg-danger">Saída Cancelada</span>
-                                    {% endif %}
-                                {% else %}
-                                    <span class="badge bg-secondary">Sem saída</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <!-- Formulário simplificado apenas com o necessário -->
-                                <form method="POST" 
-                                      action="{{ url_for('requisicao_bp.atender_requisicao', requisicao_id=req.id) }}"
-                                      class="form-atendimento"
-                                      onsubmit="return validarAtendimento(this);">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <button type="submit" 
-                                            class="btn btn-success btn-sm btn-atender"
-                                            {% if not req.tem_estoque_suficiente or req.status != 'PENDENTE' or not req.saida or req.saida.status != 'PENDENTE' %}
-                                            disabled
-                                            title="{% if not req.tem_estoque_suficiente %}Estoque insuficiente para alguns itens{% elif req.status != 'PENDENTE' %}Requisição não está pendente{% elif not req.saida %}Requisição sem saída associada{% else %}Saída não está pendente{% endif %}"
-                                            {% endif %}>
-                                        <i class="bi bi-check-lg me-1"></i>Atender
-                                    </button>
-                                </form>
+
+                                    <!-- Botão Atender -->
+                                    <form method="POST" 
+                                          action="{{ url_for('requisicao_bp.atender_requisicao', requisicao_id=req.id) }}"
+                                          class="d-inline"
+                                          onsubmit="return confirmarAtendimento(this, {{ req.tem_estoque_suficiente|tojson }})">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" 
+                                                class="btn {% if req.tem_estoque_suficiente %}btn-success{% else %}btn-warning{% endif %} btn-sm"
+                                                {% if req.status not in ['PENDENTE', 'PARCIALMENTE_ATENDIDA'] or not req.saida or req.saida.status not in ['PENDENTE', 'PARCIALMENTE_EFETIVADA'] %}
+                                                disabled
+                                                {% endif %}
+                                                title="{% if req.tem_estoque_suficiente %}Atender Requisição{% else %}Atender Parcialmente{% endif %}">
+                                            <i class="bi bi-check-lg"></i>
+                                            {% if req.tem_estoque_suficiente %}
+                                                Atender
+                                            {% else %}
+                                                Atender Parcial
+                                            {% endif %}
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="8" class="text-center py-4">
+                            <td colspan="7" class="text-center py-4">
                                 <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
                                 <p class="text-muted mb-0">Nenhuma requisição pendente.</p>
                             </td>
@@ -120,110 +150,26 @@
         </div>
     </div>
 </div>
+
+{% block scripts %}
+<script>
+function confirmarAtendimento(form, temEstoqueSuficiente) {
+    let mensagem = temEstoqueSuficiente 
+        ? 'Deseja realmente atender esta requisição?'
+        : 'Alguns itens não têm estoque suficiente. A requisição será atendida parcialmente. Deseja continuar?';
+    
+    return confirm(mensagem);
+}
+
+// Ativar tooltips do Bootstrap
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+});
+</script>
 {% endblock %}
 
-{% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-    function validarAtendimento(form) {
-        const row = form.closest('tr');
-        let temEstoqueInsuficiente = false;
-        
-        // Verificar estoque de cada item
-        row.querySelectorAll('.item-requisicao').forEach(item => {
-            const quantidade = parseFloat(item.dataset.quantidade);
-            const estoqueAtual = parseFloat(item.dataset.estoqueAtual);
-            
-            if (quantidade > estoqueAtual) {
-                temEstoqueInsuficiente = true;
-            }
-        });
-
-        if (temEstoqueInsuficiente) {
-            Swal.fire({
-                title: 'Erro',
-                text: 'Existem itens com estoque insuficiente',
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-            return false;
-        }
-
-        return confirm('Confirma o atendimento desta requisição?');
-    }
-
-    // Função para visualizar detalhes da tarefa
-    async function verDetalhes(tarefaId, titulo) {
-        try {
-            // Mostrar loading
-            Swal.fire({
-                title: 'Carregando detalhes...',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-            
-            const response = await fetch(`/api/tarefas/${tarefaId}/detalhes`);
-            const tarefa = await response.json();
-            
-            if (!response.ok) {
-                throw new Error(tarefa.error || 'Erro ao carregar detalhes');
-            }
-            
-            // Formatar datas
-            const dataInicio = tarefa.data_inicio ? new Date(tarefa.data_inicio).toLocaleDateString('pt-BR') : 'Não definida';
-            const dataTermino = tarefa.data_termino ? new Date(tarefa.data_termino).toLocaleDateString('pt-BR') : 'Não definida';
-            const dataConclusao = tarefa.data_conclusao ? new Date(tarefa.data_conclusao).toLocaleDateString('pt-BR') : 'Não concluída';
-            
-            // Montar HTML dos detalhes
-            const detalhesHtml = `
-                <div class="text-start">
-                    <h6 class="mb-3">Informações Gerais</h6>
-                    <p><strong>Título:</strong> ${tarefa.titulo}</p>
-                    <p><strong>Resumo:</strong> ${tarefa.resumo || 'Não informado'}</p>
-                    <p><strong>Status:</strong> ${tarefa.status}</p>
-                    <p><strong>Prioridade:</strong> ${tarefa.prioridade}</p>
-                    <p><strong>Número SEI:</strong> ${tarefa.numero_sei || 'Não informado'}</p>
-                    
-                    <h6 class="mt-4 mb-3">Datas</h6>
-                    <p><strong>Data Início:</strong> ${dataInicio}</p>
-                    <p><strong>Data Término:</strong> ${dataTermino}</p>
-                    <p><strong>Data Conclusão:</strong> ${dataConclusao}</p>
-                    
-                    <h6 class="mt-4 mb-3">Classificação</h6>
-                    <p><strong>Categoria:</strong> ${tarefa.categoria?.nome || 'Não informada'}</p>
-                    <p><strong>Origem:</strong> ${tarefa.origem?.nome || 'Não informada'}</p>
-                    <p><strong>Unidade:</strong> ${tarefa.unidade_local?.descricao || 'Não informada'}</p>
-                    
-                    <h6 class="mt-4 mb-3">Responsáveis</h6>
-                    <p><strong>Responsável:</strong> ${tarefa.responsavel?.nome || 'Não atribuído'}</p>
-                    <p><strong>Solicitante:</strong> ${tarefa.solicitante?.nome || 'Não informado'}</p>
-                    
-                    ${tarefa.observacoes ? `
-                        <h6 class="mt-4 mb-3">Observações</h6>
-                        <p>${tarefa.observacoes}</p>
-                    ` : ''}
-                </div>
-            `;
-            
-            // Mostrar modal com os detalhes
-            Swal.fire({
-                title: titulo,
-                html: detalhesHtml,
-                width: '600px',
-                confirmButtonText: 'Fechar'
-            });
-            
-        } catch (error) {
-            console.error('Erro:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Erro',
-                text: error.message,
-                confirmButtonText: 'OK'
-            });
-        }
-    }
-</script>
 {% endblock %} 
+

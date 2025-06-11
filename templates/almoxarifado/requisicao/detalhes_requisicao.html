@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% block title %}Detalhes da Requisição{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Requisição #{{ requisicao.id }}</h2>
+        <div>
+            <a href="{{ url_for('requisicao_bp.requisicoes_pendentes') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Voltar
+            </a>
+        </div>
+    </div>
+
+    <!-- Informações Gerais -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">Informações da Requisição</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Data da Requisição:</strong> {{ requisicao.data_requisicao.strftime('%d/%m/%Y %H:%M') }}</p>
+                    <p><strong>Solicitante:</strong> {{ requisicao.solicitante.nome }}</p>
+                    <p><strong>Setor:</strong> {{ requisicao.solicitante.setor.nome if requisicao.solicitante.setor else 'Não informado' }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p>
+                        <strong>Status:</strong>
+                        {% if requisicao.status == 'PENDENTE' %}
+                            <span class="badge bg-warning text-dark">Pendente</span>
+                        {% elif requisicao.status == 'PARCIALMENTE_ATENDIDA' %}
+                            <span class="badge bg-info">Parcialmente Atendida</span>
+                        {% elif requisicao.status == 'ATENDIDA' %}
+                            <span class="badge bg-success">Atendida</span>
+                        {% elif requisicao.status == 'CANCELADA' %}
+                            <span class="badge bg-danger">Cancelada</span>
+                        {% endif %}
+                    </p>
+                    <p><strong>Data do Atendimento:</strong> 
+                        {{ requisicao.data_atendimento.strftime('%d/%m/%Y %H:%M') if requisicao.data_atendimento else 'Não atendida' }}
+                    </p>
+                    <p><strong>Observação:</strong> {{ requisicao.observacao or 'Nenhuma observação' }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Itens da Requisição -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">Itens da Requisição</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Quantidade Solicitada</th>
+                            <th>Quantidade Atendida</th>
+                            <th>Estoque Disponível</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in requisicao.itens %}
+                        <tr>
+                            <td>{{ item.item.nome }}</td>
+                            <td>{{ item.quantidade }}</td>
+                            <td>{{ item.quantidade_atendida or 0 }}</td>
+                            <td>{{ item.item.estoque_atual }}</td>
+                            <td>
+                                {% if not item.quantidade_atendida %}
+                                    <span class="badge bg-warning text-dark">Pendente</span>
+                                {% elif item.quantidade_atendida < item.quantidade %}
+                                    <span class="badge bg-info">Parcialmente Atendido</span>
+                                {% else %}
+                                    <span class="badge bg-success">Totalmente Atendido</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ações -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">Ações</h5>
+        </div>
+        <div class="card-body">
+            <div class="d-flex gap-2">
+                {% if requisicao.status in ['PENDENTE', 'PARCIALMENTE_ATENDIDA'] and current_user.perfil and current_user.perfil.nome == 'Administrador' %}
+                    <!-- Botão Atender -->
+                    <form method="POST" 
+                          action="{{ url_for('requisicao_bp.atender_requisicao', requisicao_id=requisicao.id) }}"
+                          onsubmit="return confirm('Deseja realmente atender esta requisição?')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" 
+                                class="btn btn-success"
+                                {% if not requisicao.tem_estoque_suficiente %}
+                                data-bs-toggle="tooltip"
+                                title="Alguns itens não têm estoque suficiente. O atendimento será parcial."
+                                {% endif %}>
+                            <i class="bi bi-check-circle me-2"></i>
+                            {% if requisicao.tem_estoque_suficiente %}
+                                Atender Requisição
+                            {% else %}
+                                Atender Parcialmente
+                            {% endif %}
+                        </button>
+                    </form>
+                {% endif %}
+
+                {% if requisicao.status == 'PENDENTE' and (current_user.perfil.nome == 'Administrador' or requisicao.solicitante_id == current_user.id) %}
+                    <!-- Botão Cancelar -->
+                    <form method="POST" 
+                          action="{{ url_for('requisicao_bp.cancelar_requisicao', requisicao_id=requisicao.id) }}"
+                          onsubmit="return confirm('Deseja realmente cancelar esta requisição?')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-x-circle me-2"></i>Cancelar Requisição
+                        </button>
+                    </form>
+                {% endif %}
+
+                {% if requisicao.saida %}
+                    <!-- Botão Ver Saída -->
+                    <a href="{{ url_for('requisicao_bp.requisicao_saida', requisicao_id=requisicao.id) }}" 
+                       class="btn btn-outline-primary">
+                        <i class="bi bi-box-arrow-up-right me-2"></i>Ver Saída
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Tarefa Relacionada -->
+    {% if requisicao.tarefa %}
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">Tarefa Relacionada</h5>
+        </div>
+        <div class="card-body">
+            <p><strong>Título:</strong> {{ requisicao.tarefa.titulo }}</p>
+            <p><strong>Status:</strong> {{ requisicao.tarefa.status }}</p>
+            <p><strong>Data de Criação:</strong> {{ requisicao.tarefa.data_criacao.strftime('%d/%m/%Y %H:%M') }}</p>
+            {% if requisicao.tarefa.data_conclusao %}
+            <p><strong>Data de Conclusão:</strong> {{ requisicao.tarefa.data_conclusao.strftime('%d/%m/%Y %H:%M') }}</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% block scripts %}
+<script>
+    // Ativar tooltips do Bootstrap
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+</script>
+{% endblock %}
+
+{% endblock %} 

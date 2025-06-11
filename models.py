@@ -695,6 +695,14 @@ class RequisicaoMaterial(db.Model):
                 return False
         return True
 
+    @property
+    def tem_algum_estoque(self):
+        """Verifica se há algum estoque disponível para pelo menos um item."""
+        for item in self.itens:
+            if item.item.estoque_atual > 0:
+                return True
+        return False
+
 class RequisicaoItem(db.Model):
     __tablename__ = 'requisicao_item'
     id = db.Column(db.Integer, primary_key=True)

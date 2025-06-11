@@ -252,8 +252,8 @@ def requisicao_saida(requisicao_id):
         if result['success']:
             requisicao = result['requisicao']
             if requisicao.saida:
-                # Redirecionar para a página de detalhes da saída
-                return redirect(url_for('saida_bp.detalhes_saida', saida_id=requisicao.saida.id))
+                # Redirecionar para a página de requisição de saída
+                return redirect(url_for('saida_bp.requisicao_saida', saida_id=requisicao.saida.id))
             else:
                 flash('Saída não encontrada para esta requisição.', 'error')
                 return redirect(url_for('requisicao_bp.requisicoes_atendidas'))

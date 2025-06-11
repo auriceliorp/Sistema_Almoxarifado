@@ -157,7 +157,7 @@ class RequisicaoService:
             }
     
     @staticmethod
-    def atender_requisicao(requisicao_id, usuario_id):
+    def atender_requisicao(requisicao_id, usuario_id, tipo_atendimento='total'):
         """Atende uma requisição de material, permitindo atendimento parcial"""
         try:
             requisicao = RequisicaoMaterial.query.get_or_404(requisicao_id)
@@ -187,8 +187,12 @@ class RequisicaoService:
                     itens_atendidos_total += 1
                     continue
                 
-                # Calcular quanto podemos atender com o estoque disponível
-                quantidade_possivel = min(quantidade_pendente, item.estoque_atual)
+                # Se for atendimento parcial, atende o que tem em estoque
+                # Se for total, só atende se tiver estoque suficiente
+                if tipo_atendimento == 'parcial':
+                    quantidade_possivel = min(quantidade_pendente, item.estoque_atual)
+                else:
+                    quantidade_possivel = quantidade_pendente if item.estoque_atual >= quantidade_pendente else 0
                 
                 if quantidade_possivel > 0:
                     # Atualizar estoque
@@ -205,7 +209,7 @@ class RequisicaoService:
                         quantidade=quantidade_possivel,
                         usuario_id=usuario_id,
                         requisicao_item_id=req_item.id,
-                        observacao=f"Atendimento Req. #{requisicao.id}",
+                        observacao=f"Atendimento {'Parcial' if tipo_atendimento == 'parcial' else 'Total'} Req. #{requisicao.id}",
                         saldo_anterior=item.estoque_atual + quantidade_possivel,
                         saldo_posterior=item.estoque_atual
                     )

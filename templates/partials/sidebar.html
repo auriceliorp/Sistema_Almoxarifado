@@ -79,7 +79,7 @@
                                 <a href="{{ url_for('requisicao_bp.requisicoes_pendentes') }}" 
                                    class="nav-link {% if request.endpoint == 'requisicao_bp.requisicoes_pendentes' %}active{% endif %} text-white position-relative">
                                     <i class="bi bi-clock-history me-2"></i>Requisições Pendentes
-                                    {% if requisicoes_pendentes_count > 0 %}
+                                    {% if requisicoes_pendentes_count is defined and requisicoes_pendentes_count > 0 %}
                                     <span class="badge bg-danger">{{ requisicoes_pendentes_count }}</span>
                                     {% endif %}
                                 </a>

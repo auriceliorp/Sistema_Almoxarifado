@@ -34,8 +34,8 @@
                                 <td>
                                     {% if req.status == 'PENDENTE' %}
                                         <span class="badge bg-warning text-dark">Pendente</span>
-                                    {% elif req.status == 'APROVADA' %}
-                                        <span class="badge bg-info">Aprovada</span>
+                                    {% elif req.status == 'PARCIALMENTE_ATENDIDA' %}
+                                        <span class="badge bg-info">Parcialmente Atendida</span>
                                     {% elif req.status == 'ATENDIDA' %}
                                         <span class="badge bg-success">Atendida</span>
                                     {% elif req.status == 'REJEITADA' %}

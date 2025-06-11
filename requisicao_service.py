@@ -1,5 +1,5 @@
 from datetime import datetime
-from models import db, RequisicaoMaterial, RequisicaoItem, Item, Tarefa, SaidaMaterial, SaidaItem
+from models import db, RequisicaoMaterial, RequisicaoItem, Item, Tarefa, SaidaMaterial, SaidaItem, CategoriaTarefa
 from sqlalchemy import desc
 import logging
 
@@ -11,6 +11,11 @@ class RequisicaoService:
     def criar_requisicao(solicitante_id, observacao, itens):
         """Cria uma nova requisição de material com seus itens"""
         try:
+            # Buscar a categoria correta
+            categoria = CategoriaTarefa.query.filter_by(nome='Requisição de Materiais').first()
+            if not categoria:
+                raise ValueError("Categoria 'Requisição de Materiais' não encontrada")
+
             # Criar a requisição
             requisicao = RequisicaoMaterial(
                 solicitante_id=solicitante_id,
@@ -28,7 +33,7 @@ class RequisicaoService:
                 prioridade="Alta",
                 data_criacao=datetime.now(),
                 solicitante_id=solicitante_id,
-                categoria_id=1,  # Categoria "Requisição de Materiais"
+                categoria_id=categoria.id,  # Usando o ID da categoria encontrada
                 quantidade_acoes=len(itens),
                 observacoes=(
                     f"Requisição de materiais com {len(itens)} itens.\n\n"
@@ -118,6 +123,40 @@ class RequisicaoService:
             return {'success': False, 'error': str(e)}
     
     @staticmethod
+    def listar_requisicoes_atendidas():
+        """Lista todas as requisições que foram atendidas"""
+        try:
+            requisicoes = RequisicaoMaterial.query\
+                .filter_by(status='ATENDIDA')\
+                .order_by(desc(RequisicaoMaterial.data_requisicao))\
+                .all()
+            
+            # Em vez de atribuir a propriedade, vamos criar uma lista com os dados necessários
+            requisicoes_com_estoque = []
+            for req in requisicoes:
+                # Verificar estoque suficiente
+                tem_estoque = all(
+                    item.quantidade <= item.item.estoque_atual 
+                    for item in req.itens
+                )
+                # Adicionar a requisição e o status do estoque
+                requisicoes_com_estoque.append({
+                    'requisicao': req,
+                    'tem_estoque_suficiente': tem_estoque
+                })
+            
+            return {
+                'success': True,
+                'requisicoes': requisicoes_com_estoque
+            }
+        except Exception as e:
+            logger.error(f"Erro ao listar requisições atendidas: {str(e)}")
+            return {
+                'success': False,
+                'error': f"Erro ao listar requisições atendidas: {str(e)}"
+            }
+    
+    @staticmethod
     def atender_requisicao(requisicao_id, usuario_id):
         """Atende uma requisição de material"""
         try:
@@ -144,8 +183,9 @@ class RequisicaoService:
                 item.estoque_atual -= req_item.quantidade
                 item.saldo_financeiro -= (req_item.quantidade * item.valor_unitario)
             
-            # Atualizar status da requisição
+            # Atualizar status da requisição e data de atendimento
             requisicao.status = 'ATENDIDA'
+            requisicao.data_atendimento = datetime.now()
             
             # Atualizar status da tarefa
             if requisicao.tarefa:
@@ -158,7 +198,7 @@ class RequisicaoService:
         except Exception as e:
             db.session.rollback()
             return {'success': False, 'error': str(e)}
-    
+
     @staticmethod
     def obter_detalhes_requisicao(requisicao_id):
         """Obtém os detalhes de uma requisição"""
@@ -180,34 +220,23 @@ class RequisicaoService:
             if not requisicao:
                 return {'success': False, 'error': 'Requisição não encontrada'}
             
-            # ... resto do método ...
+            if requisicao.status != 'PENDENTE':
+                return {'success': False, 'error': 'Apenas requisições pendentes podem ser canceladas'}
+            
+            requisicao.status = 'CANCELADA'
+            
+            # Cancelar a saída associada
+            if requisicao.saida:
+                requisicao.saida.status = 'CANCELADA'
+            
+            # Atualizar status da tarefa
+            if requisicao.tarefa:
+                requisicao.tarefa.status = 'Cancelada'
+                requisicao.tarefa.data_conclusao = datetime.now()
+            
+            db.session.commit()
+            return {'success': True}
             
         except Exception as e:
             db.session.rollback()
-            return {'success': False, 'error': str(e)}
-
-    @staticmethod
-    def listar_requisicoes_atendidas():
-        """Lista todas as requisições que foram atendidas"""
-        try:
-            requisicoes = RequisicaoMaterial.query\
-                .filter_by(status='ATENDIDA')\
-                .order_by(desc(RequisicaoMaterial.data_requisicao))\
-                .all()
-            
-            for req in requisicoes:
-                req.tem_estoque_suficiente = all(
-                    item.quantidade <= item.item.estoque_atual 
-                    for item in req.itens
-                )
-            
-            return {
-                'success': True,
-                'requisicoes': requisicoes
-            }
-        except Exception as e:
-            logger.error(f"Erro ao listar requisições atendidas: {str(e)}")
-            return {
-                'success': False,
-                'error': f"Erro ao listar requisições atendidas: {str(e)}"
-            } 
+            return {'success': False, 'error': str(e)} 

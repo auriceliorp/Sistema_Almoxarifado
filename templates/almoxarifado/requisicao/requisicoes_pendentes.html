@@ -1,168 +1,75 @@
 {% extends 'base_simplificada.html' %}
 {% block title %}Requisições Pendentes{% endblock %}
 
-{% block extra_css %}
-<style>
-    .table th {
-        background-color: #2c3e50 !important;
-        color: white !important;
-    }
-    .valor-total {
-        font-size: 1.2rem;
-        font-weight: bold;
-        color: #2c3e50;
-    }
-    .item-requisicao {
-        padding: 8px;
-        border-bottom: 1px solid #eee;
-    }
-    .item-requisicao:last-child {
-        border-bottom: none;
-    }
-    .item-info {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 4px;
-    }
-    .item-status {
-        font-size: 0.875rem;
-    }
-    .item-warning {
-        color: #dc3545;
-        font-size: 0.875rem;
-    }
-    .badge-quantidade {
-        min-width: 80px;
-        text-align: center;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
 <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Requisições Pendentes</h2>
-        <a href="{{ url_for('main.almoxarifado') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-2"></i>Voltar
-        </a>
-    </div>
-
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Data Requisição</th>
-                            <th>Solicitante</th>
-                            <th>Itens</th>
-                            <th>Observação</th>
-                            <th>Status</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for req in requisicoes %}
-                        <tr>
-                            <td>{{ req.id }}</td>
-                            <td>{{ req.data_requisicao.strftime('%d/%m/%Y %H:%M') }}</td>
-                            <td>{{ req.solicitante.nome }}</td>
-                            <td>
-                                <ul class="list-unstyled mb-0">
-                                    {% for item in req.itens %}
-                                    <li>
-                                        {{ item.item.nome }}
-                                        <span class="badge bg-primary">Solicitado: {{ item.quantidade }}</span>
-                                        <span class="badge {% if item.item.estoque_atual >= item.quantidade %}bg-success{% else %}bg-warning{% endif %}">
-                                            Estoque: {{ item.item.estoque_atual }}
-                                        </span>
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-                            </td>
-                            <td>{{ req.observacao or '-' }}</td>
-                            <td>
-                                {% if req.status == 'PENDENTE' %}
-                                    <span class="badge bg-warning text-dark">Pendente</span>
-                                {% elif req.status == 'PARCIALMENTE_ATENDIDA' %}
-                                    <span class="badge bg-info">Parcialmente Atendida</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div class="btn-group">
-                                    <!-- Botão Detalhes -->
-                                    <a href="{{ url_for('requisicao_bp.detalhes_requisicao', requisicao_id=req.id) }}" 
-                                       class="btn btn-outline-secondary btn-sm">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-
-                                    <!-- Botão Atender Total (se tem estoque suficiente) -->
-                                    {% if req.tem_estoque_suficiente %}
-                                    <form method="POST" 
-                                          action="{{ url_for('requisicao_bp.atender_requisicao', requisicao_id=req.id) }}"
-                                          style="display: inline;">
-                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                        <input type="hidden" name="tipo_atendimento" value="total">
-                                        <button type="submit" 
-                                                class="btn btn-success btn-sm"
-                                                onclick="return confirm('Deseja realmente atender completamente esta requisição?');">
-                                            <i class="bi bi-check-lg"></i> Atender
-                                        </button>
-                                    </form>
-                                    {% else %}
-                                    <!-- Botão Atender Parcial -->
-                                    <form method="POST" 
-                                          action="{{ url_for('requisicao_bp.atender_requisicao', requisicao_id=req.id) }}"
-                                          style="display: inline;">
-                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                        <input type="hidden" name="tipo_atendimento" value="parcial">
-                                        <button type="submit" 
-                                                class="btn btn-warning btn-sm"
-                                                onclick="return confirm('Alguns itens serão atendidos parcialmente devido ao estoque insuficiente. Deseja continuar?');">
-                                            <i class="bi bi-check-lg"></i> Atender Parcial
-                                        </button>
-                                    </form>
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="7" class="text-center py-4">
-                                <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
-                                <p class="text-muted mb-0">Nenhuma requisição pendente.</p>
-                            </td>
-                        </tr>
+    <h1>Requisições Pendentes</h1>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Data Requisição</th>
+                    <th>Solicitante</th>
+                    <th>Itens</th>
+                    <th>Observação</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in requisicoes %}
+                <tr>
+                    <td>{{ req.id }}</td>
+                    <td>{{ req.data_criacao.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td>{{ req.solicitante.nome }}</td>
+                    <td>
+                        {% for item in req.itens %}
+                            {{ item.item.nome }}
+                            <span class="badge bg-primary">Solicitado: {{ item.quantidade }}</span>
+                            <span class="badge bg-success">Estoque: {{ item.item.estoque_atual }}</span><br>
                         {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                    </td>
+                    <td>{{ req.observacao or '-' }}</td>
+                    <td><span class="badge bg-warning">{{ req.status }}</span></td>
+                    <td>
+                        <div class="btn-group">
+                            <a href="{{ url_for('requisicao_bp.detalhes_requisicao', requisicao_id=req.id) }}" 
+                               class="btn btn-outline-secondary btn-sm" 
+                               title="Ver Detalhes">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <button type="button" 
+                                    class="btn btn-success btn-sm" 
+                                    onclick="atenderRequisicao({{ req.id }}, false)" 
+                                    title="Atender Total">
+                                <i class="bi bi-check2"></i> Atender
+                            </button>
+                            <button type="button" 
+                                    class="btn btn-warning btn-sm" 
+                                    onclick="atenderRequisicao({{ req.id }}, true)" 
+                                    title="Atender Parcial">
+                                <i class="bi bi-check2-square"></i> Atender Parcial
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 
-{% block scripts %}
 <script>
-function confirmarAtendimento(form, temEstoqueSuficiente) {
-    let mensagem = temEstoqueSuficiente 
-        ? 'Deseja realmente atender esta requisição?'
-        : 'Alguns itens não têm estoque suficiente. A requisição será atendida parcialmente. Deseja continuar?';
+function atenderRequisicao(requisicaoId, parcial) {
+    const url = parcial 
+        ? "{{ url_for('requisicao_bp.atender_requisicao_parcial', requisicao_id=0) }}".replace('0', requisicaoId)
+        : "{{ url_for('requisicao_bp.atender_requisicao', requisicao_id=0) }}".replace('0', requisicaoId);
     
-    return confirm(mensagem);
+    if (confirm('Confirma o atendimento ' + (parcial ? 'parcial ' : '') + 'desta requisição?')) {
+        window.location.href = url;
+    }
 }
-
-// Ativar tooltips do Bootstrap
-document.addEventListener('DOMContentLoaded', function() {
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
-    });
-});
 </script>
 {% endblock %}
-
-{% endblock %} 
-
 

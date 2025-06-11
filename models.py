@@ -228,7 +228,7 @@ class Tarefa(db.Model):
     numero_sei = db.Column(db.String(20), nullable=True)  # Formato: 00000.000000/0000-00
     categoria_id = db.Column(db.Integer, db.ForeignKey('categorias_tarefas.id'), nullable=True)
     resumo = db.Column(db.Text, nullable=True)
-    unidade_local_id = db.Column(db.Integer, db.ForeignKey('unidade_local.id'), nullable=True)  # Alterado para unidade_local
+    unidade_local_id = db.Column(db.Integer, db.ForeignKey('unidade_local.id'), nullable=True)
     origem_id = db.Column(db.Integer, db.ForeignKey('origens_tarefas.id'), nullable=True)
     responsavel_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True)
     solicitante_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True)
@@ -237,6 +237,7 @@ class Tarefa(db.Model):
     status = db.Column(db.String(20), nullable=False, default='Não iniciada')
     data_inicio = db.Column(db.DateTime, nullable=True)
     data_termino = db.Column(db.DateTime, nullable=True)
+    data_conclusao = db.Column(db.DateTime, nullable=True)
     observacoes = db.Column(db.Text, nullable=True)
     data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
     data_atualizacao = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -244,7 +245,7 @@ class Tarefa(db.Model):
     # Relacionamentos
     categoria = db.relationship('CategoriaTarefa', backref='tarefas')
     origem = db.relationship('OrigemTarefa', backref='tarefas')
-    unidade_local = db.relationship('UnidadeLocal', backref='tarefas')  # Alterado para UnidadeLocal
+    unidade_local = db.relationship('UnidadeLocal', backref='tarefas')
     responsavel = db.relationship('Usuario', foreign_keys=[responsavel_id], backref='tarefas_responsavel')
     solicitante = db.relationship('Usuario', foreign_keys=[solicitante_id], backref='tarefas_solicitante')
 
@@ -255,7 +256,7 @@ class Tarefa(db.Model):
             'numero_sei': self.numero_sei,
             'categoria': self.categoria.nome if self.categoria else None,
             'resumo': self.resumo,
-            'unidade_local': self.unidade_local.descricao if self.unidade_local else None,  # Alterado para unidade_local
+            'unidade_local': self.unidade_local.descricao if self.unidade_local else None,
             'origem': self.origem.nome if self.origem else None,
             'responsavel': self.responsavel.nome if self.responsavel else None,
             'solicitante': self.solicitante.nome if self.solicitante else None,
@@ -264,6 +265,7 @@ class Tarefa(db.Model):
             'status': self.status,
             'data_inicio': self.data_inicio.isoformat() if self.data_inicio else None,
             'data_termino': self.data_termino.isoformat() if self.data_termino else None,
+            'data_conclusao': self.data_conclusao.isoformat() if self.data_conclusao else None,
             'observacoes': self.observacoes,
             'data_criacao': self.data_criacao.isoformat() if self.data_criacao else None,
             'data_atualizacao': self.data_atualizacao.isoformat() if self.data_atualizacao else None

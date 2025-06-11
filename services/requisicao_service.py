@@ -1,5 +1,5 @@
 from datetime import datetime
-from models import db, RequisicaoMaterial, RequisicaoItem, Item, Tarefa, SaidaMaterial, SaidaItem
+from models import db, RequisicaoMaterial, RequisicaoItem, Item, Tarefa, SaidaMaterial, SaidaItem, CategoriaTarefa
 from sqlalchemy import desc
 import logging
 
@@ -11,6 +11,11 @@ class RequisicaoService:
     def criar_requisicao(solicitante_id, observacao, itens):
         """Cria uma nova requisição de material com seus itens"""
         try:
+            # Buscar a categoria correta
+            categoria = CategoriaTarefa.query.filter_by(nome='Requisição de Materiais').first()
+            if not categoria:
+                raise ValueError("Categoria 'Requisição de Materiais' não encontrada")
+
             # Criar a requisição
             requisicao = RequisicaoMaterial(
                 solicitante_id=solicitante_id,
@@ -28,7 +33,7 @@ class RequisicaoService:
                 prioridade="Alta",
                 data_criacao=datetime.now(),
                 solicitante_id=solicitante_id,
-                categoria_id=1,  # Categoria "Requisição de Materiais"
+                categoria_id=5,  # ID fixo da categoria "Requisição de Materiais"
                 quantidade_acoes=len(itens),
                 observacoes=(
                     f"Requisição de materiais com {len(itens)} itens.\n\n"

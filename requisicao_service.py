@@ -240,3 +240,4 @@ class RequisicaoService:
         except Exception as e:
             db.session.rollback()
             return {'success': False, 'error': str(e)} 
+

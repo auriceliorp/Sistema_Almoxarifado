@@ -113,8 +113,19 @@
                                         <i class="bi bi-eye"></i>
                                     </a>
 
-                                    <!-- Botão Atender Total (só aparece se tiver estoque suficiente) -->
-                                    {% if req.tem_estoque_suficiente %}
+                                    <!-- Botões de Atendimento -->
+                                    {% set tem_itens_sem_estoque = false %}
+                                    {% set tem_itens_com_estoque = false %}
+                                    {% for item in req.itens %}
+                                        {% if item.item.estoque_atual >= item.quantidade %}
+                                            {% set tem_itens_com_estoque = true %}
+                                        {% else %}
+                                            {% set tem_itens_sem_estoque = true %}
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    <!-- Botão Atender Total (aparece se TODOS os itens têm estoque suficiente) -->
+                                    {% if not tem_itens_sem_estoque and tem_itens_com_estoque %}
                                     <form method="POST" 
                                           action="{{ url_for('requisicao_bp.atender_requisicao', requisicao_id=req.id) }}"
                                           class="d-inline"
@@ -130,8 +141,8 @@
                                     </form>
                                     {% endif %}
 
-                                    <!-- Botão Atender Parcial (aparece quando tem itens com estoque insuficiente) -->
-                                    {% if not req.tem_estoque_suficiente %}
+                                    <!-- Botão Atender Parcial (aparece se ALGUM item tem estoque insuficiente) -->
+                                    {% if tem_itens_sem_estoque %}
                                     <form method="POST" 
                                           action="{{ url_for('requisicao_bp.atender_requisicao', requisicao_id=req.id) }}"
                                           class="d-inline"

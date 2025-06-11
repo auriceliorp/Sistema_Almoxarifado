@@ -701,6 +701,7 @@ class RequisicaoItem(db.Model):
     requisicao_id = db.Column(db.Integer, db.ForeignKey('requisicao_material.id'), nullable=False)
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
     quantidade = db.Column(db.Integer, nullable=False)
+    quantidade_atendida = db.Column(db.Integer, nullable=False, default=0)
     
     item = db.relationship('Item', backref='requisicoes')
 

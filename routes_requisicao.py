@@ -143,9 +143,18 @@ def requisicoes_pendentes():
 def atender_requisicao(requisicao_id):
     """Atende uma requisição gerando uma saída de material"""
     try:
-        result = RequisicaoService.atender_requisicao(requisicao_id, current_user.id)
+        tipo_atendimento = request.form.get('tipo_atendimento', 'total')
+        result = RequisicaoService.atender_requisicao(
+            requisicao_id, 
+            current_user.id,
+            tipo_atendimento=tipo_atendimento
+        )
+        
         if result['success']:
-            flash('Requisição atendida com sucesso!', 'success')
+            if tipo_atendimento == 'parcial':
+                flash('Requisição atendida parcialmente com sucesso!', 'success')
+            else:
+                flash('Requisição atendida totalmente com sucesso!', 'success')
         else:
             flash(result['error'], 'error')
         return redirect(url_for('requisicao_bp.requisicoes_pendentes'))

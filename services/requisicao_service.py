@@ -1,5 +1,5 @@
 from datetime import datetime
-from models import db, RequisicaoMaterial, RequisicaoItem, Item, Tarefa, SaidaMaterial, SaidaItem, CategoriaTarefa
+from models import db, RequisicaoMaterial, RequisicaoItem, Item, Tarefa, SaidaMaterial, SaidaItem, CategoriaTarefa, MovimentoEstoque
 from sqlalchemy import desc
 import logging
 
@@ -158,12 +158,12 @@ class RequisicaoService:
     
     @staticmethod
     def atender_requisicao(requisicao_id, usuario_id):
-        """Atende uma requisição de material"""
+        """Atende uma requisição de material, permitindo atendimento parcial"""
         try:
             requisicao = RequisicaoMaterial.query.get_or_404(requisicao_id)
             
-            if requisicao.status != 'PENDENTE':
-                return {'success': False, 'error': 'Esta requisição não está pendente'}
+            if requisicao.status not in ['PENDENTE', 'PARCIALMENTE_ATENDIDA']:
+                return {'success': False, 'error': 'Esta requisição não está em estado válido para atendimento'}
             
             # Atualizar a saída
             saida = requisicao.saida
@@ -172,25 +172,65 @@ class RequisicaoService:
             
             saida.usuario_id = usuario_id
             saida.data_movimento = datetime.now().date()
-            saida.status = 'EFETIVADA'
+            
+            # Variáveis para controle do atendimento
+            itens_atendidos_total = 0
+            itens_atendidos_parcial = 0
+            total_itens = len(requisicao.itens)
             
             # Atualizar o estoque dos itens
             for req_item in requisicao.itens:
                 item = req_item.item
-                if item.estoque_atual < req_item.quantidade:
-                    return {'success': False, 'error': f"Estoque insuficiente para o item {item.nome}"}
+                quantidade_pendente = req_item.quantidade - (req_item.quantidade_atendida or 0)
                 
-                item.estoque_atual -= req_item.quantidade
-                item.saldo_financeiro -= (req_item.quantidade * item.valor_unitario)
+                if quantidade_pendente <= 0:
+                    itens_atendidos_total += 1
+                    continue
+                
+                # Calcular quanto podemos atender com o estoque disponível
+                quantidade_possivel = min(quantidade_pendente, item.estoque_atual)
+                
+                if quantidade_possivel > 0:
+                    # Atualizar estoque
+                    item.estoque_atual -= quantidade_possivel
+                    item.saldo_financeiro -= (quantidade_possivel * item.valor_unitario)
+                    
+                    # Atualizar quantidade atendida
+                    req_item.quantidade_atendida = (req_item.quantidade_atendida or 0) + quantidade_possivel
+                    
+                    # Registrar movimento de estoque
+                    movimento = MovimentoEstoque(
+                        item_id=item.id,
+                        tipo="SAIDA_REQUISICAO",
+                        quantidade=quantidade_possivel,
+                        usuario_id=usuario_id,
+                        requisicao_item_id=req_item.id,
+                        observacao=f"Atendimento Req. #{requisicao.id}",
+                        saldo_anterior=item.estoque_atual + quantidade_possivel,
+                        saldo_posterior=item.estoque_atual
+                    )
+                    db.session.add(movimento)
+                    
+                    # Contabilizar atendimento
+                    if req_item.quantidade_atendida == req_item.quantidade:
+                        itens_atendidos_total += 1
+                    else:
+                        itens_atendidos_parcial += 1
             
-            # Atualizar status da requisição e data de atendimento
-            requisicao.status = 'ATENDIDA'
+            # Determinar o status da requisição
+            if itens_atendidos_total == total_itens:
+                requisicao.status = 'ATENDIDA'
+                saida.status = 'EFETIVADA'
+                if requisicao.tarefa:
+                    requisicao.tarefa.status = 'Concluída'
+                    requisicao.tarefa.data_conclusao = datetime.now()
+            elif itens_atendidos_total + itens_atendidos_parcial > 0:
+                requisicao.status = 'PARCIALMENTE_ATENDIDA'
+                saida.status = 'PARCIALMENTE_EFETIVADA'
+                if requisicao.tarefa:
+                    requisicao.tarefa.status = 'Em Andamento'
+            
             requisicao.data_atendimento = datetime.now()
-            
-            # Atualizar status da tarefa
-            if requisicao.tarefa:
-                requisicao.tarefa.status = 'Concluída'
-                requisicao.tarefa.data_conclusao = datetime.now()
             
             db.session.commit()
             return {'success': True}

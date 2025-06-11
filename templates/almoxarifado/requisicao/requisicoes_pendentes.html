@@ -113,26 +113,39 @@
                                         <i class="bi bi-eye"></i>
                                     </a>
 
-                                    <!-- Botão Atender -->
+                                    <!-- Botão Atender Total (só aparece se tiver estoque suficiente) -->
+                                    {% if req.tem_estoque_suficiente %}
                                     <form method="POST" 
                                           action="{{ url_for('requisicao_bp.atender_requisicao', requisicao_id=req.id) }}"
                                           class="d-inline"
-                                          onsubmit="return confirmarAtendimento(this, {{ req.tem_estoque_suficiente|tojson }})">
+                                          onsubmit="return confirm('Deseja realmente atender completamente esta requisição?');">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <input type="hidden" name="tipo_atendimento" value="total">
                                         <button type="submit" 
-                                                class="btn {% if req.tem_estoque_suficiente %}btn-success{% else %}btn-warning{% endif %} btn-sm"
-                                                {% if req.status not in ['PENDENTE', 'PARCIALMENTE_ATENDIDA'] or not req.saida or req.saida.status not in ['PENDENTE', 'PARCIALMENTE_EFETIVADA'] %}
-                                                disabled
-                                                {% endif %}
-                                                title="{% if req.tem_estoque_suficiente %}Atender Requisição{% else %}Atender Parcialmente{% endif %}">
-                                            <i class="bi bi-check-lg"></i>
-                                            {% if req.tem_estoque_suficiente %}
-                                                Atender
-                                            {% else %}
-                                                Atender Parcial
-                                            {% endif %}
+                                                class="btn btn-success btn-sm"
+                                                {% if req.status not in ['PENDENTE', 'PARCIALMENTE_ATENDIDA'] %}disabled{% endif %}
+                                                title="Atender Completamente">
+                                            <i class="bi bi-check-lg"></i> Atender Total
                                         </button>
                                     </form>
+                                    {% endif %}
+
+                                    <!-- Botão Atender Parcial (aparece quando tem itens com estoque insuficiente) -->
+                                    {% if not req.tem_estoque_suficiente %}
+                                    <form method="POST" 
+                                          action="{{ url_for('requisicao_bp.atender_requisicao', requisicao_id=req.id) }}"
+                                          class="d-inline"
+                                          onsubmit="return confirm('Alguns itens serão atendidos parcialmente devido ao estoque insuficiente. Deseja continuar?');">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <input type="hidden" name="tipo_atendimento" value="parcial">
+                                        <button type="submit" 
+                                                class="btn btn-warning btn-sm"
+                                                {% if req.status not in ['PENDENTE', 'PARCIALMENTE_ATENDIDA'] %}disabled{% endif %}
+                                                title="Atender Parcialmente">
+                                            <i class="bi bi-check-lg"></i> Atender Parcial
+                                        </button>
+                                    </form>
+                                    {% endif %}
                                 </div>
                             </td>
                         </tr>
@@ -172,4 +185,3 @@ document.addEventListener('DOMContentLoaded', function() {
 {% endblock %}
 
 {% endblock %} 
-

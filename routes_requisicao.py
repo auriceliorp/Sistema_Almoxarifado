@@ -131,11 +131,11 @@ def requisicoes_pendentes():
                                 requisicoes=result['requisicoes'])
         else:
             flash(f'Erro ao listar requisições pendentes: {result["error"]}', 'error')
-            return redirect(url_for('index'))
+            return redirect(url_for('main.index'))
     except Exception as e:
         logger.error(f"Erro ao listar requisições pendentes: {str(e)}")
         flash(f'Erro ao listar requisições pendentes: {str(e)}', 'error')
-        return redirect(url_for('index'))
+        return redirect(url_for('main.index'))
 
 @requisicao_bp.route('/<int:requisicao_id>/atender', methods=['POST'])
 @login_required

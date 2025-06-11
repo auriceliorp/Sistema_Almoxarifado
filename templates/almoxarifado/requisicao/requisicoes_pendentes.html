@@ -120,6 +120,13 @@ function atenderRequisicao(requisicaoId, parcial) {
         form.method = 'POST';
         form.action = url;
 
+        // Adicionar o token CSRF
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = 'csrf_token';
+        csrfToken.value = "{{ csrf_token() }}";
+        form.appendChild(csrfToken);
+
         // Adicionar o campo tipo_atendimento
         const input = document.createElement('input');
         input.type = 'hidden';
@@ -134,6 +141,5 @@ function atenderRequisicao(requisicaoId, parcial) {
 }
 </script>
 {% endblock %} 
-
 
 

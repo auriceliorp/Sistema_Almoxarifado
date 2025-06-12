@@ -1,145 +1,193 @@
 {% extends 'base_simplificada.html' %}
-{% block title %}Requisições Pendentes{% endblock %}
-
-{% block extra_css %}
-<style>
-    .table th {
-        background-color: #2c3e50 !important;
-        color: white !important;
-    }
-    .valor-total {
-        font-size: 1.2rem;
-        font-weight: bold;
-        color: #2c3e50;
-    }
-    .item-requisicao {
-        padding: 8px;
-        border-bottom: 1px solid #eee;
-    }
-    .item-requisicao:last-child {
-        border-bottom: none;
-    }
-    .item-info {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 4px;
-    }
-    .item-status {
-        font-size: 0.875rem;
-    }
-    .item-warning {
-        color: #dc3545;
-        font-size: 0.875rem;
-    }
-    .badge-quantidade {
-        min-width: 80px;
-        text-align: center;
-    }
-</style>
-{% endblock %}
+{% block title %}Requisições de Materiais Pendentes{% endblock %}
 
 {% block content %}
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Requisições Pendentes</h2>
-        <a href="{{ url_for('main.almoxarifado') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-2"></i>Voltar
-        </a>
     </div>
 
     <div class="card shadow-sm">
         <div class="card-body">
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Data Requisição</th>
-                            <th>Solicitante</th>
-                            <th>Itens</th>
-                            <th>Observação</th>
-                            <th>Status</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for req in requisicoes %}
-                        <tr>
-                            <td>{{ req.id }}</td>
-                            <td>{{ req.data_requisicao.strftime('%d/%m/%Y %H:%M') }}</td>
-                            <td>{{ req.solicitante.nome }}</td>
-                            <td>
-                                {% for item in req.itens %}
-                                    {{ item.item.nome }}
-                                    <span class="badge bg-primary">Solicitado: {{ item.quantidade }}</span>
-                                    <span class="badge bg-success">Estoque: {{ item.item.estoque_atual }}</span><br>
-                                {% endfor %}
-                            </td>
-                            <td>{{ req.observacao or '-' }}</td>
-                            <td><span class="badge bg-warning">{{ req.status }}</span></td>
-                            <td>
-                                <div class="btn-group">
-                                    <a href="{{ url_for('requisicao_bp.detalhes_requisicao', requisicao_id=req.id) }}" 
-                                       class="btn btn-outline-secondary btn-sm" 
-                                       title="Ver Detalhes">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    <button type="button" 
-                                            class="btn btn-success btn-sm" 
-                                            onclick="atenderRequisicao({{ req.id }}, false)" 
-                                            title="Atender Total">
-                                        <i class="bi bi-check2"></i> Atender
-                                    </button>
-                                    <button type="button" 
-                                            class="btn btn-warning btn-sm" 
-                                            onclick="atenderRequisicao({{ req.id }}, true)" 
-                                            title="Atender Parcial">
-                                        <i class="bi bi-check2-square"></i> Parcial
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+            <form id="formAcao" method="POST" class="needs-validation" novalidate>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Data</th>
+                                <th>Solicitante</th>
+                                <th>Itens</th>
+                                <th>Observação</th>
+                                <th>Tarefa</th>
+                                <th>Saída</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for req in requisicoes %}
+                            <tr>
+                                <td>{{ req.id }}</td>
+                                <td>{{ req.data_requisicao.strftime('%d/%m/%Y %H:%M') }}</td>
+                                <td>{{ req.solicitante.nome }}</td>
+                                <td>
+                                    <ul class="list-unstyled mb-0">
+                                        {% for item in req.itens %}
+                                        <li class="mb-2">
+                                            <div><strong>{{ item.item.nome }}</strong></div>
+                                            <div class="text-muted">
+                                                <small>Quantidade solicitada: {{ item.quantidade }}</small>
+                                            </div>
+                                            <div class="text-muted">
+                                                <small>Estoque atual: {{ item.item.estoque_atual }}</small>
+                                            </div>
+                                            {% if item.item.estoque_atual < item.quantidade %}
+                                            <div class="mt-1">
+                                                <span class="badge bg-danger">Estoque Insuficiente</span>
+                                            </div>
+                                            {% endif %}
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </td>
+                                <td>{{ req.observacao or '-' }}</td>
+                                <td>
+                                    {% if req.tarefa %}
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-info me-2"
+                                                onclick="verDetalhes('{{ req.tarefa.id }}', '{{ req.tarefa.titulo }}')">
+                                            <i class="bi bi-eye me-1"></i>Visualizar
+                                        </button>
+                                        <a href="{{ url_for('tarefas.editar_tarefa', id=req.tarefa.id) }}" 
+                                           class="btn btn-sm {% if req.tarefa.status == 'Concluída' %}btn-success{% elif req.tarefa.status == 'Não iniciada' %}btn-warning{% else %}btn-info{% endif %}">
+                                            <i class="bi {% if req.tarefa.status == 'Concluída' %}bi-check-circle{% elif req.tarefa.status == 'Não iniciada' %}bi-clock{% else %}bi-gear{% endif %} me-1"></i>
+                                            {{ req.tarefa.status }}
+                                        </a>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Sem tarefa</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if req.saida %}
+                                        {% if req.saida.status == 'PENDENTE' %}
+                                            <span class="badge bg-warning">Saída Pendente</span>
+                                        {% elif req.saida.status == 'EFETIVADA' %}
+                                            <span class="badge bg-success">Saída Efetivada</span>
+                                        {% elif req.saida.status == 'CANCELADA' %}
+                                            <span class="badge bg-danger">Saída Cancelada</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="badge bg-secondary">Sem saída</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('requisicao_bp.atender_requisicao', requisicao_id=req.id) }}"
+                                          onsubmit="return confirm('Confirma o atendimento desta requisição?');">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" 
+                                                class="btn btn-success btn-sm"
+                                                {% if not req.tem_estoque_suficiente or req.status != 'PENDENTE' or not req.saida or req.saida.status != 'PENDENTE' %}
+                                                disabled
+                                                title="{% if not req.tem_estoque_suficiente %}Estoque insuficiente para alguns itens{% elif req.status != 'PENDENTE' %}Requisição não está pendente{% elif not req.saida %}Requisição sem saída associada{% else %}Saída não está pendente{% endif %}"
+                                                {% endif %}>
+                                            <i class="bi bi-check-lg me-1"></i>Atender
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center py-4">
+                                    <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
+                                    <p class="text-muted mb-0">Nenhuma requisição pendente.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-function atenderRequisicao(requisicaoId, parcial) {
-    const url = parcial 
-        ? "{{ url_for('requisicao_bp.atender_requisicao', requisicao_id=0) }}".replace('0', requisicaoId)
-        : "{{ url_for('requisicao_bp.atender_requisicao', requisicao_id=0) }}".replace('0', requisicaoId);
-    
-    if (confirm('Confirma o atendimento ' + (parcial ? 'parcial ' : '') + 'desta requisição?')) {
-        // Criar um formulário dinâmico para enviar o tipo de atendimento
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = url;
-
-        // Adicionar o token CSRF
-        const csrfToken = document.createElement('input');
-        csrfToken.type = 'hidden';
-        csrfToken.name = 'csrf_token';
-        csrfToken.value = "{{ csrf_token() }}";
-        form.appendChild(csrfToken);
-
-        // Adicionar o campo tipo_atendimento
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'tipo_atendimento';
-        input.value = parcial ? 'parcial' : 'total';
-        form.appendChild(input);
-
-        // Adicionar o formulário ao documento e enviá-lo
-        document.body.appendChild(form);
-        form.submit();
+    // Função para visualizar detalhes da tarefa
+    async function verDetalhes(tarefaId, titulo) {
+        try {
+            // Mostrar loading
+            Swal.fire({
+                title: 'Carregando detalhes...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            const response = await fetch(`/api/tarefas/${tarefaId}/detalhes`);
+            const tarefa = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(tarefa.error || 'Erro ao carregar detalhes');
+            }
+            
+            // Formatar datas
+            const dataInicio = tarefa.data_inicio ? new Date(tarefa.data_inicio).toLocaleDateString('pt-BR') : 'Não definida';
+            const dataTermino = tarefa.data_termino ? new Date(tarefa.data_termino).toLocaleDateString('pt-BR') : 'Não definida';
+            const dataConclusao = tarefa.data_conclusao ? new Date(tarefa.data_conclusao).toLocaleDateString('pt-BR') : 'Não concluída';
+            
+            // Montar HTML dos detalhes
+            const detalhesHtml = `
+                <div class="text-start">
+                    <h6 class="mb-3">Informações Gerais</h6>
+                    <p><strong>Título:</strong> ${tarefa.titulo}</p>
+                    <p><strong>Resumo:</strong> ${tarefa.resumo || 'Não informado'}</p>
+                    <p><strong>Status:</strong> ${tarefa.status}</p>
+                    <p><strong>Prioridade:</strong> ${tarefa.prioridade}</p>
+                    <p><strong>Número SEI:</strong> ${tarefa.numero_sei || 'Não informado'}</p>
+                    
+                    <h6 class="mt-4 mb-3">Datas</h6>
+                    <p><strong>Data Início:</strong> ${dataInicio}</p>
+                    <p><strong>Data Término:</strong> ${dataTermino}</p>
+                    <p><strong>Data Conclusão:</strong> ${dataConclusao}</p>
+                    
+                    <h6 class="mt-4 mb-3">Classificação</h6>
+                    <p><strong>Categoria:</strong> ${tarefa.categoria?.nome || 'Não informada'}</p>
+                    <p><strong>Origem:</strong> ${tarefa.origem?.nome || 'Não informada'}</p>
+                    <p><strong>Unidade:</strong> ${tarefa.unidade_local?.descricao || 'Não informada'}</p>
+                    
+                    <h6 class="mt-4 mb-3">Responsáveis</h6>
+                    <p><strong>Responsável:</strong> ${tarefa.responsavel?.nome || 'Não atribuído'}</p>
+                    <p><strong>Solicitante:</strong> ${tarefa.solicitante?.nome || 'Não informado'}</p>
+                    
+                    ${tarefa.observacoes ? `
+                        <h6 class="mt-4 mb-3">Observações</h6>
+                        <p>${tarefa.observacoes}</p>
+                    ` : ''}
+                </div>
+            `;
+            
+            // Mostrar modal com os detalhes
+            Swal.fire({
+                title: titulo,
+                html: detalhesHtml,
+                width: '600px',
+                confirmButtonText: 'Fechar'
+            });
+            
+        } catch (error) {
+            console.error('Erro:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro',
+                text: error.message,
+                confirmButtonText: 'OK'
+            });
+        }
     }
-}
 </script>
 {% endblock %} 
-
-

@@ -1,0 +1,66 @@
+{% extends 'base_simplificada.html' %}
+{% block title %}Minhas Autorizações{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <a href="{{ url_for('main.home_autorizador') }}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left-circle"></i> Voltar
+        </a>
+        <h4 class="mb-0">Minhas Autorizações</h4>
+        <div style="width: 100px;"></div> <!-- Espaço para manter o título centralizado -->
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            {% if requisicoes %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Nº</th>
+                            <th>Data</th>
+                            <th>Solicitante</th>
+                            <th>Status</th>
+                            <th>Itens</th>
+                            <th class="text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for requisicao in requisicoes %}
+                        <tr>
+                            <td>{{ requisicao.id }}</td>
+                            <td>{{ requisicao.data_requisicao.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>{{ requisicao.solicitante.nome }}</td>
+                            <td>
+                                {% if requisicao.status == 'APROVADA' %}
+                                <span class="badge bg-success">Aprovada</span>
+                                {% elif requisicao.status == 'REJEITADA' %}
+                                <span class="badge bg-danger">Rejeitada</span>
+                                {% elif requisicao.status == 'ATENDIDA' %}
+                                <span class="badge bg-info">Atendida</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ requisicao.itens|length }} item(ns)</td>
+                            <td class="text-center">
+                                <a href="{{ url_for('requisicao_bp.detalhes_requisicao', requisicao_id=requisicao.id) }}" 
+                                   class="btn btn-sm btn-outline-primary" 
+                                   title="Ver Detalhes">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center text-muted py-4">
+                <i class="bi bi-inbox fs-1"></i>
+                <p class="mt-2">Nenhuma autorização encontrada.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

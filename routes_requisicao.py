@@ -280,6 +280,10 @@ def requisicao_saida(requisicao_id):
 def modificar_requisicao(requisicao_id):
     """Permite ao administrador modificar uma requisição pendente"""
     try:
+        # Log dos dados recebidos
+        logger.info("Dados do formulário recebidos:")
+        logger.info(f"Form data: {request.form}")
+        
         result = RequisicaoService.obter_detalhes_requisicao(requisicao_id)
         if not result['success']:
             flash(f'Erro ao carregar requisição: {result["error"]}', 'error')
@@ -293,6 +297,16 @@ def modificar_requisicao(requisicao_id):
             quantidades = request.form.getlist('quantidade[]')
             observacao = request.form.get('observacao', '')
             justificativa = request.form.get('justificativa', '')
+
+            logger.info(f"Itens IDs: {itens_ids}")
+            logger.info(f"Quantidades: {quantidades}")
+            logger.info(f"Observação: {observacao}")
+            logger.info(f"Justificativa: {justificativa}")
+
+            if not justificativa:
+                flash('É necessário fornecer uma justificativa para a modificação', 'error')
+                return render_template('almoxarifado/requisicao/modificar_requisicao.html',
+                                    requisicao=requisicao)
 
             result = RequisicaoService.modificar_requisicao(
                 requisicao_id=requisicao_id,
@@ -308,7 +322,10 @@ def modificar_requisicao(requisicao_id):
                 return redirect(url_for('requisicao_bp.requisicoes_pendentes'))
             else:
                 flash(result['error'], 'error')
+                return render_template('almoxarifado/requisicao/modificar_requisicao.html',
+                                    requisicao=requisicao)
 
+        # GET request - mostrar formulário
         return render_template('almoxarifado/requisicao/modificar_requisicao.html',
                             requisicao=requisicao)
 

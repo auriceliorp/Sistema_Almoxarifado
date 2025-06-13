@@ -47,21 +47,29 @@ def login():
 
         if usuario and check_password_hash(usuario.senha, senha):
             login_user(usuario)
-            perfil = usuario.perfil.nome if usuario.perfil else ''
-
-            if perfil == 'Administrador':
-                return redirect(url_for('main.home'))
-            elif perfil == 'Solicitante':
-                return redirect(url_for('main.home_solicitante'))
-            elif perfil == 'Consultor':
-                return redirect(url_for('main.home_consultor'))
-            elif perfil == 'Operador':
-                return redirect(url_for('main.home_operador'))
-            elif perfil == 'Autorizador':
-                return redirect(url_for('main.home_autorizador'))
-            else:
-                flash('Perfil desconhecido. Contate o administrador.', 'danger')
-                return redirect(url_for('main.login'))
+            
+            # Pega a próxima página da query string
+            next_page = request.args.get('next')
+            
+            # Verifica se next_page é segura
+            if not next_page or not next_page.startswith('/'):
+                # Se não houver next_page ou não for segura, redireciona baseado no perfil
+                perfil = usuario.perfil.nome if usuario.perfil else ''
+                if perfil == 'Administrador':
+                    next_page = url_for('main.home')
+                elif perfil == 'Solicitante':
+                    next_page = url_for('main.home_solicitante')
+                elif perfil == 'Consultor':
+                    next_page = url_for('main.home_consultor')
+                elif perfil == 'Operador':
+                    next_page = url_for('main.home_operador')
+                elif perfil == 'Autorizador':
+                    next_page = url_for('main.home_autorizador')
+                else:
+                    flash('Perfil desconhecido. Contate o administrador.', 'danger')
+                    return redirect(url_for('main.login'))
+            
+            return redirect(next_page)
 
         flash('E-mail ou senha inválidos.', 'danger')
         return redirect(url_for('main.login'))

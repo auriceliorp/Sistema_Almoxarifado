@@ -5,7 +5,7 @@
 <div class="container py-4">
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Início</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('main.home') }}">Início</a></li>
             {% if current_user.perfil and current_user.perfil.nome == 'Administrador' %}
             <li class="breadcrumb-item"><a href="{{ url_for('requisicao_bp.requisicoes_pendentes') }}">Requisições Pendentes</a></li>
             {% else %}
@@ -193,4 +193,4 @@
 </script>
 {% endblock %}
 
-
+{% endblock %} 

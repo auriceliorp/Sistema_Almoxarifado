@@ -244,10 +244,17 @@ def create_app():
     # Registra o blueprint de tarefas por último
     app.register_blueprint(tarefas_blueprint)
 
-    # -------------------- Cria perfis padrão --------------------
+    # Cria as tabelas e perfis padrão em um contexto separado
     with app.app_context():
-        db.create_all()  # Cria todas as tabelas
-        Perfil.criar_perfis_padrao()  # Cria os perfis padrão
+        # Primeiro cria todas as tabelas
+        db.create_all()
+        
+        try:
+            # Depois tenta criar os perfis padrão
+            Perfil.criar_perfis_padrao()
+        except Exception as e:
+            print(f"Erro ao criar perfis padrão: {e}")
+            db.session.rollback()
 
     return app
 
@@ -280,4 +287,3 @@ if __name__ == '__main__':
     init_db()
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
-

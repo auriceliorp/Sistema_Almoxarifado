@@ -681,6 +681,9 @@ class RequisicaoMaterial(db.Model):
     saida_id = db.Column(db.Integer, db.ForeignKey('saida_material.id'), nullable=True)
     saida = db.relationship('SaidaMaterial', foreign_keys=[saida_id])
     
+    autorizador_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True)
+    autorizador = db.relationship('Usuario', foreign_keys=[autorizador_id], backref='requisicoes_autorizadas')
+    
     itens = db.relationship(
         'RequisicaoItem',
         backref='requisicao',

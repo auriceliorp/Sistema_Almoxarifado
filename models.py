@@ -676,18 +676,31 @@ class RequisicaoMaterial(db.Model):
     status = db.Column(db.String(20), nullable=False, default='PENDENTE')  # PENDENTE, APROVADA, REJEITADA, ATENDIDA, CANCELADA, ESTORNADA
     observacao = db.Column(db.Text, nullable=True)
     
+    # Relacionamento com solicitante
     solicitante_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
-    solicitante = db.relationship('Usuario', backref='requisicoes')
+    solicitante = db.relationship(
+        'Usuario',
+        foreign_keys=[solicitante_id],
+        backref=db.backref('requisicoes', lazy='dynamic')
+    )
     
+    # Relacionamento com tarefa
     tarefa_id = db.Column(db.Integer, db.ForeignKey('tarefas.id'), nullable=True)
     tarefa = db.relationship('Tarefa', backref='requisicao')
     
+    # Relacionamento com saída
     saida_id = db.Column(db.Integer, db.ForeignKey('saida_material.id'), nullable=True)
     saida = db.relationship('SaidaMaterial', foreign_keys=[saida_id])
     
+    # Relacionamento com autorizador
     autorizador_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True)
-    autorizador = db.relationship('Usuario', foreign_keys=[autorizador_id], backref='requisicoes_autorizadas')
+    autorizador = db.relationship(
+        'Usuario',
+        foreign_keys=[autorizador_id],
+        backref=db.backref('requisicoes_autorizadas', lazy='dynamic')
+    )
     
+    # Relacionamento com itens
     itens = db.relationship(
         'RequisicaoItem',
         backref='requisicao',
@@ -742,4 +755,5 @@ class MovimentoEstoque(db.Model):
 
     def __repr__(self):
         return f"<MovimentoEstoque {self.tipo} - Item {self.item_id}>"
+
 

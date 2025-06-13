@@ -55,6 +55,8 @@ def login():
                 return redirect(url_for('main.home_solicitante'))
             elif perfil == 'Consultor':
                 return redirect(url_for('main.home_consultor'))
+            elif perfil == 'Operador':
+                return redirect(url_for('main.home_operador'))
             else:
                 flash('Perfil desconhecido. Contate o administrador.', 'danger')
                 return redirect(url_for('main.login'))
@@ -84,6 +86,13 @@ def home_solicitante():
 @perfil_required(['Consultor'])
 def home_consultor():
     return render_template('home_consultor.html', usuario=current_user)
+
+# --- Nova rota para Operador
+@main.route('/home_operador')
+@login_required
+@perfil_required(['Operador'])
+def home_operador():
+    return render_template('home_operador.html', usuario=current_user)
 
 # --- Logout do sistema ---
 @main.route('/logout')

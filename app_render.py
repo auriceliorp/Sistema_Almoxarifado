@@ -44,11 +44,23 @@ def create_app():
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'chave-secreta-padrao'
     app.config['WTF_CSRF_SECRET_KEY'] = os.environ.get('WTF_CSRF_SECRET_KEY') or 'csrf-chave-secreta-padrao'
 
-    # Configuração de sessão
-    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
-    app.config['SESSION_COOKIE_SECURE'] = True
-    app.config['SESSION_COOKIE_HTTPONLY'] = True
-    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+    # Configurações de sessão e cookie mais compatíveis com Firefox
+    app.config.update(
+        SESSION_COOKIE_SECURE=False,  # Alterar para True apenas em produção com HTTPS
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE='Lax',
+        PERMANENT_SESSION_LIFETIME=timedelta(hours=1),
+        # Configurações específicas para melhor compatibilidade com Firefox
+        SESSION_COOKIE_PATH='/',
+        SESSION_REFRESH_EACH_REQUEST=True,
+        MAX_COOKIE_SIZE=4093  # Firefox tem limite menor que Chrome
+    )
+    
+    # Configuração do CSRF mais permissiva
+    app.config.update(
+        WTF_CSRF_TIME_LIMIT=3600,  # 1 hora
+        WTF_CSRF_SSL_STRICT=False  # Mais permissivo com SSL
+    )
 
     # Tenta usar variáveis do Railway primeiro
     try:

@@ -1,7 +1,7 @@
 # routes_main.py
 # Rotas principais do sistema: login, home, dashboards por perfil, logout
 
-from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask import Blueprint, render_template, redirect, url_for, request, flash, session, make_response
 from flask_login import login_required, logout_user, current_user, login_user
 from werkzeug.security import check_password_hash
 from models import Usuario, RequisicaoMaterial
@@ -46,14 +46,15 @@ def login():
         usuario = Usuario.query.filter_by(email=email).first()
 
         if usuario and check_password_hash(usuario.senha, senha):
-            login_user(usuario)
+            # Fazer login com "remember me" sempre True para sessões mais longas
+            login_user(usuario, remember=True)
             
-            # Pega a próxima página da query string
+            # Configurar cookie de sessão explicitamente
+            session.permanent = True
+            
+            # Obter próxima página
             next_page = request.args.get('next')
-            
-            # Verifica se next_page é segura
             if not next_page or not next_page.startswith('/'):
-                # Se não houver next_page ou não for segura, redireciona baseado no perfil
                 perfil = usuario.perfil.nome if usuario.perfil else ''
                 if perfil == 'Administrador':
                     next_page = url_for('main.home')
@@ -69,7 +70,12 @@ def login():
                     flash('Perfil desconhecido. Contate o administrador.', 'danger')
                     return redirect(url_for('main.login'))
             
-            return redirect(next_page)
+            # Adicionar cabeçalhos de cache para Firefox
+            response = make_response(redirect(next_page))
+            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+            response.headers['Pragma'] = 'no-cache'
+            response.headers['Expires'] = '0'
+            return response
 
         flash('E-mail ou senha inválidos.', 'danger')
         return redirect(url_for('main.login'))

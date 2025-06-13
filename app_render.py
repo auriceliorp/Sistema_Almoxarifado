@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
 from flask_wtf.csrf import CSRFError
 from flask_login import login_required
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Importa extensões globais (db, login_manager, csrf)
 from extensoes import db, login_manager, csrf
@@ -30,9 +30,11 @@ logger = logging.getLogger(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))
 
-# -------------------- Configuração do login --------------------
-login_manager.login_view = 'main.login'  # Rota usada para redirecionar ao login
+# Configuração do login manager
+login_manager.login_view = 'main.login'
 login_manager.login_message = 'Por favor, faça login para acessar esta página.'
+login_manager.login_message_category = 'warning'
+login_manager.session_protection = 'strong'
 
 # -------------------- Função Factory que cria a aplicação --------------------
 def create_app():
@@ -41,6 +43,12 @@ def create_app():
     # -------------------- Configurações principais --------------------
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'chave-secreta-padrao'
     app.config['WTF_CSRF_SECRET_KEY'] = os.environ.get('WTF_CSRF_SECRET_KEY') or 'csrf-chave-secreta-padrao'
+
+    # Configuração de sessão
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
+    app.config['SESSION_COOKIE_SECURE'] = True
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
     # Tenta usar variáveis do Railway primeiro
     try:

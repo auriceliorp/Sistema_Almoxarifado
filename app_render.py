@@ -258,17 +258,7 @@ app = create_app()
 def init_db():
     with app.app_context():
         db.create_all()
-
-        # Cria perfis padrão se não existirem
-        perfis_padrao = ['Administrador', 'Solicitante', 'Consultor']
-        for nome in perfis_padrao:
-            if not Perfil.query.filter_by(nome=nome).first():
-                db.session.add(Perfil(nome=nome))
-        try:
-            db.session.commit()
-        except:
-            db.session.rollback()
-
+        
         # Cria usuário admin se não existir
         if not Usuario.query.filter_by(email='admin@admin.com').first():
             perfil_admin = Perfil.query.filter_by(nome='Administrador').first()
@@ -290,3 +280,4 @@ if __name__ == '__main__':
     init_db()
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
+

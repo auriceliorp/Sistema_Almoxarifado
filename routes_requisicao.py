@@ -346,3 +346,24 @@ def modificar_requisicao(requisicao_id):
         logger.error(f"Erro ao modificar requisição {requisicao_id}: {str(e)}")
         flash(f'Erro ao modificar requisição: {str(e)}', 'error')
         return redirect(url_for('requisicao_bp.requisicoes_pendentes'))
+
+@requisicao_bp.route('/minhas-autorizacoes')
+@login_required
+def minhas_autorizacoes():
+    """Lista as requisições autorizadas pelo usuário atual"""
+    try:
+        if not current_user.is_autorizador():
+            flash('Acesso negado. Você precisa ser autorizador para acessar esta página.', 'error')
+            return redirect(url_for('main.home'))
+
+        result = RequisicaoService.listar_minhas_autorizacoes(current_user.id)
+        if result['success']:
+            return render_template('almoxarifado/requisicao/minhas_autorizacoes.html', 
+                                requisicoes=result['requisicoes'])
+        else:
+            flash(f'Erro ao listar autorizações: {result["error"]}', 'error')
+            return redirect(url_for('main.home'))
+    except Exception as e:
+        logger.error(f"Erro ao listar autorizações: {str(e)}")
+        flash(f'Erro ao listar autorizações: {str(e)}', 'error')
+        return redirect(url_for('main.home'))

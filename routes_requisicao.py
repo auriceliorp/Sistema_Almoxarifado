@@ -280,10 +280,7 @@ def requisicao_saida(requisicao_id):
 def modificar_requisicao(requisicao_id):
     """Permite ao administrador modificar uma requisição pendente"""
     try:
-        # Log dos dados recebidos
-        logger.info("Dados do formulário recebidos:")
-        logger.info(f"Form data: {request.form}")
-        
+        # Primeiro, obtém os detalhes da requisição
         result = RequisicaoService.obter_detalhes_requisicao(requisicao_id)
         if not result['success']:
             flash(f'Erro ao carregar requisição: {result["error"]}', 'error')
@@ -291,8 +288,12 @@ def modificar_requisicao(requisicao_id):
 
         requisicao = result['requisicao']
         
+        # Se for um POST, processa a modificação
         if request.method == 'POST':
-            # Processar a modificação
+            logger.info("Dados do formulário recebidos:")
+            logger.info(f"Form data: {request.form}")
+            
+            # Obtém os dados do formulário
             itens_ids = request.form.getlist('item_id[]')
             quantidades = request.form.getlist('quantidade[]')
             observacao = request.form.get('observacao', '')
@@ -303,16 +304,23 @@ def modificar_requisicao(requisicao_id):
             logger.info(f"Observação: {observacao}")
             logger.info(f"Justificativa: {justificativa}")
 
+            # Valida os dados
+            if not itens_ids or not quantidades:
+                flash('É necessário incluir pelo menos um item', 'error')
+                return render_template('almoxarifado/requisicao/modificar_requisicao.html',
+                                    requisicao=requisicao)
+
             if not justificativa:
                 flash('É necessário fornecer uma justificativa para a modificação', 'error')
                 return render_template('almoxarifado/requisicao/modificar_requisicao.html',
                                     requisicao=requisicao)
 
+            # Tenta modificar a requisição
             result = RequisicaoService.modificar_requisicao(
                 requisicao_id=requisicao_id,
                 admin_id=current_user.id,
                 itens_ids=itens_ids,
-                quantidades=quantidades,
+                quantidades=[int(q) for q in quantidades],
                 observacao=observacao,
                 justificativa=justificativa
             )
@@ -325,7 +333,7 @@ def modificar_requisicao(requisicao_id):
                 return render_template('almoxarifado/requisicao/modificar_requisicao.html',
                                     requisicao=requisicao)
 
-        # GET request - mostrar formulário
+        # Se for GET, mostra o formulário
         return render_template('almoxarifado/requisicao/modificar_requisicao.html',
                             requisicao=requisicao)
 

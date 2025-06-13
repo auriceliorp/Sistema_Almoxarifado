@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+rom flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from services.requisicao_service import RequisicaoService
 from models import Item, Grupo
@@ -273,3 +273,46 @@ def requisicao_saida(requisicao_id):
         logger.error(f"Erro ao carregar formulário de saída da requisição {requisicao_id}: {str(e)}")
         flash(f'Erro ao carregar formulário de saída: {str(e)}', 'error')
         return redirect(url_for('requisicao_bp.requisicoes_atendidas'))
+
+@requisicao_bp.route('/<int:requisicao_id>/modificar', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def modificar_requisicao(requisicao_id):
+    """Permite ao administrador modificar uma requisição pendente"""
+    try:
+        result = RequisicaoService.obter_detalhes_requisicao(requisicao_id)
+        if not result['success']:
+            flash(f'Erro ao carregar requisição: {result["error"]}', 'error')
+            return redirect(url_for('requisicao_bp.requisicoes_pendentes'))
+
+        requisicao = result['requisicao']
+        
+        if request.method == 'POST':
+            # Processar a modificação
+            itens_ids = request.form.getlist('item_id[]')
+            quantidades = request.form.getlist('quantidade[]')
+            observacao = request.form.get('observacao', '')
+            justificativa = request.form.get('justificativa', '')
+
+            result = RequisicaoService.modificar_requisicao(
+                requisicao_id=requisicao_id,
+                admin_id=current_user.id,
+                itens_ids=itens_ids,
+                quantidades=quantidades,
+                observacao=observacao,
+                justificativa=justificativa
+            )
+
+            if result['success']:
+                flash('Requisição modificada com sucesso!', 'success')
+                return redirect(url_for('requisicao_bp.requisicoes_pendentes'))
+            else:
+                flash(result['error'], 'error')
+
+        return render_template('almoxarifado/requisicao/modificar_requisicao.html',
+                            requisicao=requisicao)
+
+    except Exception as e:
+        logger.error(f"Erro ao modificar requisição {requisicao_id}: {str(e)}")
+        flash(f'Erro ao modificar requisição: {str(e)}', 'error')
+        return redirect(url_for('requisicao_bp.requisicoes_pendentes'))

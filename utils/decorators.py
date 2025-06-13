@@ -1,6 +1,6 @@
 from functools import wraps
 from flask import redirect, url_for, flash, request, session
-from flask_login import current_user
+from flask_login import current_user, login_required
 from datetime import datetime
 from extensoes import db
 
@@ -71,30 +71,26 @@ def super_admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def perfil_required(perfis_autorizados):
+    def decorator(f):
+        @wraps(f)
+        @login_required
+        def decorated_function(*args, **kwargs):
+            if not current_user.perfil or current_user.perfil.nome not in perfis_autorizados:
+                flash('Acesso não autorizado para seu perfil.', 'danger')
+                return redirect(url_for('main.home'))
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
 def admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated:
-            flash('Por favor, faça login para acessar esta página.', 'warning')
-            return redirect(url_for('main.login'))
-            
-        if not current_user.is_admin():
-            flash('Apenas Administradores podem acessar esta página.', 'danger')
-            return redirect(url_for('main.home'))
-            
-        return f(*args, **kwargs)
-    return decorated_function
+    return perfil_required(['Administrador'])(f)
+
+def solicitante_required(f):
+    return perfil_required(['Solicitante'])(f)
 
 def autorizador_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated:
-            flash('Por favor, faça login para acessar esta página.', 'warning')
-            return redirect(url_for('main.login'))
-            
-        if not current_user.is_autorizador():
-            flash('Apenas Autorizadores podem acessar esta página.', 'danger')
-            return redirect(url_for('main.home'))
-            
-        return f(*args, **kwargs)
-    return decorated_function 
+    return perfil_required(['Autorizador'])(f)
+
+def consultor_required(f):
+    return perfil_required(['Consultor'])(f) 

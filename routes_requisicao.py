@@ -169,19 +169,30 @@ def detalhes_requisicao(requisicao_id):
     """Exibe os detalhes de uma requisição"""
     try:
         result = RequisicaoService.obter_detalhes_requisicao(requisicao_id)
-        if result['success']:
-            if not current_user.perfil or (current_user.perfil.nome != 'Administrador' and result['requisicao'].solicitante_id != current_user.id):
-                flash('Você não tem permissão para visualizar esta requisição.', 'error')
-                return redirect(url_for('index'))
-            return render_template('almoxarifado/requisicao/detalhes_requisicao.html',
-                                requisicao=result['requisicao'])
-        else:
+        if not result['success']:
             flash(f'Erro ao carregar detalhes da requisição: {result["error"]}', 'error')
-            return redirect(url_for('index'))
+            return redirect(url_for('main.home'))
+
+        requisicao = result['requisicao']
+        
+        # Verifica se o usuário tem permissão para ver a requisição
+        if not current_user.perfil or (current_user.perfil.nome != 'Administrador' and requisicao.solicitante_id != current_user.id):
+            flash('Você não tem permissão para visualizar esta requisição.', 'error')
+            return redirect(url_for('main.home'))
+
+        # Se for administrador, usa o template completo
+        if current_user.perfil and current_user.perfil.nome == 'Administrador':
+            template = 'almoxarifado/requisicao/detalhes_requisicao.html'
+        else:
+            # Se for o solicitante, usa o template simplificado
+            template = 'almoxarifado/requisicao/detalhes_minha_requisicao.html'
+
+        return render_template(template, requisicao=requisicao)
+
     except Exception as e:
         logger.error(f"Erro ao carregar detalhes da requisição {requisicao_id}: {str(e)}")
         flash(f'Erro ao carregar detalhes da requisição: {str(e)}', 'error')
-        return redirect(url_for('index'))
+        return redirect(url_for('main.home'))
 
 @requisicao_bp.route('/<int:requisicao_id>/cancelar', methods=['POST'])
 @login_required

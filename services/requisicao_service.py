@@ -283,4 +283,70 @@ class RequisicaoService:
             
         except Exception as e:
             db.session.rollback()
+            return {'success': False, 'error': str(e)}
+
+    @staticmethod
+    def modificar_requisicao(requisicao_id, admin_id, itens_ids, quantidades, observacao, justificativa):
+        """
+        Modifica uma requisição existente
+        """
+        try:
+            requisicao = RequisicaoMaterial.query.get(requisicao_id)
+            if not requisicao:
+                return {'success': False, 'error': 'Requisição não encontrada'}
+
+            if requisicao.status != 'PENDENTE':
+                return {'success': False, 'error': 'Apenas requisições pendentes podem ser modificadas'}
+
+            # Remover itens antigos
+            RequisicaoItem.query.filter_by(requisicao_id=requisicao.id).delete()
+
+            # Adicionar novos itens
+            for item_id, quantidade in zip(itens_ids, quantidades):
+                item = Item.query.get(item_id)
+                if not item:
+                    return {'success': False, 'error': f'Item {item_id} não encontrado'}
+
+                quantidade = int(quantidade)
+                if quantidade <= 0:
+                    return {'success': False, 'error': 'Quantidade deve ser maior que zero'}
+
+                if item.estoque_atual < quantidade:
+                    return {'success': False, 'error': f'Estoque insuficiente para o item {item.nome}'}
+
+                novo_item = RequisicaoItem(
+                    requisicao_id=requisicao.id,
+                    item_id=item_id,
+                    quantidade=quantidade
+                )
+                db.session.add(novo_item)
+
+            # Atualizar observação e registrar modificação
+            requisicao.observacao = observacao
+            requisicao.data_modificacao = datetime.now()
+            requisicao.modificado_por_id = admin_id
+            requisicao.justificativa_modificacao = justificativa
+
+            # Atualizar a saída associada
+            if requisicao.saida:
+                # Remover itens antigos da saída
+                SaidaItem.query.filter_by(saida_id=requisicao.saida.id).delete()
+                
+                # Adicionar novos itens à saída
+                for item_id, quantidade in zip(itens_ids, quantidades):
+                    item = Item.query.get(item_id)
+                    saida_item = SaidaItem(
+                        saida_id=requisicao.saida.id,
+                        item_id=item_id,
+                        quantidade=quantidade,
+                        valor_unitario=item.valor_unitario
+                    )
+                    db.session.add(saida_item)
+
+            db.session.commit()
+            return {'success': True}
+
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Erro ao modificar requisição: {str(e)}")
             return {'success': False, 'error': str(e)} 

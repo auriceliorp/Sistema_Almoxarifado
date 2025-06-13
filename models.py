@@ -35,6 +35,9 @@ class Perfil(db.Model):
     pode_autorizar = db.Column(db.Boolean, default=False)
     permissoes = db.Column(db.JSON)  # Lista de permissões específicas
 
+    # Remover o backref e usar relationship simples
+    usuarios = db.relationship('Usuario', back_populates='perfil')
+
     def __init__(self, nome, descricao=None, nivel_acesso=1, requer_autorizacao=False, pode_autorizar=False, permissoes=None):
         self.nome = nome
         self.descricao = descricao
@@ -135,7 +138,8 @@ class Usuario(UserMixin, db.Model):
     unidade_local_id = db.Column(db.Integer, db.ForeignKey('unidade_local.id'))
     unidade_local = db.relationship('UnidadeLocal', backref='usuarios')
     perfil_id = db.Column(db.Integer, db.ForeignKey('perfil.id'))
-    perfil = db.relationship('Perfil', backref='usuarios')
+    # Modificar para usar back_populates ao invés de backref
+    perfil = db.relationship('Perfil', back_populates='usuarios')
     senha_temporaria = db.Column(db.Boolean, default=True)
     ativo = db.Column(db.Boolean, default=True)
     data_ultimo_acesso = db.Column(db.DateTime)
@@ -738,3 +742,4 @@ class MovimentoEstoque(db.Model):
 
     def __repr__(self):
         return f"<MovimentoEstoque {self.tipo} - Item {self.item_id}>"
+

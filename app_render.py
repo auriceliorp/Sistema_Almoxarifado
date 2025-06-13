@@ -109,20 +109,33 @@ def create_app():
     @app.errorhandler(CSRFError)
     def handle_csrf_error(e):
         return render_template('error.html', 
-                             message="Token de segurança expirado. Por favor, tente novamente."), 400
+                             message="Token de segurança expirado. Por favor, tente novamente.",
+                             error_type="CSRF Error"), 400
 
     # -------------------- Handler para erros 404 --------------------
     @app.errorhandler(404)
     def not_found_error(error):
         return render_template('error.html', 
-                             message="Página não encontrada. Verifique o endereço e tente novamente."), 404
+                             message="Página não encontrada. Verifique o endereço e tente novamente.",
+                             error_type="404 Not Found"), 404
 
     # -------------------- Handler para erros 500 --------------------
     @app.errorhandler(500)
     def internal_error(error):
+        db.session.rollback()  # Garante que qualquer transação pendente seja revertida
         logger.error(f"Erro interno do servidor: {str(error)}")
         return render_template('error.html', 
-                             message="Erro interno do servidor. Por favor, tente novamente mais tarde."), 500
+                             message="Erro interno do servidor. Por favor, tente novamente mais tarde.",
+                             error_type="500 Internal Server Error"), 500
+
+    # -------------------- Handler para erros genéricos --------------------
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        db.session.rollback()  # Garante que qualquer transação pendente seja revertida
+        logger.error(f"Erro não tratado: {str(e)}")
+        return render_template('error.html',
+                             message="Ocorreu um erro inesperado. Por favor, tente novamente.",
+                             error_type="Unexpected Error"), 500
 
     # -------------------- Rota de healthcheck --------------------
     @app.route('/health')
@@ -277,4 +290,3 @@ if __name__ == '__main__':
     init_db()
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
-

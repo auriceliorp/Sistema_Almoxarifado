@@ -114,18 +114,15 @@ def create_app():
     # -------------------- Handler para erros 404 --------------------
     @app.errorhandler(404)
     def not_found_error(error):
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return jsonify(error="Página não encontrada"), 404
-        return render_template('error.html', message="Página não encontrada."), 404
+        return render_template('error.html', 
+                             message="Página não encontrada. Verifique o endereço e tente novamente."), 404
 
     # -------------------- Handler para erros 500 --------------------
     @app.errorhandler(500)
     def internal_error(error):
-        db.session.rollback()
         logger.error(f"Erro interno do servidor: {str(error)}")
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return jsonify(error="Erro interno do servidor"), 500
-        return render_template('error.html', message="Erro interno do servidor."), 500
+        return render_template('error.html', 
+                             message="Erro interno do servidor. Por favor, tente novamente mais tarde."), 500
 
     # -------------------- Rota de healthcheck --------------------
     @app.route('/health')
@@ -192,7 +189,7 @@ def create_app():
     from routes_api import api_bp as api_blueprint
     from routes_tarefas import tarefas_bp as tarefas_blueprint
     from routes_links import links_bp as links_blueprint
-    from routes_popular import popular_bp as popular_blueprint    
+    from routes_popular import popular_bp as popular_blueprint
     from limpar_dados import limpar_bp as limpar_blueprint
 
     # Registra os blueprints principais
@@ -280,3 +277,4 @@ if __name__ == '__main__':
     init_db()
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
+

@@ -1,0 +1,79 @@
+{% extends 'base_simplificada.html' %}
+{% block title %}Página Inicial - Autorizador{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="mb-3">Bem-vindo(a), {{ usuario.nome }}</h2>
+            <p class="text-muted">Perfil: Autorizador</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Requisições Pendentes -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-clock-history text-warning"></i>
+                        Requisições Pendentes
+                    </h5>
+                    <p class="card-text">Visualize e autorize as requisições que aguardam aprovação.</p>
+                    <a href="{{ url_for('requisicao_bp.requisicoes_pendentes') }}" class="btn btn-warning text-dark">
+                        Verificar Pendências
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Minhas Autorizações -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-check-circle text-success"></i>
+                        Minhas Autorizações
+                    </h5>
+                    <p class="card-text">Histórico de requisições autorizadas por você.</p>
+                    <a href="{{ url_for('requisicao_bp.minhas_autorizacoes') }}" class="btn btn-success">
+                        Ver Histórico
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Consulta de Estoque -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-search text-info"></i>
+                        Consulta de Estoque
+                    </h5>
+                    <p class="card-text">Verifique a disponibilidade de materiais no estoque.</p>
+                    <a href="{{ url_for('requisicao_bp.consulta_estoque') }}" class="btn btn-info text-white">
+                        Consultar
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Relatórios -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-file-earmark-text text-primary"></i>
+                        Relatórios
+                    </h5>
+                    <p class="card-text">Acesse relatórios e estatísticas de requisições.</p>
+                    <a href="{{ url_for('main.relatorios') }}" class="btn btn-primary">
+                        Ver Relatórios
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -9,6 +9,7 @@ from functools import wraps
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField
 from wtforms.validators import DataRequired, Email
+from datetime import timedelta
 
 # --- Definição do formulário de login ---
 class LoginForm(FlaskForm):

@@ -349,4 +349,21 @@ class RequisicaoService:
         except Exception as e:
             db.session.rollback()
             logger.error(f"Erro ao modificar requisição: {str(e)}")
+            return {'success': False, 'error': str(e)}
+
+    @staticmethod
+    def listar_minhas_autorizacoes(autorizador_id):
+        """Lista as requisições autorizadas pelo usuário"""
+        try:
+            requisicoes = RequisicaoMaterial.query\
+                .filter(
+                    (RequisicaoMaterial.status.in_(['APROVADA', 'REJEITADA', 'ATENDIDA'])) &
+                    (RequisicaoMaterial.autorizador_id == autorizador_id)
+                )\
+                .order_by(desc(RequisicaoMaterial.data_requisicao))\
+                .all()
+            
+            return {'success': True, 'requisicoes': requisicoes}
+            
+        except Exception as e:
             return {'success': False, 'error': str(e)} 

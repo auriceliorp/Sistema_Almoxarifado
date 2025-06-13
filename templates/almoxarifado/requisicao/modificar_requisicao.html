@@ -1,187 +1,133 @@
 {% extends 'base_simplificada.html' %}
 {% block title %}Modificar Requisição{% endblock %}
 
+{% block extra_css %}
+<style>
+    .table th {
+        background-color: #004b5b !important;
+        color: white !important;
+    }
+    .item-requisicao {
+        padding: 15px;
+        border: 1px solid #dee2e6;
+        margin-bottom: 10px;
+        border-radius: 5px;
+    }
+    .justificativa-admin {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        margin-top: 20px;
+    }
+    .item-info {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2>Modificar Requisição #{{ requisicao.id }}</h2>
-            <p class="text-muted mb-0">Altere os itens ou quantidades conforme necessário</p>
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Início</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('requisicao_bp.requisicoes_pendentes') }}">Requisições Pendentes</a></li>
+            <li class="breadcrumb-item active">Modificar Requisição #{{ requisicao.id }}</li>
+        </ol>
+    </nav>
+
+    <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Modificar Requisição #{{ requisicao.id }}</h5>
         </div>
-        <a href="{{ url_for('requisicao_bp.requisicoes_pendentes') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-2"></i>Voltar
-        </a>
-    </div>
-
-    <div class="row">
-        <!-- Informações da Requisição -->
-        <div class="col-md-4">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Informações da Requisição</h5>
-                </div>
-                <div class="card-body">
-                    <dl class="row mb-0">
-                        <dt class="col-sm-4">Data</dt>
-                        <dd class="col-sm-8">{{ requisicao.data_requisicao.strftime('%d/%m/%Y %H:%M') }}</dd>
-                        
-                        <dt class="col-sm-4">Solicitante</dt>
-                        <dd class="col-sm-8">{{ requisicao.solicitante.nome }}</dd>
-                        
-                        <dt class="col-sm-4">Setor</dt>
-                        <dd class="col-sm-8">{{ requisicao.solicitante.setor.nome if requisicao.solicitante.setor else 'Não informado' }}</dd>
-                        
-                        <dt class="col-sm-4">Status</dt>
-                        <dd class="col-sm-8"><span class="badge bg-warning">{{ requisicao.status }}</span></dd>
-                    </dl>
-                </div>
-            </div>
-
-            <!-- Histórico de Alterações -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Histórico de Alterações</h5>
-                </div>
-                <div class="card-body">
-                    <div class="historico-alteracoes">
-                        {% if requisicao.alteracoes %}
-                            {% for alteracao in requisicao.alteracoes %}
-                            <div class="mb-2 pb-2 border-bottom">
-                                <div><strong>{{ alteracao.usuario.nome }}</strong></div>
-                                <div>{{ alteracao.data.strftime('%d/%m/%Y %H:%M') }}</div>
-                                <div>{{ alteracao.descricao }}</div>
-                            </div>
-                            {% endfor %}
-                        {% else %}
-                            <p class="text-muted mb-0">Nenhuma alteração registrada</p>
+        <div class="card-body">
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <!-- Informações da Requisição -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <p><strong>Solicitante:</strong> {{ requisicao.solicitante.nome }}</p>
+                        <p><strong>Data da Requisição:</strong> {{ requisicao.data_requisicao.strftime('%d/%m/%Y %H:%M') }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Status:</strong> <span class="badge bg-warning">{{ requisicao.status }}</span></p>
+                        {% if requisicao.data_modificacao %}
+                        <p><strong>Última Modificação:</strong> {{ requisicao.data_modificacao.strftime('%d/%m/%Y %H:%M') }}</p>
                         {% endif %}
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Formulário de Modificação -->
-        <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Itens da Requisição</h5>
+                <!-- Itens da Requisição -->
+                <h6 class="mb-3">Itens da Requisição</h6>
+                {% for item in requisicao.itens %}
+                <div class="item-requisicao">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <input type="hidden" name="item_id[]" value="{{ item.item_id }}">
+                            <p class="mb-2"><strong>{{ item.item.nome }}</strong></p>
+                            <p class="mb-0 item-info">
+                                <span class="me-3">Código: {{ item.item.codigo }}</span>
+                                <span>Estoque atual: {{ item.item.estoque_atual }}</span>
+                            </p>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Quantidade:</label>
+                            <input type="number" 
+                                   name="quantidade[]" 
+                                   class="form-control" 
+                                   value="{{ item.quantidade }}"
+                                   min="1" 
+                                   max="{{ item.item.estoque_atual }}"
+                                   required>
+                        </div>
+                        <div class="col-md-3">
+                            <p class="mb-0 item-info">
+                                <strong>Unidade:</strong> {{ item.item.unidade }}
+                            </p>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <form method="POST">
-                        {{ form.csrf_token }}
-                        
-                        <!-- Lista de Itens Atuais -->
-                        <div class="mb-4">
-                            <h6 class="mb-3">Itens Atuais</h6>
-                            {% for item in requisicao.itens %}
-                            <div class="card mb-3">
-                                <div class="card-body">
-                                    <div class="row align-items-center">
-                                        <div class="col-md-4">
-                                            <strong>{{ item.item.nome }}</strong>
-                                            <div class="text-muted small">Código: {{ item.item.codigo }}</div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label class="form-label">Quantidade</label>
-                                            <input type="number" 
-                                                   name="quantidade_{{ item.id }}" 
-                                                   class="form-control" 
-                                                   value="{{ item.quantidade }}" 
-                                                   min="0">
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="text-muted small">
-                                                Estoque disponível: {{ item.item.estoque_atual }}
-                                            </div>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <button type="button" 
-                                                    class="btn btn-outline-danger btn-sm"
-                                                    onclick="removerItem({{ item.id }})">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
+                {% endfor %}
 
-                        <!-- Adicionar Novo Item -->
-                        <div class="mb-4">
-                            <h6 class="mb-3">Adicionar Novo Item</h6>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <select class="form-select" id="novo_item">
-                                        <option value="">Selecione um item...</option>
-                                        {% for item in itens_disponiveis %}
-                                        <option value="{{ item.id }}">
-                                            {{ item.nome }} (Estoque: {{ item.estoque_atual }})
-                                        </option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <input type="number" 
-                                           class="form-control" 
-                                           id="nova_quantidade" 
-                                           placeholder="Quantidade">
-                                </div>
-                                <div class="col-md-2">
-                                    <button type="button" 
-                                            class="btn btn-primary w-100"
-                                            onclick="adicionarItem()">
-                                        <i class="bi bi-plus"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Justificativa da Alteração -->
-                        <div class="mb-4">
-                            <label class="form-label">Justificativa da Alteração</label>
-                            <textarea class="form-control" 
-                                      name="justificativa" 
-                                      rows="3" 
-                                      required 
-                                      placeholder="Descreva o motivo das alterações"></textarea>
-                        </div>
-
-                        <!-- Botões de Ação -->
-                        <div class="d-flex justify-content-end gap-2">
-                            <button type="button" 
-                                    class="btn btn-outline-secondary"
-                                    onclick="history.back()">
-                                Cancelar
-                            </button>
-                            <button type="submit" class="btn btn-primary">
-                                Salvar Alterações
-                            </button>
-                        </div>
-                    </form>
+                <!-- Observação -->
+                <div class="form-group mt-4">
+                    <label for="observacao" class="form-label"><strong>Observação:</strong></label>
+                    <textarea name="observacao" 
+                              id="observacao" 
+                              class="form-control" 
+                              rows="2"
+                              placeholder="Observações sobre a requisição">{{ requisicao.observacao }}</textarea>
                 </div>
-            </div>
+
+                <!-- Justificativa da Modificação -->
+                <div class="justificativa-admin">
+                    <div class="form-group">
+                        <label for="justificativa" class="form-label"><strong>Justificativa da Modificação:</strong></label>
+                        <textarea name="justificativa" 
+                                  id="justificativa" 
+                                  class="form-control" 
+                                  rows="3" 
+                                  required 
+                                  placeholder="Descreva o motivo da modificação desta requisição"></textarea>
+                        <div class="form-text">
+                            Esta justificativa será registrada no histórico da requisição.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botões -->
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i> Salvar Modificações
+                    </button>
+                    <a href="{{ url_for('requisicao_bp.requisicoes_pendentes') }}" 
+                       class="btn btn-secondary">
+                        <i class="bi bi-x"></i> Cancelar
+                    </a>
+                </div>
+            </form>
         </div>
     </div>
 </div>
-
-<script>
-function removerItem(itemId) {
-    if (confirm('Tem certeza que deseja remover este item?')) {
-        // Implementar lógica de remoção
-    }
-}
-
-function adicionarItem() {
-    const itemSelect = document.getElementById('novo_item');
-    const quantidade = document.getElementById('nova_quantidade');
-    
-    if (!itemSelect.value || !quantidade.value) {
-        alert('Selecione um item e informe a quantidade');
-        return;
-    }
-    
-    // Implementar lógica de adição
-}
-</script>
 {% endblock %}

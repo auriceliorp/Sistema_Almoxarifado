@@ -34,7 +34,7 @@
             <!-- Dashboard -->
             <li class="nav-item mb-2">
                 <a href="{{ url_for('dashboard_bp.dashboard') }}" 
-                   class="nav-link {% if request.endpoint == 'dashboard_bp.dashboard' %}active{% endif %} text-white">
+                   class="nav-link {% if request.endpoint and request.endpoint == 'dashboard_bp.dashboard' %}active{% endif %} text-white">
                     <i class="bi bi-speedometer2 me-2"></i> Dashboard
                 </a>
             </li>
@@ -103,11 +103,11 @@
             <li class="nav-item mb-2">
                 <a class="nav-link text-white d-flex justify-content-between align-items-center"
                    data-bs-toggle="collapse" href="#submenuPatrimonio" role="button"
-                   aria-expanded="{% if request.endpoint.startswith('patrimonio_bp') %}true{% else %}false{% endif %}">
+                   aria-expanded="{% if request.endpoint and request.endpoint.startswith('patrimonio_bp') %}true{% else %}false{% endif %}">
                     <span><i class="bi bi-building-gear me-2"></i> Patrimônio</span>
                     <i class="bi bi-chevron-down"></i>
                 </a>
-                <ul class="collapse nav flex-column ms-3 {% if request.endpoint.startswith('patrimonio_bp') %}show{% endif %}" id="submenuPatrimonio">
+                <ul class="collapse nav flex-column ms-3 {% if request.endpoint and request.endpoint.startswith('patrimonio_bp') %}show{% endif %}" id="submenuPatrimonio">
                     <li class="nav-item"><a href="{{ url_for('patrimonio_bp.listar_bens') }}" class="nav-link {% if request.endpoint == 'patrimonio_bp.listar_bens' %}active{% endif %} text-white"><i class="bi bi-collection me-2"></i>Bens Patrimoniais</a></li>
                     <li class="nav-item"><a href="#" class="nav-link text-white-50"><i class="bi bi-clipboard-check me-2"></i>Inventário</a></li>
                     <li class="nav-item"><a href="#" class="nav-link text-white-50"><i class="bi bi-arrow-left-right me-2"></i>Transferência</a></li>
@@ -120,11 +120,11 @@
             <li class="nav-item mb-2">
                 <a class="nav-link text-white d-flex justify-content-between align-items-center"
                    data-bs-toggle="collapse" href="#submenuCompras" role="button"
-                   aria-expanded="{% if request.endpoint.startswith('painel_bp') %}true{% else %}false{% endif %}">
+                   aria-expanded="{% if request.endpoint and request.endpoint.startswith('painel_bp') %}true{% else %}false{% endif %}">
                     <span><i class="bi bi-cart-check me-2"></i> Compras</span>
                     <i class="bi bi-chevron-down"></i>
                 </a>
-                <ul class="collapse nav flex-column ms-3 {% if request.endpoint.startswith('painel_bp') %}show{% endif %}" id="submenuCompras">
+                <ul class="collapse nav flex-column ms-3 {% if request.endpoint and request.endpoint.startswith('painel_bp') %}show{% endif %}" id="submenuCompras">
                     <li class="nav-item"><a href="{{ url_for('painel_bp.lista_painel') }}" class="nav-link {% if request.endpoint == 'painel_bp.lista_painel' %}active{% endif %} text-white"><i class="bi bi-grid me-2"></i>Painel de Contratações</a></li>
                     <li class="nav-item"><a href="#" class="nav-link text-white-50"><i class="bi bi-file-earmark-text me-2"></i>Requisições</a></li>
                     <li class="nav-item"><a href="#" class="nav-link text-white-50"><i class="bi bi-building me-2"></i>Fornecedores</a></li>
@@ -138,11 +138,11 @@
             <li class="nav-item mb-2">
                 <a class="nav-link text-white d-flex justify-content-between align-items-center"
                    data-bs-toggle="collapse" href="#submenuPublicacoes" role="button"
-                   aria-expanded="{% if request.endpoint.startswith('publicacao_bp') %}true{% else %}false{% endif %}">
+                   aria-expanded="{% if request.endpoint and request.endpoint.startswith('publicacao_bp') %}true{% else %}false{% endif %}">
                     <span><i class="bi bi-journal-text me-2"></i> Publicações</span>
                     <i class="bi bi-chevron-down"></i>
                 </a>
-                <ul class="collapse nav flex-column ms-3 {% if request.endpoint.startswith('publicacao_bp') %}show{% endif %}" id="submenuPublicacoes">
+                <ul class="collapse nav flex-column ms-3 {% if request.endpoint and request.endpoint.startswith('publicacao_bp') %}show{% endif %}" id="submenuPublicacoes">
                     <li class="nav-item"><a href="{{ url_for('publicacao_bp.listar') }}" class="nav-link {% if request.endpoint == 'publicacao_bp.listar' %}active{% endif %} text-white"><i class="bi bi-list-ul me-2"></i>Lista de Publicações</a></li>
                     <li class="nav-item"><a href="{{ url_for('publicacao_bp.nova_publicacao') }}" class="nav-link {% if request.endpoint == 'publicacao_bp.nova_publicacao' %}active{% endif %} text-white"><i class="bi bi-plus-circle me-2"></i>Nova Publicação</a></li>
                     <li class="nav-item"><a href="#" class="nav-link text-white-50"><i class="bi bi-search me-2"></i>Busca Avançada</a></li>
@@ -154,11 +154,11 @@
             <li class="nav-item mb-2">
                 <a class="nav-link text-white d-flex justify-content-between align-items-center"
                    data-bs-toggle="collapse" href="#submenuConfig" role="button"
-                   aria-expanded="{% if request.endpoint.startswith('usuario_bp') or request.endpoint.startswith('nd_bp') or request.endpoint.startswith('grupo_bp') or request.endpoint.startswith('area_ul_bp') or request.endpoint.startswith('config_tarefas') %}true{% else %}false{% endif %}">
+                   aria-expanded="{% if request.endpoint and (request.endpoint.startswith('usuario_bp') or request.endpoint.startswith('nd_bp') or request.endpoint.startswith('grupo_bp') or request.endpoint.startswith('area_ul_bp') or request.endpoint.startswith('config_tarefas')) %}true{% else %}false{% endif %}">
                     <span><i class="bi bi-gear me-2"></i> Configurações</span>
                     <i class="bi bi-chevron-down"></i>
                 </a>
-                <ul class="collapse nav flex-column ms-3 {% if request.endpoint.startswith('usuario_bp') or request.endpoint.startswith('nd_bp') or request.endpoint.startswith('grupo_bp') or request.endpoint.startswith('area_ul_bp') or request.endpoint.startswith('config_tarefas') %}show{% endif %}" id="submenuConfig">
+                <ul class="collapse nav flex-column ms-3 {% if request.endpoint and (request.endpoint.startswith('usuario_bp') or request.endpoint.startswith('nd_bp') or request.endpoint.startswith('grupo_bp') or request.endpoint.startswith('area_ul_bp') or request.endpoint.startswith('config_tarefas')) %}show{% endif %}" id="submenuConfig">
                     <li class="nav-item"><a href="{{ url_for('usuario_bp.lista_usuarios') }}" class="nav-link {% if request.endpoint == 'usuario_bp.lista_usuarios' %}active{% endif %} text-white"><i class="bi bi-people me-2"></i>Perfis e Usuários</a></li>
                     <li class="nav-item"><div class="nav-link text-white-50 small"><i class="bi bi-building me-2"></i>Organização Administrativa</div></li>
                     <li class="nav-item"><a href="{{ url_for('nd_bp.lista_nd') }}" class="nav-link {% if request.endpoint == 'nd_bp.lista_nd' %}active{% endif %} text-white"><i class="bi bi-tag me-2"></i>Natureza de Despesa</a></li>
@@ -186,10 +186,10 @@
             <li class="nav-item mt-3">
                 <a class="nav-link text-white fw-bold d-flex justify-content-between align-items-center"
                    data-bs-toggle="collapse" href="#submenuTarefas" role="button"
-                   aria-expanded="{% if request.endpoint.startswith('tarefas') %}true{% else %}false{% endif %}">
+                   aria-expanded="{% if request.endpoint and request.endpoint.startswith('tarefas') %}true{% else %}false{% endif %}">
                     <span><i class="bi bi-list-task me-1"></i> Tarefas</span><i class="bi bi-chevron-down"></i>
                 </a>
-                <ul class="collapse nav flex-column ms-3 {% if request.endpoint.startswith('tarefas') %}show{% endif %}" id="submenuTarefas">
+                <ul class="collapse nav flex-column ms-3 {% if request.endpoint and request.endpoint.startswith('tarefas') %}show{% endif %}" id="submenuTarefas">
                     <li class="nav-item">
                         <a href="{{ url_for('tarefas.lista_tarefas') }}" 
                            class="nav-link {% if request.endpoint == 'tarefas.lista_tarefas' %}active{% endif %} text-white">
@@ -506,4 +506,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script> 
+
 

@@ -156,3 +156,4 @@ def relatorios():
 @login_required
 def dashboard_organizacao():
     return render_template('organizacao/dashboard_organizacao.html', usuario=current_user)
+

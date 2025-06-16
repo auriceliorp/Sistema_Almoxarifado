@@ -172,8 +172,8 @@
                 </ul>
             </li>
 
-            <!-- Auditoria (somente admin) -->
-            {% if usuario and usuario.email == 'admin@admin.com' %}
+            <!-- Auditoria (somente super admin) -->
+            {% if usuario and usuario.is_super_admin() %}
             <li class="nav-item mb-2">
                 <a href="{{ url_for('auditoria_bp.lista_logs') }}" 
                    class="nav-link {% if request.endpoint == 'auditoria_bp.lista_logs' %}active{% endif %} text-white">
@@ -506,5 +506,3 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script> 
-
-

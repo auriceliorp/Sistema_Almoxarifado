@@ -1,6 +1,6 @@
-{% extends 'base_simplificada.html' %}
+{% extends "base_simplificada.html" %}
 
-{% block title %}GestorSPS - Início{% endblock %}
+{% block title %}Gestor SPS - Início{% endblock %}
 
 {% block content %}
 <style>
@@ -65,66 +65,89 @@
   .bg-relatorios{ background-color: #e6dcff; }
 </style>
 
-<div class="container home-section">
-  <div class="home-grid">
-
-    <!-- Almoxarifado -->
-    <div class="home-card">
-      <i class="bi bi-archive"></i>
-      <h6>Almoxarifado</h6>
-      <a href="{{ url_for('main.almoxarifado') }}" class="btn btn-outline-primary w-100">Acessar</a>
+<div class="container">
+    <h1>Painel Principal</h1>
+    <p>Bem-vindo, {{ current_user.nome }}</p>
+    <p>Seu perfil: {{ current_user.perfil.nome }}</p>
+    
+    {% if current_user.perfil.nome == 'Super Administrador' %}
+    <!-- Funcionalidades específicas do Super Administrador -->
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Auditoria</h5>
+                    <p class="card-text">Acesse os logs de auditoria do sistema.</p>
+                    <a href="{{ url_for('auditoria_bp.lista_logs') }}" class="btn btn-primary">Acessar</a>
+                </div>
+            </div>
+        </div>
+        <!-- Outros cards específicos do Super Administrador -->
     </div>
+    {% endif %}
+    
+    <!-- Funcionalidades comuns a Administrador e Super Administrador -->
+    <div class="row mt-4">
+        <div class="home-grid">
 
-    <!-- Compras -->
-    <div class="home-card">
-      <i class="bi bi-cart-check"></i>
-      <h6>Compras</h6>
-      <a href="{{ url_for('painel_bp.lista_painel') }}" class="btn btn-outline-primary w-100">Acessar</a>
+            <!-- Almoxarifado -->
+            <div class="home-card">
+                <i class="bi bi-archive"></i>
+                <h6>Almoxarifado</h6>
+                <a href="{{ url_for('main.almoxarifado') }}" class="btn btn-outline-primary w-100">Acessar</a>
+            </div>
+
+            <!-- Compras -->
+            <div class="home-card">
+                <i class="bi bi-cart-check"></i>
+                <h6>Compras</h6>
+                <a href="{{ url_for('painel_bp.lista_painel') }}" class="btn btn-outline-primary w-100">Acessar</a>
+            </div>
+
+            <!-- Patrimônio -->
+            <div class="home-card">
+                <i class="bi bi-building"></i>
+                <h6>Patrimônio</h6>
+                <a href="{{ url_for('patrimonio_bp.listar_bens') }}" class="btn btn-outline-primary w-100">Acessar</a>
+            </div>
+
+            <!-- Publicações -->
+            <div class="home-card">
+                <i class="bi bi-journal-text"></i>
+                <h6>Publicações</h6>
+                <a href="{{ url_for('publicacao_bp.listar') }}" class="btn btn-outline-primary w-100">Acessar</a>
+            </div>
+
+            <!-- Tarefas -->
+            <div class="home-card">
+                <i class="bi bi-kanban"></i>
+                <h6>Tarefas</h6>
+                <a href="{{ url_for('tarefas.lista_tarefas') }}" class="btn btn-outline-primary w-100">Acessar</a>
+            </div>
+
+            <!-- Dashboard -->
+            <div class="home-card">
+                <i class="bi bi-graph-up"></i>
+                <h6>Dashboard</h6>
+                <a href="{{ url_for('dashboard_bp.dashboard') }}" class="btn btn-outline-primary w-100">Acessar</a>
+            </div>
+
+            <!-- Links Úteis -->
+            <div class="home-card">
+                <i class="bi bi-link-45deg"></i>
+                <h6>Links Úteis</h6>
+                <a href="{{ url_for('links_bp.lista_links') }}" class="btn btn-outline-primary w-100">Acessar</a>
+            </div>
+
+            <!-- Relatórios -->
+            <div class="home-card">
+                <i class="bi bi-file-earmark-bar-graph"></i>
+                <h6>Relatórios</h6>
+                <a href="{{ url_for('main.relatorios') }}" class="btn btn-outline-primary w-100">Acessar</a>
+            </div>
+
+        </div>
     </div>
-
-    <!-- Patrimônio -->
-    <div class="home-card">
-      <i class="bi bi-building"></i>
-      <h6>Patrimônio</h6>
-      <a href="{{ url_for('patrimonio_bp.listar_bens') }}" class="btn btn-outline-primary w-100">Acessar</a>
-    </div>
-
-    <!-- Publicações -->
-    <div class="home-card">
-      <i class="bi bi-journal-text"></i>
-      <h6>Publicações</h6>
-      <a href="{{ url_for('publicacao_bp.listar') }}" class="btn btn-outline-primary w-100">Acessar</a>
-    </div>
-
-    <!-- Tarefas -->
-    <div class="home-card">
-      <i class="bi bi-kanban"></i>
-      <h6>Tarefas</h6>
-      <a href="{{ url_for('tarefas.lista_tarefas') }}" class="btn btn-outline-primary w-100">Acessar</a>
-    </div>
-
-    <!-- Dashboard -->
-    <div class="home-card">
-      <i class="bi bi-graph-up"></i>
-      <h6>Dashboard</h6>
-      <a href="{{ url_for('dashboard_bp.dashboard') }}" class="btn btn-outline-primary w-100">Acessar</a>
-    </div>
-
-    <!-- Links Úteis -->
-    <div class="home-card">
-      <i class="bi bi-link-45deg"></i>
-      <h6>Links Úteis</h6>
-      <a href="{{ url_for('links_bp.lista_links') }}" class="btn btn-outline-primary w-100">Acessar</a>
-    </div>
-
-    <!-- Relatórios -->
-    <div class="home-card">
-      <i class="bi bi-file-earmark-bar-graph"></i>
-      <h6>Relatórios</h6>
-      <a href="{{ url_for('main.relatorios') }}" class="btn btn-outline-primary w-100">Acessar</a>
-    </div>
-
-  </div>
 </div>
 
 <script>

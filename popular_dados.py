@@ -11,7 +11,7 @@ from models import NaturezaDespesa, Grupo, Item, Fornecedor, Usuario, Perfil, Un
 fake = Faker('pt_BR')
 
 # ---------------------- PERFIS ----------------------
-perfis = ['Administrador', 'Solicitante', 'Consultor']
+perfis = ['Administrador', 'Operador', 'Autorizador']
 for nome in perfis:
     if not Perfil.query.filter_by(nome=nome).first():
         db.session.add(Perfil(nome=nome))

@@ -17,7 +17,7 @@ def permissao_required(permissao, requer_autorizacao=False):
                 return redirect(url_for('main.home'))
 
             # Se o usuário é super admin ou admin, não precisa de autorização
-            if current_user.is_admin():
+            if current_user.is_super_admin() or current_user.is_admin():
                 return f(*args, **kwargs)
 
             # Se a operação requer autorização e o usuário precisa de autorização
@@ -78,7 +78,7 @@ def admin_required(f):
             flash('Por favor, faça login para acessar esta página.', 'warning')
             return redirect(url_for('main.login'))
             
-        if not current_user.perfil or current_user.perfil.nome != 'Administrador':
+        if not current_user.perfil or (current_user.perfil.nome != 'Administrador' and current_user.perfil.nome != 'Super Administrador'):
             flash('Apenas Administradores podem acessar esta página.', 'danger')
             return redirect(url_for('main.home'))
             

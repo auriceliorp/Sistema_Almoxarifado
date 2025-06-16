@@ -47,22 +47,16 @@ def login():
         usuario = Usuario.query.filter_by(email=email).first()
 
         if usuario and check_password_hash(usuario.senha, senha):
-            # Fazer login com "remember me" sempre True para sessões mais longas
             login_user(usuario, remember=True)
-            
-            # Configurar cookie de sessão explicitamente
             session.permanent = True
             
-            # Obter próxima página
             next_page = request.args.get('next')
             if not next_page or not next_page.startswith('/'):
                 perfil = usuario.perfil.nome if usuario.perfil else ''
-                if perfil == 'Administrador':
+                if perfil == 'Super Administrador':
                     next_page = url_for('main.home')
-                elif perfil == 'Solicitante':
-                    next_page = url_for('main.home_solicitante')
-                elif perfil == 'Consultor':
-                    next_page = url_for('main.home_consultor')
+                elif perfil == 'Administrador':
+                    next_page = url_for('main.home')
                 elif perfil == 'Operador':
                     next_page = url_for('main.home_operador')
                 elif perfil == 'Autorizador':
@@ -71,7 +65,6 @@ def login():
                     flash('Perfil desconhecido. Contate o administrador.', 'danger')
                     return redirect(url_for('main.login'))
             
-            # Adicionar cabeçalhos de cache para Firefox
             response = make_response(redirect(next_page))
             response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
             response.headers['Pragma'] = 'no-cache'

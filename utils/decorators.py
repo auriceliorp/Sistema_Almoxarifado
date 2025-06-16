@@ -64,8 +64,50 @@ def super_admin_required(f):
             flash('Por favor, faça login para acessar esta página.', 'warning')
             return redirect(url_for('main.login'))
             
-        if not current_user.is_super_admin():
+        if not current_user.perfil or current_user.perfil.nome != 'Super Administrador':
             flash('Apenas Super Administradores podem acessar esta página.', 'danger')
+            return redirect(url_for('main.home'))
+            
+        return f(*args, **kwargs)
+    return decorated_function
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated:
+            flash('Por favor, faça login para acessar esta página.', 'warning')
+            return redirect(url_for('main.login'))
+            
+        if not current_user.perfil or current_user.perfil.nome != 'Administrador':
+            flash('Apenas Administradores podem acessar esta página.', 'danger')
+            return redirect(url_for('main.home'))
+            
+        return f(*args, **kwargs)
+    return decorated_function
+
+def operador_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated:
+            flash('Por favor, faça login para acessar esta página.', 'warning')
+            return redirect(url_for('main.login'))
+            
+        if not current_user.perfil or current_user.perfil.nome != 'Operador':
+            flash('Apenas Operadores podem acessar esta página.', 'danger')
+            return redirect(url_for('main.home'))
+            
+        return f(*args, **kwargs)
+    return decorated_function
+
+def autorizador_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated:
+            flash('Por favor, faça login para acessar esta página.', 'warning')
+            return redirect(url_for('main.login'))
+            
+        if not current_user.perfil or current_user.perfil.nome != 'Autorizador':
+            flash('Apenas Autorizadores podem acessar esta página.', 'danger')
             return redirect(url_for('main.home'))
             
         return f(*args, **kwargs)
@@ -81,16 +123,4 @@ def perfil_required(perfis_autorizados):
                 return redirect(url_for('main.home'))
             return f(*args, **kwargs)
         return decorated_function
-    return decorator
-
-def admin_required(f):
-    return perfil_required(['Administrador'])(f)
-
-def solicitante_required(f):
-    return perfil_required(['Solicitante'])(f)
-
-def autorizador_required(f):
-    return perfil_required(['Autorizador'])(f)
-
-def consultor_required(f):
-    return perfil_required(['Consultor'])(f) 
+    return decorator 

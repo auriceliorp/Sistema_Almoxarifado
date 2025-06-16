@@ -755,5 +755,3 @@ class MovimentoEstoque(db.Model):
 
     def __repr__(self):
         return f"<MovimentoEstoque {self.tipo} - Item {self.item_id}>"
-
-

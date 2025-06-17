@@ -76,10 +76,10 @@ def login():
 
     return render_template('login.html', form=form)
 
-# --- Página principal para Administrador ---
+# --- Página principal ---
 @main.route('/home')
 @login_required
-@perfil_required(['Administrador'])
+@perfil_required(['Super Administrador', 'Administrador'])  # Permitir ambos os perfis
 def home():
     return render_template('home.html', usuario=current_user)
 
@@ -156,4 +156,3 @@ def relatorios():
 @login_required
 def dashboard_organizacao():
     return render_template('organizacao/dashboard_organizacao.html', usuario=current_user)
-

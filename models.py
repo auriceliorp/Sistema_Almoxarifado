@@ -152,7 +152,7 @@ class Usuario(UserMixin, db.Model):
         return check_password_hash(self.senha, senha)
 
     def is_super_admin(self):
-        return self.perfil and self.perfil.nivel_acesso == 4
+        return self.perfil and self.perfil.nome == 'Super Administrador'
 
     def is_admin(self):
         return self.perfil and self.perfil.nivel_acesso >= 3

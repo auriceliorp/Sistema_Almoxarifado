@@ -22,8 +22,10 @@ def admin_required(f):
 # ------------------------ ROTA: Lista de Logs ------------------------ #
 @auditoria_bp.route('/logs')
 @login_required
-@admin_required
 def lista_logs():
+    if not current_user.is_super_admin():
+        return render_template('acesso_negado.html')
+        
     page = request.args.get('page', 1, type=int)
     filtro = request.args.get('filtro', 'tabela')
     busca = request.args.get('busca', '').strip().lower()
@@ -43,8 +45,10 @@ def lista_logs():
 # ------------------------ ROTA: Detalhes do Log ------------------------ #
 @auditoria_bp.route('/log/<int:log_id>')
 @login_required
-@admin_required
 def detalhes_log(log_id):
+    if not current_user.is_super_admin():
+        return render_template('acesso_negado.html')
+        
     log = AuditLog.query.get_or_404(log_id)
 
     dados_antes = json_pretty(log.dados_anteriores)

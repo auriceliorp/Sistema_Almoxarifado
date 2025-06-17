@@ -3,7 +3,7 @@ from flask import Blueprint, request, jsonify, render_template, redirect, url_fo
 from flask_login import login_required, current_user
 
 # Importações locais
-from models import db, Tarefa, CategoriaTarefa, OrigemTarefa, UnidadeLocal, Usuario
+from models import db, Tarefa, CategoriaTarefa, OrigemTarefa, UnidadeLocal, Usuario, LogAuditoria
 from extensoes import csrf
 
 # Outras importações
@@ -330,7 +330,6 @@ def atualizar_tarefa(id):
 @login_required
 @csrf.exempt
 def atualizar_status_tarefa(id):
-    """Atualiza apenas o status de uma tarefa."""
     try:
         tarefa = Tarefa.query.get_or_404(id)
         data = request.get_json()
@@ -354,6 +353,15 @@ def atualizar_status_tarefa(id):
         elif novo_status != 'Concluída' and old_status == 'Concluída':
             tarefa.data_conclusao = None
         
+        # Adicionar log de auditoria
+        log = LogAuditoria(
+            usuario_id=current_user.id,
+            acao=f'Alteração de status da tarefa {id}',
+            detalhes=f'Status alterado de {old_status} para {novo_status}'
+        )
+        db.session.add(log)
+        
+        # Commit das alterações
         db.session.commit()
         
         # Retornar também os contadores atualizados
@@ -587,3 +595,4 @@ def get_dashboard_data():
 def init_app(app):
     app.register_blueprint(tarefas_bp)
     app.register_blueprint(api_bp) 
+

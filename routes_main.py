@@ -79,8 +79,9 @@ def login():
 # --- Página principal ---
 @main.route('/home')
 @login_required
-@perfil_required(['Super Administrador', 'Administrador'])  # Permitir ambos os perfis
 def home():
+    # O template atual já tem toda a lógica de verificação de perfil
+    # e mostra o conteúdo apropriado para cada tipo de usuário
     return render_template('home.html', usuario=current_user)
 
 # --- Página principal para Solicitante ---
@@ -156,3 +157,4 @@ def relatorios():
 @login_required
 def dashboard_organizacao():
     return render_template('organizacao/dashboard_organizacao.html', usuario=current_user)
+

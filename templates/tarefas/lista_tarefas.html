@@ -88,8 +88,9 @@
         margin-bottom: 1rem;
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         border-left: 4px solid;
-        cursor: move;
+        cursor: grab;
         transition: transform 0.2s, box-shadow 0.2s;
+        position: relative;
     }
     
     .kanban-card:hover {
@@ -407,16 +408,34 @@
     }
 
     .gu-mirror {
-        background: white;
-        border-radius: 8px;
-        padding: 1rem;
-        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-        opacity: 0.8;
+        cursor: grabbing !important;
+        opacity: 0.8 !important;
+        transform: rotate(3deg);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important;
     }
 
     .gu-transit {
-        opacity: 0.2;
-        background: #f8f9fa;
+        opacity: 0.2 !important;
+        background: #f8f9fa !important;
+        border: 2px dashed #dee2e6;
+    }
+
+    .kanban-card:active {
+        cursor: grabbing;
+    }
+
+    .kanban-card.is-dragging {
+        opacity: 0.9;
+        transform: rotate(2deg);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+
+    .kanban-column-content.gu-over {
+        background-color: rgba(0,0,0,0.03);
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
     }
 </style>
 {% endblock %}
@@ -680,3 +699,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %} 
+

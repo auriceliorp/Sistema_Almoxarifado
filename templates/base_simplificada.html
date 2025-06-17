@@ -108,7 +108,16 @@
       <button class="navbar-toggler d-md-none me-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas">
         <i class="bi bi-list fs-3"></i>
       </button>
-      <a href="{{ url_for('main.home') }}" class="btn btn-sm btn-outline-light d-flex align-items-center">
+      <a href="{% if current_user.perfil.nome == 'Super Administrador' or current_user.perfil.nome == 'Administrador' %}
+                {{ url_for('main.home') }}
+              {% elif current_user.perfil.nome == 'Operador' %}
+                {{ url_for('main.home_operador') }}
+              {% elif current_user.perfil.nome == 'Autorizador' %}
+                {{ url_for('main.home_autorizador') }}
+              {% else %}
+                {{ url_for('main.home') }}
+              {% endif %}" 
+         class="btn btn-sm btn-outline-light d-flex align-items-center">
         <i class="bi bi-house-door me-1"></i> Início
       </a>
     </div>

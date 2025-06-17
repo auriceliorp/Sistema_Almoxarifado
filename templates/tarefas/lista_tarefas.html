@@ -722,27 +722,31 @@ document.addEventListener('DOMContentLoaded', function() {
     // Pegar todas as colunas do Kanban
     const containers = Array.from(document.querySelectorAll('.kanban-column-content'));
     
-    // Inicializar Dragula
+    let draggingCard = null;
+    let originalColumn = null;
+
+    // Inicializar Dragula com configurações ajustadas
     const drake = dragula(containers, {
         moves: function(el, container, handle) {
-            // Permitir arrastar pelo cartão inteiro, exceto em botões
             return !handle.classList.contains('btn') && 
                    !handle.classList.contains('dropdown-toggle');
         },
         accepts: function(el, target, source, sibling) {
-            // Permitir soltar em qualquer coluna
             return true;
         },
         direction: 'vertical',
-        revertOnSpill: true // Reverte se soltar fora de uma coluna
+        revertOnSpill: true,
+        removeOnSpill: false
     });
 
-    // Evento quando começa a arrastar
+    // Quando começa a arrastar
     drake.on('drag', function(el, source) {
+        draggingCard = el;
+        originalColumn = source;
         el.classList.add('is-dragging');
     });
 
-    // Evento quando solta o cartão
+    // Quando solta o cartão
     drake.on('drop', function(el, target, source, sibling) {
         el.classList.remove('is-dragging');
         
@@ -750,7 +754,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const tarefaTitulo = el.querySelector('.kanban-card-title').textContent;
         const novoStatus = target.dataset.status;
         
-        // Confirmar a mudança
+        // Primeiro anexar o cartão à nova coluna
+        target.appendChild(el);
+        
+        // Depois mostrar a confirmação
         Swal.fire({
             title: 'Confirmar mudança?',
             html: `Deseja alterar o status da tarefa <strong>${tarefaTitulo}</strong> para <strong>${novoStatus}</strong>?`,
@@ -759,21 +766,62 @@ document.addEventListener('DOMContentLoaded', function() {
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
             confirmButtonText: 'Sim, alterar',
-            cancelButtonText: 'Cancelar'
+            cancelButtonText: 'Cancelar',
+            allowOutsideClick: false // Impede fechamento clicando fora
         }).then((result) => {
             if (result.isConfirmed) {
                 atualizarStatusTarefa(tarefaId, novoStatus);
             } else {
-                // Retornar o cartão para a coluna original
+                // Se cancelou, retorna o cartão para a coluna original
                 source.appendChild(el);
+                atualizarContadores();
             }
         });
     });
 
-    // Evento quando cancela o arrasto
+    // Quando cancela o arrasto
     drake.on('cancel', function(el) {
         el.classList.remove('is-dragging');
+        draggingCard = null;
+        originalColumn = null;
     });
+
+    // Função para atualizar status da tarefa
+    function atualizarStatusTarefa(tarefaId, novoStatus) {
+        fetch(`/api/tarefas/${tarefaId}/status`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ status: novoStatus })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro ao atualizar status');
+            }
+            return response.json();
+        })
+        .then(data => {
+            Toast.fire({
+                icon: 'success',
+                title: 'Status atualizado com sucesso!'
+            });
+            atualizarContadores();
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            Toast.fire({
+                icon: 'error',
+                title: 'Erro ao atualizar status'
+            });
+            // Em caso de erro, retorna o cartão para a coluna original
+            if (originalColumn && draggingCard) {
+                originalColumn.appendChild(draggingCard);
+            }
+            atualizarContadores();
+        });
+    }
 
     // Função para atualizar contadores
     function atualizarContadores() {
@@ -803,60 +851,8 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => console.error('Erro ao atualizar contadores:', error));
     }
 
-    // Atualizar a função de atualização de status
-    function atualizarStatusTarefa(tarefaId, novoStatus) {
-        fetch(`/api/tarefas/${tarefaId}/status`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify({ status: novoStatus })
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(err => Promise.reject(err));
-            }
-            return response.json();
-        })
-        .then(data => {
-            Toast.fire({
-                icon: 'success',
-                title: 'Status atualizado com sucesso!'
-            });
-            // Atualizar contadores após sucesso
-            atualizarContadores();
-        })
-        .catch(error => {
-            console.error('Erro:', error);
-            Toast.fire({
-                icon: 'error',
-                title: 'Erro ao atualizar status. Por favor, tente novamente.'
-            });
-            // Em caso de erro, retorna o cartão para a coluna original
-            if (originalColumn) {
-                originalColumn.appendChild(draggingCard);
-            }
-            // Atualizar contadores mesmo em caso de erro
-            atualizarContadores();
-        });
-    }
-
     // Adicionar chamada inicial dos contadores
     atualizarContadores();
-    
-    // Atualizar contadores após qualquer mudança via drag and drop
-    drake.on('drop', function(el, target, source, sibling) {
-        // ... código existente do drop ...
-        
-        // Atualizar contadores após confirmação
-        if (result.isConfirmed) {
-            atualizarStatusTarefa(tarefaId, novoStatus);
-        } else {
-            source.appendChild(el);
-            atualizarContadores();
-        }
-    });
 });
 </script>
 {% endblock %} 

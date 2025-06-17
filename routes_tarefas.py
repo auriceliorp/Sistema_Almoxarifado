@@ -353,14 +353,6 @@ def atualizar_status_tarefa(id):
         elif novo_status != 'Concluída' and old_status == 'Concluída':
             tarefa.data_conclusao = None
         
-        # Adicionar log de auditoria
-        log = LogAuditoria(
-            usuario_id=current_user.id,
-            acao=f'Alteração de status da tarefa {id}',
-            detalhes=f'Status alterado de {old_status} para {novo_status}'
-        )
-        db.session.add(log)
-        
         # Commit das alterações
         db.session.commit()
         

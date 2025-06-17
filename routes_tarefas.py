@@ -344,7 +344,7 @@ def atualizar_status_tarefa(id):
         # Validar status permitidos
         status_permitidos = ['Não iniciada', 'Em execução', 'Suspensa', 'Concluída', 'Em atraso']
         if novo_status not in status_permitidos:
-            return jsonify({'error': 'Status inválido'}), 400
+            return jsonify({'error': f'Status inválido. Status permitidos: {", ".join(status_permitidos)}'}), 400
         
         tarefa.status = novo_status
         
@@ -356,9 +356,19 @@ def atualizar_status_tarefa(id):
         
         db.session.commit()
         
+        # Retornar também os contadores atualizados
+        contadores = {
+            'nao_iniciadas': Tarefa.query.filter_by(status='Não iniciada').count(),
+            'em_execucao': Tarefa.query.filter_by(status='Em execução').count(),
+            'suspensas': Tarefa.query.filter_by(status='Suspensa').count(),
+            'concluidas': Tarefa.query.filter_by(status='Concluída').count(),
+            'em_atraso': Tarefa.query.filter_by(status='Em atraso').count()
+        }
+        
         return jsonify({
             'message': 'Status atualizado com sucesso',
-            'data': tarefa.to_dict()
+            'data': tarefa.to_dict(),
+            'contadores': contadores
         })
     except Exception as e:
         db.session.rollback()

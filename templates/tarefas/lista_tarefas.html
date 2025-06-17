@@ -804,19 +804,31 @@ document.addEventListener('DOMContentLoaded', function() {
             return response.json();
         })
         .then(data => {
-            // Atualizar contadores com os dados retornados
             if (data.contadores) {
-                document.querySelector('[data-status="nao-iniciada"]').textContent = data.contadores.nao_iniciadas;
-                document.querySelector('[data-status="em-execucao"]').textContent = data.contadores.em_execucao;
-                document.querySelector('[data-status="suspensa"]').textContent = data.contadores.suspensas;
-                document.querySelector('[data-status="concluida"]').textContent = data.contadores.concluidas;
-                document.querySelector('[data-status="em-atraso"]').textContent = data.contadores.em_atraso;
+                // Atualizar os contadores no topo
+                document.querySelector('.status-count[data-status="nao-iniciada"]').textContent = data.contadores.nao_iniciadas;
+                document.querySelector('.status-count[data-status="em-execucao"]').textContent = data.contadores.em_execucao;
+                document.querySelector('.status-count[data-status="suspensa"]').textContent = data.contadores.suspensas;
+                document.querySelector('.status-count[data-status="concluida"]').textContent = data.contadores.concluidas;
+                document.querySelector('.status-count[data-status="em-atraso"]').textContent = data.contadores.em_atraso;
                 
                 // Atualizar o total
-                const total = data.contadores.nao_iniciadas + data.contadores.em_execucao + 
-                             data.contadores.suspensas + data.contadores.concluidas + 
+                const total = data.contadores.nao_iniciadas + 
+                             data.contadores.em_execucao + 
+                             data.contadores.suspensas + 
+                             data.contadores.concluidas + 
                              data.contadores.em_atraso;
-                document.querySelector('strong:first-child').textContent = total;
+                
+                // Atualizar o contador total no topo
+                document.querySelector('p.text-muted.mb-0 strong:first-child').textContent = total;
+                
+                // Atualizar os contadores das colunas
+                document.querySelectorAll('.kanban-column').forEach(coluna => {
+                    const status = coluna.classList[1]; // pega a segunda classe que contém o status
+                    const contador = coluna.querySelector('.kanban-column-counter');
+                    const cards = coluna.querySelectorAll('.kanban-card').length;
+                    contador.textContent = cards;
+                });
             }
             
             Toast.fire({

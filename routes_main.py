@@ -50,20 +50,10 @@ def login():
             login_user(usuario, remember=True)
             session.permanent = True
             
+            # Simplificado: sempre redireciona para home
             next_page = request.args.get('next')
             if not next_page or not next_page.startswith('/'):
-                perfil = usuario.perfil.nome if usuario.perfil else ''
-                if perfil == 'Super Administrador':
-                    next_page = url_for('main.home')
-                elif perfil == 'Administrador':
-                    next_page = url_for('main.home')
-                elif perfil == 'Operador':
-                    next_page = url_for('main.home_operador')
-                elif perfil == 'Autorizador':
-                    next_page = url_for('main.home_autorizador')
-                else:
-                    flash('Perfil desconhecido. Contate o administrador.', 'danger')
-                    return redirect(url_for('main.login'))
+                next_page = url_for('main.home')
             
             response = make_response(redirect(next_page))
             response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
@@ -80,37 +70,7 @@ def login():
 @main.route('/home')
 @login_required
 def home():
-    # O template atual já tem toda a lógica de verificação de perfil
-    # e mostra o conteúdo apropriado para cada tipo de usuário
     return render_template('home.html', usuario=current_user)
-
-# --- Página principal para Solicitante ---
-@main.route('/home_solicitante')
-@login_required
-@perfil_required(['Solicitante'])
-def home_solicitante():
-    return render_template('home_solicitante.html', usuario=current_user)
-
-# --- Página principal para Consultor ---
-@main.route('/home_consultor')
-@login_required
-@perfil_required(['Consultor'])
-def home_consultor():
-    return render_template('home_consultor.html', usuario=current_user)
-
-# --- Nova rota para Operador
-@main.route('/home_operador')
-@login_required
-@perfil_required(['Operador'])
-def home_operador():
-    return render_template('home_operador.html', usuario=current_user)
-
-# --- Página principal para Autorizador ---
-@main.route('/home_autorizador')
-@login_required
-@perfil_required(['Autorizador'])
-def home_autorizador():
-    return render_template('home_autorizador.html', usuario=current_user)
 
 # --- Logout do sistema ---
 @main.route('/logout')

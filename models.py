@@ -756,4 +756,19 @@ class MovimentoEstoque(db.Model):
     def __repr__(self):
         return f"<MovimentoEstoque {self.tipo} - Item {self.item_id}>"
 
+class LogAuditoria(db.Model):
+    __tablename__ = 'log_auditoria'
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    acao = db.Column(db.String(100), nullable=False)
+    detalhes = db.Column(db.Text, nullable=True)
+    data_hora = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relacionamentos
+    usuario = db.relationship('Usuario', backref='logs_auditoria')
+
+    def __repr__(self):
+        return f"<LogAuditoria {self.id} - {self.acao}>"
+
+
 

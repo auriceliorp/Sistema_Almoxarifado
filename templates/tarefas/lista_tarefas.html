@@ -970,12 +970,29 @@ function atualizarStatusTarefa(tarefaId, novoStatus) {
         return response.json();
     })
     .then(data => {
+        // Mostrar mensagem de sucesso
         Toast.fire({
             icon: 'success',
             title: 'Status atualizado com sucesso!'
         });
-        // Atualizar a interface ou recarregar a página
-        window.location.reload();
+
+        // Mover o cartão para a nova coluna no Kanban
+        const cardElement = document.querySelector(`[data-tarefa-id="${tarefaId}"]`).closest('.kanban-card');
+        const novaColuna = document.querySelector(`.kanban-column.${novoStatus.toLowerCase().replace(' ', '-')}`);
+        
+        if (cardElement && novaColuna) {
+            // Animar a transição
+            cardElement.style.transition = 'all 0.3s ease';
+            cardElement.style.opacity = '0';
+            
+            setTimeout(() => {
+                novaColuna.appendChild(cardElement);
+                cardElement.style.opacity = '1';
+            }, 300);
+
+            // Atualizar os contadores
+            atualizarContadores();
+        }
     })
     .catch(error => {
         console.error('Erro:', error);
@@ -984,6 +1001,22 @@ function atualizarStatusTarefa(tarefaId, novoStatus) {
             title: 'Erro ao atualizar status. Por favor, tente novamente.'
         });
     });
+}
+
+// Função para atualizar os contadores
+function atualizarContadores() {
+    fetch('/api/tarefas/contadores')
+    .then(response => response.json())
+    .then(data => {
+        // Atualizar os números nas cards de estatísticas
+        document.querySelector('.stats-value:nth-child(1)').textContent = data.total;
+        document.querySelector('.stats-value:nth-child(2)').textContent = data.nao_iniciadas;
+        document.querySelector('.stats-value:nth-child(3)').textContent = data.em_execucao;
+        document.querySelector('.stats-value:nth-child(4)').textContent = data.suspensas;
+        document.querySelector('.stats-value:nth-child(5)').textContent = data.concluidas;
+        document.querySelector('.stats-value:nth-child(6)').textContent = data.em_atraso;
+    })
+    .catch(error => console.error('Erro ao atualizar contadores:', error));
 }
 </script>
 {% endblock %} 

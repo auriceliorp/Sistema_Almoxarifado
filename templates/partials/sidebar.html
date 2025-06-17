@@ -31,7 +31,7 @@
 
     <div class="sidebar-menu" role="navigation" aria-label="Menu principal">
         <ul class="nav flex-column">
-            <!-- Dashboard -->
+            <!-- Dashboard - Visível para Super Admin e Admin -->
             {% if current_user.is_super_admin() or current_user.is_admin() %}
             <li class="nav-item mb-2">
                 <a href="{{ url_for('dashboard_bp.dashboard') }}" 
@@ -41,7 +41,7 @@
             </li>
             {% endif %}
 
-            <!-- Almoxarifado -->
+            <!-- Almoxarifado - Menu completo para Super Admin e Admin -->
             {% if current_user.is_super_admin() or current_user.is_admin() %}
             <li class="nav-item mb-2">
                 <a class="nav-link text-white d-flex justify-content-between align-items-center"
@@ -100,7 +100,7 @@
                 </ul>
             </li>
 
-            <!-- Patrimônio -->
+            <!-- Patrimônio - Visível para Super Admin e Admin -->
             {% if current_user.is_super_admin() or current_user.is_admin() %}
             <li class="nav-item mb-2">
                 <a class="nav-link text-white d-flex justify-content-between align-items-center"
@@ -118,7 +118,7 @@
             </li>
             {% endif %}
 
-            <!-- Compras -->
+            <!-- Compras - Visível para Super Admin e Admin -->
             {% if current_user.is_super_admin() or current_user.is_admin() %}
             <li class="nav-item mb-2">
                 <a class="nav-link text-white d-flex justify-content-between align-items-center"
@@ -137,7 +137,7 @@
             </li>
             {% endif %}
 
-            <!-- Publicações -->
+            <!-- Publicações - Visível para Super Admin e Admin -->
             {% if current_user.is_super_admin() or current_user.is_admin() %}
             <li class="nav-item mb-2">
                 <a class="nav-link text-white d-flex justify-content-between align-items-center"
@@ -154,7 +154,7 @@
             </li>
             {% endif %}
 
-            <!-- Configurações -->
+            <!-- Configurações - Visível para Super Admin e Admin -->
             {% if current_user.is_super_admin() or current_user.is_admin() %}
             <li class="nav-item mb-2">
                 <a class="nav-link text-white d-flex justify-content-between align-items-center"
@@ -177,7 +177,7 @@
             </li>
             {% endif %}
 
-            <!-- Tarefas -->
+            <!-- Tarefas - Visível para Super Admin e Admin -->
             {% if current_user.is_super_admin() or current_user.is_admin() %}
             <li class="nav-item mt-3">
                 <a class="nav-link text-white fw-bold d-flex justify-content-between align-items-center"

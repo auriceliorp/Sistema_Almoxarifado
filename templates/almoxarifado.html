@@ -93,7 +93,7 @@
 
   <div class="dashboard-grid">
     <!-- Itens -->
-    {% if current_user.is_admin() or current_user.tem_permissao('gerenciar_itens') %}
+    {% if current_user.is_super_admin() or current_user.is_admin() or current_user.tem_permissao('gerenciar_itens') %}
     <div class="service-card">
       <i class="bi bi-box"></i>
       <h6>Itens</h6>
@@ -107,7 +107,7 @@
     {% endif %}
 
     <!-- Fornecedores -->
-    {% if current_user.is_admin() or current_user.tem_permissao('gerenciar_fornecedores') %}
+    {% if current_user.is_super_admin() or current_user.is_admin() or current_user.tem_permissao('gerenciar_fornecedores') %}
     <div class="service-card">
       <i class="bi bi-person-check"></i>
       <h6>Fornecedores</h6>
@@ -121,7 +121,7 @@
     {% endif %}
 
     <!-- Entradas -->
-    {% if current_user.is_admin() or current_user.tem_permissao('gerenciar_entradas') %}
+    {% if current_user.is_super_admin() or current_user.is_admin() or current_user.tem_permissao('gerenciar_entradas') %}
     <div class="service-card">
       <i class="bi bi-box-arrow-in-down"></i>
       <h6>Entrada de Materiais</h6>
@@ -135,7 +135,7 @@
     {% endif %}
 
     <!-- Saídas -->
-    {% if current_user.is_admin() or current_user.tem_permissao('gerenciar_saidas') %}
+    {% if current_user.is_super_admin() or current_user.is_admin() or current_user.tem_permissao('gerenciar_saidas') %}
     <div class="service-card">
       <i class="bi bi-box-arrow-up"></i>
       <h6>Saída de Materiais</h6>

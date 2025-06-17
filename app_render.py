@@ -264,6 +264,10 @@ def create_app():
     # Registra o blueprint de tarefas por último
     app.register_blueprint(tarefas_blueprint)
 
+    # Registra os blueprints de API
+    from routes_tarefas import api_bp as tarefas_api_blueprint
+    app.register_blueprint(tarefas_api_blueprint)
+
     # Cria as tabelas e perfis padrão em um contexto separado
     with app.app_context():
         # Primeiro cria todas as tabelas

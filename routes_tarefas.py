@@ -328,6 +328,7 @@ def atualizar_tarefa(id):
 
 @api_bp.route('/tarefas/<int:id>/status', methods=['PUT'])
 @login_required
+@csrf.exempt
 def atualizar_status_tarefa(id):
     """Atualiza apenas o status de uma tarefa."""
     try:

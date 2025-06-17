@@ -464,9 +464,12 @@
         <div>
             <h4 class="mb-1">Gestão de Tarefas</h4>
             <p class="text-muted mb-0">
-                Total de tarefas: <strong>{{ total_tarefas }}</strong> | 
-                Em andamento: <strong>{{ tarefas_em_execucao }}</strong> | 
-                Concluídas: <strong>{{ tarefas_concluidas }}</strong>
+                Total: <strong>{{ total_tarefas }}</strong> | 
+                Não Iniciadas: <strong class="status-count" data-status="nao-iniciada">{{ tarefas_nao_iniciadas }}</strong> | 
+                Em Execução: <strong class="status-count" data-status="em-execucao">{{ tarefas_em_execucao }}</strong> | 
+                Suspensas: <strong class="status-count" data-status="suspensa">{{ tarefas_suspensas }}</strong> | 
+                Concluídas: <strong class="status-count" data-status="concluida">{{ tarefas_concluidas }}</strong> | 
+                Em Atraso: <strong class="status-count" data-status="em-atraso">{{ tarefas_em_atraso }}</strong>
             </p>
         </div>
         <div class="d-flex gap-2">
@@ -584,7 +587,8 @@
 
     <!-- Kanban Board -->
     <div class="kanban-board">
-        {% for status in ['Não iniciada', 'Em execução', 'Suspensa', 'Concluída', 'Em atraso'] %}
+        {% set status_ordem = ['Não iniciada', 'Em execução', 'Suspensa', 'Concluída', 'Em atraso'] %}
+        {% for status in status_ordem %}
         <div class="kanban-column {{ status.lower().replace(' ', '-') }}">
             <div class="kanban-column-header">
                 <h6>
@@ -771,7 +775,88 @@ document.addEventListener('DOMContentLoaded', function() {
         el.classList.remove('is-dragging');
     });
 
-    // Resto do seu código JavaScript...
+    // Função para atualizar contadores
+    function atualizarContadores() {
+        // Atualizar contadores das colunas
+        document.querySelectorAll('.kanban-column').forEach(coluna => {
+            const contador = coluna.querySelector('.kanban-column-counter');
+            const cardsVisiveis = coluna.querySelectorAll('.kanban-card:not([style*="display: none"])').length;
+            contador.textContent = cardsVisiveis;
+        });
+
+        // Atualizar estatísticas do topo via API
+        fetch('/api/tarefas/contadores')
+        .then(response => response.json())
+        .then(data => {
+            // Atualizar os números no cabeçalho
+            document.querySelector('[data-status="nao-iniciada"]').textContent = data.nao_iniciadas;
+            document.querySelector('[data-status="em-execucao"]').textContent = data.em_execucao;
+            document.querySelector('[data-status="suspensa"]').textContent = data.suspensas;
+            document.querySelector('[data-status="concluida"]').textContent = data.concluidas;
+            document.querySelector('[data-status="em-atraso"]').textContent = data.em_atraso;
+            
+            // Atualizar o total
+            const total = data.nao_iniciadas + data.em_execucao + data.suspensas + 
+                         data.concluidas + data.em_atraso;
+            document.querySelector('strong:first-child').textContent = total;
+        })
+        .catch(error => console.error('Erro ao atualizar contadores:', error));
+    }
+
+    // Atualizar a função de atualização de status
+    function atualizarStatusTarefa(tarefaId, novoStatus) {
+        fetch(`/api/tarefas/${tarefaId}/status`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ status: novoStatus })
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => Promise.reject(err));
+            }
+            return response.json();
+        })
+        .then(data => {
+            Toast.fire({
+                icon: 'success',
+                title: 'Status atualizado com sucesso!'
+            });
+            // Atualizar contadores após sucesso
+            atualizarContadores();
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            Toast.fire({
+                icon: 'error',
+                title: 'Erro ao atualizar status. Por favor, tente novamente.'
+            });
+            // Em caso de erro, retorna o cartão para a coluna original
+            if (originalColumn) {
+                originalColumn.appendChild(draggingCard);
+            }
+            // Atualizar contadores mesmo em caso de erro
+            atualizarContadores();
+        });
+    }
+
+    // Adicionar chamada inicial dos contadores
+    atualizarContadores();
+    
+    // Atualizar contadores após qualquer mudança via drag and drop
+    drake.on('drop', function(el, target, source, sibling) {
+        // ... código existente do drop ...
+        
+        // Atualizar contadores após confirmação
+        if (result.isConfirmed) {
+            atualizarStatusTarefa(tarefaId, novoStatus);
+        } else {
+            source.appendChild(el);
+            atualizarContadores();
+        }
+    });
 });
 </script>
 {% endblock %} 

@@ -792,34 +792,48 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
             },
             body: JSON.stringify({ status: novoStatus })
         })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Erro ao atualizar status');
+                return response.json().then(err => Promise.reject(err));
             }
             return response.json();
         })
         .then(data => {
+            // Atualizar contadores com os dados retornados
+            if (data.contadores) {
+                document.querySelector('[data-status="nao-iniciada"]').textContent = data.contadores.nao_iniciadas;
+                document.querySelector('[data-status="em-execucao"]').textContent = data.contadores.em_execucao;
+                document.querySelector('[data-status="suspensa"]').textContent = data.contadores.suspensas;
+                document.querySelector('[data-status="concluida"]').textContent = data.contadores.concluidas;
+                document.querySelector('[data-status="em-atraso"]').textContent = data.contadores.em_atraso;
+                
+                // Atualizar o total
+                const total = data.contadores.nao_iniciadas + data.contadores.em_execucao + 
+                             data.contadores.suspensas + data.contadores.concluidas + 
+                             data.contadores.em_atraso;
+                document.querySelector('strong:first-child').textContent = total;
+            }
+            
             Toast.fire({
                 icon: 'success',
                 title: 'Status atualizado com sucesso!'
             });
-            atualizarContadores();
         })
         .catch(error => {
             console.error('Erro:', error);
             Toast.fire({
                 icon: 'error',
-                title: 'Erro ao atualizar status'
+                title: error.error || 'Erro ao atualizar status'
             });
             // Em caso de erro, retorna o cartão para a coluna original
             if (originalColumn && draggingCard) {
                 originalColumn.appendChild(draggingCard);
             }
-            atualizarContadores();
         });
     }
 

@@ -155,7 +155,7 @@ class Usuario(UserMixin, db.Model):
         return self.perfil and self.perfil.nome == 'Super Administrador'
 
     def is_admin(self):
-        return self.perfil and self.perfil.nivel_acesso >= 3
+        return self.perfil and self.perfil.nome == 'Administrador'
 
     def is_autorizador(self):
         return self.perfil and self.perfil.pode_autorizar
@@ -755,3 +755,5 @@ class MovimentoEstoque(db.Model):
 
     def __repr__(self):
         return f"<MovimentoEstoque {self.tipo} - Item {self.item_id}>"
+
+

@@ -3,6 +3,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 <link href="https://cdn.jsdelivr.net/npm/dragula@3.7.3/dist/dragula.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dragula/3.7.3/dragula.min.css">
 <style>
     .kanban-board {
         display: flex;
@@ -88,7 +89,11 @@
         margin-bottom: 1rem;
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         border-left: 4px solid;
-        cursor: grab;
+        cursor: move;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
         transition: transform 0.2s, box-shadow 0.2s;
         position: relative;
     }
@@ -408,16 +413,27 @@
     }
 
     .gu-mirror {
-        cursor: grabbing !important;
-        opacity: 0.8 !important;
-        transform: rotate(3deg);
-        box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important;
+        position: fixed !important;
+        margin: 0 !important;
+        z-index: 9999 !important;
+        opacity: 0.8;
+        cursor: grabbing;
+    }
+
+    .gu-hide {
+        display: none !important;
+    }
+
+    .gu-unselectable {
+        -webkit-user-select: none !important;
+        -moz-user-select: none !important;
+        -ms-user-select: none !important;
+        user-select: none !important;
     }
 
     .gu-transit {
-        opacity: 0.2 !important;
-        background: #f8f9fa !important;
-        border: 2px dashed #dee2e6;
+        opacity: 0.2;
+        transform: rotate(0deg);
     }
 
     .kanban-card:active {
@@ -430,12 +446,13 @@
         box-shadow: 0 8px 16px rgba(0,0,0,0.1);
     }
 
+    .kanban-column-content {
+        min-height: 100px;
+    }
+
     .kanban-column-content.gu-over {
-        background-color: rgba(0,0,0,0.03);
+        background: rgba(0,0,0,0.03);
         border: 2px dashed #ccc;
-        border-radius: 8px;
-        padding-top: 1rem;
-        padding-bottom: 1rem;
     }
 </style>
 {% endblock %}
@@ -583,9 +600,11 @@
                 </h6>
                 <span class="kanban-column-counter">0</span>
             </div>
-            <div class="kanban-column-content">
+            <div class="kanban-column-content" data-status="{{ status }}">
                 {% for tarefa in tarefas if tarefa.status == status %}
-                <div class="kanban-card {{ tarefa.prioridade.lower() }}" data-tarefa-id="{{ tarefa.id }}">
+                <div class="kanban-card {{ tarefa.prioridade.lower() }}" 
+                     data-tarefa-id="{{ tarefa.id }}"
+                     draggable="true">
                     <div class="kanban-card-header">
                         <h6 class="kanban-card-title">{{ tarefa.titulo }}</h6>
                         <div class="dropdown">
@@ -641,6 +660,7 @@
 {% block extra_js %}
 {{ super() }}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dragula/3.7.3/dragula.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Configuração do gráfico de responsáveis
@@ -695,8 +715,63 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // ... resto do código JavaScript ...
+    // Pegar todas as colunas do Kanban
+    const containers = Array.from(document.querySelectorAll('.kanban-column-content'));
+    
+    // Inicializar Dragula
+    const drake = dragula(containers, {
+        moves: function(el, container, handle) {
+            // Permitir arrastar pelo cartão inteiro, exceto em botões
+            return !handle.classList.contains('btn') && 
+                   !handle.classList.contains('dropdown-toggle');
+        },
+        accepts: function(el, target, source, sibling) {
+            // Permitir soltar em qualquer coluna
+            return true;
+        },
+        direction: 'vertical',
+        revertOnSpill: true // Reverte se soltar fora de uma coluna
+    });
+
+    // Evento quando começa a arrastar
+    drake.on('drag', function(el, source) {
+        el.classList.add('is-dragging');
+    });
+
+    // Evento quando solta o cartão
+    drake.on('drop', function(el, target, source, sibling) {
+        el.classList.remove('is-dragging');
+        
+        const tarefaId = el.dataset.tarefaId;
+        const tarefaTitulo = el.querySelector('.kanban-card-title').textContent;
+        const novoStatus = target.dataset.status;
+        
+        // Confirmar a mudança
+        Swal.fire({
+            title: 'Confirmar mudança?',
+            html: `Deseja alterar o status da tarefa <strong>${tarefaTitulo}</strong> para <strong>${novoStatus}</strong>?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sim, alterar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                atualizarStatusTarefa(tarefaId, novoStatus);
+            } else {
+                // Retornar o cartão para a coluna original
+                source.appendChild(el);
+            }
+        });
+    });
+
+    // Evento quando cancela o arrasto
+    drake.on('cancel', function(el) {
+        el.classList.remove('is-dragging');
+    });
+
+    // Resto do seu código JavaScript...
 });
 </script>
 {% endblock %} 
-

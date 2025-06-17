@@ -912,29 +912,7 @@ $(document).ready(function() {
         const tarefaId = $(this).data('tarefa-id');
         const novoStatus = $(this).val();
         
-        $.ajax({
-            url: `/api/tarefas/${tarefaId}/status`,
-            method: 'PUT',
-            contentType: 'application/json',
-            data: JSON.stringify({ status: novoStatus }),
-            success: function(response) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Status atualizado!',
-                    showConfirmButton: false,
-                    timer: 1500
-                }).then(() => {
-                    location.reload();
-                });
-            },
-            error: function(xhr, status, error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erro ao atualizar status',
-                    text: 'Por favor, tente novamente.'
-                });
-            }
-        });
+        atualizarStatusTarefa(tarefaId, novoStatus);
     });
 
     // Confirmação de exclusão
@@ -975,6 +953,38 @@ $(document).ready(function() {
         {% endif %}
     {% endwith %}
 });
+
+function atualizarStatusTarefa(tarefaId, novoStatus) {
+    fetch(`/api/tarefas/${tarefaId}/status`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ status: novoStatus })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => Promise.reject(err));
+        }
+        return response.json();
+    })
+    .then(data => {
+        Toast.fire({
+            icon: 'success',
+            title: 'Status atualizado com sucesso!'
+        });
+        // Atualizar a interface ou recarregar a página
+        window.location.reload();
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        Toast.fire({
+            icon: 'error',
+            title: 'Erro ao atualizar status. Por favor, tente novamente.'
+        });
+    });
+}
 </script>
 {% endblock %} 
 

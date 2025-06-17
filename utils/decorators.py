@@ -123,4 +123,25 @@ def perfil_required(perfis_autorizados):
                 return redirect(url_for('main.home'))
             return f(*args, **kwargs)
         return decorated_function
+    return decorator
+
+def almoxarifado_access_required(permissao=None):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not current_user.is_authenticated:
+                flash('Por favor, faça login para acessar esta página.', 'warning')
+                return redirect(url_for('main.login'))
+            
+            # Super Admin sempre tem acesso
+            if current_user.is_super_admin():
+                return f(*args, **kwargs)
+                
+            # Se não for super admin, verifica outras permissões
+            if permissao and not current_user.tem_permissao(permissao):
+                flash('Você não tem permissão para acessar esta funcionalidade.', 'danger')
+                return redirect(url_for('main.home'))
+                
+            return f(*args, **kwargs)
+        return decorated_function
     return decorator 

@@ -1,0 +1,125 @@
+{% extends 'base_simplificada.html' %}
+{% block title %}Nova Solicitação de Compra{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h4 class="card-title mb-4">Nova Solicitação de Compra</h4>
+            
+            <form method="POST" action="{{ url_for('solicitacao_compra_bp.criar_solicitacao') }}">
+                <!-- Campos da Atividade -->
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="numero_atividade" class="form-label">Número da Atividade</label>
+                        <input type="text" class="form-control" id="numero_atividade" name="numero_atividade">
+                    </div>
+                    <div class="col-md-8">
+                        <label for="nome_atividade" class="form-label">Nome da Atividade</label>
+                        <input type="text" class="form-control" id="nome_atividade" name="nome_atividade" readonly>
+                    </div>
+                </div>
+
+                <!-- Finalidade e Justificativa -->
+                <div class="mb-3">
+                    <label for="finalidade" class="form-label">Finalidade *</label>
+                    <textarea class="form-control" id="finalidade" name="finalidade" required rows="3"></textarea>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="justificativa_marca" class="form-label">Justificativa Técnica para Marca Específica</label>
+                    <textarea class="form-control" id="justificativa_marca" name="justificativa_marca" rows="3"></textarea>
+                </div>
+
+                <!-- Seleção de Itens -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">Itens</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="itens-container">
+                            <!-- Template para linha de item -->
+                            <div class="row mb-3 item-row">
+                                <div class="col-md-6">
+                                    <label class="form-label">Item *</label>
+                                    <select class="form-select" name="item_id[]" required>
+                                        <option value="">Selecione um item...</option>
+                                        {% for item in itens %}
+                                        <option value="{{ item.id }}">{{ item.nome }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Quantidade *</label>
+                                    <input type="number" class="form-control" name="quantidade[]" required min="1">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">&nbsp;</label>
+                                    <button type="button" class="btn btn-danger w-100 remover-item">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="btn btn-secondary" id="adicionar-item">
+                            <i class="bi bi-plus-lg"></i> Adicionar Item
+                        </button>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i> Criar Solicitação
+                    </button>
+                    <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-lg"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Adicionar novo item
+    document.getElementById('adicionar-item').addEventListener('click', function() {
+        const container = document.getElementById('itens-container');
+        const template = container.querySelector('.item-row').cloneNode(true);
+        
+        // Limpar valores
+        template.querySelector('select').value = '';
+        template.querySelector('input[type="number"]').value = '';
+        
+        // Adicionar evento para remover
+        template.querySelector('.remover-item').addEventListener('click', function() {
+            if (container.querySelectorAll('.item-row').length > 1) {
+                this.closest('.item-row').remove();
+            }
+        });
+        
+        container.appendChild(template);
+    });
+    
+    // Evento inicial para remover itens
+    document.querySelectorAll('.remover-item').forEach(button => {
+        button.addEventListener('click', function() {
+            const container = document.getElementById('itens-container');
+            if (container.querySelectorAll('.item-row').length > 1) {
+                this.closest('.item-row').remove();
+            }
+        });
+    });
+    
+    // TODO: Implementar busca do nome da atividade quando número for preenchido
+    document.getElementById('numero_atividade').addEventListener('change', function() {
+        // Aqui você implementará a busca do nome da atividade
+        // Por enquanto, apenas um placeholder
+        document.getElementById('nome_atividade').value = 'Nome da Atividade será buscado automaticamente';
+    });
+});
+</script>
+{% endblock %}
+{% endblock %} 

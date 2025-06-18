@@ -22,6 +22,9 @@ from models import (
     CategoriaTarefa, OrigemTarefa, RequisicaoMaterial, RequisicaoItem
 )
 
+# Adicione junto com os outros imports de blueprints
+from routes_solicitacao_compra import solicitacao_compra_bp as solicitacao_compra_blueprint
+
 # Configura logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -240,6 +243,7 @@ def create_app():
     app.register_blueprint(grupo_blueprint)
     app.register_blueprint(fornecedor_blueprint)
     app.register_blueprint(nd_blueprint)
+    app.register_blueprint(solicitacao_compra_blueprint)
 
     # Registra os blueprints de patrimônio
     app.register_blueprint(patrimonio_blueprint)
@@ -311,3 +315,4 @@ if __name__ == '__main__':
     init_db()
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
+

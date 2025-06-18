@@ -1,0 +1,115 @@
+{% extends 'base_simplificada.html' %}
+{% block title %}Detalhes da Solicitação de Compra{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">Detalhes da Solicitação #{{ solicitacao.id }}</h4>
+        <a href="{{ url_for('solicitacao_compra_bp.minhas_solicitacoes') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="card-title">Informações Gerais</h5>
+                    <dl class="row">
+                        <dt class="col-sm-4">Data da Solicitação</dt>
+                        <dd class="col-sm-8">{{ solicitacao.data_solicitacao.strftime('%d/%m/%Y %H:%M') }}</dd>
+
+                        <dt class="col-sm-4">Status</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge {% if solicitacao.status == 'PENDENTE' %}bg-warning
+                                             {% elif solicitacao.status == 'APROVADA' %}bg-success
+                                             {% elif solicitacao.status == 'REJEITADA' %}bg-danger
+                                             {% elif solicitacao.status == 'CONCLUÍDA' %}bg-info{% endif %}">
+                                {{ solicitacao.status }}
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-4">Solicitante</dt>
+                        <dd class="col-sm-8">{{ solicitacao.solicitante.nome }}</dd>
+
+                        <dt class="col-sm-4">Atividade</dt>
+                        <dd class="col-sm-8">{{ solicitacao.atividade.numero }} - {{ solicitacao.atividade.nome }}</dd>
+                    </dl>
+                </div>
+
+                <div class="col-md-6">
+                    <h5 class="card-title">Detalhes da Solicitação</h5>
+                    <dl class="row">
+                        <dt class="col-sm-4">Finalidade</dt>
+                        <dd class="col-sm-8">{{ solicitacao.finalidade }}</dd>
+
+                        {% if solicitacao.justificativa_marca %}
+                        <dt class="col-sm-4">Justificativa Marca</dt>
+                        <dd class="col-sm-8">{{ solicitacao.justificativa_marca }}</dd>
+                        {% endif %}
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title">Itens Solicitados</h5>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Quantidade</th>
+                            <th>Unidade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in solicitacao.itens %}
+                        <tr>
+                            <td>{{ item.item.nome }}</td>
+                            <td>{{ item.quantidade }}</td>
+                            <td>{{ item.item.unidade }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% if solicitacao.status == 'PENDENTE' and solicitacao.solicitante_id == current_user.id %}
+    <div class="d-flex justify-content-end mt-4">
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelarModal">
+            <i class="bi bi-x-circle"></i> Cancelar Solicitação
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal de Cancelamento -->
+{% if solicitacao.status == 'PENDENTE' and solicitacao.solicitante_id == current_user.id %}
+<div class="modal fade" id="cancelarModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cancelar Solicitação</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja cancelar esta solicitação?</p>
+                <p class="text-danger"><small>Esta ação não poderá ser desfeita.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Não</button>
+                <form action="{{ url_for('solicitacao_compra_bp.cancelar_solicitacao', solicitacao_id=solicitacao.id) }}" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger">Sim, Cancelar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %} 

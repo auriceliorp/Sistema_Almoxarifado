@@ -33,7 +33,7 @@
                         <dd class="col-sm-8">{{ solicitacao.solicitante.nome }}</dd>
 
                         <dt class="col-sm-4">Atividade</dt>
-                        <dd class="col-sm-8">{{ solicitacao.atividade.numero }} - {{ solicitacao.atividade.nome }}</dd>
+                        <dd class="col-sm-8">{{ solicitacao.numero_atividade }} - {{ solicitacao.nome_atividade }}</dd>
                     </dl>
                 </div>
 
@@ -66,11 +66,11 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for item in solicitacao.itens %}
+                        {% for item_solicitacao in solicitacao.itens %}
                         <tr>
-                            <td>{{ item.item.nome }}</td>
-                            <td>{{ item.quantidade }}</td>
-                            <td>{{ item.item.unidade }}</td>
+                            <td>{{ item_solicitacao.item.nome }}</td>
+                            <td>{{ item_solicitacao.quantidade }}</td>
+                            <td>{{ item_solicitacao.item.unidade }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>

@@ -814,3 +814,22 @@ class ItemSolicitacaoCompra(db.Model):
 
     def __repr__(self):
         return f"<ItemSolicitacaoCompra {self.id}>"
+
+class Atividade(db.Model):
+    __tablename__ = 'atividades'
+    id = db.Column(db.Integer, primary_key=True)
+    numero = db.Column(db.String(50), unique=True, nullable=False)
+    nome = db.Column(db.String(200), nullable=False)
+    descricao = db.Column(db.Text)
+    data_inicio = db.Column(db.Date)
+    data_fim = db.Column(db.Date)
+    status = db.Column(db.String(20), default='ATIVA')  # ATIVA, CONCLUÍDA, CANCELADA
+    
+    responsavel_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
+    responsavel = db.relationship('Usuario', backref='atividades_responsavel')
+    
+    data_cadastro = db.Column(db.DateTime, default=datetime.utcnow)
+    data_atualizacao = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<Atividade {self.numero}>"

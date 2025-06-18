@@ -110,4 +110,32 @@ def detalhes_solicitacao(solicitacao_id):
                              solicitacao=solicitacao)
     except Exception as e:
         flash(f'Erro ao carregar detalhes da solicitação: {str(e)}', 'error')
-        return redirect(url_for('solicitacao_compra_bp.minhas_solicitacoes')) 
+        return redirect(url_for('solicitacao_compra_bp.minhas_solicitacoes'))
+
+@solicitacao_compra_bp.route('/<int:solicitacao_id>/cancelar', methods=['POST'])
+@login_required
+def cancelar_solicitacao(solicitacao_id):
+    """Cancela uma solicitação de compra"""
+    try:
+        solicitacao = SolicitacaoCompra.query.get_or_404(solicitacao_id)
+        
+        # Verificar se o usuário tem permissão para cancelar
+        if solicitacao.solicitante_id != current_user.id:
+            flash('Você não tem permissão para cancelar esta solicitação.', 'error')
+            return redirect(url_for('solicitacao_compra_bp.detalhes_solicitacao', solicitacao_id=solicitacao_id))
+            
+        # Verificar se a solicitação pode ser cancelada
+        if solicitacao.status != 'PENDENTE':
+            flash('Esta solicitação não pode ser cancelada.', 'error')
+            return redirect(url_for('solicitacao_compra_bp.detalhes_solicitacao', solicitacao_id=solicitacao_id))
+            
+        # Cancelar a solicitação
+        solicitacao.status = 'CANCELADA'
+        db.session.commit()
+        
+        flash('Solicitação cancelada com sucesso.', 'success')
+        return redirect(url_for('solicitacao_compra_bp.minhas_solicitacoes'))
+        
+    except Exception as e:
+        flash(f'Erro ao cancelar solicitação: {str(e)}', 'error')
+        return redirect(url_for('solicitacao_compra_bp.detalhes_solicitacao', solicitacao_id=solicitacao_id)) 

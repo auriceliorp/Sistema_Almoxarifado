@@ -8,6 +8,9 @@
             <h4 class="card-title mb-4">Nova Solicitação de Compra</h4>
             
             <form method="POST" action="{{ url_for('solicitacao_compra_bp.criar_solicitacao') }}">
+                <!-- Token CSRF -->
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
                 <!-- Campos da Atividade -->
                 <div class="row mb-3">
                     <div class="col-md-4">

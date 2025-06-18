@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
-from models import db, Atividade
+from models import db, Atividade, Usuario
 from utils.decorators import admin_required
 import logging
 
@@ -33,6 +33,9 @@ def lista_atividades():
 @login_required
 @admin_required
 def nova_atividade():
+    # Buscar todos os usuários ativos
+    usuarios = Usuario.query.filter_by(ativo=True).order_by(Usuario.nome).all()
+    
     if request.method == 'POST':
         try:
             atividade = Atividade(
@@ -54,13 +57,14 @@ def nova_atividade():
             db.session.rollback()
             flash(f'Erro ao cadastrar atividade: {str(e)}', 'error')
             
-    return render_template('atividade/form.html')
+    return render_template('atividade/form.html', usuarios=usuarios)
 
 @atividade_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def editar_atividade(id):
     atividade = Atividade.query.get_or_404(id)
+    usuarios = Usuario.query.filter_by(ativo=True).order_by(Usuario.nome).all()
     
     if request.method == 'POST':
         try:
@@ -79,7 +83,7 @@ def editar_atividade(id):
             db.session.rollback()
             flash(f'Erro ao atualizar atividade: {str(e)}', 'error')
     
-    return render_template('atividade/form.html', atividade=atividade)
+    return render_template('atividade/form.html', atividade=atividade, usuarios=usuarios)
 
 @atividade_bp.route('/api/buscar/<string:numero>')
 @login_required

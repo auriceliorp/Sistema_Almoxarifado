@@ -786,22 +786,22 @@ class SolicitacaoCompra(db.Model):
     nome_atividade = db.Column(db.String(200))
     finalidade = db.Column(db.Text, nullable=False)
     justificativa_marca = db.Column(db.Text)
-    status = db.Column(db.String(20), nullable=False, default='PENDENTE')  # PENDENTE, APROVADA, REJEITADA, CONCLUÍDA
+    status = db.Column(db.String(20), nullable=False, default='PENDENTE')
     
-    # Relacionamentos
     solicitante_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
     solicitante = db.relationship('Usuario', foreign_keys=[solicitante_id], backref='solicitacoes_compra')
     
-    # Relacionamento com a tarefa gerada
     tarefa_id = db.Column(db.Integer, db.ForeignKey('tarefas.id'), nullable=True)
     tarefa = db.relationship('Tarefa', backref='solicitacao_compra')
     
-    # Itens da solicitação
     itens = db.relationship(
         'ItemSolicitacaoCompra',
         backref='solicitacao',
         cascade='all, delete-orphan'
     )
+
+    def __repr__(self):
+        return f"<SolicitacaoCompra {self.id}>"
 
 class ItemSolicitacaoCompra(db.Model):
     __tablename__ = 'item_solicitacao_compra'
@@ -811,3 +811,6 @@ class ItemSolicitacaoCompra(db.Model):
     quantidade = db.Column(db.Integer, nullable=False)
     
     item = db.relationship('Item', backref='solicitacoes_compra')
+
+    def __repr__(self):
+        return f"<ItemSolicitacaoCompra {self.id}>"

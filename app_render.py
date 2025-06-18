@@ -24,6 +24,7 @@ from models import (
 
 # Adicione junto com os outros imports de blueprints
 from routes_solicitacao_compra import solicitacao_compra_bp as solicitacao_compra_blueprint
+from routes_atividade import atividade_bp as atividade_blueprint
 
 # Configura logging
 logging.basicConfig(level=logging.INFO)
@@ -271,6 +272,9 @@ def create_app():
     # Registra os blueprints de API
     from routes_tarefas import api_bp as tarefas_api_blueprint
     app.register_blueprint(tarefas_api_blueprint)
+
+    # Registrar junto com os outros blueprints
+    app.register_blueprint(atividade_blueprint)
 
     # Cria as tabelas e perfis padrão em um contexto separado
     with app.app_context():

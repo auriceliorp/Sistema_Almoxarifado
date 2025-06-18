@@ -666,6 +666,80 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dragula/3.7.3/dragula.min.js"></script>
 <script>
+// Função para visualizar detalhes da tarefa
+async function verDetalhes(tarefaId, titulo) {
+    try {
+        // Mostrar loading
+        Swal.fire({
+            title: 'Carregando detalhes...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+        
+        const response = await fetch(`/api/tarefas/${tarefaId}/detalhes`);
+        const tarefa = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(tarefa.error || 'Erro ao carregar detalhes');
+        }
+        
+        // Formatar datas
+        const dataInicio = tarefa.data_inicio ? new Date(tarefa.data_inicio).toLocaleDateString('pt-BR') : 'Não definida';
+        const dataTermino = tarefa.data_termino ? new Date(tarefa.data_termino).toLocaleDateString('pt-BR') : 'Não definida';
+        const dataConclusao = tarefa.data_conclusao ? new Date(tarefa.data_conclusao).toLocaleDateString('pt-BR') : 'Não concluída';
+        
+        // Montar HTML dos detalhes
+        const detalhesHtml = `
+            <div class="text-start">
+                <h6 class="mb-3">Informações Gerais</h6>
+                <p><strong>Título:</strong> ${tarefa.titulo}</p>
+                <p><strong>Resumo:</strong> ${tarefa.resumo || 'Não informado'}</p>
+                <p><strong>Status:</strong> ${tarefa.status}</p>
+                <p><strong>Prioridade:</strong> ${tarefa.prioridade}</p>
+                <p><strong>Número SEI:</strong> ${tarefa.numero_sei || 'Não informado'}</p>
+                
+                <h6 class="mt-4 mb-3">Datas</h6>
+                <p><strong>Data Início:</strong> ${dataInicio}</p>
+                <p><strong>Data Término:</strong> ${dataTermino}</p>
+                <p><strong>Data Conclusão:</strong> ${dataConclusao}</p>
+                
+                <h6 class="mt-4 mb-3">Classificação</h6>
+                <p><strong>Categoria:</strong> ${tarefa.categoria?.nome || 'Não informada'}</p>
+                <p><strong>Origem:</strong> ${tarefa.origem?.nome || 'Não informada'}</p>
+                <p><strong>Unidade:</strong> ${tarefa.unidade_local?.descricao || 'Não informada'}</p>
+                
+                <h6 class="mt-4 mb-3">Responsáveis</h6>
+                <p><strong>Responsável:</strong> ${tarefa.responsavel?.nome || 'Não atribuído'}</p>
+                <p><strong>Solicitante:</strong> ${tarefa.solicitante?.nome || 'Não informado'}</p>
+                
+                ${tarefa.observacoes ? `
+                    <h6 class="mt-4 mb-3">Observações</h6>
+                    <p>${tarefa.observacoes}</p>
+                ` : ''}
+            </div>
+        `;
+        
+        // Mostrar modal com os detalhes
+        Swal.fire({
+            title: titulo,
+            html: detalhesHtml,
+            width: '600px',
+            showConfirmButton: false,
+            showCloseButton: true
+        });
+        
+    } catch (error) {
+        console.error('Erro:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Erro',
+            text: 'Não foi possível carregar os detalhes da tarefa'
+        });
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Configuração do gráfico de responsáveis
     const ctx = document.getElementById('chartResponsaveis').getContext('2d');

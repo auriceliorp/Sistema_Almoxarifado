@@ -86,6 +86,16 @@
         </button>
     </div>
     {% endif %}
+
+    <div class="card-body">
+        <div class="d-flex gap-2">
+            <!-- Botão de Impressão -->
+            <a href="{{ url_for('solicitacao_compra_bp.imprimir_solicitacao', solicitacao_id=solicitacao.id) }}" 
+               class="btn btn-outline-primary" target="_blank">
+                <i class="bi bi-printer me-2"></i>Imprimir
+            </a>
+        </div>
+    </div>
 </div>
 
 <!-- Modal de Cancelamento -->

@@ -32,13 +32,17 @@ def criar_solicitacao():
         # Obter dados do formulário
         itens_ids = request.form.getlist('item_id[]')
         quantidades = request.form.getlist('quantidade[]')
-        numero_atividade = request.form.get('numero_atividade')
-        nome_atividade = request.form.get('nome_atividade')
+        atividade_id = request.form.get('atividade_id')
         finalidade = request.form.get('finalidade')
         justificativa_marca = request.form.get('justificativa_marca')
 
         if not itens_ids:
             raise ValueError("É necessário incluir pelo menos um item")
+
+        # Buscar a atividade
+        atividade = Atividade.query.get(atividade_id)
+        if not atividade:
+            raise ValueError("Atividade não encontrada")
 
         # Preparar lista de itens
         itens = []
@@ -56,8 +60,8 @@ def criar_solicitacao():
         # Criar solicitação
         result = SolicitacaoCompraService.criar_solicitacao(
             solicitante_id=current_user.id,
-            numero_atividade=numero_atividade,
-            nome_atividade=nome_atividade,
+            numero_atividade=atividade.numero,
+            nome_atividade=atividade.nome,
             finalidade=finalidade,
             justificativa_marca=justificativa_marca,
             itens=itens

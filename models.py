@@ -778,3 +778,36 @@ class LogAuditoria(db.Model):
     def __repr__(self):
         return f"<LogAuditoria {self.id} - {self.acao}>"
 
+class SolicitacaoCompra(db.Model):
+    __tablename__ = 'solicitacao_compra'
+    id = db.Column(db.Integer, primary_key=True)
+    data_solicitacao = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    numero_atividade = db.Column(db.String(50))
+    nome_atividade = db.Column(db.String(200))
+    finalidade = db.Column(db.Text, nullable=False)
+    justificativa_marca = db.Column(db.Text)
+    status = db.Column(db.String(20), nullable=False, default='PENDENTE')  # PENDENTE, APROVADA, REJEITADA, CONCLUÍDA
+    
+    # Relacionamentos
+    solicitante_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    solicitante = db.relationship('Usuario', foreign_keys=[solicitante_id], backref='solicitacoes_compra')
+    
+    # Relacionamento com a tarefa gerada
+    tarefa_id = db.Column(db.Integer, db.ForeignKey('tarefas.id'), nullable=True)
+    tarefa = db.relationship('Tarefa', backref='solicitacao_compra')
+    
+    # Itens da solicitação
+    itens = db.relationship(
+        'ItemSolicitacaoCompra',
+        backref='solicitacao',
+        cascade='all, delete-orphan'
+    )
+
+class ItemSolicitacaoCompra(db.Model):
+    __tablename__ = 'item_solicitacao_compra'
+    id = db.Column(db.Integer, primary_key=True)
+    solicitacao_id = db.Column(db.Integer, db.ForeignKey('solicitacao_compra.id'), nullable=False)
+    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
+    quantidade = db.Column(db.Integer, nullable=False)
+    
+    item = db.relationship('Item', backref='solicitacoes_compra')

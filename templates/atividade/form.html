@@ -1,0 +1,67 @@
+{% extends 'base_simplificada.html' %}
+{% block title %}{{ 'Editar' if atividade else 'Nova' }} Atividade{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h4 class="card-title mb-4">{{ 'Editar' if atividade else 'Nova' }} Atividade</h4>
+            
+            <form method="POST">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="numero" class="form-label">Número *</label>
+                        <input type="text" class="form-control" id="numero" name="numero" 
+                               value="{{ atividade.numero if atividade else '' }}" required>
+                    </div>
+                    
+                    <div class="col-md-8">
+                        <label for="nome" class="form-label">Nome *</label>
+                        <input type="text" class="form-control" id="nome" name="nome" 
+                               value="{{ atividade.nome if atividade else '' }}" required>
+                    </div>
+                    
+                    <div class="col-12">
+                        <label for="descricao" class="form-label">Descrição</label>
+                        <textarea class="form-control" id="descricao" name="descricao" rows="3">{{ atividade.descricao if atividade else '' }}</textarea>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label for="data_inicio" class="form-label">Data Início</label>
+                        <input type="date" class="form-control" id="data_inicio" name="data_inicio" 
+                               value="{{ atividade.data_inicio.strftime('%Y-%m-%d') if atividade and atividade.data_inicio else '' }}">
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label for="data_fim" class="form-label">Data Fim</label>
+                        <input type="date" class="form-control" id="data_fim" name="data_fim" 
+                               value="{{ atividade.data_fim.strftime('%Y-%m-%d') if atividade and atividade.data_fim else '' }}">
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label for="responsavel_id" class="form-label">Responsável</label>
+                        <select class="form-select" id="responsavel_id" name="responsavel_id">
+                            <option value="">Selecione...</option>
+                            {% for usuario in usuarios %}
+                            <option value="{{ usuario.id }}" 
+                                    {% if atividade and atividade.responsavel_id == usuario.id %}selected{% endif %}>
+                                {{ usuario.nome }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i> Salvar
+                    </button>
+                    <a href="{{ url_for('atividade_bp.lista_atividades') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-lg"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

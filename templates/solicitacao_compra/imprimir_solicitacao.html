@@ -1,0 +1,129 @@
+{% extends 'base_impressao.html' %}
+{% block title %}Solicitação de Compra #{{ solicitacao.id }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Cabeçalho -->
+    <div class="row mb-4">
+        <div class="col-2">
+            <img src="{{ url_for('static', filename='embrapa_logo.png') }}" alt="Logo Embrapa" class="img-fluid">
+        </div>
+        <div class="col-10 text-center">
+            <h4>SOLICITAÇÃO DE COMPRA DE MATERIAL</h4>
+            <h5>Nº {{ solicitacao.id }}/{{ solicitacao.data_solicitacao.strftime('%Y') }}</h5>
+        </div>
+    </div>
+
+    <!-- Informações da Solicitação -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Data da Solicitação:</strong> {{ solicitacao.data_solicitacao.strftime('%d/%m/%Y %H:%M') }}</p>
+                    <p><strong>Solicitante:</strong> {{ solicitacao.solicitante.nome }}</p>
+                    <p><strong>Setor:</strong> {{ solicitacao.solicitante.setor.nome if solicitacao.solicitante.setor else 'Não informado' }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Número da Atividade:</strong> {{ solicitacao.numero_atividade }}</p>
+                    <p><strong>Nome da Atividade:</strong> {{ solicitacao.nome_atividade }}</p>
+                    <p><strong>Status:</strong> 
+                        {% if solicitacao.status == 'PENDENTE' %}
+                            <span class="badge bg-warning text-dark">Pendente</span>
+                        {% elif solicitacao.status == 'APROVADA' %}
+                            <span class="badge bg-success">Aprovada</span>
+                        {% elif solicitacao.status == 'REJEITADA' %}
+                            <span class="badge bg-danger">Rejeitada</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Itens Solicitados -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Itens Solicitados</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Quantidade</th>
+                        <th>Unidade</th>
+                        <th>Especificação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in solicitacao.itens %}
+                    <tr>
+                        <td>{{ item.item.nome }}</td>
+                        <td>{{ item.quantidade }}</td>
+                        <td>{{ item.item.unidade }}</td>
+                        <td>{{ item.item.especificacao }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Finalidade e Justificativa -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h6>Finalidade:</h6>
+            <p class="mb-4">{{ solicitacao.finalidade }}</p>
+
+            {% if solicitacao.justificativa_marca %}
+            <h6>Justificativa Técnica para Marca Específica:</h6>
+            <p>{{ solicitacao.justificativa_marca }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Assinaturas -->
+    <div class="row mt-5">
+        <div class="col-md-4">
+            <div class="border-top border-dark pt-2 text-center">
+                <p class="mb-0">{{ solicitacao.solicitante.nome }}</p>
+                <p class="mb-0"><small>Solicitante</small></p>
+                <p class="mb-0"><small>{{ solicitacao.data_solicitacao.strftime('%d/%m/%Y') }}</small></p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="border-top border-dark pt-2 text-center">
+                <p class="mb-0">_____________________________</p>
+                <p class="mb-0"><small>Chefia Imediata</small></p>
+                <p class="mb-0"><small>Data: ____/____/______</small></p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="border-top border-dark pt-2 text-center">
+                <p class="mb-0">_____________________________</p>
+                <p class="mb-0"><small>Setor de Compras</small></p>
+                <p class="mb-0"><small>Data: ____/____/______</small></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Observações -->
+    <div class="mt-4">
+        <p class="small text-muted">
+            <strong>Observações:</strong><br>
+            1. Esta solicitação deve ser acompanhada das especificações técnicas detalhadas do material.<br>
+            2. Em caso de marca específica, a justificativa técnica é obrigatória.<br>
+            3. O prazo para atendimento dependerá do processo de compras e disponibilidade orçamentária.
+        </p>
+    </div>
+</div>
+
+{% block print_button %}
+<div class="no-print text-end mb-4">
+    <button onclick="window.print()" class="btn btn-primary">
+        <i class="bi bi-printer me-2"></i>Imprimir
+    </button>
+</div>
+{% endblock %}
+
+{% endblock %} 

@@ -142,4 +142,24 @@ def cancelar_solicitacao(solicitacao_id):
         
     except Exception as e:
         flash(f'Erro ao cancelar solicitação: {str(e)}', 'error')
-        return redirect(url_for('solicitacao_compra_bp.detalhes_solicitacao', solicitacao_id=solicitacao_id)) 
+        return redirect(url_for('solicitacao_compra_bp.detalhes_solicitacao', solicitacao_id=solicitacao_id))
+
+@solicitacao_compra_bp.route('/<int:solicitacao_id>/imprimir')
+@login_required
+def imprimir_solicitacao(solicitacao_id):
+    """Gera o documento de impressão da solicitação de compra"""
+    try:
+        solicitacao = SolicitacaoCompra.query.get_or_404(solicitacao_id)
+        
+        # Verificar permissão
+        if not current_user.is_admin() and solicitacao.solicitante_id != current_user.id:
+            flash('Você não tem permissão para imprimir esta solicitação.', 'error')
+            return redirect(url_for('solicitacao_compra_bp.minhas_solicitacoes'))
+            
+        return render_template('solicitacao_compra/imprimir_solicitacao.html', 
+                             solicitacao=solicitacao)
+                             
+    except Exception as e:
+        flash(f'Erro ao gerar impressão: {str(e)}', 'error')
+        return redirect(url_for('solicitacao_compra_bp.detalhes_solicitacao', 
+                              solicitacao_id=solicitacao_id)) 

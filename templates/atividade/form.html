@@ -8,6 +8,9 @@
             <h4 class="card-title mb-4">{{ 'Editar' if atividade else 'Nova' }} Atividade</h4>
             
             <form method="POST">
+                <!-- Token CSRF -->
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label for="numero" class="form-label">Número *</label>
@@ -39,8 +42,8 @@
                     </div>
                     
                     <div class="col-md-4">
-                        <label for="responsavel_id" class="form-label">Responsável</label>
-                        <select class="form-select" id="responsavel_id" name="responsavel_id">
+                        <label for="responsavel_id" class="form-label">Responsável *</label>
+                        <select class="form-select" id="responsavel_id" name="responsavel_id" required>
                             <option value="">Selecione...</option>
                             {% for usuario in usuarios %}
                             <option value="{{ usuario.id }}" 

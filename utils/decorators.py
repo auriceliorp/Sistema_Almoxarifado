@@ -78,8 +78,8 @@ def admin_required(f):
             flash('Por favor, faça login para acessar esta página.', 'warning')
             return redirect(url_for('main.login'))
             
-        if not current_user.perfil or (current_user.perfil.nome != 'Administrador' and current_user.perfil.nome != 'Super Administrador'):
-            flash('Apenas Administradores podem acessar esta página.', 'danger')
+        if not current_user.perfil or (not current_user.is_admin() and not current_user.is_super_admin()):
+            flash('Acesso negado. Você precisa ser administrador para acessar esta página.', 'error')
             return redirect(url_for('main.home'))
             
         return f(*args, **kwargs)

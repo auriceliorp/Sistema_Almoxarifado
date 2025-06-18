@@ -91,4 +91,23 @@ def minhas_solicitacoes():
             return redirect(url_for('main.index'))
     except Exception as e:
         flash(f'Erro ao listar solicitações: {str(e)}', 'error')
-        return redirect(url_for('main.index')) 
+        return redirect(url_for('main.index'))
+
+@solicitacao_compra_bp.route('/<int:solicitacao_id>')
+@login_required
+def detalhes_solicitacao(solicitacao_id):
+    """Exibe os detalhes de uma solicitação de compra"""
+    try:
+        # Buscar a solicitação
+        solicitacao = SolicitacaoCompra.query.get_or_404(solicitacao_id)
+        
+        # Verificar se o usuário tem permissão para ver esta solicitação
+        if not current_user.is_admin() and solicitacao.solicitante_id != current_user.id:
+            flash('Você não tem permissão para ver esta solicitação.', 'error')
+            return redirect(url_for('solicitacao_compra_bp.minhas_solicitacoes'))
+        
+        return render_template('solicitacao_compra/detalhes_solicitacao.html', 
+                             solicitacao=solicitacao)
+    except Exception as e:
+        flash(f'Erro ao carregar detalhes da solicitação: {str(e)}', 'error')
+        return redirect(url_for('solicitacao_compra_bp.minhas_solicitacoes')) 

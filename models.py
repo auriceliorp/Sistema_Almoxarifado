@@ -163,10 +163,18 @@ class Usuario(UserMixin, db.Model):
     def requer_autorizacao(self):
         return self.perfil and self.perfil.requer_autorizacao
 
+    def is_admin_or_super(self):
+        return self.perfil and (self.perfil.nome in ['Administrador', 'Super Administrador'])
+
     def tem_permissao(self, permissao):
+        # Super Admin já tem todas as permissões
         if self.is_super_admin():
             return True
         
+        # Admin tem todas as permissões exceto auditoria
+        if self.is_admin() and permissao != 'auditoria':
+            return True
+            
         if self.permissoes_especiais and permissao in self.permissoes_especiais:
             return self.permissoes_especiais[permissao]
             
@@ -769,6 +777,4 @@ class LogAuditoria(db.Model):
 
     def __repr__(self):
         return f"<LogAuditoria {self.id} - {self.acao}>"
-
-
 

@@ -11,12 +11,13 @@
                 <!-- Campos da Atividade -->
                 <div class="row mb-3">
                     <div class="col-md-4">
-                        <label for="numero_atividade" class="form-label">Número da Atividade</label>
-                        <input type="text" class="form-control" id="numero_atividade" name="numero_atividade">
-                    </div>
-                    <div class="col-md-8">
-                        <label for="nome_atividade" class="form-label">Nome da Atividade</label>
-                        <input type="text" class="form-control" id="nome_atividade" name="nome_atividade" readonly>
+                        <label for="atividade_id" class="form-label">Atividade *</label>
+                        <select class="form-select" id="atividade_id" name="atividade_id" required>
+                            <option value="">Selecione uma atividade...</option>
+                            {% for atividade in atividades %}
+                            <option value="{{ atividade.id }}">{{ atividade.numero }} - {{ atividade.nome }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                 </div>
 

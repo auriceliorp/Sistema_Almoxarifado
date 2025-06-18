@@ -179,7 +179,8 @@ def editar_tarefa(id):
                          categorias=categorias,
                          origens=origens,
                          unidades_locais=unidades_locais,
-                         usuarios=usuarios)
+                         usuarios=usuarios,
+                         modo='editar')
 
 @tarefas_bp.route('/excluir/<int:id>')
 @login_required
@@ -221,17 +222,6 @@ def get_tarefas():
         return jsonify([tarefa.to_dict() for tarefa in tarefas])
     except Exception as e:
         print(f"Erro ao buscar tarefas: {str(e)}")
-        return jsonify({'error': str(e)}), 500
-
-@api_bp.route('/tarefas/<int:id>/detalhes', methods=['GET'])
-@login_required
-def get_detalhes_tarefa(id):
-    """Retorna os detalhes de uma tarefa específica."""
-    try:
-        tarefa = Tarefa.query.get_or_404(id)
-        return jsonify(tarefa.to_dict())
-    except Exception as e:
-        print(f"Erro ao buscar detalhes da tarefa: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @api_bp.route('/tarefas', methods=['POST'])

@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from services.solicitacao_compra_service import SolicitacaoCompraService
-from models import db, Item, SolicitacaoCompra, ItemSolicitacaoCompra, Tarefa, CategoriaTarefa
+from models import db, Item, SolicitacaoCompra, ItemSolicitacaoCompra, Tarefa, CategoriaTarefa, Atividade
 import logging
 
 # Configuração de logging
@@ -16,8 +16,10 @@ def nova_solicitacao():
     """Página para criar nova solicitação de compra"""
     try:
         itens = Item.query.order_by(Item.nome).all()
+        atividades = Atividade.query.filter_by(status='ATIVA').order_by(Atividade.numero).all()
         return render_template('solicitacao_compra/nova_solicitacao.html', 
-                             itens=itens)
+                             itens=itens,
+                             atividades=atividades)
     except Exception as e:
         flash(f'Erro ao carregar página: {str(e)}', 'error')
         return redirect(url_for('main.index'))

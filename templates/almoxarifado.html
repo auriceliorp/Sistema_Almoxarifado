@@ -191,6 +191,22 @@
     </div>
     {% endif %}
 
+    <!-- Solicitação de Compra -->
+    <div class="service-card">
+      <i class="bi bi-cart"></i>
+      <h6>Solicitação de Compra</h6>
+      <div class="btn-group">
+        <a href="{{ url_for('solicitacao_compra_bp.nova_solicitacao') }}" class="btn btn-outline-primary">
+          <i class="bi bi-plus-lg"></i>
+          Nova Solicitação
+        </a>
+        <a href="{{ url_for('solicitacao_compra_bp.minhas_solicitacoes') }}" class="btn btn-outline-primary">
+          <i class="bi bi-list-check"></i>
+          Minhas Solicitações
+        </a>
+      </div>
+    </div>
+
   </div>
 </div>
 {% endblock %}

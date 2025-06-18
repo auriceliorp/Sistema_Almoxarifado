@@ -1,0 +1,101 @@
+{% extends 'base_simplificada.html' %}
+{% block title %}Lista de Atividades{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">Atividades</h4>
+        {% if current_user.is_admin() %}
+        <a href="{{ url_for('atividade_bp.nova_atividade') }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Nova Atividade
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Filtros -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select" onchange="this.form.submit()">
+                        <option value="ATIVA" {% if status_filter == 'ATIVA' %}selected{% endif %}>Ativas</option>
+                        <option value="CONCLUÍDA" {% if status_filter == 'CONCLUÍDA' %}selected{% endif %}>Concluídas</option>
+                        <option value="CANCELADA" {% if status_filter == 'CANCELADA' %}selected{% endif %}>Canceladas</option>
+                        <option value="TODAS" {% if status_filter == 'TODAS' %}selected{% endif %}>Todas</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Número</th>
+                            <th>Nome</th>
+                            <th>Responsável</th>
+                            <th>Data Início</th>
+                            <th>Data Fim</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for atividade in atividades.items %}
+                        <tr>
+                            <td>{{ atividade.numero }}</td>
+                            <td>{{ atividade.nome }}</td>
+                            <td>{{ atividade.responsavel.nome if atividade.responsavel else '-' }}</td>
+                            <td>{{ atividade.data_inicio.strftime('%d/%m/%Y') if atividade.data_inicio else '-' }}</td>
+                            <td>{{ atividade.data_fim.strftime('%d/%m/%Y') if atividade.data_fim else '-' }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if atividade.status == 'ATIVA' else 'secondary' }}">
+                                    {{ atividade.status }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if current_user.is_admin() %}
+                                <a href="{{ url_for('atividade_bp.editar_atividade', id=atividade.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted">
+                                Nenhuma atividade encontrada
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginação -->
+            {% if atividades.pages > 1 %}
+            <nav aria-label="Paginação" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% for page in atividades.iter_pages() %}
+                        {% if page %}
+                            <li class="page-item {{ 'active' if page == atividades.page else '' }}">
+                                <a class="page-link" href="{{ url_for('atividade_bp.lista_atividades', page=page, status=status_filter) }}">
+                                    {{ page }}
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

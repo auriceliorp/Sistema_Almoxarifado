@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from services.solicitacao_compra_service import SolicitacaoCompraService
-from models import db, Item, SolicitacaoCompra, ItemSolicitacaoCompra, Tarefa, CategoriaTarefa, Atividade, TriagemSolicitacaoCompra, PainelContratacao
+from models import db, Item, SolicitacaoCompra, ItemSolicitacaoCompra, Tarefa, CategoriaTarefa, Atividade, TriagemSolicitacaoCompra, PainelContratacao, NaturezaDespesa, Usuario, UnidadeLocal
 import logging
 import json
 from datetime import datetime
@@ -285,6 +285,25 @@ def criar_processo_da_triagem(triagem_id):
 def criar_processo_form(triagem_id):
     triagem = TriagemSolicitacaoCompra.query.get_or_404(triagem_id)
     
+    # Buscar dados para os selects
+    naturezas_despesa = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
+    usuarios = Usuario.query.filter_by(ativo=True).order_by(Usuario.nome).all()
+    setores = UnidadeLocal.query.order_by(UnidadeLocal.sigla).all()
+    
+    # Lista de fundamentações legais
+    fundamentacoes_legais = [
+        'Art. 17, I (RLCC) c/c Art. 6º, XVI (Lei 14.133/2021) - Pregão',
+        'Art. 29, I (Lei 13.303/2016) c/c Art. 98, Art. 100 e Art. 103, §3º - Dispensa',
+        'Art. 29, II - Dispensa',
+        'Art. 29, X - Prestadoras de Serviço Público',
+        'Art. 29, XV - Contratação Emergencial',
+        'Art. 30, I - Inexigibilidade',
+        'Art. 30, II - Inexigibilidade',
+        'Art. 108, IV - Congressos, Feiras e Exposições',
+        'Art. 75, IV, "c" - P&D',
+        'Art. 17, II - Licitação Embrapa'
+    ]
+
     if request.method == 'POST':
         try:
             # Criar processo no painel de contratações
@@ -333,11 +352,19 @@ def criar_processo_form(triagem_id):
             return render_template(
                 'solicitacao_compra/criar_processo.html',
                 triagem=triagem,
-                now=datetime.now()
+                now=datetime.now(),
+                naturezas_despesa=naturezas_despesa,
+                usuarios=usuarios,
+                setores=setores,
+                fundamentacoes_legais=fundamentacoes_legais
             )
     
     return render_template(
         'solicitacao_compra/criar_processo.html',
         triagem=triagem,
-        now=datetime.now()
+        now=datetime.now(),
+        naturezas_despesa=naturezas_despesa,
+        usuarios=usuarios,
+        setores=setores,
+        fundamentacoes_legais=fundamentacoes_legais
     ) 

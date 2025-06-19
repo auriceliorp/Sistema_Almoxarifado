@@ -89,16 +89,28 @@ function abrirModalTriagem() {
 }
 
 function salvarTriagem() {
+    // Pegar os valores dos campos
     const titulo = document.getElementById('titulo').value;
     const descricao = document.getElementById('descricao').value;
+    
+    // Pegar os IDs das solicitações selecionadas
     const solicitacoesSelecionadas = Array.from(document.querySelectorAll('input[name="solicitacao"]:checked')).map(cb => cb.value);
+    
+    if (solicitacoesSelecionadas.length === 0) {
+        alert('Selecione pelo menos uma solicitação para criar a triagem.');
+        return;
+    }
 
+    // Criar objeto com os dados
     const dados = {
         titulo: titulo,
         descricao: descricao,
         solicitacoes: solicitacoesSelecionadas
     };
 
+    console.log('Enviando dados:', dados);  // Debug
+
+    // Enviar para o servidor
     fetch('/solicitacao_compra/criar_triagem', {
         method: 'POST',
         headers: {
@@ -107,17 +119,27 @@ function salvarTriagem() {
         },
         body: JSON.stringify(dados)
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(data => Promise.reject(data));
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
+            // Fechar o modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalCriarTriagem'));
+            modal.hide();
+            
+            // Recarregar a página
             window.location.reload();
         } else {
-            alert(data.message || 'Erro ao criar triagem');
+            throw new Error(data.message || 'Erro ao criar triagem');
         }
     })
     .catch(error => {
         console.error('Erro:', error);
-        alert('Erro ao criar triagem. Por favor, tente novamente.');
+        alert(error.message || 'Erro ao criar triagem. Por favor, tente novamente.');
     });
 }
 

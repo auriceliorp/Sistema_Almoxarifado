@@ -1,8 +1,10 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from services.solicitacao_compra_service import SolicitacaoCompraService
-from models import db, Item, SolicitacaoCompra, ItemSolicitacaoCompra, Tarefa, CategoriaTarefa, Atividade
+from models import db, Item, SolicitacaoCompra, ItemSolicitacaoCompra, Tarefa, CategoriaTarefa, Atividade, TriagemSolicitacaoCompra, PainelContratacao
 import logging
+import json
+from datetime import datetime
 
 # Configuração de logging
 logging.basicConfig(level=logging.INFO)
@@ -196,4 +198,92 @@ def atender_solicitacao(solicitacao_id):
     return render_template(
         'solicitacao_compra/atender_solicitacao.html',
         solicitacao=solicitacao
-    ) 
+    )
+
+@solicitacao_compra_bp.route('/triagem')
+@login_required
+def triagem_solicitacoes():
+    # Buscar solicitações pendentes de triagem
+    solicitacoes = SolicitacaoCompra.query.filter_by(
+        status='Processo Iniciado'
+    ).order_by(
+        SolicitacaoCompra.data_solicitacao.desc()
+    ).all()
+    
+    # Buscar triagens em andamento
+    triagens = TriagemSolicitacaoCompra.query.filter(
+        TriagemSolicitacaoCompra.status != 'Concluída'
+    ).order_by(
+        TriagemSolicitacaoCompra.data_criacao.desc()
+    ).all()
+    
+    return render_template(
+        'solicitacao_compra/triagem_solicitacoes.html',
+        solicitacoes=solicitacoes,
+        triagens=triagens
+    )
+
+@solicitacao_compra_bp.route('/triagem/criar', methods=['POST'])
+@login_required
+def criar_triagem():
+    try:
+        dados = request.form
+        solicitacoes_ids = json.loads(dados.get('solicitacoes', '[]'))
+        
+        if not solicitacoes_ids:
+            return jsonify({'success': False, 'error': 'Nenhuma solicitação selecionada'})
+            
+        triagem = TriagemSolicitacaoCompra(
+            titulo=dados['titulo'],
+            descricao=dados['descricao'],
+            responsavel_id=current_user.id
+        )
+        
+        # Associar solicitações
+        solicitacoes = SolicitacaoCompra.query.filter(
+            SolicitacaoCompra.id.in_(solicitacoes_ids)
+        ).all()
+        
+        triagem.solicitacoes.extend(solicitacoes)
+        
+        db.session.add(triagem)
+        db.session.commit()
+        
+        return jsonify({'success': True})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@solicitacao_compra_bp.route('/triagem/<int:triagem_id>/processo', methods=['POST'])
+@login_required
+def criar_processo_da_triagem(triagem_id):
+    try:
+        triagem = TriagemSolicitacaoCompra.query.get_or_404(triagem_id)
+        
+        # Criar processo no painel de contratações
+        processo = PainelContratacao(
+            ano=datetime.now().year,
+            objeto=triagem.titulo,
+            status='Processo Iniciado',
+            solicitante_id=triagem.responsavel_id
+            # ... outros campos necessários
+        )
+        
+        db.session.add(processo)
+        db.session.flush()  # Gera o ID do processo
+        
+        # Atualizar triagem e solicitações
+        triagem.painel_contratacao_id = processo.id
+        triagem.status = 'Concluída'
+        
+        for solicitacao in triagem.solicitacoes:
+            solicitacao.painel_contratacao_id = processo.id
+            solicitacao.status = 'Em andamento'
+        
+        db.session.commit()
+        
+        return jsonify({'success': True})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}) 

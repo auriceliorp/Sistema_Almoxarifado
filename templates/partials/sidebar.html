@@ -541,74 +541,7 @@ document.addEventListener('DOMContentLoaded', function() {
         hideLoadingOverlay();
         showError('Ocorreu um erro ao carregar a página');
     });
-
-    // Inicializar máscaras e validações
-    const moneyInputs = document.querySelectorAll('.money');
-    moneyInputs.forEach(input => {
-        IMask(input, {
-            mask: 'R$ num',
-            blocks: {
-                num: {
-                    mask: Number,
-                    thousandsSeparator: '.',
-                    radix: ',',
-                    scale: 2,
-                    padFractionalZeros: true,
-                    normalizeZeros: true
-                }
-            }
-        });
-    });
-
-    // Calcular percentual de economia
-    const valorEstimado = document.getElementById('valor_estimado');
-    const valorHomologado = document.getElementById('valor_homologado');
-    const percentualEconomia = document.getElementById('percentual_economia');
-
-    function calcularEconomia() {
-        const ve = parseFloat(valorEstimado.value.replace('R$', '').replace('.', '').replace(',', '.'));
-        const vh = parseFloat(valorHomologado.value.replace('R$', '').replace('.', '').replace(',', '.'));
-        
-        if (ve && vh && ve > 0) {
-            const economia = ((ve - vh) / ve) * 100;
-            percentualEconomia.value = economia.toFixed(2) + '%';
-        } else {
-            percentualEconomia.value = '';
-        }
-    }
-
-    valorEstimado.addEventListener('input', calcularEconomia);
-    valorHomologado.addEventListener('input', calcularEconomia);
 });
-
-// Função para salvar o processo
-function salvarProcesso() {
-    const form = document.getElementById('formCriarProcesso');
-    
-    if (!form.checkValidity()) {
-        form.classList.add('was-validated');
-        return;
-    }
-
-    const formData = new FormData(form);
-    
-    fetch('/solicitacao-compra/triagem/processo', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Processo criado com sucesso!');
-            window.location.href = `/painel/visualizar/${data.processo_id}`;
-        } else {
-            alert('Erro ao criar processo: ' + data.message);
-        }
-    })
-    .catch(error => {
-        alert('Erro ao processar requisição: ' + error);
-    });
-}
 </script>
 
 <div class="modal fade" id="modalCriarProcesso" tabindex="-1">

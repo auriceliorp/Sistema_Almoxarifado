@@ -116,7 +116,7 @@
                                     <i class="bi bi-pencil"></i> Editar
                                 </button>
                                 <button class="btn btn-sm btn-success" 
-                                        onclick="criarProcesso({{ triagem.id }})">
+                                        onclick="abrirModalProcesso({{ triagem.id }})">
                                     <i class="bi bi-arrow-right-circle"></i> Criar Processo
                                 </button>
                             </div>
@@ -156,42 +156,12 @@
         </div>
     </div>
 </div>
+
+<!-- Modal do formulário de processo -->
+{% include 'solicitacao_compra/modal_criar_processo.html' %}
+
 {% endblock %}
 
 {% block extra_js %}
-<script>
-function criarNovaTriagem() {
-    const solicitacoesSelecionadas = getSolicitacoesSelecionadas();
-    if (solicitacoesSelecionadas.length === 0) {
-        alert('Selecione pelo menos uma solicitação');
-        return;
-    }
-    $('#modalNovaTriagem').modal('show');
-}
-
-function salvarTriagem() {
-    const formData = new FormData(document.getElementById('formNovaTriagem'));
-    formData.append('solicitacoes', JSON.stringify(getSolicitacoesSelecionadas()));
-    
-    fetch('/solicitacao-compra/triagem/criar', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            window.location.reload();
-        } else {
-            alert(data.error);
-        }
-    });
-}
-
-function getSolicitacoesSelecionadas() {
-    return Array.from(document.querySelectorAll('.solicitacao-check:checked'))
-                .map(checkbox => checkbox.value);
-}
-
-// ... outras funções JavaScript necessárias ...
-</script>
-{% endblock %}
+<script src="{{ url_for('static', filename='js/triagem.js') }}"></script>
+{% endblock %} 

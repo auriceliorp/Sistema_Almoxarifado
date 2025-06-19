@@ -1,0 +1,205 @@
+<!-- Modal para criar processo de contratação -->
+<div class="modal fade" id="modalCriarProcesso" tabindex="-1">
+    <div class="modal-dialog modal-xl"> <!-- Modal extra large -->
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Criar Processo de Contratação</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formCriarProcesso" class="needs-validation" novalidate>
+                    <!-- Dados Básicos -->
+                    <div class="row mb-4">
+                        <h6 class="border-bottom pb-2">Dados Básicos</h6>
+                        <div class="col-md-2">
+                            <div class="form-floating">
+                                <input type="number" class="form-control" id="ano" name="ano" required>
+                                <label for="ano">Ano</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <input type="date" class="form-control" id="data_abertura" name="data_abertura">
+                                <label for="data_abertura">Data de Abertura</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <input type="date" class="form-control" id="data_homologacao" name="data_homologacao">
+                                <label for="data_homologacao">Data de Homologação</label>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-floating">
+                                <input type="number" class="form-control" id="periodo_dias" name="periodo_dias">
+                                <label for="periodo_dias">Período (dias)</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Identificação do Processo -->
+                    <div class="row mb-4">
+                        <h6 class="border-bottom pb-2">Identificação do Processo</h6>
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="numero_sei" name="numero_sei" required>
+                                <label for="numero_sei">Número SEI</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <select class="form-select" id="modalidade" name="modalidade" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="Pregão">Pregão</option>
+                                    <option value="Dispensa">Dispensa</option>
+                                    <option value="Inexigibilidade">Inexigibilidade</option>
+                                </select>
+                                <label for="modalidade">Modalidade</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="registro_precos" name="registro_precos">
+                                <label for="registro_precos">Registro de Preços</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="numero_licitacao" name="numero_licitacao">
+                                <label for="numero_licitacao">Número Licitação</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detalhes do Objeto -->
+                    <div class="row mb-4">
+                        <h6 class="border-bottom pb-2">Detalhes do Objeto</h6>
+                        <div class="col-md-12 mb-3">
+                            <div class="form-floating">
+                                <textarea class="form-control" id="objeto" name="objeto" style="height: 100px" required></textarea>
+                                <label for="objeto">Objeto</label>
+                            </div>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <div class="form-floating">
+                                <textarea class="form-control" id="fundamentacao_legal" name="fundamentacao_legal" style="height: 100px"></textarea>
+                                <label for="fundamentacao_legal">Fundamentação Legal</label>
+                            </div>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <div class="form-floating">
+                                <textarea class="form-control" id="orgaos_participantes" name="orgaos_participantes" style="height: 100px"></textarea>
+                                <label for="orgaos_participantes">Órgãos Participantes</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Valores e Natureza de Despesa -->
+                    <div class="row mb-4">
+                        <h6 class="border-bottom pb-2">Valores e Natureza de Despesa</h6>
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <input type="text" class="form-control money" id="valor_estimado" name="valor_estimado">
+                                <label for="valor_estimado">Valor Estimado</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <input type="text" class="form-control money" id="valor_homologado" name="valor_homologado">
+                                <label for="valor_homologado">Valor Homologado</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="percentual_economia" name="percentual_economia" readonly>
+                                <label for="percentual_economia">% Economia</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="natureza_despesa" name="natureza_despesa">
+                                <label for="natureza_despesa">Natureza de Despesa</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informações Complementares -->
+                    <div class="row mb-4">
+                        <h6 class="border-bottom pb-2">Informações Complementares</h6>
+                        <div class="col-md-4">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="parecer_juridico" name="parecer_juridico">
+                                <label for="parecer_juridico">Parecer Jurídico</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-floating">
+                                <select class="form-select" id="status" name="status" required>
+                                    <option value="Processo Iniciado">Processo Iniciado</option>
+                                    <option value="Em andamento">Em andamento</option>
+                                    <option value="Concluído">Concluído</option>
+                                    <option value="Aguardando Definições">Aguardando Definições</option>
+                                    <option value="Cancelada">Cancelada</option>
+                                </select>
+                                <label for="status">Status</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="setor_responsavel" name="setor_responsavel" required>
+                                <label for="setor_responsavel">Setor Responsável</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ocorrências -->
+                    <div class="row mb-4">
+                        <h6 class="border-bottom pb-2">Ocorrências</h6>
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <select class="form-select" id="impugnacao" name="impugnacao">
+                                    <option value="">Selecione...</option>
+                                    <option value="Sim">Sim</option>
+                                    <option value="Não">Não</option>
+                                </select>
+                                <label for="impugnacao">Impugnação</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <select class="form-select" id="recurso" name="recurso">
+                                    <option value="">Selecione...</option>
+                                    <option value="Sim">Sim</option>
+                                    <option value="Não">Não</option>
+                                </select>
+                                <label for="recurso">Recurso</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <select class="form-select" id="itens_desertos" name="itens_desertos">
+                                    <option value="">Selecione...</option>
+                                    <option value="Sim">Sim</option>
+                                    <option value="Não">Não</option>
+                                </select>
+                                <label for="itens_desertos">Itens Desertos</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="responsavel_conducao" name="responsavel_conducao">
+                                <label for="responsavel_conducao">Responsável Condução</label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="salvarProcesso()">
+                    <i class="bi bi-check-circle me-2"></i>Criar Processo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

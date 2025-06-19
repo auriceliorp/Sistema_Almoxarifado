@@ -280,10 +280,49 @@ def criar_processo_da_triagem(triagem_id):
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 400
 
-@solicitacao_compra_bp.route('/triagem/<int:triagem_id>/criar_processo')
+@solicitacao_compra_bp.route('/triagem/<int:triagem_id>/criar_processo', methods=['GET', 'POST'])
 @login_required
 def criar_processo_form(triagem_id):
     triagem = TriagemSolicitacaoCompra.query.get_or_404(triagem_id)
+    
+    if request.method == 'POST':
+        try:
+            # Criar processo no painel de contratações
+            processo = PainelContratacao(
+                ano=request.form.get('ano'),
+                data_abertura=datetime.strptime(request.form.get('data_abertura'), '%Y-%m-%d') if request.form.get('data_abertura') else None,
+                data_homologacao=datetime.strptime(request.form.get('data_homologacao'), '%Y-%m-%d') if request.form.get('data_homologacao') else None,
+                periodo_dias=request.form.get('periodo_dias'),
+                numero_sei=request.form.get('numero_sei'),
+                modalidade=request.form.get('modalidade'),
+                numero_licitacao=request.form.get('numero_licitacao'),
+                objeto=request.form.get('objeto'),
+                status='Processo Iniciado',
+                solicitante_id=current_user.id
+            )
+            
+            db.session.add(processo)
+            db.session.flush()  # Para obter o ID do processo
+            
+            # Atualizar solicitações vinculadas à triagem
+            for solicitacao in triagem.solicitacoes:
+                solicitacao.painel_contratacao_id = processo.id
+                solicitacao.status = 'Em andamento'
+            
+            db.session.commit()
+            flash('Processo criado com sucesso!', 'success')
+            return redirect(url_for('painel_bp.visualizar_painel', painel_id=processo.id))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao criar processo: {str(e)}', 'error')
+            return render_template(
+                'solicitacao_compra/criar_processo.html',
+                triagem=triagem,
+                now=datetime.now()
+            )
+    
+    # GET request
     return render_template(
         'solicitacao_compra/criar_processo.html',
         triagem=triagem,

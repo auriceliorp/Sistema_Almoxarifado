@@ -223,7 +223,9 @@ def triagem_solicitacoes():
 def criar_triagem():
     try:
         dados = request.get_json()
+        print("Dados recebidos:", dados)  # Debug
         
+        # Criar nova triagem
         triagem = TriagemSolicitacaoCompra(
             titulo=dados['titulo'],
             descricao=dados['descricao'],
@@ -232,16 +234,19 @@ def criar_triagem():
         db.session.add(triagem)
         db.session.flush()  # Para obter o ID da triagem
         
+        # Associar solicitações à triagem
         for solicitacao_id in dados['solicitacoes']:
             solicitacao = SolicitacaoCompra.query.get(solicitacao_id)
             if solicitacao:
                 solicitacao.triagem_id = triagem.id
+                print(f"Associando solicitação {solicitacao_id} à triagem {triagem.id}")  # Debug
         
         db.session.commit()
         return jsonify({'success': True, 'message': 'Triagem criada com sucesso'})
     
     except Exception as e:
         db.session.rollback()
+        print("Erro ao criar triagem:", str(e))  # Debug
         return jsonify({'success': False, 'message': str(e)}), 400
 
 @solicitacao_compra_bp.route('/triagem/<int:triagem_id>/processo', methods=['POST'])

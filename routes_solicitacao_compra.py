@@ -203,20 +203,15 @@ def atender_solicitacao(solicitacao_id):
 @solicitacao_compra_bp.route('/triagem_solicitacoes')
 @login_required
 def triagem_solicitacoes():
-    # Vamos imprimir os status existentes
-    todos_status = db.session.query(SolicitacaoCompra.status.distinct()).all()
-    print(f"Status existentes: {todos_status}")
+    # Buscar solicitações pendentes
+    solicitacoes = SolicitacaoCompra.query.filter_by(status='Processo Iniciado').all()
     
-    # Buscar todas as solicitações sem filtro
-    solicitacoes = SolicitacaoCompra.query.all()
-    print(f"Total de solicitações: {len(solicitacoes)}")
-    
-    # Para cada solicitação, vamos ver seus dados
-    for s in solicitacoes:
-        print(f"ID: {s.id}, Status: {s.status}")
+    # Buscar triagens existentes
+    triagens = TriagemSolicitacaoCompra.query.order_by(TriagemSolicitacaoCompra.data_criacao.desc()).all()
     
     return render_template('solicitacao_compra/triagem_solicitacoes.html', 
-                         solicitacoes=solicitacoes)
+                         solicitacoes=solicitacoes,
+                         triagens=triagens)
 
 @solicitacao_compra_bp.route('/criar_triagem', methods=['POST'])
 @login_required

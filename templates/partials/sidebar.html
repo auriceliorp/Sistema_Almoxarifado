@@ -140,12 +140,26 @@
                     
                     <!-- Itens visíveis apenas para Admin e Super Admin -->
                     {% if current_user.is_super_admin() or current_user.is_admin() %}
-                    <li class="nav-item"><a href="{{ url_for('painel_bp.lista_painel') }}" class="nav-link text-white"><i class="bi bi-grid me-2"></i>Painel de Contratações</a></li>
-                    <li class="nav-item"><a href="#" class="nav-link text-white"><i class="bi bi-file-earmark-text me-2"></i>Solicitações Pendentes</a></li>
-                    <li class="nav-item"><a href="#" class="nav-link text-white"><i class="bi bi-building me-2"></i>Fornecedores</a></li>
-                    <li class="nav-item"><a href="#" class="nav-link text-white"><i class="bi bi-currency-dollar me-2"></i>Cotações</a></li>
-                    <li class="nav-item"><a href="#" class="nav-link text-white"><i class="bi bi-folder me-2"></i>Processos SEI</a></li>
-                    <li class="nav-item"><a href="#" class="nav-link text-white"><i class="bi bi-calendar4-week me-2"></i>Agenda de Contratos</a></li>
+                    <li class="nav-item">
+                        <a href="{{ url_for('solicitacao_compra_bp.triagem_solicitacoes') }}" class="nav-link text-white">
+                            <i class="bi bi-funnel me-2"></i>Triagem de Solicitações
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ url_for('painel_bp.lista_painel') }}" class="nav-link text-white">
+                            <i class="bi bi-grid me-2"></i>Painel de Contratações
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link text-white">
+                            <i class="bi bi-building me-2"></i>Fornecedores
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link text-white">
+                            <i class="bi bi-currency-dollar me-2"></i>Cotações
+                        </a>
+                    </li>
                     {% endif %}
                 </ul>
             </li>

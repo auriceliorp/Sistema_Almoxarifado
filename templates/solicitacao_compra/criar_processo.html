@@ -99,8 +99,13 @@
                         <div class="form-text">Descreva o objeto da contratação</div>
                     </div>
                     <div class="col-md-12 mb-3">
-                        <label for="fundamentacao_legal" class="form-label">Fundamentação Legal</label>
-                        <textarea class="form-control" id="fundamentacao_legal" name="fundamentacao_legal" rows="2"></textarea>
+                        <label for="fundamentacao_legal" class="form-label">Fundamentação Legal *</label>
+                        <select class="form-select" id="fundamentacao_legal" name="fundamentacao_legal" required>
+                            <option value="">Selecione...</option>
+                            {% for fundamentacao in fundamentacoes_legais %}
+                            <option value="{{ fundamentacao }}">{{ fundamentacao }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                     <div class="col-md-12 mb-3">
                         <label for="orgaos_participantes" class="form-label">Órgãos Participantes</label>
@@ -112,8 +117,13 @@
                 <div class="row mb-4">
                     <h6 class="border-bottom pb-2">Valores e Natureza da Despesa</h6>
                     <div class="col-md-6">
-                        <label for="natureza_despesa" class="form-label">Natureza da Despesa</label>
-                        <input type="text" class="form-control" id="natureza_despesa" name="natureza_despesa">
+                        <label for="natureza_despesa" class="form-label">Natureza da Despesa *</label>
+                        <select class="form-select" id="natureza_despesa" name="natureza_despesa" required>
+                            <option value="">Selecione...</option>
+                            {% for nd in naturezas_despesa %}
+                            <option value="{{ nd.id }}">{{ nd.codigo }} - {{ nd.descricao }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                     <div class="col-md-3">
                         <label for="valor_estimado" class="form-label">Valor Estimado</label>
@@ -130,11 +140,21 @@
                     <h6 class="border-bottom pb-2">Responsáveis</h6>
                     <div class="col-md-6">
                         <label for="setor_responsavel" class="form-label">Setor Responsável *</label>
-                        <input type="text" class="form-control" id="setor_responsavel" name="setor_responsavel" required>
+                        <select class="form-select" id="setor_responsavel" name="setor_responsavel" required>
+                            <option value="">Selecione...</option>
+                            {% for setor in setores %}
+                            <option value="{{ setor.id }}">{{ setor.sigla }} - {{ setor.nome }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                     <div class="col-md-6">
                         <label for="responsavel_conducao" class="form-label">Responsável pela Condução *</label>
-                        <input type="text" class="form-control" id="responsavel_conducao" name="responsavel_conducao" required>
+                        <select class="form-select" id="responsavel_conducao" name="responsavel_conducao" required>
+                            <option value="">Selecione...</option>
+                            {% for usuario in usuarios %}
+                            <option value="{{ usuario.id }}">{{ usuario.nome }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                 </div>
 

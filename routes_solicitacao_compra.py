@@ -203,56 +203,34 @@ def atender_solicitacao(solicitacao_id):
 @solicitacao_compra_bp.route('/triagem')
 @login_required
 def triagem_solicitacoes():
-    # Buscar solicitações pendentes de triagem
-    solicitacoes = SolicitacaoCompra.query.filter_by(
-        status='Processo Iniciado'
-    ).order_by(
-        SolicitacaoCompra.data_solicitacao.desc()
-    ).all()
-    
-    # Buscar triagens em andamento
-    triagens = TriagemSolicitacaoCompra.query.filter(
-        TriagemSolicitacaoCompra.status != 'Concluída'
-    ).order_by(
-        TriagemSolicitacaoCompra.data_criacao.desc()
-    ).all()
-    
-    return render_template(
-        'solicitacao_compra/triagem_solicitacoes.html',
-        solicitacoes=solicitacoes,
-        triagens=triagens
-    )
+    solicitacoes = SolicitacaoCompra.query.filter_by(status='PENDENTE').all()
+    return render_template('solicitacao_compra/triagem_solicitacoes.html', solicitacoes=solicitacoes)
 
-@solicitacao_compra_bp.route('/triagem/criar', methods=['POST'])
+@solicitacao_compra_bp.route('/criar_triagem', methods=['POST'])
 @login_required
 def criar_triagem():
     try:
-        dados = request.form
-        solicitacoes_ids = json.loads(dados.get('solicitacoes', '[]'))
+        dados = request.get_json()
         
-        if not solicitacoes_ids:
-            return jsonify({'success': False, 'error': 'Nenhuma solicitação selecionada'})
-            
         triagem = TriagemSolicitacaoCompra(
             titulo=dados['titulo'],
             descricao=dados['descricao'],
             responsavel_id=current_user.id
         )
-        
-        # Associar solicitações
-        solicitacoes = SolicitacaoCompra.query.filter(
-            SolicitacaoCompra.id.in_(solicitacoes_ids)
-        ).all()
-        
-        triagem.solicitacoes.extend(solicitacoes)
-        
         db.session.add(triagem)
+        db.session.flush()  # Para obter o ID da triagem
+        
+        for solicitacao_id in dados['solicitacoes']:
+            solicitacao = SolicitacaoCompra.query.get(solicitacao_id)
+            if solicitacao:
+                solicitacao.triagem_id = triagem.id
+        
         db.session.commit()
-        
-        return jsonify({'success': True})
-        
+        return jsonify({'success': True, 'message': 'Triagem criada com sucesso'})
+    
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 400
 
 @solicitacao_compra_bp.route('/triagem/<int:triagem_id>/processo', methods=['POST'])
 @login_required

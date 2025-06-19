@@ -162,4 +162,38 @@ def imprimir_solicitacao(solicitacao_id):
     except Exception as e:
         flash(f'Erro ao gerar impressão: {str(e)}', 'error')
         return redirect(url_for('solicitacao_compra_bp.detalhes_solicitacao', 
-                              solicitacao_id=solicitacao_id)) 
+                              solicitacao_id=solicitacao_id))
+
+@solicitacao_compra_bp.route('/atender/<int:solicitacao_id>', methods=['GET', 'POST'])
+@login_required
+def atender_solicitacao(solicitacao_id):
+    solicitacao = SolicitacaoCompra.query.get_or_404(solicitacao_id)
+    
+    if request.method == 'POST':
+        novo_status = request.form.get('status')
+        criar_processo = request.form.get('criar_processo') == 'on'
+        
+        dados_painel = None
+        if criar_processo:
+            dados_painel = {
+                'numero_sei': request.form.get('numero_sei'),
+                'modalidade': request.form.get('modalidade'),
+                # ... outros campos do painel ...
+            }
+        
+        result = SolicitacaoCompraService.atender_solicitacao(
+            solicitacao_id=solicitacao_id,
+            novo_status=novo_status,
+            dados_painel=dados_painel
+        )
+        
+        if result['success']:
+            flash('Solicitação atendida com sucesso!', 'success')
+            return redirect(url_for('solicitacao_compra_bp.lista_solicitacoes_pendentes'))
+        else:
+            flash(f'Erro ao atender solicitação: {result["error"]}', 'error')
+    
+    return render_template(
+        'solicitacao_compra/atender_solicitacao.html',
+        solicitacao=solicitacao
+    ) 

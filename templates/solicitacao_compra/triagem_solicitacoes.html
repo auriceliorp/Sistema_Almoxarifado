@@ -2,8 +2,8 @@
 {% block title %}Triagem de Solicitações de Compra{% endblock %}
 
 {% block content %}
-<!-- Adicionar o token CSRF no head -->
-<meta name="csrf-token" content="{{ csrf_token() }}">
+<!-- Adicionar o token CSRF corretamente -->
+<input type="hidden" name="csrf-token" content="{{ csrf_token() }}">
 
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -108,23 +108,19 @@ function salvarTriagem() {
         solicitacoes: solicitacoesSelecionadas
     };
 
-    console.log('Enviando dados:', dados);  // Debug
+    // Obter o token CSRF corretamente
+    const token = document.querySelector('input[name="csrf-token"]').getAttribute('content');
 
     // Enviar para o servidor
-    fetch('/solicitacao_compra/criar_triagem', {
+    fetch('/solicitacao-compra/criar_triagem', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrf-token]').content
+            'X-CSRFToken': token
         },
         body: JSON.stringify(dados)
     })
-    .then(response => {
-        if (!response.ok) {
-            return response.json().then(data => Promise.reject(data));
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
         if (data.success) {
             // Fechar o modal
@@ -139,7 +135,7 @@ function salvarTriagem() {
     })
     .catch(error => {
         console.error('Erro:', error);
-        alert(error.message || 'Erro ao criar triagem. Por favor, tente novamente.');
+        alert('Erro ao criar triagem. Por favor, tente novamente.');
     });
 }
 

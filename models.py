@@ -837,3 +837,24 @@ class Atividade(db.Model):
     def __repr__(self):
         return f"<Atividade {self.numero}>"
 
+class TriagemSolicitacaoCompra(db.Model):
+    __tablename__ = 'triagem_solicitacao_compra'
+    id = db.Column(db.Integer, primary_key=True)
+    data_criacao = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    titulo = db.Column(db.String(200), nullable=False)
+    descricao = db.Column(db.Text)
+    status = db.Column(db.String(50), default='Em Análise')
+    responsavel_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
+    painel_contratacao_id = db.Column(db.Integer, db.ForeignKey('painel_contratacoes.id'), nullable=True)
+    
+    # Relacionamentos
+    responsavel = db.relationship('Usuario', foreign_keys=[responsavel_id])
+    painel_contratacao = db.relationship('PainelContratacao', backref='triagem')
+    solicitacoes = db.relationship('SolicitacaoCompra', secondary='triagem_solicitacao_associacao')
+
+# Tabela de associação entre Triagem e Solicitações
+class TriagemSolicitacaoAssociacao(db.Model):
+    __tablename__ = 'triagem_solicitacao_associacao'
+    triagem_id = db.Column(db.Integer, db.ForeignKey('triagem_solicitacao_compra.id'), primary_key=True)
+    solicitacao_id = db.Column(db.Integer, db.ForeignKey('solicitacao_compra.id'), primary_key=True)
+    observacao = db.Column(db.Text)

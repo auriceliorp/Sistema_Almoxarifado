@@ -1,7 +1,15 @@
-from models import db, SolicitacaoCompra, ItemSolicitacaoCompra, Tarefa, CategoriaTarefa
+from models import db, SolicitacaoCompra, ItemSolicitacaoCompra, Tarefa, CategoriaTarefa, PainelContratacao
 from datetime import datetime
 
 class SolicitacaoCompraService:
+    STATUS_CHOICES = [
+        'Processo Iniciado',
+        'Em andamento',
+        'Concluído',
+        'Aguardando Definições',
+        'Cancelada'
+    ]
+    
     @staticmethod
     def criar_solicitacao(solicitante_id, numero_atividade, nome_atividade, finalidade, justificativa_marca, itens):
         try:
@@ -65,4 +73,44 @@ class SolicitacaoCompraService:
             solicitacao = SolicitacaoCompra.query.get_or_404(solicitacao_id)
             return {'success': True, 'solicitacao': solicitacao}
         except Exception as e:
+            return {'success': False, 'error': str(e)}
+
+    @staticmethod
+    def atender_solicitacao(solicitacao_id, novo_status, dados_painel=None):
+        """
+        Atende uma solicitação de compra e opcionalmente cria um processo no painel
+        """
+        try:
+            solicitacao = SolicitacaoCompra.query.get_or_404(solicitacao_id)
+            
+            if novo_status not in SolicitacaoCompraService.STATUS_CHOICES:
+                raise ValueError("Status inválido")
+                
+            solicitacao.status = novo_status
+            
+            # Se fornecido dados do painel, cria ou atualiza o processo
+            if dados_painel:
+                if not solicitacao.painel_contratacao_id:
+                    # Criar novo processo no painel
+                    processo = PainelContratacao(
+                        ano=datetime.now().year,
+                        objeto=solicitacao.finalidade,
+                        status=novo_status,
+                        solicitante_id=solicitacao.solicitante_id,
+                        # ... outros campos do painel ...
+                    )
+                    db.session.add(processo)
+                    db.session.flush()  # Gera o ID
+                    solicitacao.painel_contratacao_id = processo.id
+                else:
+                    # Atualiza processo existente
+                    processo = solicitacao.painel_contratacao
+                    processo.status = novo_status
+                    # ... atualiza outros campos ...
+            
+            db.session.commit()
+            return {'success': True, 'message': 'Solicitação atualizada com sucesso'}
+            
+        except Exception as e:
+            db.session.rollback()
             return {'success': False, 'error': str(e)} 

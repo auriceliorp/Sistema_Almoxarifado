@@ -8,6 +8,8 @@ from models import (
     NaturezaDespesa, Grupo, Item, Fornecedor, Usuario,
     UnidadeLocal, Local, EntradaMaterial, SaidaMaterial
 )
+import os
+from sqlalchemy import text
 
 # Cria o blueprint com prefixo de rota /popular
 popular_bp = Blueprint('popular_bp', __name__, url_prefix='/popular')
@@ -57,5 +59,35 @@ def popular_dados():
         flash('Base de dados populada com sucesso!', 'success')
     except Exception as e:
         flash(f'Erro ao popular base de dados: {e}', 'danger')
+
+    return redirect(url_for('main.home'))
+
+
+# Adicione esta nova rota
+@popular_bp.route('/executar_migracao/<numero>')
+@login_required
+def executar_migracao(numero):
+    if current_user.email != 'admin@admin.com':
+        flash('Acesso não autorizado.', 'danger')
+        return redirect(url_for('main.home'))
+
+    try:
+        # Caminho para o arquivo de migração
+        arquivo_migracao = f'migrations/{numero}_atualizar_solicitacao_compra.sql'
+        
+        if not os.path.exists(arquivo_migracao):
+            flash(f'Arquivo de migração {numero} não encontrado.', 'danger')
+            return redirect(url_for('main.home'))
+
+        # Lê e executa o arquivo SQL
+        with open(arquivo_migracao, 'r', encoding='utf-8') as file:
+            sql = file.read()
+            db.session.execute(text(sql))
+            db.session.commit()
+
+        flash(f'Migração {numero} executada com sucesso!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Erro ao executar migração: {str(e)}', 'danger')
 
     return redirect(url_for('main.home'))

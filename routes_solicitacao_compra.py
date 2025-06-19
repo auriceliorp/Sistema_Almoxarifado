@@ -286,5 +286,6 @@ def criar_processo_form(triagem_id):
     triagem = TriagemSolicitacaoCompra.query.get_or_404(triagem_id)
     return render_template(
         'solicitacao_compra/criar_processo.html',
-        triagem=triagem
+        triagem=triagem,
+        now=datetime.now()
     ) 

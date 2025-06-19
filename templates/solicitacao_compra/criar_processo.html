@@ -90,12 +90,87 @@
                     </div>
                 </div>
 
-                <!-- ... outros campos do formulário ... -->
+                <!-- Detalhes do Objeto -->
+                <div class="row mb-4">
+                    <h6 class="border-bottom pb-2">Detalhes do Objeto</h6>
+                    <div class="col-md-12 mb-3">
+                        <label for="objeto" class="form-label">Objeto *</label>
+                        <textarea class="form-control" id="objeto" name="objeto" rows="3" required>{{ triagem.titulo }}</textarea>
+                        <div class="form-text">Descreva o objeto da contratação</div>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <label for="fundamentacao_legal" class="form-label">Fundamentação Legal</label>
+                        <textarea class="form-control" id="fundamentacao_legal" name="fundamentacao_legal" rows="2"></textarea>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <label for="orgaos_participantes" class="form-label">Órgãos Participantes</label>
+                        <textarea class="form-control" id="orgaos_participantes" name="orgaos_participantes" rows="2"></textarea>
+                    </div>
+                </div>
+
+                <!-- Valores e Natureza da Despesa -->
+                <div class="row mb-4">
+                    <h6 class="border-bottom pb-2">Valores e Natureza da Despesa</h6>
+                    <div class="col-md-6">
+                        <label for="natureza_despesa" class="form-label">Natureza da Despesa</label>
+                        <input type="text" class="form-control" id="natureza_despesa" name="natureza_despesa">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="valor_estimado" class="form-label">Valor Estimado</label>
+                        <input type="number" step="0.01" class="form-control" id="valor_estimado" name="valor_estimado">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="valor_homologado" class="form-label">Valor Homologado</label>
+                        <input type="number" step="0.01" class="form-control" id="valor_homologado" name="valor_homologado">
+                    </div>
+                </div>
+
+                <!-- Responsáveis -->
+                <div class="row mb-4">
+                    <h6 class="border-bottom pb-2">Responsáveis</h6>
+                    <div class="col-md-6">
+                        <label for="setor_responsavel" class="form-label">Setor Responsável *</label>
+                        <input type="text" class="form-control" id="setor_responsavel" name="setor_responsavel" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="responsavel_conducao" class="form-label">Responsável pela Condução *</label>
+                        <input type="text" class="form-control" id="responsavel_conducao" name="responsavel_conducao" required>
+                    </div>
+                </div>
+
+                <!-- Ocorrências -->
+                <div class="row mb-4">
+                    <h6 class="border-bottom pb-2">Ocorrências</h6>
+                    <div class="col-md-4">
+                        <label for="impugnacao" class="form-label">Impugnação</label>
+                        <select class="form-select" id="impugnacao" name="impugnacao">
+                            <option value="">Selecione...</option>
+                            <option value="Sim">Sim</option>
+                            <option value="Não">Não</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="recurso" class="form-label">Recurso</label>
+                        <select class="form-select" id="recurso" name="recurso">
+                            <option value="">Selecione...</option>
+                            <option value="Sim">Sim</option>
+                            <option value="Não">Não</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="itens_desertos" class="form-label">Itens Desertos</label>
+                        <select class="form-select" id="itens_desertos" name="itens_desertos">
+                            <option value="">Selecione...</option>
+                            <option value="Sim">Sim</option>
+                            <option value="Não">Não</option>
+                        </select>
+                    </div>
+                </div>
 
                 <div class="d-flex justify-content-end gap-2 mt-4">
                     <a href="{{ url_for('solicitacao_compra_bp.triagem_solicitacoes') }}" 
                        class="btn btn-secondary">
-                        Cancelar
+                        <i class="bi bi-x-circle me-2"></i>Cancelar
                     </a>
                     <button type="submit" class="btn btn-primary">
                         <i class="bi bi-check-circle me-2"></i>Criar Processo

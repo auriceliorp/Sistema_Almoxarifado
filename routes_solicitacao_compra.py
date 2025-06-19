@@ -295,14 +295,28 @@ def criar_processo_form(triagem_id):
                 periodo_dias=request.form.get('periodo_dias'),
                 numero_sei=request.form.get('numero_sei'),
                 modalidade=request.form.get('modalidade'),
+                registro_precos=request.form.get('registro_precos'),
+                orgaos_participantes=request.form.get('orgaos_participantes'),
                 numero_licitacao=request.form.get('numero_licitacao'),
-                objeto=request.form.get('objeto'),
+                parecer_juridico=request.form.get('parecer_juridico'),
+                fundamentacao_legal=request.form.get('fundamentacao_legal'),
+                objeto=request.form.get('objeto'),  # Campo obrigatório
+                natureza_despesa=request.form.get('natureza_despesa'),
+                valor_estimado=float(request.form.get('valor_estimado')) if request.form.get('valor_estimado') else None,
+                valor_homologado=float(request.form.get('valor_homologado')) if request.form.get('valor_homologado') else None,
+                percentual_economia=None,  # Será calculado depois
+                impugnacao=request.form.get('impugnacao'),
+                recurso=request.form.get('recurso'),
+                itens_desertos=request.form.get('itens_desertos'),
+                responsavel_conducao=request.form.get('responsavel_conducao'),
+                setor_responsavel=request.form.get('setor_responsavel'),
                 status='Processo Iniciado',
+                excluido=False,
                 solicitante_id=current_user.id
             )
             
             db.session.add(processo)
-            db.session.flush()  # Para obter o ID do processo
+            db.session.flush()
             
             # Atualizar solicitações vinculadas à triagem
             for solicitacao in triagem.solicitacoes:
@@ -322,7 +336,6 @@ def criar_processo_form(triagem_id):
                 now=datetime.now()
             )
     
-    # GET request
     return render_template(
         'solicitacao_compra/criar_processo.html',
         triagem=triagem,

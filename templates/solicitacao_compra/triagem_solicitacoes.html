@@ -10,15 +10,20 @@
         <h4><i class="bi bi-funnel me-2"></i>Triagem de Solicitações</h4>
     </div>
 
+    <!-- Debug info -->
+    <div class="alert alert-info">
+        Total de solicitações encontradas: {{ solicitacoes|length }}
+    </div>
+
     <!-- Tabela de Solicitações -->
     <div class="table-responsive">
         <table class="table">
             <thead>
                 <tr>
                     <th><input type="checkbox" id="selecionarTodas"></th>
+                    <th>ID</th>
                     <th>Data</th>
                     <th>Solicitante</th>
-                    <th>Objeto</th>
                     <th>Status</th>
                 </tr>
             </thead>
@@ -26,9 +31,9 @@
                 {% for solicitacao in solicitacoes %}
                 <tr>
                     <td><input type="checkbox" name="solicitacao" value="{{ solicitacao.id }}"></td>
+                    <td>{{ solicitacao.id }}</td>
                     <td>{{ solicitacao.data_solicitacao.strftime('%d/%m/%Y') }}</td>
-                    <td>{{ solicitacao.solicitante.nome }}</td>
-                    <td>{{ solicitacao.objeto }}</td>
+                    <td>{{ solicitacao.solicitante.nome if solicitacao.solicitante else 'N/A' }}</td>
                     <td>{{ solicitacao.status }}</td>
                 </tr>
                 {% endfor %}

@@ -3,6 +3,13 @@
 
 {% block content %}
 <div class="container-fluid py-4">
+    <!-- Cabeçalho -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">
+            <i class="bi bi-funnel me-2"></i>Triagem de Solicitações
+        </h4>
+    </div>
+
     <!-- Tabs para diferentes visões -->
     <ul class="nav nav-tabs mb-4">
         <li class="nav-item">
@@ -83,9 +90,6 @@
                     <div class="mt-3">
                         <button class="btn btn-primary" onclick="criarNovaTriagem()">
                             <i class="bi bi-plus-circle"></i> Criar Nova Triagem
-                        </button>
-                        <button class="btn btn-outline-primary" onclick="adicionarATriagem()">
-                            <i class="bi bi-folder-plus"></i> Adicionar à Triagem Existente
                         </button>
                     </div>
                 </div>

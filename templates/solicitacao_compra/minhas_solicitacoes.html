@@ -30,14 +30,16 @@
                             <td>{{ solicitacao.data_solicitacao.strftime('%d/%m/%Y %H:%M') }}</td>
                             <td>{{ solicitacao.nome_atividade or 'N/A' }}</td>
                             <td>
-                                {% if solicitacao.status == 'PENDENTE' %}
-                                <span class="badge bg-warning">Pendente</span>
-                                {% elif solicitacao.status == 'APROVADA' %}
-                                <span class="badge bg-success">Aprovada</span>
-                                {% elif solicitacao.status == 'REJEITADA' %}
-                                <span class="badge bg-danger">Rejeitada</span>
-                                {% elif solicitacao.status == 'CONCLUÍDA' %}
-                                <span class="badge bg-info">Concluída</span>
+                                {% if solicitacao.status == 'Processo Iniciado' %}
+                                    <span class="badge bg-info">Processo Iniciado</span>
+                                {% elif solicitacao.status == 'Em andamento' %}
+                                    <span class="badge bg-warning">Em andamento</span>
+                                {% elif solicitacao.status == 'Concluído' %}
+                                    <span class="badge bg-success">Concluído</span>
+                                {% elif solicitacao.status == 'Aguardando Definições' %}
+                                    <span class="badge bg-secondary">Aguardando Definições</span>
+                                {% elif solicitacao.status == 'Cancelada' %}
+                                    <span class="badge bg-danger">Cancelada</span>
                                 {% endif %}
                             </td>
                             <td>

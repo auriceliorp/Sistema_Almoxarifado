@@ -201,4 +201,7 @@ document.getElementById('selecionarTodas').addEventListener('change', function()
     checkboxes.forEach(cb => cb.checked = this.checked);
 });
 </script>
+
+<!-- Incluir o arquivo JavaScript da triagem -->
+<script src="{{ url_for('static', filename='js/triagem.js') }}"></script>
 {% endblock %} 

@@ -803,6 +803,8 @@ class SolicitacaoCompra(db.Model):
         cascade='all, delete-orphan'
     )
 
+    triagem_id = db.Column(db.Integer, db.ForeignKey('triagem_solicitacao_compra.id'), nullable=True)
+
     def __repr__(self):
         return f"<SolicitacaoCompra {self.id}>"
 
@@ -839,18 +841,16 @@ class Atividade(db.Model):
 
 class TriagemSolicitacaoCompra(db.Model):
     __tablename__ = 'triagem_solicitacao_compra'
+    
     id = db.Column(db.Integer, primary_key=True)
-    data_criacao = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     titulo = db.Column(db.String(200), nullable=False)
     descricao = db.Column(db.Text)
-    status = db.Column(db.String(50), default='Em Análise')
-    responsavel_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
-    painel_contratacao_id = db.Column(db.Integer, db.ForeignKey('painel_contratacoes.id'), nullable=True)
+    data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
+    responsavel_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
     
     # Relacionamentos
-    responsavel = db.relationship('Usuario', foreign_keys=[responsavel_id])
-    painel_contratacao = db.relationship('PainelContratacao', backref='triagem')
-    solicitacoes = db.relationship('SolicitacaoCompra', secondary='triagem_solicitacao_associacao')
+    responsavel = db.relationship('Usuario', backref='triagens_criadas')
+    solicitacoes = db.relationship('SolicitacaoCompra', backref='triagem')
 
 # Tabela de associação entre Triagem e Solicitações
 class TriagemSolicitacaoAssociacao(db.Model):

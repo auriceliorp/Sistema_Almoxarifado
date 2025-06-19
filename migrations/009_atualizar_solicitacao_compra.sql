@@ -1,16 +1,23 @@
--- Atualizar a coluna status
-ALTER TABLE solicitacao_compra 
-ALTER COLUMN status TYPE varchar(50);
-
 -- Adicionar coluna de referência ao painel
 ALTER TABLE solicitacao_compra 
-ADD COLUMN painel_contratacao_id integer REFERENCES painel_contratacoes(id);
+ADD COLUMN painel_contratacao_id integer;
 
--- Atualizar os status existentes
-UPDATE solicitacao_compra 
-SET status = 'Processo Iniciado' 
-WHERE status = 'PENDENTE';
+-- Adicionar a foreign key
+ALTER TABLE solicitacao_compra 
+ADD CONSTRAINT fk_painel_contratacao 
+FOREIGN KEY (painel_contratacao_id) 
+REFERENCES painel_contratacoes(id);
 
+-- Atualizar os status existentes para o novo padrão
 UPDATE solicitacao_compra 
-SET status = 'Concluído' 
-WHERE status = 'CONCLUÍDA'; 
+SET status = CASE 
+    WHEN status = 'PENDENTE' THEN 'Processo Iniciado'
+    WHEN status = 'APROVADA' THEN 'Em andamento'
+    WHEN status = 'CONCLUÍDA' THEN 'Concluído'
+    WHEN status = 'REJEITADA' THEN 'Cancelada'
+    ELSE status 
+END;
+
+-- Alterar o tipo da coluna status se necessário
+ALTER TABLE solicitacao_compra 
+ALTER COLUMN status TYPE varchar(50); 

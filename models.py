@@ -786,7 +786,7 @@ class SolicitacaoCompra(db.Model):
     nome_atividade = db.Column(db.String(200))
     finalidade = db.Column(db.Text, nullable=False)
     justificativa_marca = db.Column(db.Text)
-    status = db.Column(db.String(20), nullable=False, default='PENDENTE')
+    status = db.Column(db.String(50), nullable=False, default='Processo Iniciado')
     
     solicitante_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
     solicitante = db.relationship('Usuario', foreign_keys=[solicitante_id], backref='solicitacoes_compra')
@@ -799,6 +799,10 @@ class SolicitacaoCompra(db.Model):
         backref='solicitacao',
         cascade='all, delete-orphan'
     )
+
+    # Adicionar campo de referência ao painel de contratações
+    painel_contratacao_id = db.Column(db.Integer, db.ForeignKey('painel_contratacoes.id'), nullable=True)
+    painel_contratacao = db.relationship('PainelContratacao', backref='solicitacao_compra')
 
     def __repr__(self):
         return f"<SolicitacaoCompra {self.id}>"
@@ -828,6 +832,11 @@ class Atividade(db.Model):
     responsavel_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
     responsavel = db.relationship('Usuario', backref='atividades_responsavel')
     
+    data_cadastro = db.Column(db.DateTime, default=datetime.utcnow)
+    data_atualizacao = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<Atividade {self.numero}>"
     data_cadastro = db.Column(db.DateTime, default=datetime.utcnow)
     data_atualizacao = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

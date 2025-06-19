@@ -88,9 +88,10 @@
                             <td>{{ triagem.responsavel.nome }}</td>
                             <td>{{ triagem.solicitacoes|length }}</td>
                             <td>
-                                <button class="btn btn-sm btn-success" onclick="abrirModalProcesso({{ triagem.id }})">
+                                <a href="{{ url_for('solicitacao_compra_bp.criar_processo_form', triagem_id=triagem.id) }}" 
+                                   class="btn btn-sm btn-success">
                                     <i class="bi bi-arrow-right-circle"></i> Criar Processo
-                                </button>
+                                </a>
                             </td>
                         </tr>
                         {% endfor %}
@@ -204,4 +205,4 @@ document.getElementById('selecionarTodas').addEventListener('change', function()
 
 <!-- Incluir o arquivo JavaScript da triagem -->
 <script src="{{ url_for('static', filename='js/triagem.js') }}"></script>
-{% endblock %} 
+{% endblock %}

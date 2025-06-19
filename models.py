@@ -789,20 +789,19 @@ class SolicitacaoCompra(db.Model):
     status = db.Column(db.String(50), nullable=False, default='Processo Iniciado')
     
     solicitante_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
-    solicitante = db.relationship('Usuario', foreign_keys=[solicitante_id], backref='solicitacoes_compra')
+    solicitante = db.relationship('Usuario', foreign_keys=[solicitante_id])
     
     tarefa_id = db.Column(db.Integer, db.ForeignKey('tarefas.id'), nullable=True)
     tarefa = db.relationship('Tarefa', backref='solicitacao_compra')
+    
+    painel_contratacao_id = db.Column(db.Integer, db.ForeignKey('painel_contratacoes.id'), nullable=True)
+    painel_contratacao = db.relationship('PainelContratacao', backref='solicitacao_compra')
     
     itens = db.relationship(
         'ItemSolicitacaoCompra',
         backref='solicitacao',
         cascade='all, delete-orphan'
     )
-
-    # Adicionar campo de referência ao painel de contratações
-    painel_contratacao_id = db.Column(db.Integer, db.ForeignKey('painel_contratacoes.id'), nullable=True)
-    painel_contratacao = db.relationship('PainelContratacao', backref='solicitacao_compra')
 
     def __repr__(self):
         return f"<SolicitacaoCompra {self.id}>"
@@ -837,8 +836,4 @@ class Atividade(db.Model):
 
     def __repr__(self):
         return f"<Atividade {self.numero}>"
-    data_cadastro = db.Column(db.DateTime, default=datetime.utcnow)
-    data_atualizacao = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    def __repr__(self):
-        return f"<Atividade {self.numero}>"

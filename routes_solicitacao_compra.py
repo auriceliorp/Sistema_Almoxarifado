@@ -248,32 +248,34 @@ def criar_triagem():
 @login_required
 def criar_processo_da_triagem(triagem_id):
     try:
+        dados = request.get_json()
         triagem = TriagemSolicitacaoCompra.query.get_or_404(triagem_id)
         
         # Criar processo no painel de contratações
         processo = PainelContratacao(
-            ano=datetime.now().year,
-            objeto=triagem.titulo,
+            ano=dados.get('ano'),
+            numero_sei=dados.get('numero_sei'),
+            modalidade=dados.get('modalidade'),
+            objeto=dados.get('objeto'),
+            natureza_despesa=dados.get('natureza_despesa'),
+            valor_estimado=dados.get('valor_estimado'),
+            setor_responsavel=dados.get('setor_responsavel'),
+            responsavel_conducao=dados.get('responsavel_conducao'),
             status='Processo Iniciado',
-            solicitante_id=triagem.responsavel_id
-            # ... outros campos necessários
+            solicitante_id=current_user.id
         )
         
         db.session.add(processo)
-        db.session.flush()  # Gera o ID do processo
+        db.session.flush()  # Para obter o ID do processo
         
-        # Atualizar triagem e solicitações
-        triagem.painel_contratacao_id = processo.id
-        triagem.status = 'Concluída'
-        
+        # Atualizar solicitações vinculadas à triagem
         for solicitacao in triagem.solicitacoes:
             solicitacao.painel_contratacao_id = processo.id
             solicitacao.status = 'Em andamento'
         
         db.session.commit()
-        
-        return jsonify({'success': True})
+        return jsonify({'success': True, 'message': 'Processo criado com sucesso'})
         
     except Exception as e:
         db.session.rollback()
-        return jsonify({'success': False, 'error': str(e)}) 
+        return jsonify({'success': False, 'message': str(e)}), 400 

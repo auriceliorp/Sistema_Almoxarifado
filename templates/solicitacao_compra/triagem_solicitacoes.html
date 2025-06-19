@@ -10,72 +10,128 @@
         <h4><i class="bi bi-funnel me-2"></i>Triagem de Solicitações</h4>
     </div>
 
-    <!-- Debug info -->
-    <div class="alert alert-info">
-        Total de solicitações encontradas: {{ solicitacoes|length }}
-    </div>
+    <!-- Tabs de navegação -->
+    <ul class="nav nav-tabs mb-4" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#solicitacoes" type="button">
+                <i class="bi bi-inbox me-2"></i>Solicitações Pendentes
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#triagens" type="button">
+                <i class="bi bi-collection me-2"></i>Triagens Criadas
+            </button>
+        </li>
+    </ul>
 
-    <!-- Tabela de Solicitações -->
-    <div class="table-responsive">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th><input type="checkbox" id="selecionarTodas"></th>
-                    <th>ID</th>
-                    <th>Data</th>
-                    <th>Solicitante</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for solicitacao in solicitacoes %}
-                <tr>
-                    <td><input type="checkbox" name="solicitacao" value="{{ solicitacao.id }}"></td>
-                    <td>{{ solicitacao.id }}</td>
-                    <td>{{ solicitacao.data_solicitacao.strftime('%d/%m/%Y') }}</td>
-                    <td>{{ solicitacao.solicitante.nome if solicitacao.solicitante else 'N/A' }}</td>
-                    <td>{{ solicitacao.status }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+    <!-- Conteúdo das tabs -->
+    <div class="tab-content">
+        <!-- Tab Solicitações Pendentes -->
+        <div class="tab-pane fade show active" id="solicitacoes">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="selecionarTodas"></th>
+                            <th>ID</th>
+                            <th>Data</th>
+                            <th>Solicitante</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for solicitacao in solicitacoes %}
+                        <tr>
+                            <td><input type="checkbox" name="solicitacao" value="{{ solicitacao.id }}"></td>
+                            <td>{{ solicitacao.id }}</td>
+                            <td>{{ solicitacao.data_solicitacao.strftime('%d/%m/%Y') }}</td>
+                            <td>{{ solicitacao.solicitante.nome if solicitacao.solicitante else 'N/A' }}</td>
+                            <td>{{ solicitacao.status }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-info" onclick="visualizarDetalhes({{ solicitacao.id }})">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
 
-    <!-- Botão para criar triagem -->
-    <button class="btn btn-primary" onclick="abrirModalTriagem()">
-        <i class="bi bi-plus-circle"></i> Criar Nova Triagem
-    </button>
+            <!-- Botão para criar triagem -->
+            <button class="btn btn-primary" onclick="abrirModalTriagem()">
+                <i class="bi bi-plus-circle"></i> Criar Nova Triagem
+            </button>
+        </div>
 
-    <!-- Modal de Criar Triagem -->
-    <div class="modal fade" id="modalCriarTriagem">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Nova Triagem</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="formCriarTriagem">
-                        <div class="mb-3">
-                            <label for="titulo" class="form-label">Título</label>
-                            <input type="text" class="form-control" id="titulo" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="descricao" class="form-label">Descrição</label>
-                            <textarea class="form-control" id="descricao" rows="3"></textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="salvarTriagem()">Salvar</button>
-                </div>
+        <!-- Tab Triagens Criadas -->
+        <div class="tab-pane fade" id="triagens">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Título</th>
+                            <th>Data Criação</th>
+                            <th>Responsável</th>
+                            <th>Qtd. Solicitações</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for triagem in triagens %}
+                        <tr>
+                            <td>{{ triagem.id }}</td>
+                            <td>{{ triagem.titulo }}</td>
+                            <td>{{ triagem.data_criacao.strftime('%d/%m/%Y') }}</td>
+                            <td>{{ triagem.responsavel.nome }}</td>
+                            <td>{{ triagem.solicitacoes|length }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-success" onclick="abrirModalProcesso({{ triagem.id }})">
+                                    <i class="bi bi-arrow-right-circle"></i> Criar Processo
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
 
-<!-- JavaScript para a página -->
+<!-- Modal de Criar Triagem -->
+<div class="modal fade" id="modalCriarTriagem">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nova Triagem</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formCriarTriagem">
+                    <div class="mb-3">
+                        <label for="titulo" class="form-label">Título</label>
+                        <input type="text" class="form-control" id="titulo" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="descricao" class="form-label">Descrição</label>
+                        <textarea class="form-control" id="descricao" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="salvarTriagem()">Salvar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
 <script>
 function abrirModalTriagem() {
     const selecionadas = document.querySelectorAll('input[name="solicitacao"]:checked');

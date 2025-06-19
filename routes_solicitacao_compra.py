@@ -288,7 +288,7 @@ def criar_processo_form(triagem_id):
     # Buscar dados para os selects
     naturezas_despesa = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
     usuarios = Usuario.query.filter_by(ativo=True).order_by(Usuario.nome).all()
-    setores = UnidadeLocal.query.order_by(UnidadeLocal.sigla).all()
+    setores = UnidadeLocal.query.order_by(UnidadeLocal.codigo).all()
     
     # Lista de fundamentações legais
     fundamentacoes_legais = [

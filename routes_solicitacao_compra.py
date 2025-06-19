@@ -278,4 +278,13 @@ def criar_processo_da_triagem(triagem_id):
         
     except Exception as e:
         db.session.rollback()
-        return jsonify({'success': False, 'message': str(e)}), 400 
+        return jsonify({'success': False, 'message': str(e)}), 400
+
+@solicitacao_compra_bp.route('/triagem/<int:triagem_id>/criar_processo')
+@login_required
+def criar_processo_form(triagem_id):
+    triagem = TriagemSolicitacaoCompra.query.get_or_404(triagem_id)
+    return render_template(
+        'solicitacao_compra/criar_processo.html',
+        triagem=triagem
+    ) 

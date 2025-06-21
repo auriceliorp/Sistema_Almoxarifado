@@ -120,20 +120,23 @@
 
             <!-- Compras - Menu para todos os usuários -->
             <li class="nav-item mb-2">
-                <a class="nav-link text-white d-flex justify-content-between align-items-center"
-                   data-bs-toggle="collapse" href="#submenuCompras" role="button">
+                <a class="nav-link text-white d-flex justify-content-between align-items-center {% if request.blueprint == 'solicitacao_compra_bp' %}active{% endif %}"
+                   data-bs-toggle="collapse" href="#submenuCompras" role="button"
+                   aria-expanded="{% if request.blueprint == 'solicitacao_compra_bp' %}true{% else %}false{% endif %}">
                     <span><i class="bi bi-cart-check me-2"></i> Compras</span>
                     <i class="bi bi-chevron-down"></i>
                 </a>
-                <ul class="collapse nav flex-column ms-3" id="submenuCompras">
+                <ul class="collapse nav flex-column ms-3 {% if request.blueprint == 'solicitacao_compra_bp' %}show{% endif %}" id="submenuCompras">
                     <!-- Itens visíveis para todos os usuários -->
                     <li class="nav-item">
-                        <a href="{{ url_for('solicitacao_compra_bp.nova_solicitacao') }}" class="nav-link text-white">
+                        <a href="{{ url_for('solicitacao_compra_bp.nova_solicitacao') }}" 
+                           class="nav-link text-white {% if request.endpoint == 'solicitacao_compra_bp.nova_solicitacao' %}active{% endif %}">
                             <i class="bi bi-plus-lg me-2"></i>Nova Solicitação
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{ url_for('solicitacao_compra_bp.minhas_solicitacoes') }}" class="nav-link text-white">
+                        <a href="{{ url_for('solicitacao_compra_bp.minhas_solicitacoes') }}" 
+                           class="nav-link text-white {% if request.endpoint == 'solicitacao_compra_bp.minhas_solicitacoes' %}active{% endif %}">
                             <i class="bi bi-list-check me-2"></i>Minhas Solicitações
                         </a>
                     </li>
@@ -141,12 +144,14 @@
                     <!-- Itens visíveis apenas para Admin e Super Admin -->
                     {% if current_user.is_super_admin() or current_user.is_admin() %}
                     <li class="nav-item">
-                        <a href="{{ url_for('solicitacao_compra_bp.triagem_solicitacoes') }}" class="nav-link text-white">
+                        <a href="{{ url_for('solicitacao_compra_bp.triagem_solicitacoes') }}" 
+                           class="nav-link text-white {% if request.endpoint == 'solicitacao_compra_bp.triagem_solicitacoes' %}active{% endif %}">
                             <i class="bi bi-funnel me-2"></i>Triagem de Solicitações
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{ url_for('painel_bp.lista_painel') }}" class="nav-link text-white">
+                        <a href="{{ url_for('painel_bp.lista_painel') }}" 
+                           class="nav-link text-white {% if request.endpoint == 'painel_bp.lista_painel' %}active{% endif %}">
                             <i class="bi bi-grid me-2"></i>Painel de Contratações
                         </a>
                     </li>
@@ -541,7 +546,74 @@ document.addEventListener('DOMContentLoaded', function() {
         hideLoadingOverlay();
         showError('Ocorreu um erro ao carregar a página');
     });
+
+    // Inicializar máscaras e validações
+    const moneyInputs = document.querySelectorAll('.money');
+    moneyInputs.forEach(input => {
+        IMask(input, {
+            mask: 'R$ num',
+            blocks: {
+                num: {
+                    mask: Number,
+                    thousandsSeparator: '.',
+                    radix: ',',
+                    scale: 2,
+                    padFractionalZeros: true,
+                    normalizeZeros: true
+                }
+            }
+        });
+    });
+
+    // Calcular percentual de economia
+    const valorEstimado = document.getElementById('valor_estimado');
+    const valorHomologado = document.getElementById('valor_homologado');
+    const percentualEconomia = document.getElementById('percentual_economia');
+
+    function calcularEconomia() {
+        const ve = parseFloat(valorEstimado.value.replace('R$', '').replace('.', '').replace(',', '.'));
+        const vh = parseFloat(valorHomologado.value.replace('R$', '').replace('.', '').replace(',', '.'));
+        
+        if (ve && vh && ve > 0) {
+            const economia = ((ve - vh) / ve) * 100;
+            percentualEconomia.value = economia.toFixed(2) + '%';
+        } else {
+            percentualEconomia.value = '';
+        }
+    }
+
+    valorEstimado.addEventListener('input', calcularEconomia);
+    valorHomologado.addEventListener('input', calcularEconomia);
 });
+
+// Função para salvar o processo
+function salvarProcesso() {
+    const form = document.getElementById('formCriarProcesso');
+    
+    if (!form.checkValidity()) {
+        form.classList.add('was-validated');
+        return;
+    }
+
+    const formData = new FormData(form);
+    
+    fetch('/solicitacao-compra/triagem/processo', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Processo criado com sucesso!');
+            window.location.href = `/painel/visualizar/${data.processo_id}`;
+        } else {
+            alert('Erro ao criar processo: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Erro ao processar requisição: ' + error);
+    });
+}
 </script>
 
 <div class="modal fade" id="modalCriarProcesso" tabindex="-1">
@@ -748,4 +820,3 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 </div> 
-

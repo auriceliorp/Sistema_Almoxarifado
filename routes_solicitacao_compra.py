@@ -23,8 +23,12 @@ def nova_solicitacao():
                              itens=itens,
                              atividades=atividades)
     except Exception as e:
-        flash(f'Erro ao carregar página: {str(e)}', 'error')
-        return redirect(url_for('main.index'))
+        logger.error(f'Erro ao carregar página de nova solicitação: {str(e)}')
+        # Retorna a página mesmo com erro, mas sem os dados
+        return render_template('solicitacao_compra/nova_solicitacao.html', 
+                             itens=[],
+                             atividades=[],
+                             error_message='Erro ao carregar os dados. Por favor, tente novamente.')
 
 @solicitacao_compra_bp.route('/criar', methods=['POST'])
 @login_required

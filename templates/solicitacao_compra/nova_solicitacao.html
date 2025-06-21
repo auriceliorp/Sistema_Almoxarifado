@@ -7,6 +7,12 @@
         <div class="card-body">
             <h4 class="card-title mb-4">Nova Solicitação de Compra</h4>
             
+            {% if error_message %}
+            <div class="alert alert-danger" role="alert">
+                {{ error_message }}
+            </div>
+            {% endif %}
+            
             <form method="POST" action="{{ url_for('solicitacao_compra_bp.criar_solicitacao') }}">
                 <!-- Token CSRF -->
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

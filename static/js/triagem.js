@@ -127,7 +127,34 @@ function salvarTriagem() {
 }
 
 function visualizarDetalhes(solicitacaoId) {
-    window.location.href = `/solicitacao-compra/detalhes/${solicitacaoId}`;
+    const modalBody = document.getElementById('detalhesConteudo');
+    modalBody.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"></div></div>';
+    
+    const modal = new bootstrap.Modal(document.getElementById('modalDetalhes'));
+    modal.show();
+    
+    fetch(`/solicitacao-compra/detalhes/${solicitacaoId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro ao carregar detalhes');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                modalBody.innerHTML = data.html;
+            } else {
+                throw new Error(data.message || 'Erro ao carregar detalhes');
+            }
+        })
+        .catch(error => {
+            modalBody.innerHTML = `
+                <div class="alert alert-danger">
+                    ${error.message || 'Erro ao carregar detalhes da solicitação'}
+                </div>
+            `;
+            console.error('Erro:', error);
+        });
 }
 
 function editarTriagem(triagemId) {

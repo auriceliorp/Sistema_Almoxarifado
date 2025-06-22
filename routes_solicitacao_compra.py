@@ -397,3 +397,31 @@ def detalhes_solicitacao(solicitacao_id):
             'message': str(e)
         }), 400 
 
+@solicitacao_compra_bp.route('/api/detalhes/<int:solicitacao_id>')
+@login_required
+def api_detalhes_solicitacao(solicitacao_id):
+    """Retorna os detalhes da solicitação em formato JSON para AJAX"""
+    try:
+        solicitacao = SolicitacaoCompra.query.get_or_404(solicitacao_id)
+        
+        # Verificar permissão
+        if not current_user.is_admin() and solicitacao.solicitante_id != current_user.id:
+            return jsonify({
+                'success': False,
+                'message': 'Você não tem permissão para ver esta solicitação.'
+            }), 403
+        
+        # Renderizar o template parcial
+        html = render_template('solicitacao_compra/detalhes_solicitacao_partial.html',
+                             solicitacao=solicitacao)
+        
+        return jsonify({
+            'success': True,
+            'html': html
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500 

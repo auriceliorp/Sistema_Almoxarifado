@@ -150,41 +150,17 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Inicializar tooltips e popovers
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.forEach(function(tooltipTriggerEl) {
-        new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-
-    // Selecionar/Deselecionar todas as solicitações
-    const selecionarTodas = document.getElementById('selecionarTodas');
-    if (selecionarTodas) {
-        selecionarTodas.addEventListener('change', function() {
-            const checkboxes = document.querySelectorAll('.solicitacao-check');
-            checkboxes.forEach(cb => cb.checked = this.checked);
-        });
-    }
-});
-
 function visualizarDetalhes(solicitacaoId) {
-    // Mostrar loading no modal
     const modalBody = document.getElementById('detalhesConteudo');
-    modalBody.innerHTML = `
-        <div class="text-center">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Carregando...</span>
-            </div>
-        </div>
-    `;
-
-    // Abrir o modal
+    modalBody.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"></div></div>';
+    
     const modal = new bootstrap.Modal(document.getElementById('modalDetalhes'));
     modal.show();
-
-    // Buscar os detalhes
-    fetch(`/solicitacao-compra/api/detalhes/${solicitacaoId}`)
+    
+    // Usar a nova rota que foi renomeada
+    fetch(`/solicitacao-compra/detalhes/${solicitacaoId}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error('Erro ao carregar detalhes');
@@ -219,7 +195,7 @@ function abrirModalTriagem() {
     document.getElementById('titulo').value = '';
     document.getElementById('descricao').value = '';
     
-    // Abrir modal
+    // Abrir modal usando Bootstrap 5
     const modal = new bootstrap.Modal(document.getElementById('modalCriarTriagem'));
     modal.show();
 }
@@ -286,12 +262,17 @@ function salvarTriagem() {
     .catch(error => {
         console.error('Erro:', error);
         alert('Erro ao criar triagem: ' + error.message);
-    })
-    .finally(() => {
+        
         // Restaurar botão
         btnSalvar.innerHTML = btnText;
         btnSalvar.disabled = false;
     });
 }
+
+// Adicionar funcionalidade ao checkbox "Selecionar Todas"
+document.getElementById('selecionarTodas').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.solicitacao-check');
+    checkboxes.forEach(cb => cb.checked = this.checked);
+});
 </script>
 {% endblock %}

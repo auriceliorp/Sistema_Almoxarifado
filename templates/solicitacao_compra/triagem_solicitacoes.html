@@ -2,8 +2,8 @@
 {% block title %}Triagem de Solicitações de Compra{% endblock %}
 
 {% block content %}
-<!-- Adicionar o token CSRF corretamente -->
-<input type="hidden" name="csrf-token" content="{{ csrf_token() }}">
+<!-- Token CSRF -->
+<meta name="csrf-token" content="{{ csrf_token() }}">
 
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -43,13 +43,13 @@
                     <tbody>
                         {% for solicitacao in solicitacoes %}
                         <tr>
-                            <td><input type="checkbox" name="solicitacao" value="{{ solicitacao.id }}"></td>
+                            <td><input type="checkbox" class="solicitacao-check" name="solicitacao" value="{{ solicitacao.id }}"></td>
                             <td>{{ solicitacao.id }}</td>
                             <td>{{ solicitacao.data_solicitacao.strftime('%d/%m/%Y') }}</td>
                             <td>{{ solicitacao.solicitante.nome if solicitacao.solicitante else 'N/A' }}</td>
                             <td>{{ solicitacao.status }}</td>
                             <td>
-                                <button class="btn btn-sm btn-info" onclick="visualizarDetalhes({{ solicitacao.id }})">
+                                <button type="button" class="btn btn-sm btn-info" onclick="visualizarDetalhes({{ solicitacao.id }})">
                                     <i class="bi bi-eye"></i>
                                 </button>
                             </td>
@@ -60,7 +60,7 @@
             </div>
 
             <!-- Botão para criar triagem -->
-            <button class="btn btn-primary" onclick="abrirModalTriagem()">
+            <button type="button" class="btn btn-primary" onclick="abrirModalTriagem()">
                 <i class="bi bi-plus-circle"></i> Criar Nova Triagem
             </button>
         </div>
@@ -102,8 +102,26 @@
     </div>
 </div>
 
+<!-- Modal de Visualização de Detalhes -->
+<div class="modal fade" id="modalDetalhes" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalhes da Solicitação</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detalhesConteudo">
+                <!-- Conteúdo será preenchido via JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modal de Criar Triagem -->
-<div class="modal fade" id="modalCriarTriagem">
+<div class="modal fade" id="modalCriarTriagem" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -129,115 +147,135 @@
         </div>
     </div>
 </div>
-
 {% endblock %}
 
 {% block scripts %}
 <script>
-// Função para tratar erros de forma mais específica
-function handleError(error, context) {
-    console.error(`Erro ${context}:`, error);
-    let mensagem = 'Ocorreu um erro inesperado.';
-    
-    if (error.message) {
-        mensagem = error.message;
-    } else if (typeof error === 'string') {
-        mensagem = error;
-    }
-    
-    // Mostrar mensagem de erro mais amigável
-    const alertDiv = document.createElement('div');
-    alertDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
-    alertDiv.innerHTML = `
-        <strong>Erro ${context}:</strong> ${mensagem}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
-    `;
-    
-    const container = document.querySelector('.container-fluid');
-    container.insertBefore(alertDiv, container.firstChild);
-    
-    // Remover após 5 segundos se não foi fechado manualmente
-    setTimeout(() => {
-        if (alertDiv && alertDiv.parentNode) {
-            alertDiv.remove();
-        }
-    }, 5000);
-}
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar tooltips e popovers
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(function(tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl);
+    });
 
-// Função para visualizar detalhes da solicitação
+    // Selecionar/Deselecionar todas as solicitações
+    const selecionarTodas = document.getElementById('selecionarTodas');
+    if (selecionarTodas) {
+        selecionarTodas.addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.solicitacao-check');
+            checkboxes.forEach(cb => cb.checked = this.checked);
+        });
+    }
+});
+
 function visualizarDetalhes(solicitacaoId) {
-    try {
-        fetch(`/solicitacao-compra/${solicitacaoId}/detalhes`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    const modal = new bootstrap.Modal(document.getElementById('modalDetalhes'));
-                    document.getElementById('detalhesConteudo').innerHTML = data.html;
-                    modal.show();
-                } else {
-                    throw new Error(data.message || 'Erro ao carregar detalhes');
-                }
-            })
-            .catch(error => handleError(error, 'ao carregar detalhes'));
-    } catch (error) {
-        handleError(error, 'ao processar visualização');
-    }
+    // Mostrar loading no modal
+    const modalBody = document.getElementById('detalhesConteudo');
+    modalBody.innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Carregando...</span>
+            </div>
+        </div>
+    `;
+
+    // Abrir o modal
+    const modal = new bootstrap.Modal(document.getElementById('modalDetalhes'));
+    modal.show();
+
+    // Buscar os detalhes
+    fetch(`/solicitacao-compra/detalhes/${solicitacaoId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro ao carregar detalhes');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                modalBody.innerHTML = data.html;
+            } else {
+                throw new Error(data.message || 'Erro ao carregar detalhes');
+            }
+        })
+        .catch(error => {
+            modalBody.innerHTML = `
+                <div class="alert alert-danger">
+                    ${error.message || 'Erro ao carregar detalhes da solicitação'}
+                </div>
+            `;
+            console.error('Erro:', error);
+        });
 }
 
-// Função para abrir modal de triagem
 function abrirModalTriagem() {
-    const selecionadas = document.querySelectorAll('input[name="solicitacao"]:checked');
+    const selecionadas = document.querySelectorAll('.solicitacao-check:checked');
     if (selecionadas.length === 0) {
         alert('Selecione pelo menos uma solicitação para criar a triagem.');
         return;
     }
     
+    // Limpar formulário
+    document.getElementById('titulo').value = '';
+    document.getElementById('descricao').value = '';
+    
+    // Abrir modal
     const modal = new bootstrap.Modal(document.getElementById('modalCriarTriagem'));
     modal.show();
 }
 
-// Função para salvar triagem
 function salvarTriagem() {
-    const titulo = document.getElementById('titulo').value;
-    const descricao = document.getElementById('descricao').value;
-    const solicitacoesSelecionadas = Array.from(
-        document.querySelectorAll('input[name="solicitacao"]:checked')
-    ).map(cb => cb.value);
+    const titulo = document.getElementById('titulo').value.trim();
+    const descricao = document.getElementById('descricao').value.trim();
     
     if (!titulo) {
         alert('O título é obrigatório');
         return;
     }
 
+    const solicitacoesSelecionadas = Array.from(
+        document.querySelectorAll('.solicitacao-check:checked')
+    ).map(cb => cb.value);
+    
     if (solicitacoesSelecionadas.length === 0) {
         alert('Selecione pelo menos uma solicitação');
         return;
     }
 
+    // Mostrar loading no botão
+    const btnSalvar = document.querySelector('#modalCriarTriagem .btn-primary');
+    const btnText = btnSalvar.innerHTML;
+    btnSalvar.innerHTML = `
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        Salvando...
+    `;
+    btnSalvar.disabled = true;
+
+    // Preparar dados
     const dados = {
         titulo: titulo,
         descricao: descricao,
         solicitacoes: solicitacoesSelecionadas
     };
 
-    const token = document.querySelector('input[name="csrf-token"]').getAttribute('content');
-
+    // Enviar para o servidor
     fetch('/solicitacao-compra/criar_triagem', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': token
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
         },
         body: JSON.stringify(dados)
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Erro na requisição');
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
+            // Fechar modal e recarregar página
             const modal = bootstrap.Modal.getInstance(document.getElementById('modalCriarTriagem'));
             modal.hide();
             window.location.reload();
@@ -246,36 +284,14 @@ function salvarTriagem() {
         }
     })
     .catch(error => {
-        handleError(error, 'ao criar triagem');
+        console.error('Erro:', error);
+        alert('Erro ao criar triagem: ' + error.message);
+    })
+    .finally(() => {
+        // Restaurar botão
+        btnSalvar.innerHTML = btnText;
+        btnSalvar.disabled = false;
     });
 }
-
-// Inicialização quando o documento carregar
-document.addEventListener('DOMContentLoaded', function() {
-    try {
-        // Selecionar/Deselecionar todas as solicitações
-        const selecionarTodas = document.getElementById('selecionarTodas');
-        if (selecionarTodas) {
-            selecionarTodas.addEventListener('change', function() {
-                const checkboxes = document.querySelectorAll('input[name="solicitacao"]');
-                checkboxes.forEach(cb => cb.checked = this.checked);
-            });
-        }
-        
-        // Verificar se todas as dependências necessárias estão carregadas
-        if (!window.bootstrap) {
-            throw new Error('Bootstrap não está carregado corretamente');
-        }
-        
-        if (!window.fetch) {
-            throw new Error('Seu navegador não suporta fetch. Por favor, atualize para uma versão mais recente');
-        }
-    } catch (error) {
-        handleError(error, 'na inicialização');
-    }
-});
 </script>
-
-<!-- Incluir o arquivo JavaScript da triagem -->
-<script src="{{ url_for('static', filename='js/triagem.js') }}"></script>
 {% endblock %}

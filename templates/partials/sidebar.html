@@ -520,31 +520,67 @@ document.addEventListener('DOMContentLoaded', function() {
         overlay.classList.add('d-none');
     }
 
+    // Adicionar tratamento de erro mais específico para carregamento de recursos
+    window.addEventListener('error', function(e) {
+        // Verificar se o erro é de carregamento de recurso
+        if (e.target && (e.target.tagName === 'SCRIPT' || e.target.tagName === 'LINK')) {
+            console.error('Erro ao carregar recurso:', e.target.src || e.target.href);
+            return;
+        }
+        
+        // Para outros tipos de erro, verificar se é realmente um erro crítico
+        if (e.error && e.error instanceof Error) {
+            console.error('Erro JavaScript:', e.error);
+            // Só mostrar erro na interface se for um erro crítico
+            if (e.error.message.includes('critical') || e.error.message.includes('fatal')) {
+                hideLoadingOverlay();
+                showError('Ocorreu um erro crítico. Por favor, recarregue a página.');
+            }
+        }
+    }, true);
+
+    // Adicionar tratamento para erros de promessas não tratadas
+    window.addEventListener('unhandledrejection', function(e) {
+        console.error('Promessa não tratada:', e.reason);
+        // Não mostrar erro na interface para evitar mensagens desnecessárias
+    });
+
+    // Função melhorada para mostrar erros
     function showError(message) {
         const errorDiv = document.createElement('div');
-        errorDiv.className = 'error-feedback';
-        errorDiv.textContent = message;
-        document.querySelector('.sidebar-menu').prepend(errorDiv);
-        errorDiv.style.display = 'block';
+        errorDiv.className = 'alert alert-danger alert-dismissible fade show';
+        errorDiv.innerHTML = `
+            <strong>Erro:</strong> ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+        `;
+        
+        const container = document.querySelector('.sidebar-menu') || document.body;
+        container.insertBefore(errorDiv, container.firstChild);
+        
+        // Remover após 5 segundos se não foi fechado manualmente
         setTimeout(() => {
-            errorDiv.style.display = 'none';
-            errorDiv.remove();
+            if (errorDiv && errorDiv.parentNode) {
+                errorDiv.remove();
+            }
         }, 5000);
     }
 
-    // Interceptar cliques em links para mostrar loading
+    // Melhorar o tratamento de cliques em links
     document.querySelectorAll('.nav-link:not([data-bs-toggle])').forEach(link => {
         link.addEventListener('click', function(e) {
             if (!this.classList.contains('disabled')) {
-                showLoadingOverlay();
+                try {
+                    showLoadingOverlay();
+                    
+                    // Adicionar timeout para esconder o loading se demorar muito
+                    setTimeout(() => {
+                        hideLoadingOverlay();
+                    }, 10000); // 10 segundos
+                } catch (error) {
+                    console.error('Erro ao mostrar loading:', error);
+                }
             }
         });
-    });
-
-    // Exemplo de tratamento de erro
-    window.addEventListener('error', function(e) {
-        hideLoadingOverlay();
-        showError('Ocorreu um erro ao carregar a página');
     });
 
     // Inicializar máscaras e validações

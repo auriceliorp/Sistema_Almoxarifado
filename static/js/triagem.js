@@ -49,47 +49,80 @@ document.addEventListener('DOMContentLoaded', function() {
         valorEstimado.addEventListener('input', calcularEconomia);
         valorHomologado.addEventListener('input', calcularEconomia);
     }
+
+    // Selecionar/Deselecionar todas as solicitações
+    const selecionarTodas = document.getElementById('selecionarTodas');
+    if (selecionarTodas) {
+        selecionarTodas.addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('input[name="solicitacao"]');
+            checkboxes.forEach(cb => cb.checked = this.checked);
+        });
+    }
 });
 
-function criarNovaTriagem() {
-    const solicitacoesSelecionadas = Array.from(
-        document.querySelectorAll('input.solicitacao-check:checked')
-    ).map(cb => cb.value);
-
-    if (solicitacoesSelecionadas.length === 0) {
-        alert('Selecione pelo menos uma solicitação para criar a triagem');
+function abrirModalTriagem() {
+    const selecionadas = document.querySelectorAll('input[name="solicitacao"]:checked');
+    if (selecionadas.length === 0) {
+        alert('Selecione pelo menos uma solicitação para criar a triagem.');
         return;
     }
-
-    const modal = new bootstrap.Modal(document.getElementById('modalNovaTriagem'));
+    
+    const modal = new bootstrap.Modal(document.getElementById('modalCriarTriagem'));
     modal.show();
 }
 
 function salvarTriagem() {
-    const form = document.getElementById('formNovaTriagem');
-    const formData = new FormData(form);
+    // Pegar os valores dos campos
+    const titulo = document.getElementById('titulo').value;
+    const descricao = document.getElementById('descricao').value;
     
-    // Adicionar solicitações selecionadas
+    // Pegar os IDs das solicitações selecionadas
     const solicitacoesSelecionadas = Array.from(
-        document.querySelectorAll('input.solicitacao-check:checked')
+        document.querySelectorAll('input[name="solicitacao"]:checked')
     ).map(cb => cb.value);
     
-    formData.append('solicitacoes', JSON.stringify(solicitacoesSelecionadas));
+    if (solicitacoesSelecionadas.length === 0) {
+        alert('Selecione pelo menos uma solicitação para criar a triagem.');
+        return;
+    }
 
-    fetch('/solicitacao-compra/triagem/criar', {
+    // Criar objeto com os dados
+    const dados = {
+        titulo: titulo,
+        descricao: descricao,
+        solicitacoes: solicitacoesSelecionadas
+    };
+
+    // Enviar para o servidor
+    fetch('/solicitacao-compra/criar_triagem', {
         method: 'POST',
-        body: formData
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify(dados)
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Erro na requisição');
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
+            // Fechar o modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalCriarTriagem'));
+            modal.hide();
+            
+            // Recarregar a página
             window.location.reload();
         } else {
-            alert('Erro ao criar triagem: ' + data.message);
+            throw new Error(data.message || 'Erro ao criar triagem');
         }
     })
     .catch(error => {
-        alert('Erro ao processar requisição: ' + error);
+        console.error('Erro:', error);
+        alert('Erro ao criar triagem: ' + error.message);
     });
 }
 

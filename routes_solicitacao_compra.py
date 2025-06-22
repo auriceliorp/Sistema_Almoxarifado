@@ -372,3 +372,28 @@ def criar_processo_form(triagem_id):
         setores=setores,
         fundamentacoes_legais=fundamentacoes_legais
     ) 
+
+@solicitacao_compra_bp.route('/detalhes/<int:solicitacao_id>')
+@login_required
+def detalhes_solicitacao(solicitacao_id):
+    try:
+        solicitacao = SolicitacaoCompra.query.get_or_404(solicitacao_id)
+        
+        # Renderizar o template com os detalhes
+        html = render_template(
+            'solicitacao_compra/detalhes_solicitacao.html',
+            solicitacao=solicitacao,
+            _is_ajax=True
+        )
+        
+        return jsonify({
+            'success': True,
+            'html': html
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 400 
+

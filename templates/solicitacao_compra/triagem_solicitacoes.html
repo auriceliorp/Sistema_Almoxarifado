@@ -134,24 +134,59 @@
 
 {% block scripts %}
 <script>
+// Função para tratar erros de forma mais específica
+function handleError(error, context) {
+    console.error(`Erro ${context}:`, error);
+    let mensagem = 'Ocorreu um erro inesperado.';
+    
+    if (error.message) {
+        mensagem = error.message;
+    } else if (typeof error === 'string') {
+        mensagem = error;
+    }
+    
+    // Mostrar mensagem de erro mais amigável
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
+    alertDiv.innerHTML = `
+        <strong>Erro ${context}:</strong> ${mensagem}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+    `;
+    
+    const container = document.querySelector('.container-fluid');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    // Remover após 5 segundos se não foi fechado manualmente
+    setTimeout(() => {
+        if (alertDiv && alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+
 // Função para visualizar detalhes da solicitação
 function visualizarDetalhes(solicitacaoId) {
-    fetch(`/solicitacao-compra/${solicitacaoId}/detalhes`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Mostrar detalhes em um modal ou página
-                const modal = new bootstrap.Modal(document.getElementById('modalDetalhes'));
-                document.getElementById('detalhesConteudo').innerHTML = data.html;
-                modal.show();
-            } else {
-                alert('Erro ao carregar detalhes: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Erro:', error);
-            alert('Erro ao carregar detalhes da solicitação');
-        });
+    try {
+        fetch(`/solicitacao-compra/${solicitacaoId}/detalhes`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    const modal = new bootstrap.Modal(document.getElementById('modalDetalhes'));
+                    document.getElementById('detalhesConteudo').innerHTML = data.html;
+                    modal.show();
+                } else {
+                    throw new Error(data.message || 'Erro ao carregar detalhes');
+                }
+            })
+            .catch(error => handleError(error, 'ao carregar detalhes'));
+    } catch (error) {
+        handleError(error, 'ao processar visualização');
+    }
 }
 
 // Função para abrir modal de triagem
@@ -211,20 +246,32 @@ function salvarTriagem() {
         }
     })
     .catch(error => {
-        console.error('Erro:', error);
-        alert('Erro ao criar triagem: ' + error.message);
+        handleError(error, 'ao criar triagem');
     });
 }
 
 // Inicialização quando o documento carregar
 document.addEventListener('DOMContentLoaded', function() {
-    // Selecionar/Deselecionar todas as solicitações
-    const selecionarTodas = document.getElementById('selecionarTodas');
-    if (selecionarTodas) {
-        selecionarTodas.addEventListener('change', function() {
-            const checkboxes = document.querySelectorAll('input[name="solicitacao"]');
-            checkboxes.forEach(cb => cb.checked = this.checked);
-        });
+    try {
+        // Selecionar/Deselecionar todas as solicitações
+        const selecionarTodas = document.getElementById('selecionarTodas');
+        if (selecionarTodas) {
+            selecionarTodas.addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('input[name="solicitacao"]');
+                checkboxes.forEach(cb => cb.checked = this.checked);
+            });
+        }
+        
+        // Verificar se todas as dependências necessárias estão carregadas
+        if (!window.bootstrap) {
+            throw new Error('Bootstrap não está carregado corretamente');
+        }
+        
+        if (!window.fetch) {
+            throw new Error('Seu navegador não suporta fetch. Por favor, atualize para uma versão mais recente');
+        }
+    } catch (error) {
+        handleError(error, 'na inicialização');
     }
 });
 </script>

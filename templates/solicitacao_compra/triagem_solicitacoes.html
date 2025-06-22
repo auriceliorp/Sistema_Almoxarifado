@@ -291,10 +291,40 @@ function inicializarTriagem() {
         })
         .then(data => {
             if (data.success) {
-                // Fechar modal e recarregar página
+                // Fechar modal
                 const modal = bootstrap.Modal.getInstance(document.getElementById('modalCriarTriagem'));
                 modal.hide();
-                window.location.reload();
+                
+                // Mostrar mensagem de sucesso
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                alertDiv.innerHTML = `
+                    <strong>Sucesso!</strong> Triagem criada com sucesso.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                
+                // Inserir alerta no topo da página
+                const container = document.querySelector('.container-fluid');
+                container.insertBefore(alertDiv, container.firstChild);
+                
+                // Remover as solicitações selecionadas da tabela
+                const solicitacoesSelecionadas = document.querySelectorAll('.solicitacao-check:checked');
+                solicitacoesSelecionadas.forEach(checkbox => {
+                    const row = checkbox.closest('tr');
+                    if (row) {
+                        row.remove();
+                    }
+                });
+                
+                // Mudar para a aba de triagens criadas
+                const triagensTab = document.querySelector('[data-bs-target="#triagens"]');
+                const tab = new bootstrap.Tab(triagensTab);
+                tab.show();
+                
+                // Recarregar a página após 1 segundo para atualizar a lista de triagens
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
             } else {
                 throw new Error(data.message || 'Erro ao criar triagem');
             }

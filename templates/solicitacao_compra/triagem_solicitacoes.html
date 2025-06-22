@@ -184,7 +184,7 @@ function visualizarDetalhes(solicitacaoId) {
     modal.show();
 
     // Buscar os detalhes
-    fetch(`/solicitacao-compra/detalhes/${solicitacaoId}`)
+    fetch(`/solicitacao-compra/api/detalhes/${solicitacaoId}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error('Erro ao carregar detalhes');

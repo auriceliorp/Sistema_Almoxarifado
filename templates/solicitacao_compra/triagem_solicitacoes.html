@@ -134,6 +134,27 @@
 
 {% block scripts %}
 <script>
+// Função para visualizar detalhes da solicitação
+function visualizarDetalhes(solicitacaoId) {
+    fetch(`/solicitacao-compra/${solicitacaoId}/detalhes`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Mostrar detalhes em um modal ou página
+                const modal = new bootstrap.Modal(document.getElementById('modalDetalhes'));
+                document.getElementById('detalhesConteudo').innerHTML = data.html;
+                modal.show();
+            } else {
+                alert('Erro ao carregar detalhes: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao carregar detalhes da solicitação');
+        });
+}
+
+// Função para abrir modal de triagem
 function abrirModalTriagem() {
     const selecionadas = document.querySelectorAll('input[name="solicitacao"]:checked');
     if (selecionadas.length === 0) {
@@ -145,30 +166,32 @@ function abrirModalTriagem() {
     modal.show();
 }
 
+// Função para salvar triagem
 function salvarTriagem() {
-    // Pegar os valores dos campos
     const titulo = document.getElementById('titulo').value;
     const descricao = document.getElementById('descricao').value;
+    const solicitacoesSelecionadas = Array.from(
+        document.querySelectorAll('input[name="solicitacao"]:checked')
+    ).map(cb => cb.value);
     
-    // Pegar os IDs das solicitações selecionadas
-    const solicitacoesSelecionadas = Array.from(document.querySelectorAll('input[name="solicitacao"]:checked')).map(cb => cb.value);
-    
-    if (solicitacoesSelecionadas.length === 0) {
-        alert('Selecione pelo menos uma solicitação para criar a triagem.');
+    if (!titulo) {
+        alert('O título é obrigatório');
         return;
     }
 
-    // Criar objeto com os dados
+    if (solicitacoesSelecionadas.length === 0) {
+        alert('Selecione pelo menos uma solicitação');
+        return;
+    }
+
     const dados = {
         titulo: titulo,
         descricao: descricao,
         solicitacoes: solicitacoesSelecionadas
     };
 
-    // Obter o token CSRF corretamente
     const token = document.querySelector('input[name="csrf-token"]').getAttribute('content');
 
-    // Enviar para o servidor
     fetch('/solicitacao-compra/criar_triagem', {
         method: 'POST',
         headers: {
@@ -180,11 +203,8 @@ function salvarTriagem() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Fechar o modal
             const modal = bootstrap.Modal.getInstance(document.getElementById('modalCriarTriagem'));
             modal.hide();
-            
-            // Recarregar a página
             window.location.reload();
         } else {
             throw new Error(data.message || 'Erro ao criar triagem');
@@ -192,14 +212,20 @@ function salvarTriagem() {
     })
     .catch(error => {
         console.error('Erro:', error);
-        alert('Erro ao criar triagem. Por favor, tente novamente.');
+        alert('Erro ao criar triagem: ' + error.message);
     });
 }
 
-// Selecionar/Deselecionar todas as solicitações
-document.getElementById('selecionarTodas').addEventListener('change', function() {
-    const checkboxes = document.querySelectorAll('input[name="solicitacao"]');
-    checkboxes.forEach(cb => cb.checked = this.checked);
+// Inicialização quando o documento carregar
+document.addEventListener('DOMContentLoaded', function() {
+    // Selecionar/Deselecionar todas as solicitações
+    const selecionarTodas = document.getElementById('selecionarTodas');
+    if (selecionarTodas) {
+        selecionarTodas.addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('input[name="solicitacao"]');
+            checkboxes.forEach(cb => cb.checked = this.checked);
+        });
+    }
 });
 </script>
 

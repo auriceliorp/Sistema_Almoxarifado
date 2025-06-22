@@ -153,19 +153,39 @@
 </div>
 {% endblock %}
 
-{% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}
 <script>
+// Garantir que o DOM e o Bootstrap estejam carregados
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Script carregado');
+    inicializarTriagem();
+});
+
+// Também inicializar quando o conteúdo for carregado dinamicamente
+document.addEventListener('conteudoCarregado', function() {
+    inicializarTriagem();
+});
+
+function inicializarTriagem() {
+    console.log('Inicializando funções de triagem');
     
     // Função para visualizar detalhes
     window.visualizarDetalhes = function(solicitacaoId) {
         console.log('Visualizando detalhes da solicitação:', solicitacaoId);
         const modalBody = document.getElementById('detalhesConteudo');
+        if (!modalBody) {
+            console.error('Elemento detalhesConteudo não encontrado');
+            return;
+        }
+        
         modalBody.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"></div></div>';
         
-        const modal = new bootstrap.Modal(document.getElementById('modalDetalhes'));
+        const modalElement = document.getElementById('modalDetalhes');
+        if (!modalElement) {
+            console.error('Elemento modalDetalhes não encontrado');
+            return;
+        }
+        
+        const modal = new bootstrap.Modal(modalElement);
         modal.show();
         
         fetch(`/solicitacao-compra/detalhes/${solicitacaoId}`)
@@ -202,11 +222,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Limpar formulário
-        document.getElementById('titulo').value = '';
-        document.getElementById('descricao').value = '';
+        const titulo = document.getElementById('titulo');
+        const descricao = document.getElementById('descricao');
+        
+        if (titulo) titulo.value = '';
+        if (descricao) descricao.value = '';
         
         // Abrir modal
-        const modal = new bootstrap.Modal(document.getElementById('modalCriarTriagem'));
+        const modalElement = document.getElementById('modalCriarTriagem');
+        if (!modalElement) {
+            console.error('Elemento modalCriarTriagem não encontrado');
+            return;
+        }
+        
+        const modal = new bootstrap.Modal(modalElement);
         modal.show();
     }
 
@@ -288,7 +317,8 @@ document.addEventListener('DOMContentLoaded', function() {
             checkboxes.forEach(cb => cb.checked = this.checked);
         });
     }
-});
+}
 </script>
 {% endblock %}
+
 

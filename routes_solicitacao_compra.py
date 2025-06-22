@@ -375,7 +375,7 @@ def criar_processo_form(triagem_id):
 
 @solicitacao_compra_bp.route('/detalhes/<int:solicitacao_id>')
 @login_required
-def detalhes_solicitacao(solicitacao_id):
+def detalhes_solicitacao_ajax(solicitacao_id):
     try:
         solicitacao = SolicitacaoCompra.query.get_or_404(solicitacao_id)
         
@@ -395,7 +395,7 @@ def detalhes_solicitacao(solicitacao_id):
         return jsonify({
             'success': False,
             'message': str(e)
-        }), 400 
+        }), 400
 
 @solicitacao_compra_bp.route('/api/detalhes/<int:solicitacao_id>')
 @login_required

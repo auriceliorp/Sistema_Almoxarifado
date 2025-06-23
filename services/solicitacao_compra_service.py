@@ -1,4 +1,4 @@
-from models import db, SolicitacaoCompra, ItemSolicitacaoCompra, Tarefa, CategoriaTarefa, PainelContratacao
+from models import db, SolicitacaoCompra, ItemSolicitacaoCompra, Tarefa, CategoriaTarefa, PainelContratacao, ItemPainelContratacao
 from datetime import datetime
 
 class SolicitacaoCompraService:
@@ -98,8 +98,23 @@ class SolicitacaoCompraService:
                         objeto=solicitacao.finalidade,
                         status=novo_status,
                         solicitante_id=solicitacao.solicitante_id,
-                        # ... outros campos do painel ...
+                        numero_sei=dados_painel.get('numero_sei'),
+                        modalidade=dados_painel.get('modalidade')
                     )
+                    
+                    # Adicionar os itens da solicitação ao processo
+                    for item_solicitacao in solicitacao.itens:
+                        item_painel = ItemPainelContratacao(
+                            item_id=item_solicitacao.item_id,
+                            quantidade=item_solicitacao.quantidade,
+                            valor_unitario=item_solicitacao.item.valor_unitario,
+                            valor_total=item_solicitacao.quantidade * item_solicitacao.item.valor_unitario
+                        )
+                        processo.itens_painel.append(item_painel)
+                    
+                    # Adicionar o solicitante original
+                    processo.solicitantes.append(solicitacao.solicitante)
+                    
                     db.session.add(processo)
                     db.session.flush()  # Gera o ID
                     solicitacao.painel_contratacao_id = processo.id
@@ -107,7 +122,8 @@ class SolicitacaoCompraService:
                     # Atualiza processo existente
                     processo = solicitacao.painel_contratacao
                     processo.status = novo_status
-                    # ... atualiza outros campos ...
+                    processo.numero_sei = dados_painel.get('numero_sei')
+                    processo.modalidade = dados_painel.get('modalidade')
             
             db.session.commit()
             return {'success': True, 'message': 'Solicitação atualizada com sucesso'}
@@ -115,4 +131,3 @@ class SolicitacaoCompraService:
         except Exception as e:
             db.session.rollback()
             return {'success': False, 'error': str(e)} 
-

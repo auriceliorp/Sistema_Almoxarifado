@@ -181,11 +181,39 @@ def editar_painel(id):
             processo.setor_responsavel = request.form.get('setor_responsavel')
             processo.status = request.form.get('status')
 
+            # Atualizar itens
+            # Primeiro, remove todos os itens existentes
+            ItemPainelContratacao.query.filter_by(painel_id=processo.id).delete()
+            
+            # Depois adiciona os novos itens
+            itens_data = request.form.getlist('itens[]')
+            if itens_data:
+                for item_data in itens_data:
+                    item = json.loads(item_data)
+                    item_painel = ItemPainelContratacao(
+                        painel_id=processo.id,
+                        item_id=item['id'],
+                        quantidade=item['quantidade'],
+                        valor_unitario=float(item['valor_unitario']),
+                        valor_total=float(item['quantidade']) * float(item['valor_unitario'])
+                    )
+                    db.session.add(item_painel)
+
+            # Atualizar solicitantes
+            processo.solicitantes.clear()
+            solicitantes = request.form.getlist('solicitantes[]')
+            if solicitantes:
+                for solicitante_id in solicitantes:
+                    solicitante = Usuario.query.get(solicitante_id)
+                    if solicitante:
+                        processo.solicitantes.append(solicitante)
+
             db.session.commit()
             flash('Processo atualizado com sucesso!', 'success')
             return redirect(url_for('painel_bp.lista_painel'))
 
         except Exception as e:
+            db.session.rollback()
             print(f"Erro ao atualizar processo: {e}")
             flash('Erro ao atualizar processo. Verifique os dados e tente novamente.', 'danger')
 
@@ -287,3 +315,4 @@ def criar_processo():
         db.session.rollback()
         flash(f'Erro ao criar processo: {str(e)}', 'error')
         return redirect(url_for('painel_bp.lista_painel'))
+

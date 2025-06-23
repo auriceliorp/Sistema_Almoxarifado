@@ -109,12 +109,35 @@ def novo_painel():
                 excluido=False
             )
 
+            # Adicionar itens ao processo
+            itens_data = request.form.getlist('itens[]')
+            if itens_data:
+                for item_data in itens_data:
+                    item = json.loads(item_data)
+                    item_painel = ItemPainelContratacao(
+                        painel_id=processo.id,
+                        item_id=item['id'],
+                        quantidade=item['quantidade'],
+                        valor_unitario=float(item['valor_unitario']),
+                        valor_total=float(item['quantidade']) * float(item['valor_unitario'])
+                    )
+                    db.session.add(item_painel)
+
+            # Adicionar solicitantes
+            solicitantes = request.form.getlist('solicitantes[]')
+            if solicitantes:
+                for solicitante_id in solicitantes:
+                    solicitante = Usuario.query.get(solicitante_id)
+                    if solicitante:
+                        processo.solicitantes.append(solicitante)
+
             db.session.add(processo)
             db.session.commit()
             flash('Processo cadastrado com sucesso!', 'success')
             return redirect(url_for('painel_bp.lista_painel'))
 
         except Exception as e:
+            db.session.rollback()
             print(f"Erro ao salvar processo: {e}")
             flash('Erro ao salvar processo. Verifique os dados e tente novamente.', 'danger')
 

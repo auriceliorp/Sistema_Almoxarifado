@@ -1,5 +1,5 @@
 -- Criar tabela de itens do painel
-CREATE TABLE itens_painel_contratacao (
+CREATE TABLE IF NOT EXISTS itens_painel_contratacao (
     id SERIAL PRIMARY KEY,
     painel_id INTEGER NOT NULL,
     item_id INTEGER NOT NULL,
@@ -13,7 +13,7 @@ CREATE TABLE itens_painel_contratacao (
 );
 
 -- Criar tabela de associação para solicitantes
-CREATE TABLE painel_solicitantes (
+CREATE TABLE IF NOT EXISTS painel_solicitantes (
     painel_id INTEGER NOT NULL,
     usuario_id INTEGER NOT NULL,
     PRIMARY KEY (painel_id, usuario_id),
@@ -23,15 +23,15 @@ CREATE TABLE painel_solicitantes (
         REFERENCES usuarios(id)
 );
 
--- Criar índices para melhorar performance
-CREATE INDEX idx_itens_painel_contratacao_painel ON itens_painel_contratacao(painel_id);
-CREATE INDEX idx_itens_painel_contratacao_item ON itens_painel_contratacao(item_id);
-CREATE INDEX idx_painel_solicitantes_painel ON painel_solicitantes(painel_id);
-CREATE INDEX idx_painel_solicitantes_usuario ON painel_solicitantes(usuario_id);
+-- Criar índices para melhorar performance (se não existirem)
+CREATE INDEX IF NOT EXISTS idx_itens_painel_contratacao_painel ON itens_painel_contratacao(painel_id);
+CREATE INDEX IF NOT EXISTS idx_itens_painel_contratacao_item ON itens_painel_contratacao(item_id);
+CREATE INDEX IF NOT EXISTS idx_painel_solicitantes_painel ON painel_solicitantes(painel_id);
+CREATE INDEX IF NOT EXISTS idx_painel_solicitantes_usuario ON painel_solicitantes(usuario_id);
 
 -- Migrar dados existentes de solicitações de compra para o painel
 INSERT INTO itens_painel_contratacao (painel_id, item_id, quantidade, valor_unitario, valor_total)
-SELECT 
+SELECT DISTINCT
     sc.painel_contratacao_id,
     isc.item_id,
     isc.quantidade,
@@ -40,10 +40,12 @@ SELECT
 FROM solicitacao_compra sc
 JOIN item_solicitacao_compra isc ON isc.solicitacao_id = sc.id
 JOIN item i ON i.id = isc.item_id
-WHERE sc.painel_contratacao_id IS NOT NULL;
+WHERE sc.painel_contratacao_id IS NOT NULL
+ON CONFLICT DO NOTHING;
 
 -- Migrar solicitantes existentes
 INSERT INTO painel_solicitantes (painel_id, usuario_id)
 SELECT DISTINCT painel_contratacao_id, solicitante_id
 FROM solicitacao_compra
-WHERE painel_contratacao_id IS NOT NULL; 
+WHERE painel_contratacao_id IS NOT NULL
+ON CONFLICT DO NOTHING; 

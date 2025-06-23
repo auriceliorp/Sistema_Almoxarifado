@@ -222,31 +222,37 @@ def triagem_solicitacoes():
 def criar_triagem():
     try:
         dados = request.get_json()
-        print("Dados recebidos:", dados)  # Debug
         
-        # Criar nova triagem
+        # Criar a triagem
         triagem = TriagemSolicitacaoCompra(
             titulo=dados['titulo'],
             descricao=dados['descricao'],
-            responsavel_id=current_user.id
+            responsavel_id=current_user.id,
+            data_criacao=datetime.now()
         )
         db.session.add(triagem)
-        db.session.flush()  # Para obter o ID da triagem
         
-        # Associar solicitações à triagem
+        # Associar solicitações e atualizar seus status
         for solicitacao_id in dados['solicitacoes']:
             solicitacao = SolicitacaoCompra.query.get(solicitacao_id)
             if solicitacao:
-                solicitacao.triagem_id = triagem.id
-                print(f"Associando solicitação {solicitacao_id} à triagem {triagem.id}")  # Debug
+                triagem.solicitacoes.append(solicitacao)
+                # Atualizar o status da solicitação
+                solicitacao.status = 'EM_TRIAGEM'  # ou o status apropriado para seu sistema
         
         db.session.commit()
-        return jsonify({'success': True, 'message': 'Triagem criada com sucesso'})
-    
+        
+        return jsonify({
+            'success': True,
+            'message': 'Triagem criada com sucesso'
+        })
+        
     except Exception as e:
         db.session.rollback()
-        print("Erro ao criar triagem:", str(e))  # Debug
-        return jsonify({'success': False, 'message': str(e)}), 400
+        return jsonify({
+            'success': False,
+            'message': f'Erro ao criar triagem: {str(e)}'
+        }), 500
 
 @solicitacao_compra_bp.route('/triagem/<int:triagem_id>/processo', methods=['POST'])
 @login_required

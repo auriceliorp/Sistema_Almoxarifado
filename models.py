@@ -517,8 +517,36 @@ class PainelContratacao(db.Model):
     solicitante_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
     solicitante = db.relationship('Usuario', foreign_keys=[solicitante_id])
 
+    itens_painel = db.relationship(
+        'ItemPainelContratacao',
+        backref='painel',
+        cascade='all, delete-orphan'
+    )
+
     def __repr__(self):
         return f"<PainelContratacao {self.numero_sei}>"
+
+# Adicionar após a classe PainelContratacao
+
+class ItemPainelContratacao(db.Model):
+    __tablename__ = 'itens_painel_contratacao'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    painel_id = db.Column(db.Integer, db.ForeignKey('painel_contratacoes.id'), nullable=False)
+    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
+    quantidade = db.Column(db.Integer, nullable=False)
+    valor_unitario = db.Column(db.Numeric(14, 2), nullable=True)
+    valor_total = db.Column(db.Numeric(14, 2), nullable=True)
+    
+    # Relacionamentos
+    painel = db.relationship('PainelContratacao', backref='itens_painel')
+    item = db.relationship('Item', backref='paineis_contratacao')
+
+# Tabela de associação para múltiplos solicitantes
+painel_solicitantes = db.Table('painel_solicitantes',
+    db.Column('painel_id', db.Integer, db.ForeignKey('painel_contratacoes.id'), primary_key=True),
+    db.Column('usuario_id', db.Integer, db.ForeignKey('usuarios.id'), primary_key=True)
+)
 
 # ------------------- CONTROLE DE BENS -------------------
 from extensoes import db
@@ -858,4 +886,5 @@ class TriagemSolicitacaoAssociacao(db.Model):
     triagem_id = db.Column(db.Integer, db.ForeignKey('triagem_solicitacao_compra.id'), primary_key=True)
     solicitacao_id = db.Column(db.Integer, db.ForeignKey('solicitacao_compra.id'), primary_key=True)
     observacao = db.Column(db.Text)
+
 

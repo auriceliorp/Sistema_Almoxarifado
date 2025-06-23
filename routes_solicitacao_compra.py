@@ -1,10 +1,12 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, Response
 from flask_login import login_required, current_user
 from services.solicitacao_compra_service import SolicitacaoCompraService
 from models import db, Item, SolicitacaoCompra, ItemSolicitacaoCompra, Tarefa, CategoriaTarefa, Atividade, TriagemSolicitacaoCompra, PainelContratacao, NaturezaDespesa, Usuario, UnidadeLocal
 import logging
 import json
 from datetime import datetime
+import csv
+from io import StringIO
 
 # Configuração de logging
 logging.basicConfig(level=logging.INFO)
@@ -293,91 +295,34 @@ def criar_processo_da_triagem(triagem_id):
 @solicitacao_compra_bp.route('/triagem/<int:triagem_id>/criar_processo', methods=['GET', 'POST'])
 @login_required
 def criar_processo_form(triagem_id):
-    triagem = TriagemSolicitacaoCompra.query.get_or_404(triagem_id)
-    
-    # Buscar dados para os selects
-    naturezas_despesa = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
-    usuarios = Usuario.query.filter_by(ativo=True).order_by(Usuario.nome).all()
-    setores = UnidadeLocal.query.order_by(UnidadeLocal.codigo).all()
-    
-    # Lista de fundamentações legais
-    fundamentacoes_legais = [
-        'Art. 17, I (RLCC) c/c Art. 6º, XVI (Lei 14.133/2021) - Pregão',
-        'Art. 29, I (Lei 13.303/2016) c/c Art. 98, Art. 100 e Art. 103, §3º - Dispensa',
-        'Art. 29, II - Dispensa',
-        'Art. 29, X - Prestadoras de Serviço Público',
-        'Art. 29, XV - Contratação Emergencial',
-        'Art. 30, I - Inexigibilidade',
-        'Art. 30, II - Inexigibilidade',
-        'Art. 108, IV - Congressos, Feiras e Exposições',
-        'Art. 75, IV, "c" - P&D',
-        'Art. 17, II - Licitação Embrapa'
-    ]
-
-    if request.method == 'POST':
-        try:
-            # Criar processo no painel de contratações
-            processo = PainelContratacao(
-                ano=request.form.get('ano'),
-                data_abertura=datetime.strptime(request.form.get('data_abertura'), '%Y-%m-%d') if request.form.get('data_abertura') else None,
-                data_homologacao=datetime.strptime(request.form.get('data_homologacao'), '%Y-%m-%d') if request.form.get('data_homologacao') else None,
-                periodo_dias=request.form.get('periodo_dias'),
-                numero_sei=request.form.get('numero_sei'),
-                modalidade=request.form.get('modalidade'),
-                registro_precos=request.form.get('registro_precos'),
-                orgaos_participantes=request.form.get('orgaos_participantes'),
-                numero_licitacao=request.form.get('numero_licitacao'),
-                parecer_juridico=request.form.get('parecer_juridico'),
-                fundamentacao_legal=request.form.get('fundamentacao_legal'),
-                objeto=request.form.get('objeto'),  # Campo obrigatório
-                natureza_despesa=request.form.get('natureza_despesa'),
-                valor_estimado=float(request.form.get('valor_estimado')) if request.form.get('valor_estimado') else None,
-                valor_homologado=float(request.form.get('valor_homologado')) if request.form.get('valor_homologado') else None,
-                percentual_economia=None,  # Será calculado depois
-                impugnacao=request.form.get('impugnacao'),
-                recurso=request.form.get('recurso'),
-                itens_desertos=request.form.get('itens_desertos'),
-                responsavel_conducao=request.form.get('responsavel_conducao'),
-                setor_responsavel=request.form.get('setor_responsavel'),
-                status='Processo Iniciado',
-                excluido=False,
-                solicitante_id=current_user.id
-            )
+    try:
+        triagem = TriagemSolicitacaoCompra.query.get_or_404(triagem_id)
+        
+        if request.method == 'POST':
+            dados_painel = {
+                'numero_sei': request.form.get('numero_sei'),
+                'modalidade': request.form.get('modalidade')
+            }
             
-            db.session.add(processo)
-            db.session.flush()
-            
-            # Atualizar solicitações vinculadas à triagem
+            # Atualizar todas as solicitações da triagem
             for solicitacao in triagem.solicitacoes:
-                solicitacao.painel_contratacao_id = processo.id
-                solicitacao.status = 'Em andamento'
+                result = SolicitacaoCompraService.atender_solicitacao(
+                    solicitacao_id=solicitacao.id,
+                    novo_status='Em andamento',
+                    dados_painel=dados_painel
+                )
+                
+                if not result['success']:
+                    raise Exception(result['error'])
             
-            db.session.commit()
             flash('Processo criado com sucesso!', 'success')
-            return redirect(url_for('painel_bp.visualizar_painel', painel_id=processo.id))
+            return redirect(url_for('painel_bp.lista_painel'))
             
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Erro ao criar processo: {str(e)}', 'error')
-            return render_template(
-                'solicitacao_compra/criar_processo.html',
-                triagem=triagem,
-                now=datetime.now(),
-                naturezas_despesa=naturezas_despesa,
-                usuarios=usuarios,
-                setores=setores,
-                fundamentacoes_legais=fundamentacoes_legais
-            )
-    
-    return render_template(
-        'solicitacao_compra/criar_processo.html',
-        triagem=triagem,
-        now=datetime.now(),
-        naturezas_despesa=naturezas_despesa,
-        usuarios=usuarios,
-        setores=setores,
-        fundamentacoes_legais=fundamentacoes_legais
-    ) 
+        return render_template('solicitacao_compra/criar_processo.html', triagem=triagem)
+        
+    except Exception as e:
+        flash(f'Erro ao criar processo: {str(e)}', 'error')
+        return redirect(url_for('solicitacao_compra_bp.triagem_solicitacoes'))
 
 @solicitacao_compra_bp.route('/detalhes/<int:solicitacao_id>')
 @login_required
@@ -430,4 +375,123 @@ def api_detalhes_solicitacao(solicitacao_id):
         return jsonify({
             'success': False,
             'message': str(e)
-        }), 500 
+        }), 500
+
+@solicitacao_compra_bp.route('/lista_solicitacoes_pendentes')
+@login_required
+def lista_solicitacoes_pendentes():
+    """Lista todas as solicitações pendentes para atendimento"""
+    try:
+        # Buscar solicitações pendentes
+        solicitacoes = SolicitacaoCompra.query.filter(
+            SolicitacaoCompra.status.in_(['Processo Iniciado', 'Em andamento'])
+        ).order_by(SolicitacaoCompra.data_solicitacao.desc()).all()
+        
+        return render_template('solicitacao_compra/requisicoes_pendentes.html',
+                             solicitacoes=solicitacoes)
+    except Exception as e:
+        flash(f'Erro ao listar solicitações pendentes: {str(e)}', 'error')
+        return redirect(url_for('main.index'))
+
+@solicitacao_compra_bp.route('/lista_solicitacoes_atendidas')
+@login_required
+def lista_solicitacoes_atendidas():
+    """Lista todas as solicitações já atendidas"""
+    try:
+        # Buscar solicitações atendidas
+        solicitacoes = SolicitacaoCompra.query.filter(
+            SolicitacaoCompra.status.in_(['Concluído', 'Cancelada'])
+        ).order_by(SolicitacaoCompra.data_solicitacao.desc()).all()
+        
+        return render_template('solicitacao_compra/requisicoes_atendidas.html',
+                             solicitacoes=solicitacoes)
+    except Exception as e:
+        flash(f'Erro ao listar solicitações atendidas: {str(e)}', 'error')
+        return redirect(url_for('main.index'))
+
+@solicitacao_compra_bp.route('/buscar_solicitacoes')
+@login_required
+def buscar_solicitacoes():
+    """Busca solicitações por critérios"""
+    try:
+        # Obter parâmetros de busca
+        status = request.args.get('status')
+        data_inicio = request.args.get('data_inicio')
+        data_fim = request.args.get('data_fim')
+        solicitante_id = request.args.get('solicitante_id')
+        
+        # Construir query base
+        query = SolicitacaoCompra.query
+        
+        # Aplicar filtros
+        if status:
+            query = query.filter(SolicitacaoCompra.status == status)
+        if data_inicio:
+            query = query.filter(SolicitacaoCompra.data_solicitacao >= data_inicio)
+        if data_fim:
+            query = query.filter(SolicitacaoCompra.data_solicitacao <= data_fim)
+        if solicitante_id:
+            query = query.filter(SolicitacaoCompra.solicitante_id == solicitante_id)
+            
+        # Ordenar e executar query
+        solicitacoes = query.order_by(SolicitacaoCompra.data_solicitacao.desc()).all()
+        
+        return render_template('solicitacao_compra/lista_solicitacoes.html',
+                             solicitacoes=solicitacoes)
+    except Exception as e:
+        flash(f'Erro ao buscar solicitações: {str(e)}', 'error')
+        return redirect(url_for('main.index'))
+
+@solicitacao_compra_bp.route('/exportar_solicitacoes')
+@login_required
+def exportar_solicitacoes():
+    """Exporta solicitações para CSV"""
+    try:
+        # Obter parâmetros de filtro
+        status = request.args.get('status')
+        data_inicio = request.args.get('data_inicio')
+        data_fim = request.args.get('data_fim')
+        
+        # Construir query base
+        query = SolicitacaoCompra.query
+        
+        # Aplicar filtros
+        if status:
+            query = query.filter(SolicitacaoCompra.status == status)
+        if data_inicio:
+            query = query.filter(SolicitacaoCompra.data_solicitacao >= data_inicio)
+        if data_fim:
+            query = query.filter(SolicitacaoCompra.data_solicitacao <= data_fim)
+            
+        # Buscar solicitações
+        solicitacoes = query.order_by(SolicitacaoCompra.data_solicitacao.desc()).all()
+        
+        # Criar CSV
+        output = StringIO()
+        writer = csv.writer(output)
+        
+        # Escrever cabeçalho
+        writer.writerow(['ID', 'Data', 'Solicitante', 'Status', 'Atividade', 'Finalidade'])
+        
+        # Escrever dados
+        for s in solicitacoes:
+            writer.writerow([
+                s.id,
+                s.data_solicitacao.strftime('%d/%m/%Y'),
+                s.solicitante.nome,
+                s.status,
+                s.numero_atividade,
+                s.finalidade
+            ])
+        
+        # Preparar resposta
+        output.seek(0)
+        return Response(
+            output.getvalue(),
+            mimetype='text/csv',
+            headers={'Content-Disposition': 'attachment; filename=solicitacoes.csv'}
+        )
+        
+    except Exception as e:
+        flash(f'Erro ao exportar solicitações: {str(e)}', 'error')
+        return redirect(url_for('solicitacao_compra_bp.lista_solicitacoes_pendentes')) 

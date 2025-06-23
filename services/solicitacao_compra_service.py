@@ -20,7 +20,8 @@ class SolicitacaoCompraService:
                 nome_atividade=nome_atividade,
                 finalidade=finalidade,
                 justificativa_marca=justificativa_marca,
-                status='Processo Iniciado'  # Definir status inicial explicitamente
+                status='Processo Iniciado',  # Definir status inicial explicitamente
+                data_solicitacao=datetime.now()  # Adicionar data da solicitação
             )
             db.session.add(solicitacao)
             
@@ -44,7 +45,8 @@ class SolicitacaoCompraService:
                 resumo=f'Solicitação de compra realizada por {solicitacao.solicitante.nome}',
                 solicitante_id=solicitante_id,
                 prioridade='Média',
-                status='Não iniciada'
+                status='Não iniciada',
+                data_criacao=datetime.now()
             )
             db.session.add(tarefa)
             
@@ -95,6 +97,7 @@ class SolicitacaoCompraService:
                     # Criar novo processo no painel
                     processo = PainelContratacao(
                         ano=datetime.now().year,
+                        data_abertura=datetime.now().date(),  # Adicionar data de abertura
                         objeto=solicitacao.finalidade,
                         status=novo_status,
                         solicitante_id=solicitacao.solicitante_id,

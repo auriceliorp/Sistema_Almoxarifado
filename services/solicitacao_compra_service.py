@@ -19,7 +19,8 @@ class SolicitacaoCompraService:
                 numero_atividade=numero_atividade,
                 nome_atividade=nome_atividade,
                 finalidade=finalidade,
-                justificativa_marca=justificativa_marca
+                justificativa_marca=justificativa_marca,
+                status='Processo Iniciado'  # Definir status inicial explicitamente
             )
             db.session.add(solicitacao)
             
@@ -114,3 +115,4 @@ class SolicitacaoCompraService:
         except Exception as e:
             db.session.rollback()
             return {'success': False, 'error': str(e)} 
+

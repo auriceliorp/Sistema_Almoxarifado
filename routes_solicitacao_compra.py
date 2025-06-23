@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, Response
 from flask_login import login_required, current_user
 from services.solicitacao_compra_service import SolicitacaoCompraService
-from models import db, Item, SolicitacaoCompra, ItemSolicitacaoCompra, Tarefa, CategoriaTarefa, Atividade, TriagemSolicitacaoCompra, PainelContratacao, NaturezaDespesa, Usuario, UnidadeLocal, Local
+from models import db, Item, SolicitacaoCompra, ItemSolicitacaoCompra, Tarefa, CategoriaTarefa, Atividade, TriagemSolicitacaoCompra, PainelContratacao, NaturezaDespesa, Usuario, UnidadeLocal, Local, Setor
 import logging
 import json
 from datetime import datetime
@@ -333,13 +333,13 @@ def criar_processo_form(triagem_id):
             'Art. 74, Inc. III - Lei 14.133/2021'
         ]
         
-        # Buscar naturezas de despesa (sem filtro de ativo)
+        # Buscar naturezas de despesa
         naturezas_despesa = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
         
-        # Buscar setores (locais)
-        setores = Local.query.order_by(Local.codigo).all()
+        # Buscar setores
+        setores = Setor.query.order_by(Setor.nome).all()
         
-        # Buscar usuários
+        # Buscar usuários ativos
         usuarios = Usuario.query.filter_by(ativo=True).order_by(Usuario.nome).all()
             
         return render_template('solicitacao_compra/criar_processo.html', 

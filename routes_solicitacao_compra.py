@@ -296,12 +296,26 @@ def criar_processo_da_triagem(triagem_id):
 @login_required
 def criar_processo_form(triagem_id):
     try:
+        from datetime import datetime
+        from models import NaturezaDespesa, Usuario, Setor
+        
         triagem = TriagemSolicitacaoCompra.query.get_or_404(triagem_id)
         
         if request.method == 'POST':
             dados_painel = {
                 'numero_sei': request.form.get('numero_sei'),
-                'modalidade': request.form.get('modalidade')
+                'modalidade': request.form.get('modalidade'),
+                'objeto': request.form.get('objeto'),
+                'fundamentacao_legal': request.form.get('fundamentacao_legal'),
+                'orgaos_participantes': request.form.get('orgaos_participantes'),
+                'natureza_despesa': request.form.get('natureza_despesa'),
+                'valor_estimado': request.form.get('valor_estimado'),
+                'valor_homologado': request.form.get('valor_homologado'),
+                'setor_responsavel': request.form.get('setor_responsavel'),
+                'responsavel_conducao': request.form.get('responsavel_conducao'),
+                'impugnacao': request.form.get('impugnacao'),
+                'recurso': request.form.get('recurso'),
+                'itens_desertos': request.form.get('itens_desertos')
             }
             
             # Atualizar todas as solicitações da triagem

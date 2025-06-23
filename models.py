@@ -523,8 +523,18 @@ class PainelContratacao(db.Model):
         cascade='all, delete-orphan'
     )
 
+    solicitantes = db.relationship(
+        'Usuario',
+        secondary=painel_solicitantes,
+        backref=db.backref('paineis_solicitados', lazy='dynamic')
+    )
+
     def __repr__(self):
         return f"<PainelContratacao {self.numero_sei}>"
+
+    @property
+    def valor_total_itens(self):
+        return sum(item.valor_total for item in self.itens_painel)
 
 # Adicionar após a classe PainelContratacao
 

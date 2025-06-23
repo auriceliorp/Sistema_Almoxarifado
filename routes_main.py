@@ -118,3 +118,8 @@ def relatorios():
 def dashboard_organizacao():
     return render_template('organizacao/dashboard_organizacao.html', usuario=current_user)
 
+# --- Página do Fluxograma de Compras ---
+@main.route('/fluxograma_compras')
+@login_required
+def fluxograma_compras():
+    return render_template('fluxograma_compras.html')

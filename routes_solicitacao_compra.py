@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, Response
 from flask_login import login_required, current_user
 from services.solicitacao_compra_service import SolicitacaoCompraService
-from models import db, Item, SolicitacaoCompra, ItemSolicitacaoCompra, Tarefa, CategoriaTarefa, Atividade, TriagemSolicitacaoCompra, PainelContratacao, NaturezaDespesa, Usuario, UnidadeLocal
+from models import db, Item, SolicitacaoCompra, ItemSolicitacaoCompra, Tarefa, CategoriaTarefa, Atividade, TriagemSolicitacaoCompra, PainelContratacao, NaturezaDespesa, Usuario, UnidadeLocal, Local
 import logging
 import json
 from datetime import datetime
@@ -317,15 +317,38 @@ def criar_processo_form(triagem_id):
             
             flash('Processo criado com sucesso!', 'success')
             return redirect(url_for('painel_bp.lista_painel'))
+        
+        # Carregar dados para os selects
+        fundamentacoes_legais = [
+            'Art. 24, Inc. I - Lei 8.666/93',
+            'Art. 24, Inc. II - Lei 8.666/93',
+            'Art. 25, Inc. I - Lei 8.666/93',
+            'Art. 25, Inc. II - Lei 8.666/93',
+            'Art. 25, Inc. III - Lei 8.666/93',
+            'Lei 14.133/2021 - Nova Lei de Licitações',
+            'Art. 75, Inc. I - Lei 14.133/2021',
+            'Art. 75, Inc. II - Lei 14.133/2021',
+            'Art. 74, Inc. I - Lei 14.133/2021',
+            'Art. 74, Inc. II - Lei 14.133/2021',
+            'Art. 74, Inc. III - Lei 14.133/2021'
+        ]
+        
+        # Buscar naturezas de despesa ativas
+        naturezas_despesa = NaturezaDespesa.query.filter_by(ativo=True).order_by(NaturezaDespesa.codigo).all()
+        
+        # Buscar setores (locais)
+        setores = Local.query.filter_by(ativo=True).order_by(Local.codigo).all()
+        
+        # Buscar usuários ativos
+        usuarios = Usuario.query.filter_by(ativo=True).order_by(Usuario.nome).all()
             
-        # Adicionar a variável now ao contexto do template
         return render_template('solicitacao_compra/criar_processo.html', 
                              triagem=triagem,
                              now=datetime.now(),
-                             fundamentacoes_legais=[],  # Adicionar lista de fundamentações
-                             naturezas_despesa=[],      # Adicionar lista de NDs
-                             setores=[],                # Adicionar lista de setores
-                             usuarios=[])               # Adicionar lista de usuários
+                             fundamentacoes_legais=fundamentacoes_legais,
+                             naturezas_despesa=naturezas_despesa,
+                             setores=setores,
+                             usuarios=usuarios)
         
     except Exception as e:
         flash(f'Erro ao criar processo: {str(e)}', 'error')

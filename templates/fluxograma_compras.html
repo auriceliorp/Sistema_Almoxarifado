@@ -4,120 +4,208 @@
 {% block content %}
 <div class="container">
     <h1 class="text-center mb-4">Fluxograma do Processo de Compras</h1>
-    <div class="text-center mb-3">
-        <button onclick="downloadAsPNG()" class="btn btn-primary me-2">Baixar como PNG</button>
-        <button onclick="downloadAsSVG()" class="btn btn-secondary">Baixar como SVG</button>
-    </div>
-    <div id="mermaid-diagram" class="mermaid">
-        graph TD
-        %% Definição de estilos
-        classDef inicio fill:#90EE90,stroke:#006400,stroke-width:2px,color:black
-        classDef formulario fill:#FFB6C1,stroke:#8B0000,stroke-width:2px,color:black
-        classDef processo fill:#87CEEB,stroke:#00008B,stroke-width:2px,color:black
-        classDef decisao fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:black
-        classDef status fill:#DDA0DD,stroke:#4B0082,stroke-width:2px,color:black
-        classDef final fill:#FA8072,stroke:#8B0000,stroke-width:2px,color:black
+    
+    <div class="home-grid">
+        <!-- Controles do Fluxograma -->
+        <div class="home-card">
+            <i class="bi bi-zoom-in"></i>
+            <h6>Controles</h6>
+            <div class="d-flex justify-content-center gap-2 mb-3">
+                <button onclick="zoomIn()" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-zoom-in"></i> Aumentar
+                </button>
+                <button onclick="zoomOut()" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-zoom-out"></i> Diminuir
+                </button>
+                <button onclick="resetZoom()" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-arrow-counterclockwise"></i> Reset
+                </button>
+            </div>
+            <div class="d-flex justify-content-center gap-2">
+                <button onclick="downloadAsPNG()" class="btn btn-sm btn-primary">
+                    <i class="bi bi-download"></i> PNG
+                </button>
+                <button onclick="downloadAsSVG()" class="btn btn-sm btn-secondary">
+                    <i class="bi bi-download"></i> SVG
+                </button>
+            </div>
+        </div>
 
-        %% Início do Processo
-        A[Início - Solicitante]:::inicio
-        
-        %% Formulário de Solicitação
-        subgraph Formulário
-            B[Nova Solicitação de Compra]:::formulario
-            C[Preencher Formulário]:::formulario
-            D[Selecionar Itens]:::formulario
-            E[Definir Quantidade]:::formulario
-            F[Selecionar Atividade]:::formulario
-            G[Informar Finalidade]:::formulario
-            H[Justificativa de Marca]:::formulario
-        end
-        
-        %% Processo Inicial
-        subgraph Criação
-            I[Criar Solicitação]:::processo
-            J[Sistema cria Tarefa automática]:::processo
-            K[Status: Processo Iniciado]:::status
-        end
-        
-        %% Triagem
-        subgraph Análise
-            L[Triagem das Solicitações]:::processo
-            M{Aprovação?}:::decisao
-        end
-        
-        %% Processo de Compra
-        subgraph Processo_de_Compra
-            N[Criar Processo de Compra]:::processo
-            O[Preencher dados do processo]:::processo
-            P[Número SEI]:::formulario
-            Q[Modalidade]:::formulario
-            R[Fundamentação Legal]:::formulario
-            S[Natureza da Despesa]:::formulario
-            T[Setor Responsável]:::formulario
-            U[Responsável pela Condução]:::formulario
-        end
-        
-        %% Painel e Acompanhamento
-        subgraph Acompanhamento
-            V[Painel de Contratações]:::processo
-            W[Acompanhamento do Processo]:::processo
-            X[Processo em Execução]:::status
-        end
-        
-        %% Status Finais
-        subgraph Status_Final
-            Y[Processo Finalizado]:::final
-            Z[Processo Cancelado]:::final
-            AA[Processo em Espera]:::status
-            BB[Solicitação Cancelada]:::final
-        end
+        <!-- Fluxograma -->
+        <div class="home-card fluxograma-container">
+            <div id="mermaid-diagram" class="mermaid">
+                graph TD
+                %% Definição de estilos
+                classDef inicio fill:#90EE90,stroke:#006400,stroke-width:2px,color:black
+                classDef formulario fill:#FFB6C1,stroke:#8B0000,stroke-width:2px,color:black
+                classDef processo fill:#87CEEB,stroke:#00008B,stroke-width:2px,color:black
+                classDef decisao fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:black
+                classDef status fill:#DDA0DD,stroke:#4B0082,stroke-width:2px,color:black
+                classDef final fill:#FA8072,stroke:#8B0000,stroke-width:2px,color:black
 
-        %% Conexões
-        A --> B
-        B --> C
-        C --> |Inclui| D
-        C --> |Inclui| E
-        C --> |Inclui| F
-        C --> |Inclui| G
-        C --> |Opcional| H
-        
-        C --> I
-        I --> J
-        I --> K
-        
-        K --> L
-        L --> M
-        
-        M --> |Aprovado| N
-        N --> O
-        O --> |Inclui| P
-        O --> |Inclui| Q
-        O --> |Inclui| R
-        O --> |Inclui| S
-        O --> |Inclui| T
-        O --> |Inclui| U
-        
-        O --> V
-        V --> W
-        W --> X
-        
-        X --> |Concluído| Y
-        X --> |Cancelada| Z
-        X --> |Aguardando Definições| AA
-        
-        M --> |Rejeitado| BB
+                %% Início do Processo
+                A[Início - Solicitante]:::inicio
+                
+                %% Formulário de Solicitação
+                subgraph Formulário
+                    B[Nova Solicitação de Compra]:::formulario
+                    C[Preencher Formulário]:::formulario
+                    D[Selecionar Itens]:::formulario
+                    E[Definir Quantidade]:::formulario
+                    F[Selecionar Atividade]:::formulario
+                    G[Informar Finalidade]:::formulario
+                    H[Justificativa de Marca]:::formulario
+                end
+                
+                %% Processo Inicial
+                subgraph Criação
+                    I[Criar Solicitação]:::processo
+                    J[Sistema cria Tarefa automática]:::processo
+                    K[Status: Processo Iniciado]:::status
+                end
+                
+                %% Triagem
+                subgraph Análise
+                    L[Triagem das Solicitações]:::processo
+                    M{Aprovação?}:::decisao
+                end
+                
+                %% Processo de Compra
+                subgraph Processo_de_Compra
+                    N[Criar Processo de Compra]:::processo
+                    O[Preencher dados do processo]:::processo
+                    P[Número SEI]:::formulario
+                    Q[Modalidade]:::formulario
+                    R[Fundamentação Legal]:::formulario
+                    S[Natureza da Despesa]:::formulario
+                    T[Setor Responsável]:::formulario
+                    U[Responsável pela Condução]:::formulario
+                end
+                
+                %% Painel e Acompanhamento
+                subgraph Acompanhamento
+                    V[Painel de Contratações]:::processo
+                    W[Acompanhamento do Processo]:::processo
+                    X[Processo em Execução]:::status
+                end
+                
+                %% Status Finais
+                subgraph Status_Final
+                    Y[Processo Finalizado]:::final
+                    Z[Processo Cancelado]:::final
+                    AA[Processo em Espera]:::status
+                    BB[Solicitação Cancelada]:::final
+                end
 
-        %% Legenda
-        subgraph Legenda
-            L1[Início/Fim]:::inicio
-            L2[Formulários]:::formulario
-            L3[Processos]:::processo
-            L4[Decisões]:::decisao
-            L5[Status]:::status
-            L6[Finalização]:::final
-        end
+                %% Conexões
+                A --> B
+                B --> C
+                C --> |Inclui| D
+                C --> |Inclui| E
+                C --> |Inclui| F
+                C --> |Inclui| G
+                C --> |Opcional| H
+                
+                C --> I
+                I --> J
+                I --> K
+                
+                K --> L
+                L --> M
+                
+                M --> |Aprovado| N
+                N --> O
+                O --> |Inclui| P
+                O --> |Inclui| Q
+                O --> |Inclui| R
+                O --> |Inclui| S
+                O --> |Inclui| T
+                O --> |Inclui| U
+                
+                O --> V
+                V --> W
+                W --> X
+                
+                X --> |Concluído| Y
+                X --> |Cancelada| Z
+                X --> |Aguardando Definições| AA
+                
+                M --> |Rejeitado| BB
+
+                %% Legenda
+                subgraph Legenda
+                    L1[Início/Fim]:::inicio
+                    L2[Formulários]:::formulario
+                    L3[Processos]:::processo
+                    L4[Decisões]:::decisao
+                    L5[Status]:::status
+                    L6[Finalização]:::final
+                end
+            </div>
+        </div>
     </div>
 </div>
+
+<style>
+    .home-grid {
+        display: grid;
+        grid-template-columns: 250px 1fr;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .home-card {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .home-card:hover {
+        transform: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .home-card i {
+        font-size: 2rem;
+        color: #004b5b;
+        margin-bottom: 1rem;
+    }
+
+    .home-card h6 {
+        margin-bottom: 1rem;
+        color: #333;
+    }
+
+    .fluxograma-container {
+        overflow: auto;
+        max-height: calc(100vh - 200px);
+        position: relative;
+    }
+
+    #mermaid-diagram {
+        transform-origin: center center;
+        transition: transform 0.3s ease;
+    }
+
+    .btn-outline-primary {
+        color: #004b5b;
+        border-color: #004b5b;
+    }
+
+    .btn-outline-primary:hover {
+        background-color: #004b5b;
+        color: white;
+    }
+
+    @media (max-width: 768px) {
+        .home-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
 
 {% block extra_scripts %}
 <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
@@ -128,10 +216,33 @@
         theme: 'default',
         securityLevel: 'loose',
         flowchart: {
-            useMaxWidth: false,
-            htmlLabels: true
+            useMaxWidth: true,
+            htmlLabels: true,
+            curve: 'basis'
         }
     });
+
+    let currentZoom = 1;
+    const diagram = document.getElementById('mermaid-diagram');
+
+    function zoomIn() {
+        currentZoom = Math.min(currentZoom + 0.1, 2);
+        updateZoom();
+    }
+
+    function zoomOut() {
+        currentZoom = Math.max(currentZoom - 0.1, 0.5);
+        updateZoom();
+    }
+
+    function resetZoom() {
+        currentZoom = 1;
+        updateZoom();
+    }
+
+    function updateZoom() {
+        diagram.style.transform = `scale(${currentZoom})`;
+    }
 
     function downloadAsPNG() {
         const element = document.querySelector("#mermaid-diagram svg");

@@ -297,7 +297,7 @@ def criar_processo_da_triagem(triagem_id):
 def criar_processo_form(triagem_id):
     try:
         from datetime import datetime
-        from models import NaturezaDespesa, Usuario, Setor
+        from models import NaturezaDespesa, Usuario, UnidadeLocal
         
         triagem = TriagemSolicitacaoCompra.query.get_or_404(triagem_id)
         
@@ -350,8 +350,8 @@ def criar_processo_form(triagem_id):
         # Buscar naturezas de despesa
         naturezas_despesa = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
         
-        # Buscar setores
-        setores = Setor.query.order_by(Setor.nome).all()
+        # Buscar unidades locais
+        unidades_locais = UnidadeLocal.query.order_by(UnidadeLocal.codigo).all()
         
         # Buscar usuários ativos
         usuarios = Usuario.query.filter_by(ativo=True).order_by(Usuario.nome).all()
@@ -361,7 +361,7 @@ def criar_processo_form(triagem_id):
                              now=datetime.now(),
                              fundamentacoes_legais=fundamentacoes_legais,
                              naturezas_despesa=naturezas_despesa,
-                             setores=setores,
+                             setores=unidades_locais,
                              usuarios=usuarios)
         
     except Exception as e:

@@ -786,7 +786,7 @@ class SolicitacaoCompra(db.Model):
     nome_atividade = db.Column(db.String(200))
     finalidade = db.Column(db.Text, nullable=False)
     justificativa_marca = db.Column(db.Text)
-    status = db.Column(db.String(50), nullable=False, default='Processo Iniciado')
+    status = db.Column(db.String(50), default='PENDENTE')
     
     solicitante_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
     solicitante = db.relationship('Usuario', foreign_keys=[solicitante_id])
@@ -858,3 +858,4 @@ class TriagemSolicitacaoAssociacao(db.Model):
     triagem_id = db.Column(db.Integer, db.ForeignKey('triagem_solicitacao_compra.id'), primary_key=True)
     solicitacao_id = db.Column(db.Integer, db.ForeignKey('solicitacao_compra.id'), primary_key=True)
     observacao = db.Column(db.Text)
+

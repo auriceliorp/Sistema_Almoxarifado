@@ -1,4 +1,22 @@
+from flask import Blueprint, jsonify
+from flask_login import login_required
+from models import Tarefa, Item
 
+# Primeiro, criar o blueprint
+api_bp = Blueprint('api', __name__, url_prefix='/api')
+
+# Depois, definir as rotas
+@api_bp.route('/itens')
+def get_itens():
+    itens = Item.query.all()
+    return jsonify([{
+        'id': item.id,
+        'nome': f"{item.codigo_sap} - {item.nome}",
+        'valor_unitario': float(item.valor_unitario)
+    } for item in itens])
+
+@api_bp.route('/tarefas/<int:tarefa_id>/detalhes')
+@login_required
 def get_detalhes_tarefa(tarefa_id):
     try:
         tarefa = Tarefa.query.get_or_404(tarefa_id)
@@ -60,12 +78,3 @@ def get_contadores():
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-@api_bp.route('/itens')
-def get_itens():
-    itens = Item.query.all()
-    return jsonify([{
-        'id': item.id,
-        'nome': f"{item.codigo_sap} - {item.nome}",
-        'valor_unitario': float(item.valor_unitario)
-    } for item in itens])

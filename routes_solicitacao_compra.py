@@ -333,13 +333,13 @@ def criar_processo_form(triagem_id):
             'Art. 74, Inc. III - Lei 14.133/2021'
         ]
         
-        # Buscar naturezas de despesa ativas
-        naturezas_despesa = NaturezaDespesa.query.filter_by(ativo=True).order_by(NaturezaDespesa.codigo).all()
+        # Buscar naturezas de despesa (sem filtro de ativo)
+        naturezas_despesa = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
         
         # Buscar setores (locais)
-        setores = Local.query.filter_by(ativo=True).order_by(Local.codigo).all()
+        setores = Local.query.order_by(Local.codigo).all()
         
-        # Buscar usuários ativos
+        # Buscar usuários
         usuarios = Usuario.query.filter_by(ativo=True).order_by(Usuario.nome).all()
             
         return render_template('solicitacao_compra/criar_processo.html', 

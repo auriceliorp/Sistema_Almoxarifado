@@ -143,7 +143,7 @@
                         <select class="form-select" id="setor_responsavel" name="setor_responsavel" required>
                             <option value="">Selecione...</option>
                             {% for setor in setores %}
-                            <option value="{{ setor.id }}">{{ setor.codigo }} - {{ setor.descricao }}</option>
+                            <option value="{{ setor.codigo }}">{{ setor.codigo }} - {{ setor.descricao }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -201,4 +201,5 @@
     </div>
 </div>
 {% endblock %}
+
 

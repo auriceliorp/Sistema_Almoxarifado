@@ -318,7 +318,14 @@ def criar_processo_form(triagem_id):
             flash('Processo criado com sucesso!', 'success')
             return redirect(url_for('painel_bp.lista_painel'))
             
-        return render_template('solicitacao_compra/criar_processo.html', triagem=triagem)
+        # Adicionar a variável now ao contexto do template
+        return render_template('solicitacao_compra/criar_processo.html', 
+                             triagem=triagem,
+                             now=datetime.now(),
+                             fundamentacoes_legais=[],  # Adicionar lista de fundamentações
+                             naturezas_despesa=[],      # Adicionar lista de NDs
+                             setores=[],                # Adicionar lista de setores
+                             usuarios=[])               # Adicionar lista de usuários
         
     except Exception as e:
         flash(f'Erro ao criar processo: {str(e)}', 'error')

@@ -480,7 +480,12 @@ class AuditLog(db.Model):
     # Data e hora da operação
     data_hora = db.Column(db.DateTime, default=datetime.utcnow)
 
-# ------------------- PAINEL DE CONTRATAÇÕES -------------------
+# Adicionar antes da classe PainelContratacao
+painel_solicitantes = db.Table('painel_solicitantes',
+    db.Column('painel_id', db.Integer, db.ForeignKey('painel_contratacoes.id'), primary_key=True),
+    db.Column('usuario_id', db.Integer, db.ForeignKey('usuarios.id'), primary_key=True)
+)
+
 class PainelContratacao(db.Model):
     __tablename__ = 'painel_contratacoes'
 
@@ -517,12 +522,7 @@ class PainelContratacao(db.Model):
     solicitante_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
     solicitante = db.relationship('Usuario', foreign_keys=[solicitante_id])
 
-    itens_painel = db.relationship(
-        'ItemPainelContratacao',
-        backref='painel',
-        cascade='all, delete-orphan'
-    )
-
+    # Adicionar o relacionamento com múltiplos solicitantes
     solicitantes = db.relationship(
         'Usuario',
         secondary=painel_solicitantes,
@@ -552,11 +552,8 @@ class ItemPainelContratacao(db.Model):
     painel = db.relationship('PainelContratacao', backref='itens_painel')
     item = db.relationship('Item', backref='paineis_contratacao')
 
-# Tabela de associação para múltiplos solicitantes
-painel_solicitantes = db.Table('painel_solicitantes',
-    db.Column('painel_id', db.Integer, db.ForeignKey('painel_contratacoes.id'), primary_key=True),
-    db.Column('usuario_id', db.Integer, db.ForeignKey('usuarios.id'), primary_key=True)
-)
+    def __repr__(self):
+        return f"<ItemPainelContratacao {self.id} - Painel {self.painel_id}>"
 
 # ------------------- CONTROLE DE BENS -------------------
 from extensoes import db
@@ -896,5 +893,3 @@ class TriagemSolicitacaoAssociacao(db.Model):
     triagem_id = db.Column(db.Integer, db.ForeignKey('triagem_solicitacao_compra.id'), primary_key=True)
     solicitacao_id = db.Column(db.Integer, db.ForeignKey('solicitacao_compra.id'), primary_key=True)
     observacao = db.Column(db.Text)
-
-

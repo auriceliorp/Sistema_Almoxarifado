@@ -7,7 +7,8 @@ from datetime import datetime
 from sqlalchemy.orm import joinedload
 from sqlalchemy import func
 from extensoes import db
-from models import PainelContratacao, Usuario
+from models import PainelContratacao, Usuario, ItemPainelContratacao
+import json
 
 painel_bp = Blueprint('painel_bp', __name__, url_prefix='/painel')
 
@@ -230,3 +231,36 @@ def dashboard_compras():
         ultimos_processos=ultimos_processos,
         usuario=current_user
     )
+
+
+@painel_bp.route('/criar_processo', methods=['POST'])
+@login_required
+def criar_processo():
+    try:
+        # ... código existente ...
+
+        # Adicionar itens
+        for item_data in request.form.getlist('itens[]'):
+            item = json.loads(item_data)
+            item_painel = ItemPainelContratacao(
+                item_id=item['id'],
+                quantidade=item['quantidade'],
+                valor_unitario=item['valor_unitario'],
+                valor_total=item['quantidade'] * item['valor_unitario']
+            )
+            processo.itens_painel.append(item_painel)
+
+        # Adicionar solicitantes
+        for solicitante_id in request.form.getlist('solicitantes[]'):
+            solicitante = Usuario.query.get(solicitante_id)
+            if solicitante:
+                processo.solicitantes.append(solicitante)
+
+        db.session.commit()
+        flash('Processo criado com sucesso!', 'success')
+        return redirect(url_for('painel_bp.visualizar_painel', id=processo.id))
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Erro ao criar processo: {str(e)}', 'error')
+        return redirect(url_for('painel_bp.lista_painel'))

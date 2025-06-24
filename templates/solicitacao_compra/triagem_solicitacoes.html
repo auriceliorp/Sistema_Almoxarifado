@@ -111,39 +111,23 @@
     <div class="tab-content">
         <!-- Tab Solicitações Pendentes -->
         <div class="tab-pane fade show active" id="solicitacoes">
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th><input type="checkbox" id="selecionarTodas"></th>
-                            <th>ID</th>
-                            <th>Data</th>
-                            <th>Solicitante</th>
-                            <th>Status</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for solicitacao in solicitacoes %}
-                        <tr>
-                            <td><input type="checkbox" class="solicitacao-check" name="solicitacao" value="{{ solicitacao.id }}"></td>
-                            <td>{{ solicitacao.id }}</td>
-                            <td>{{ solicitacao.data_solicitacao.strftime('%d/%m/%Y') }}</td>
-                            <td>{{ solicitacao.solicitante.nome if solicitacao.solicitante else 'N/A' }}</td>
-                            <td>{{ solicitacao.status }}</td>
-                            <td>
-                                <button type="button" class="btn btn-sm btn-info" onclick="visualizarDetalhes({{ solicitacao.id }})">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <!-- Área da tabela -->
+            <div class="table-responsive" id="areaTabela">
+                <!-- A tabela será carregada aqui -->
+            </div>
+
+            <!-- Área da paginação -->
+            <div id="areaPaginacao" class="mt-4">
+                <!-- A paginação será carregada aqui -->
+            </div>
+
+            <!-- Informações de total -->
+            <div class="text-muted text-center mt-2">
+                <small id="infoRegistros"></small>
             </div>
 
             <!-- Botão para criar triagem -->
-            <button type="button" class="btn btn-primary" onclick="abrirModalTriagem()">
+            <button type="button" class="btn btn-primary mt-4" onclick="abrirModalTriagem()">
                 <i class="bi bi-plus-circle"></i> Criar Nova Triagem
             </button>
         </div>
@@ -479,6 +463,3 @@ function inicializarTriagem() {
 }
 </script>
 {% endblock %}
-
-
-

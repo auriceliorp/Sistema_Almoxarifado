@@ -104,14 +104,42 @@
                         <label for="filtroSelect" class="text-muted">Filtrar por</label>
                     </div>
                 </div>
+
+                <!-- Campo de busca dinâmico -->
                 <div class="col-md-7">
-                    <div class="form-floating">
-                        <input type="text" name="busca" value="{{ busca or '' }}" 
-                               class="form-control shadow-sm" id="buscaInput" 
-                               placeholder="Digite para buscar...">
+                    <!-- Campo de texto para SAP e Descrição -->
+                    <div class="form-floating" id="campoBuscaTexto" {% if filtro in ['grupo', 'nd'] %}style="display: none;"{% endif %}>
+                        <input type="text" name="busca" value="{{ busca or '' }}" class="form-control shadow-sm" id="buscaInput" placeholder="Digite para buscar...">
                         <label for="buscaInput" class="text-muted">Valor da busca</label>
                     </div>
+
+                    <!-- Select para Grupos -->
+                    <div class="form-floating" id="campoBuscaGrupo" {% if filtro != 'grupo' %}style="display: none;"{% endif %}>
+                        <select name="busca_grupo" class="form-select shadow-sm" id="buscaGrupoSelect">
+                            <option value="">Selecione um grupo</option>
+                            {% for grupo in grupos %}
+                            <option value="{{ grupo.id }}" {% if busca == grupo.id|string %}selected{% endif %}>
+                                {{ grupo.nome }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <label for="buscaGrupoSelect" class="text-muted">Selecione o Grupo</label>
+                    </div>
+
+                    <!-- Select para NDs -->
+                    <div class="form-floating" id="campoBuscaND" {% if filtro != 'nd' %}style="display: none;"{% endif %}>
+                        <select name="busca_nd" class="form-select shadow-sm" id="buscaNDSelect">
+                            <option value="">Selecione uma ND</option>
+                            {% for nd in naturezas_despesa %}
+                            <option value="{{ nd.id }}" {% if busca == nd.id|string %}selected{% endif %}>
+                                {{ nd.codigo }} - {{ nd.nome }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <label for="buscaNDSelect" class="text-muted">Selecione a Natureza de Despesa</label>
+                    </div>
                 </div>
+
                 <div class="col-md-2">
                     <button type="submit" class="btn btn-primary w-100 h-100 shadow-sm">
                         <i class="bi bi-search me-1"></i>
@@ -282,7 +310,37 @@ document.addEventListener('DOMContentLoaded', function() {
         var form = document.getElementById('formExcluir')
         form.action = '/item/' + itemId + '/excluir'
     })
-})
+
+    const filtroSelect = document.getElementById('filtroSelect');
+    const campoBuscaTexto = document.getElementById('campoBuscaTexto');
+    const campoBuscaGrupo = document.getElementById('campoBuscaGrupo');
+    const campoBuscaND = document.getElementById('campoBuscaND');
+    
+    // Função para mostrar o campo apropriado baseado no filtro selecionado
+    function atualizarCampoBusca() {
+        const filtroSelecionado = filtroSelect.value;
+        
+        // Esconde todos os campos primeiro
+        campoBuscaTexto.style.display = 'none';
+        campoBuscaGrupo.style.display = 'none';
+        campoBuscaND.style.display = 'none';
+        
+        // Mostra o campo apropriado
+        if (filtroSelecionado === 'grupo') {
+            campoBuscaGrupo.style.display = 'block';
+        } else if (filtroSelecionado === 'nd') {
+            campoBuscaND.style.display = 'block';
+        } else {
+            campoBuscaTexto.style.display = 'block';
+        }
+    }
+    
+    // Atualiza os campos quando o filtro é alterado
+    filtroSelect.addEventListener('change', atualizarCampoBusca);
+    
+    // Inicializa o estado correto dos campos
+    atualizarCampoBusca();
+});
 </script>
 {% endblock %}
 

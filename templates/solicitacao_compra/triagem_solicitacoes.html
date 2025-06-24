@@ -14,6 +14,85 @@
         <h4><i class="bi bi-funnel me-2"></i>Triagem de Solicitações</h4>
     </div>
 
+    <!-- Filtros Avançados -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form id="formFiltros" class="row g-3">
+                <!-- Filtro por Solicitante -->
+                <div class="col-md-4">
+                    <div class="form-floating">
+                        <select class="form-select" id="filtroSolicitante" name="solicitante">
+                            <option value="">Todos os solicitantes</option>
+                            {% for solicitante in solicitantes %}
+                            <option value="{{ solicitante.id }}" {% if filtro_solicitante == solicitante.id %}selected{% endif %}>
+                                {{ solicitante.nome }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <label>Solicitante</label>
+                    </div>
+                </div>
+
+                <!-- Filtro por Status -->
+                <div class="col-md-4">
+                    <div class="form-floating">
+                        <select class="form-select" id="filtroStatus" name="status">
+                            <option value="">Todos os status</option>
+                            {% for status in status_list %}
+                            <option value="{{ status }}" {% if filtro_status == status %}selected{% endif %}>
+                                {{ status }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <label>Status</label>
+                    </div>
+                </div>
+
+                <!-- Filtro por ND -->
+                <div class="col-md-4">
+                    <div class="form-floating">
+                        <select class="form-select" id="filtroND" name="nd">
+                            <option value="">Todas as NDs</option>
+                            {% for nd in naturezas_despesa %}
+                            <option value="{{ nd.id }}" {% if filtro_nd == nd.id %}selected{% endif %}>
+                                {{ nd.codigo }} - {{ nd.nome }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <label>Natureza de Despesa</label>
+                    </div>
+                </div>
+
+                <!-- Filtro por Período -->
+                <div class="col-md-4">
+                    <div class="form-floating">
+                        <input type="date" class="form-control" id="dataInicio" name="data_inicio" 
+                               value="{{ filtro_data_inicio }}">
+                        <label>Data Início</label>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="form-floating">
+                        <input type="date" class="form-control" id="dataFim" name="data_fim" 
+                               value="{{ filtro_data_fim }}">
+                        <label>Data Fim</label>
+                    </div>
+                </div>
+
+                <!-- Botões de Ação -->
+                <div class="col-md-4 d-flex align-items-center">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-search me-1"></i> Filtrar
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="limparFiltros()">
+                        <i class="bi bi-x-circle me-1"></i> Limpar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Tabs de navegação -->
     <ul class="nav nav-tabs mb-4" role="tablist">
         <li class="nav-item" role="presentation">
@@ -155,15 +234,65 @@
 
 {% block extra_js %}
 <script>
-// Garantir que o DOM e o Bootstrap estejam carregados
 document.addEventListener('DOMContentLoaded', function() {
     inicializarTriagem();
+    inicializarFiltros();
 });
 
-// Também inicializar quando o conteúdo for carregado dinamicamente
-document.addEventListener('conteudoCarregado', function() {
-    inicializarTriagem();
-});
+function inicializarFiltros() {
+    // Formulário de filtros
+    document.getElementById('formFiltros').addEventListener('submit', function(e) {
+        e.preventDefault();
+        aplicarFiltros();
+    });
+
+    // Atualizar tabela quando mudar os selects
+    ['filtroSolicitante', 'filtroStatus', 'filtroND'].forEach(id => {
+        document.getElementById(id).addEventListener('change', function() {
+            aplicarFiltros();
+        });
+    });
+}
+
+function aplicarFiltros() {
+    const formData = new FormData(document.getElementById('formFiltros'));
+    const params = new URLSearchParams(formData);
+    
+    // Mostrar indicador de carregamento
+    document.querySelector('#solicitacoes .table-responsive').innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Carregando...</span>
+            </div>
+        </div>
+    `;
+
+    // Fazer a requisição
+    fetch(`/solicitacao-compra/triagem/filtrar?${params.toString()}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.querySelector('#solicitacoes .table-responsive').innerHTML = data.html;
+                inicializarTriagem(); // Reinicializar eventos após atualizar a tabela
+            } else {
+                throw new Error(data.message || 'Erro ao filtrar solicitações');
+            }
+        })
+        .catch(error => {
+            document.querySelector('#solicitacoes .table-responsive').innerHTML = `
+                <div class="alert alert-danger">
+                    ${error.message || 'Erro ao filtrar solicitações'}
+                </div>
+            `;
+        });
+}
+
+function limparFiltros() {
+    // Limpar todos os campos do formulário
+    document.getElementById('formFiltros').reset();
+    // Aplicar filtros para atualizar a tabela
+    aplicarFiltros();
+}
 
 function inicializarTriagem() {
     console.log('Inicializando funções de triagem');
@@ -350,5 +479,6 @@ function inicializarTriagem() {
 }
 </script>
 {% endblock %}
+
 
 

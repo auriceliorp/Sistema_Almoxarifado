@@ -16,31 +16,31 @@ item_bp = Blueprint('item_bp', __name__, url_prefix='/item')
 @item_bp.route('/itens')
 @login_required
 def lista_itens():
-    filtro = request.args.get('filtro')          # Tipo de filtro selecionado (sap, descricao, grupo, nd)
-    busca = request.args.get('busca')            # Termo buscado
-    nd_id = request.args.get('nd_id')            # Filtro por natureza de despesa
-    page = request.args.get('page', 1, type=int) # Página atual da paginação
+    filtro = request.args.get('filtro')
+    busca = request.args.get('busca')
+    busca_grupo = request.args.get('busca_grupo')
+    busca_nd = request.args.get('busca_nd')
+    page = request.args.get('page', 1, type=int)
 
     # Query base para os itens
     query = Item.query
 
-    # Filtro por Natureza de Despesa (ND)
-    if nd_id:
-        query = query.join(Grupo).filter(Grupo.natureza_despesa_id == nd_id)
-
-    # Filtros dinâmicos por campo
-    if filtro and busca:
-        busca = busca.lower()
+    # Aplicar filtros
+    if filtro and (busca or busca_grupo or busca_nd):
         if filtro == 'sap':
             query = query.filter(Item.codigo_sap.ilike(f'%{busca}%'))
         elif filtro == 'descricao':
             query = query.filter(Item.nome.ilike(f'%{busca}%'))
-        elif filtro == 'grupo':
-            query = query.join(Grupo).filter(Grupo.nome.ilike(f'%{busca}%'))
-        elif filtro == 'nd':
-            query = query.join(NaturezaDespesa).filter(NaturezaDespesa.codigo.ilike(f'%{busca}%'))
+        elif filtro == 'grupo' and busca_grupo:
+            query = query.filter(Item.grupo_id == busca_grupo)
+        elif filtro == 'nd' and busca_nd:
+            query = query.join(Grupo).filter(Grupo.natureza_despesa_id == busca_nd)
 
-    # Cálculo das estatísticas
+    # Carregar dados para os selects
+    grupos = Grupo.query.order_by(Grupo.nome).all()
+    naturezas_despesa = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
+
+    # Estatísticas e paginação (mantido o código existente)
     stats = db.session.query(
         func.count(distinct(Item.id)).label('total_itens'),
         func.sum(Item.valor_unitario * Item.estoque_atual).label('total_valor'),
@@ -48,18 +48,13 @@ def lista_itens():
         func.count(distinct(Item.id)).filter(Item.estoque_atual > 0).label('total_com_estoque')
     ).first()
 
-    # Paginação ordenada por nome do item
     itens = query.order_by(Item.nome.asc()).paginate(page=page, per_page=10)
-
-    # Carrega naturezas de despesa para o filtro do formulário
-    naturezas_despesa = NaturezaDespesa.query.all()
-    nd_selecionado = int(nd_id) if nd_id else None
 
     return render_template(
         'item/lista_itens.html',
         itens=itens,
+        grupos=grupos,
         naturezas_despesa=naturezas_despesa,
-        nd_selecionado=nd_selecionado,
         filtro=filtro,
         busca=busca,
         total_valor=stats.total_valor or 0,

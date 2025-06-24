@@ -209,15 +209,29 @@ def atender_solicitacao(solicitacao_id):
 @solicitacao_compra_bp.route('/triagem_solicitacoes')
 @login_required
 def triagem_solicitacoes():
-    # Buscar solicitações pendentes
-    solicitacoes = SolicitacaoCompra.query.filter_by(status='Processo Iniciado').all()
-    
-    # Buscar triagens existentes
-    triagens = TriagemSolicitacaoCompra.query.order_by(TriagemSolicitacaoCompra.data_criacao.desc()).all()
-    
-    return render_template('solicitacao_compra/triagem_solicitacoes.html', 
-                         solicitacoes=solicitacoes,
-                         triagens=triagens)
+    # Carregar dados para os filtros
+    solicitantes = Usuario.query.order_by(Usuario.nome).all()
+    naturezas_despesa = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
+    status_list = ['PENDENTE', 'EM_ANALISE', 'APROVADA', 'REJEITADA']  # Ajuste conforme seus status
+
+    # Carregar solicitações (pode aplicar filtros iniciais se necessário)
+    solicitacoes = SolicitacaoCompra.query\
+        .order_by(SolicitacaoCompra.data_solicitacao.desc())\
+        .all()
+
+    # Carregar triagens
+    triagens = TriagemSolicitacaoCompra.query\
+        .order_by(TriagemSolicitacaoCompra.data_criacao.desc())\
+        .all()
+
+    return render_template(
+        'solicitacao_compra/triagem_solicitacoes.html',
+        solicitacoes=solicitacoes,
+        triagens=triagens,
+        solicitantes=solicitantes,
+        naturezas_despesa=naturezas_despesa,
+        status_list=status_list
+    )
 
 @solicitacao_compra_bp.route('/criar_triagem', methods=['POST'])
 @login_required
@@ -538,4 +552,57 @@ def exportar_solicitacoes():
         
     except Exception as e:
         flash(f'Erro ao exportar solicitações: {str(e)}', 'error')
-        return redirect(url_for('solicitacao_compra_bp.lista_solicitacoes_pendentes')) 
+        return redirect(url_for('solicitacao_compra_bp.lista_solicitacoes_pendentes'))
+
+@solicitacao_compra_bp.route('/triagem/filtrar')
+@login_required
+def filtrar_triagem():
+    try:
+        # Obter parâmetros dos filtros
+        solicitante_id = request.args.get('solicitante')
+        status = request.args.get('status')
+        nd_id = request.args.get('nd')
+        data_inicio = request.args.get('data_inicio')
+        data_fim = request.args.get('data_fim')
+
+        # Query base
+        query = SolicitacaoCompra.query
+
+        # Aplicar filtros
+        if solicitante_id:
+            query = query.filter(SolicitacaoCompra.solicitante_id == solicitante_id)
+        
+        if status:
+            query = query.filter(SolicitacaoCompra.status == status)
+        
+        if nd_id:
+            query = query.join(SolicitacaoCompraItem).join(Item).join(Grupo)\
+                        .filter(Grupo.natureza_despesa_id == nd_id)
+        
+        if data_inicio:
+            data_inicio = datetime.strptime(data_inicio, '%Y-%m-%d')
+            query = query.filter(SolicitacaoCompra.data_solicitacao >= data_inicio)
+        
+        if data_fim:
+            data_fim = datetime.strptime(data_fim, '%Y-%m-%d')
+            query = query.filter(SolicitacaoCompra.data_solicitacao <= data_fim)
+
+        # Ordenar por data
+        solicitacoes = query.order_by(SolicitacaoCompra.data_solicitacao.desc()).all()
+
+        # Renderizar apenas a tabela
+        html = render_template(
+            'solicitacao_compra/partials/tabela_solicitacoes.html',
+            solicitacoes=solicitacoes
+        )
+
+        return jsonify({
+            'success': True,
+            'html': html
+        })
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }) 

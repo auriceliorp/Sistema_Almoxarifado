@@ -1,0 +1,34 @@
+{% if solicitacoes.pages > 1 %}
+<nav aria-label="Navegação de páginas">
+    <ul class="pagination justify-content-center">
+        <!-- Botão Anterior -->
+        <li class="page-item {{ 'disabled' if not solicitacoes.has_prev }}">
+            <a class="page-link" href="#" data-page="{{ solicitacoes.prev_num }}" 
+               {{ 'tabindex="-1" aria-disabled="true"' if not solicitacoes.has_prev }}>
+                <i class="bi bi-chevron-left"></i>
+            </a>
+        </li>
+
+        <!-- Números das Páginas -->
+        {% for page_num in solicitacoes.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if page_num %}
+                <li class="page-item {{ 'active' if page_num == solicitacoes.page }}">
+                    <a class="page-link" href="#" data-page="{{ page_num }}">{{ page_num }}</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        <!-- Botão Próximo -->
+        <li class="page-item {{ 'disabled' if not solicitacoes.has_next }}">
+            <a class="page-link" href="#" data-page="{{ solicitacoes.next_num }}"
+               {{ 'tabindex="-1" aria-disabled="true"' if not solicitacoes.has_next }}>
+                <i class="bi bi-chevron-right"></i>
+            </a>
+        </li>
+    </ul>
+</nav>
+{% endif %}

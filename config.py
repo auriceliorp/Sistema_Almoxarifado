@@ -24,3 +24,5 @@ class Config:
     EMAIL_SENHA = os.environ.get('EMAIL_SENHA')
     SMTP_SERVER = os.environ.get('SMTP_SERVER')
     SMTP_PORT = int(os.environ.get('SMTP_PORT', 587))
+
+    ITEMS_PER_PAGE = 10  # ou outro número que preferir

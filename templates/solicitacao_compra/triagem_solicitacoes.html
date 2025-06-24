@@ -111,19 +111,71 @@
     <div class="tab-content">
         <!-- Tab Solicitações Pendentes -->
         <div class="tab-pane fade show active" id="solicitacoes">
-            <!-- Área da tabela -->
             <div class="table-responsive" id="areaTabela">
-                <!-- A tabela será carregada aqui -->
+                <!-- Tabela inicial com todas as solicitações -->
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="selecionarTodas"></th>
+                            <th>ID</th>
+                            <th>Data</th>
+                            <th>Solicitante</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for solicitacao in solicitacoes.items %}
+                        <tr>
+                            <td><input type="checkbox" class="solicitacao-check" name="solicitacao" value="{{ solicitacao.id }}"></td>
+                            <td>{{ solicitacao.id }}</td>
+                            <td>{{ solicitacao.data_solicitacao.strftime('%d/%m/%Y') }}</td>
+                            <td>{{ solicitacao.solicitante.nome if solicitacao.solicitante else 'N/A' }}</td>
+                            <td>{{ solicitacao.status }}</td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-info" onclick="visualizarDetalhes({{ solicitacao.id }})">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
 
-            <!-- Área da paginação -->
+            <!-- Paginação inicial -->
             <div id="areaPaginacao" class="mt-4">
-                <!-- A paginação será carregada aqui -->
-            </div>
+                {% if solicitacoes.pages > 1 %}
+                <nav aria-label="Navegação de páginas">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item {{ 'disabled' if not solicitacoes.has_prev }}">
+                            <a class="page-link" href="#" data-page="{{ solicitacoes.prev_num }}" 
+                               {{ 'tabindex="-1" aria-disabled="true"' if not solicitacoes.has_prev }}>
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
 
-            <!-- Informações de total -->
-            <div class="text-muted text-center mt-2">
-                <small id="infoRegistros"></small>
+                        {% for page_num in solicitacoes.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                            {% if page_num %}
+                                <li class="page-item {{ 'active' if page_num == solicitacoes.page }}">
+                                    <a class="page-link" href="#" data-page="{{ page_num }}">{{ page_num }}</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        <li class="page-item {{ 'disabled' if not solicitacoes.has_next }}">
+                            <a class="page-link" href="#" data-page="{{ solicitacoes.next_num }}"
+                               {{ 'tabindex="-1" aria-disabled="true"' if not solicitacoes.has_next }}>
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                {% endif %}
             </div>
 
             <!-- Botão para criar triagem -->
@@ -220,30 +272,51 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     inicializarTriagem();
+    inicializarPaginacao();
     inicializarFiltros();
 });
 
-function inicializarFiltros() {
-    // Formulário de filtros
-    document.getElementById('formFiltros').addEventListener('submit', function(e) {
-        e.preventDefault();
-        aplicarFiltros();
-    });
-
-    // Atualizar tabela quando mudar os selects
-    ['filtroSolicitante', 'filtroStatus', 'filtroND'].forEach(id => {
-        document.getElementById(id).addEventListener('change', function() {
-            aplicarFiltros();
+function inicializarPaginacao() {
+    // Adicionar eventos aos links de paginação
+    document.querySelectorAll('#areaPaginacao .page-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const pagina = this.dataset.page;
+            if (pagina) {
+                // Verificar se há filtros ativos
+                const filtrosAtivos = verificarFiltrosAtivos();
+                if (filtrosAtivos) {
+                    aplicarFiltros(parseInt(pagina));
+                } else {
+                    // Se não há filtros, apenas navegar para a página
+                    carregarPagina(parseInt(pagina));
+                }
+            }
         });
     });
 }
 
-function aplicarFiltros() {
+function verificarFiltrosAtivos() {
+    const solicitante = document.getElementById('filtroSolicitante').value;
+    const status = document.getElementById('filtroStatus').value;
+    const nd = document.getElementById('filtroND').value;
+    const dataInicio = document.getElementById('dataInicio').value;
+    const dataFim = document.getElementById('dataFim').value;
+
+    return solicitante || status || nd || dataInicio || dataFim;
+}
+
+function carregarPagina(pagina) {
+    window.location.href = `/solicitacao-compra/triagem?page=${pagina}`;
+}
+
+function aplicarFiltros(pagina = 1) {
     const formData = new FormData(document.getElementById('formFiltros'));
+    formData.append('page', pagina);
     const params = new URLSearchParams(formData);
     
     // Mostrar indicador de carregamento
-    document.querySelector('#solicitacoes .table-responsive').innerHTML = `
+    document.querySelector('#areaTabela').innerHTML = `
         <div class="text-center py-4">
             <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Carregando...</span>
@@ -251,19 +324,20 @@ function aplicarFiltros() {
         </div>
     `;
 
-    // Fazer a requisição
     fetch(`/solicitacao-compra/triagem/filtrar?${params.toString()}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                document.querySelector('#solicitacoes .table-responsive').innerHTML = data.html;
-                inicializarTriagem(); // Reinicializar eventos após atualizar a tabela
+                document.querySelector('#areaTabela').innerHTML = data.html_tabela;
+                document.querySelector('#areaPaginacao').innerHTML = data.html_paginacao;
+                inicializarPaginacao();
+                inicializarTriagem();
             } else {
                 throw new Error(data.message || 'Erro ao filtrar solicitações');
             }
         })
         .catch(error => {
-            document.querySelector('#solicitacoes .table-responsive').innerHTML = `
+            document.querySelector('#areaTabela').innerHTML = `
                 <div class="alert alert-danger">
                     ${error.message || 'Erro ao filtrar solicitações'}
                 </div>

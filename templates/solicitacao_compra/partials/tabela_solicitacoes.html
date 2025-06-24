@@ -1,0 +1,35 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th><input type="checkbox" id="selecionarTodas"></th>
+            <th>ID</th>
+            <th>Data</th>
+            <th>Solicitante</th>
+            <th>Status</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for solicitacao in solicitacoes %}
+        <tr>
+            <td><input type="checkbox" class="solicitacao-check" name="solicitacao" value="{{ solicitacao.id }}"></td>
+            <td>{{ solicitacao.id }}</td>
+            <td>{{ solicitacao.data_solicitacao.strftime('%d/%m/%Y') }}</td>
+            <td>{{ solicitacao.solicitante.nome if solicitacao.solicitante else 'N/A' }}</td>
+            <td>{{ solicitacao.status }}</td>
+            <td>
+                <button type="button" class="btn btn-sm btn-info" onclick="visualizarDetalhes({{ solicitacao.id }})">
+                    <i class="bi bi-eye"></i>
+                </button>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="6" class="text-center py-4">
+                <i class="bi bi-inbox fs-2 d-block mb-2 text-muted"></i>
+                Nenhuma solicitação encontrada com os filtros selecionados.
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

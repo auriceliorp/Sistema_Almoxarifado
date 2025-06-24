@@ -7,6 +7,8 @@ import json
 from datetime import datetime
 import csv
 from io import StringIO
+from sqlalchemy import func
+from flask import current_app
 
 # Configuração de logging
 logging.basicConfig(level=logging.INFO)
@@ -558,6 +560,10 @@ def exportar_solicitacoes():
 @login_required
 def filtrar_triagem():
     try:
+        # Parâmetros de paginação
+        page = request.args.get('page', 1, type=int)
+        per_page = current_app.config.get('ITEMS_PER_PAGE', 10)  # Configure isso no config.py
+
         # Obter parâmetros dos filtros
         solicitante_id = request.args.get('solicitante')
         status = request.args.get('status')
@@ -587,18 +593,31 @@ def filtrar_triagem():
             data_fim = datetime.strptime(data_fim, '%Y-%m-%d')
             query = query.filter(SolicitacaoCompra.data_solicitacao <= data_fim)
 
-        # Ordenar por data
-        solicitacoes = query.order_by(SolicitacaoCompra.data_solicitacao.desc()).all()
+        # Contar total de registros para estatísticas
+        total_registros = query.count()
 
-        # Renderizar apenas a tabela
-        html = render_template(
+        # Ordenar e paginar
+        solicitacoes = query.order_by(SolicitacaoCompra.data_solicitacao.desc())\
+                           .paginate(page=page, per_page=per_page, error_out=False)
+
+        # Renderizar tabela e paginação
+        html_tabela = render_template(
             'solicitacao_compra/partials/tabela_solicitacoes.html',
+            solicitacoes=solicitacoes
+        )
+
+        html_paginacao = render_template(
+            'solicitacao_compra/partials/paginacao.html',
             solicitacoes=solicitacoes
         )
 
         return jsonify({
             'success': True,
-            'html': html
+            'html_tabela': html_tabela,
+            'html_paginacao': html_paginacao,
+            'total_registros': total_registros,
+            'pagina_atual': page,
+            'total_paginas': solicitacoes.pages
         })
 
     except Exception as e:

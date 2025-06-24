@@ -1,6 +1,6 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from flask_login import login_required
-from models import Tarefa, Item
+from models import Tarefa, Item, Grupo
 
 # Primeiro, criar o blueprint
 api_bp = Blueprint('api', __name__, url_prefix='/api')
@@ -78,3 +78,32 @@ def get_contadores():
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@api_bp.route('/itens/buscar')
+@login_required
+def buscar_itens():
+    tipo = request.args.get('tipo')
+    termo = request.args.get('termo')
+    
+    query = Item.query
+    
+    if tipo and termo:
+        if tipo == 'sap':
+            query = query.filter(Item.codigo_sap.ilike(f'%{termo}%'))
+        elif tipo == 'descricao':
+            query = query.filter(Item.nome.ilike(f'%{termo}%'))
+        elif tipo == 'grupo':
+            query = query.filter(Item.grupo_id == termo)
+        elif tipo == 'nd':
+            query = query.join(Grupo).filter(Grupo.natureza_despesa_id == termo)
+    
+    itens = query.order_by(Item.nome).all()
+    
+    return jsonify([{
+        'id': item.id,
+        'codigo_sap': item.codigo_sap,
+        'nome': item.nome,
+        'unidade': item.unidade,
+        'grupo': item.grupo.nome if item.grupo else 'N/A',
+        'nd': item.grupo.natureza_despesa.codigo if item.grupo and item.grupo.natureza_despesa else 'N/A'
+    } for item in itens])

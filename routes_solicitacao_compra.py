@@ -208,18 +208,22 @@ def atender_solicitacao(solicitacao_id):
         solicitacao=solicitacao
     )
 
-@solicitacao_compra_bp.route('/triagem_solicitacoes')
+@solicitacao_compra_bp.route('/triagem')
 @login_required
 def triagem_solicitacoes():
+    # Parâmetros de paginação
+    page = request.args.get('page', 1, type=int)
+    per_page = current_app.config.get('ITEMS_PER_PAGE', 10)
+
     # Carregar dados para os filtros
     solicitantes = Usuario.query.order_by(Usuario.nome).all()
     naturezas_despesa = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
-    status_list = ['PENDENTE', 'EM_ANALISE', 'APROVADA', 'REJEITADA']  # Ajuste conforme seus status
+    status_list = ['PENDENTE', 'EM_ANALISE', 'APROVADA', 'REJEITADA']
 
-    # Carregar solicitações (pode aplicar filtros iniciais se necessário)
+    # Carregar solicitações com paginação
     solicitacoes = SolicitacaoCompra.query\
         .order_by(SolicitacaoCompra.data_solicitacao.desc())\
-        .all()
+        .paginate(page=page, per_page=per_page, error_out=False)
 
     # Carregar triagens
     triagens = TriagemSolicitacaoCompra.query\

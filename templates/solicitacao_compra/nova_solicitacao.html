@@ -43,43 +43,43 @@
 
                 <!-- Seleção de Itens -->
                 <div class="card mb-3">
-                    <div class="card-header">
-                        <h5 class="mb-0">Itens</h5>
+                    <div class="card-header bg-light">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Itens</h5>
+                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalBuscarItem">
+                                <i class="bi bi-search"></i> Buscar e Adicionar Item
+                            </button>
+                        </div>
                     </div>
                     <div class="card-body">
-                        <div id="itens-container">
-                            <!-- Template para linha de item -->
-                            <div class="row mb-3 item-row">
-                                <div class="col-md-6">
-                                    <label class="form-label">Item *</label>
-                                    <select class="form-select" name="item_id[]" required>
-                                        <option value="">Selecione um item...</option>
-                                        {% for item in itens %}
-                                        <option value="{{ item.id }}">{{ item.nome }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Quantidade *</label>
-                                    <input type="number" class="form-control" name="quantidade[]" required min="1">
-                                </div>
-                                <div class="col-md-2">
-                                    <label class="form-label">&nbsp;</label>
-                                    <button type="button" class="btn btn-danger w-100 remover-item">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
+                        <!-- Tabela de itens selecionados -->
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="tabelaItensSelecionados">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código SAP</th>
+                                        <th>Descrição</th>
+                                        <th>Unidade</th>
+                                        <th>Quantidade</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Os itens serão adicionados aqui via JavaScript -->
+                                </tbody>
+                            </table>
                         </div>
                         
-                        <button type="button" class="btn btn-secondary" id="adicionar-item">
-                            <i class="bi bi-plus-lg"></i> Adicionar Item
-                        </button>
+                        <!-- Mensagem quando não há itens -->
+                        <div id="semItens" class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                            Nenhum item adicionado. Use o botão "Buscar e Adicionar Item" acima.
+                        </div>
                     </div>
                 </div>
 
                 <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary" id="btnSubmit">
                         <i class="bi bi-check-lg"></i> Criar Solicitação
                     </button>
                     <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
@@ -91,45 +91,219 @@
     </div>
 </div>
 
+<!-- Modal de Busca de Itens -->
+<div class="modal fade" id="modalBuscarItem" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Buscar Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Filtros de Busca -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                            <select class="form-select" id="filtroTipo">
+                                <option value="sap">Código SAP</option>
+                                <option value="descricao">Descrição</option>
+                                <option value="grupo">Grupo</option>
+                                <option value="nd">ND</option>
+                            </select>
+                            <label>Filtrar por</label>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <div class="form-floating" id="campoBuscaTexto">
+                            <input type="text" class="form-control" id="termoBusca" placeholder="Digite para buscar...">
+                            <label>Termo de busca</label>
+                        </div>
+                        <div class="form-floating" id="campoBuscaGrupo" style="display: none;">
+                            <select class="form-select" id="grupoSelect">
+                                <option value="">Selecione um grupo</option>
+                                {% for grupo in grupos %}
+                                <option value="{{ grupo.id }}">{{ grupo.nome }}</option>
+                                {% endfor %}
+                            </select>
+                            <label>Selecione o Grupo</label>
+                        </div>
+                        <div class="form-floating" id="campoBuscaND" style="display: none;">
+                            <select class="form-select" id="ndSelect">
+                                <option value="">Selecione uma ND</option>
+                                {% for nd in naturezas_despesa %}
+                                <option value="{{ nd.id }}">{{ nd.codigo }} - {{ nd.nome }}</option>
+                                {% endfor %}
+                            </select>
+                            <label>Selecione a Natureza de Despesa</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-primary h-100 w-100" id="btnBuscar">
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabela de Resultados -->
+                <div class="table-responsive" style="max-height: 400px;">
+                    <table class="table table-hover" id="tabelaResultados">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>Código SAP</th>
+                                <th>Descrição</th>
+                                <th>Unidade</th>
+                                <th>Grupo</th>
+                                <th>ND</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Resultados serão inseridos aqui via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Adicionar novo item
-    document.getElementById('adicionar-item').addEventListener('click', function() {
-        const container = document.getElementById('itens-container');
-        const template = container.querySelector('.item-row').cloneNode(true);
+    const itensSelecionados = new Map(); // Armazena os itens selecionados
+    
+    // Controle de exibição dos campos de busca
+    document.getElementById('filtroTipo').addEventListener('change', function() {
+        const tipo = this.value;
+        document.getElementById('campoBuscaTexto').style.display = 
+            (tipo === 'sap' || tipo === 'descricao') ? 'block' : 'none';
+        document.getElementById('campoBuscaGrupo').style.display = 
+            (tipo === 'grupo') ? 'block' : 'none';
+        document.getElementById('campoBuscaND').style.display = 
+            (tipo === 'nd') ? 'block' : 'none';
+    });
+
+    // Função para buscar itens
+    async function buscarItens() {
+        const tipo = document.getElementById('filtroTipo').value;
+        let termo;
         
-        // Limpar valores
-        template.querySelector('select').value = '';
-        template.querySelector('input[type="number"]').value = '';
+        switch(tipo) {
+            case 'grupo':
+                termo = document.getElementById('grupoSelect').value;
+                break;
+            case 'nd':
+                termo = document.getElementById('ndSelect').value;
+                break;
+            default:
+                termo = document.getElementById('termoBusca').value;
+        }
+
+        try {
+            const response = await fetch(`/api/itens/buscar?tipo=${tipo}&termo=${termo}`);
+            const dados = await response.json();
+            
+            const tbody = document.querySelector('#tabelaResultados tbody');
+            tbody.innerHTML = '';
+            
+            dados.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.codigo_sap}</td>
+                    <td>${item.nome}</td>
+                    <td>${item.unidade}</td>
+                    <td><span class="badge bg-info">${item.grupo}</span></td>
+                    <td><span class="badge bg-secondary">${item.nd}</span></td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-success" 
+                                onclick="selecionarItem('${item.id}', '${item.codigo_sap}', '${item.nome}', '${item.unidade}')">
+                            <i class="bi bi-plus-circle"></i> Selecionar
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } catch (error) {
+            console.error('Erro ao buscar itens:', error);
+        }
+    }
+
+    // Função para selecionar um item
+    window.selecionarItem = function(id, codigo, nome, unidade) {
+        if (itensSelecionados.has(id)) {
+            alert('Este item já foi selecionado!');
+            return;
+        }
+
+        const tbody = document.querySelector('#tabelaItensSelecionados tbody');
+        const tr = document.createElement('tr');
+        tr.dataset.itemId = id;
+        tr.innerHTML = `
+            <td>${codigo}</td>
+            <td>${nome}</td>
+            <td>${unidade}</td>
+            <td>
+                <input type="number" class="form-control form-control-sm" 
+                       name="quantidade[]" required min="1" style="width: 100px;">
+                <input type="hidden" name="item_id[]" value="${id}">
+            </td>
+            <td>
+                <button type="button" class="btn btn-sm btn-danger" onclick="removerItem('${id}')">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        `;
         
-        // Adicionar evento para remover
-        template.querySelector('.remover-item').addEventListener('click', function() {
-            if (container.querySelectorAll('.item-row').length > 1) {
-                this.closest('.item-row').remove();
+        tbody.appendChild(tr);
+        itensSelecionados.set(id, true);
+        
+        document.getElementById('semItens').style.display = 'none';
+        document.querySelector('#tabelaItensSelecionados').style.display = 'table';
+    };
+
+    // Função para remover um item
+    window.removerItem = function(id) {
+        const tr = document.querySelector(`#tabelaItensSelecionados tr[data-item-id="${id}"]`);
+        tr.remove();
+        itensSelecionados.delete(id);
+        
+        if (itensSelecionados.size === 0) {
+            document.getElementById('semItens').style.display = 'block';
+            document.querySelector('#tabelaItensSelecionados').style.display = 'none';
+        }
+    };
+
+    // Event Listeners
+    document.getElementById('btnBuscar').addEventListener('click', buscarItens);
+    document.getElementById('termoBusca').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            buscarItens();
+        }
+    });
+
+    // Validação do formulário
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (itensSelecionados.size === 0) {
+            e.preventDefault();
+            alert('Por favor, adicione pelo menos um item à solicitação.');
+            return;
+        }
+
+        const quantidades = document.querySelectorAll('input[name="quantidade[]"]');
+        let quantidadesValidas = true;
+        quantidades.forEach(input => {
+            if (!input.value || input.value < 1) {
+                quantidadesValidas = false;
             }
         });
-        
-        container.appendChild(template);
-    });
-    
-    // Evento inicial para remover itens
-    document.querySelectorAll('.remover-item').forEach(button => {
-        button.addEventListener('click', function() {
-            const container = document.getElementById('itens-container');
-            if (container.querySelectorAll('.item-row').length > 1) {
-                this.closest('.item-row').remove();
-            }
-        });
-    });
-    
-    // TODO: Implementar busca do nome da atividade quando número for preenchido
-    document.getElementById('numero_atividade').addEventListener('change', function() {
-        // Aqui você implementará a busca do nome da atividade
-        // Por enquanto, apenas um placeholder
-        document.getElementById('nome_atividade').value = 'Nome da Atividade será buscado automaticamente';
+
+        if (!quantidadesValidas) {
+            e.preventDefault();
+            alert('Por favor, preencha quantidades válidas para todos os itens.');
+        }
     });
 });
 </script>
-{% endblock %}
 {% endblock %} 

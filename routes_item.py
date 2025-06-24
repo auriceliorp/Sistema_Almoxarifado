@@ -288,7 +288,7 @@ def exportar_pdf():
 
         # Salva em memória
         pdf_output = BytesIO()
-        pdf.output(pdf_output)
+        pdf_output.write(pdf.output(dest='S').encode('latin1'))  # Nova forma de salvar
         pdf_output.seek(0)
 
         # Envia o arquivo

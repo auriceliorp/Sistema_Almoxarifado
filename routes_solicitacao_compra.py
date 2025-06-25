@@ -294,7 +294,7 @@ def criar_processo_da_triagem(triagem_id):
             valor_estimado=dados.get('valor_estimado'),
             setor_responsavel=dados.get('setor_responsavel'),
             responsavel_conducao=dados.get('responsavel_conducao'),
-            status='Processo Iniciado',
+            status='Iniciado',  # Usando o status padrão do sistema
             solicitante_id=current_user.id
         )
         
@@ -673,3 +673,4 @@ def cancelar_processo(triagem_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500 
+

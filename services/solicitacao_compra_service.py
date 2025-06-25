@@ -5,7 +5,7 @@ class SolicitacaoCompraService:
     STATUS_CHOICES = [
         'Pendente',
         'Iniciado',
-        'Andamento',
+        'Em andamento',
         'Concluido',
         'Cancelada'
     ]

@@ -3,10 +3,10 @@ from datetime import datetime
 
 class SolicitacaoCompraService:
     STATUS_CHOICES = [
-        'Processo Iniciado',
-        'Em andamento',
-        'Concluído',
-        'Aguardando Definições',
+        'Pendente',
+        'Iniciado',
+        'Andamento',
+        'Concluido',
         'Cancelada'
     ]
     
@@ -20,7 +20,7 @@ class SolicitacaoCompraService:
                 nome_atividade=nome_atividade,
                 finalidade=finalidade,
                 justificativa_marca=justificativa_marca,
-                status='Processo Iniciado',  # Definir status inicial explicitamente
+                status='Pendente',  # Definir status inicial explicitamente
                 data_solicitacao=datetime.now()  # Adicionar data da solicitação
             )
             db.session.add(solicitacao)

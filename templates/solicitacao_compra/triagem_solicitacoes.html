@@ -324,14 +324,32 @@ function aplicarFiltros(pagina = 1) {
         </div>
     `;
 
+    // Fazer a requisição
     fetch(`/solicitacao-compra/triagem/filtrar?${params.toString()}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                document.querySelector('#areaTabela').innerHTML = data.html_tabela;
-                document.querySelector('#areaPaginacao').innerHTML = data.html_paginacao;
-                inicializarPaginacao();
+                // Atualizar a tabela
+                const tabelaContainer = document.querySelector('#areaTabela');
+                tabelaContainer.innerHTML = data.html_tabela;
+                
+                // Atualizar a paginação
+                const paginacaoContainer = document.querySelector('#areaPaginacao');
+                paginacaoContainer.innerHTML = data.html_paginacao;
+                
+                // Reinicializar eventos
                 inicializarTriagem();
+                inicializarPaginacao();
+
+                // Mostrar total de registros encontrados
+                if (data.total_registros === 0) {
+                    tabelaContainer.innerHTML = `
+                        <div class="alert alert-info text-center">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Nenhuma solicitação encontrada com os filtros selecionados.
+                        </div>
+                    `;
+                }
             } else {
                 throw new Error(data.message || 'Erro ao filtrar solicitações');
             }
@@ -339,11 +357,24 @@ function aplicarFiltros(pagina = 1) {
         .catch(error => {
             document.querySelector('#areaTabela').innerHTML = `
                 <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
                     ${error.message || 'Erro ao filtrar solicitações'}
                 </div>
             `;
+            console.error('Erro:', error);
         });
 }
+
+// Adicionar console.log para debug
+document.getElementById('formFiltros').addEventListener('submit', function(e) {
+    e.preventDefault();
+    console.log('Formulário submetido');
+    const formData = new FormData(this);
+    for (let [key, value] of formData.entries()) {
+        console.log(`${key}: ${value}`);
+    }
+    aplicarFiltros(1);
+});
 
 function limparFiltros() {
     // Limpar todos os campos do formulário
@@ -537,3 +568,4 @@ function inicializarTriagem() {
 }
 </script>
 {% endblock %}
+

@@ -17,5 +17,5 @@ WHERE status IN ('REJEITADA', 'CANCELADA', 'Cancelada');
 
 -- Atualizar outros status que possam existir
 UPDATE solicitacao_compra
-SET status = 'AGUARDANDO_DEFINICOES'
-WHERE status IN ('Aguardando Definições'); 
+SET status = 'Andamento'
+WHERE status IN ('AGUARDANDO_DEFINICOES', 'Aguardando Definições'); 

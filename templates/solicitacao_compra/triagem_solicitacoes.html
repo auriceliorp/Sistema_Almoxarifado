@@ -218,11 +218,11 @@
                                 {% if tem_processo %}
                                     {% set painel = painel_contratacao.query.get(painel_id) %}
                                     {% if painel %}
-                                        {% if painel.status == 'Processo Iniciado' %}
-                                            <span class="badge bg-info">Processo Iniciado</span>
+                                        {% if painel.status == 'Iniciado' %}
+                                            <span class="badge bg-info">Iniciado</span>
                                         {% elif painel.status == 'Em andamento' %}
                                             <span class="badge bg-primary">Em andamento</span>
-                                        {% elif painel.status == 'Concluído' %}
+                                        {% elif painel.status == 'Concluido' %}
                                             <span class="badge bg-success">Concluído</span>
                                         {% elif painel.status == 'Aguardando Definições' %}
                                             <span class="badge bg-warning">Aguardando Definições</span>

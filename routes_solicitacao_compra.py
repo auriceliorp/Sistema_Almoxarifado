@@ -23,15 +23,22 @@ def nova_solicitacao():
     try:
         itens = Item.query.order_by(Item.nome).all()
         atividades = Atividade.query.filter_by(status='ATIVA').order_by(Atividade.numero).all()
+        grupos = Grupo.query.order_by(Grupo.nome).all()
+        naturezas_despesa = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
+        
         return render_template('solicitacao_compra/nova_solicitacao.html', 
                              itens=itens,
-                             atividades=atividades)
+                             atividades=atividades,
+                             grupos=grupos,
+                             naturezas_despesa=naturezas_despesa)
     except Exception as e:
         logger.error(f'Erro ao carregar página de nova solicitação: {str(e)}')
         # Retorna a página mesmo com erro, mas sem os dados
         return render_template('solicitacao_compra/nova_solicitacao.html', 
                              itens=[],
                              atividades=[],
+                             grupos=[],
+                             naturezas_despesa=[],
                              error_message='Erro ao carregar os dados. Por favor, tente novamente.')
 
 @solicitacao_compra_bp.route('/criar', methods=['POST'])

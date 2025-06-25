@@ -139,12 +139,12 @@ def cancelar_solicitacao(solicitacao_id):
             return redirect(url_for('solicitacao_compra_bp.detalhes_solicitacao', solicitacao_id=solicitacao_id))
             
         # Verificar se a solicitação pode ser cancelada
-        if solicitacao.status != 'PENDENTE':
+        if solicitacao.status != 'Pendente':
             flash('Esta solicitação não pode ser cancelada.', 'error')
             return redirect(url_for('solicitacao_compra_bp.detalhes_solicitacao', solicitacao_id=solicitacao_id))
             
         # Cancelar a solicitação
-        solicitacao.status = 'CANCELADA'
+        solicitacao.status = 'Cancelada'
         db.session.commit()
         
         flash('Solicitação cancelada com sucesso.', 'success')
@@ -218,7 +218,8 @@ def triagem_solicitacoes():
     # Carregar dados para os filtros
     solicitantes = Usuario.query.order_by(Usuario.nome).all()
     naturezas_despesa = NaturezaDespesa.query.order_by(NaturezaDespesa.codigo).all()
-    status_list = ['PENDENTE', 'EM_ANALISE', 'APROVADA', 'REJEITADA']
+    # Usar os status do serviço
+    status_list = SolicitacaoCompraService.STATUS_CHOICES
 
     # Carregar solicitações com paginação
     solicitacoes = SolicitacaoCompra.query\
@@ -260,7 +261,7 @@ def criar_triagem():
             if solicitacao:
                 triagem.solicitacoes.append(solicitacao)
                 # Atualizar o status da solicitação
-                solicitacao.status = 'EM_TRIAGEM'  # ou o status apropriado para seu sistema
+                solicitacao.status = 'Andamento'  # Usando o status padrão do sistema
         
         db.session.commit()
         
@@ -303,7 +304,7 @@ def criar_processo_da_triagem(triagem_id):
         # Atualizar solicitações vinculadas à triagem
         for solicitacao in triagem.solicitacoes:
             solicitacao.painel_contratacao_id = processo.id
-            solicitacao.status = 'Em andamento'
+            solicitacao.status = 'Andamento'  # Mantendo consistência com o padrão
         
         db.session.commit()
         return jsonify({'success': True, 'message': 'Processo criado com sucesso'})
@@ -342,7 +343,7 @@ def criar_processo_form(triagem_id):
             for solicitacao in triagem.solicitacoes:
                 result = SolicitacaoCompraService.atender_solicitacao(
                     solicitacao_id=solicitacao.id,
-                    novo_status='Em andamento',
+                    novo_status='Andamento',
                     dados_painel=dados_painel
                 )
                 
@@ -592,7 +593,9 @@ def filtrar_triagem():
             query = query.filter(SolicitacaoCompra.solicitante_id == int(solicitante_id))
         
         if status and status != '':
-            query = query.filter(SolicitacaoCompra.status == status)
+            # Verificar se o status é válido
+            if status in SolicitacaoCompraService.STATUS_CHOICES:
+                query = query.filter(SolicitacaoCompra.status == status)
         
         if nd_id and nd_id != '':
             query = query.join(ItemSolicitacaoCompra, SolicitacaoCompra.id == ItemSolicitacaoCompra.solicitacao_id)\
@@ -642,3 +645,32 @@ def filtrar_triagem():
             'success': False,
             'message': str(e)
         }) 
+
+@solicitacao_compra_bp.route('/triagem/<int:triagem_id>/cancelar', methods=['POST'])
+@login_required
+def cancelar_processo(triagem_id):
+    try:
+        # Buscar a triagem
+        triagem = TriagemSolicitacaoCompra.query.get_or_404(triagem_id)
+        
+        # Verificar se todas as solicitações têm processo
+        tem_processo = False
+        for solicitacao in triagem.solicitacoes:
+            if solicitacao.painel_contratacao_id:
+                tem_processo = True
+                # Atualizar status da solicitação
+                solicitacao.status = 'Cancelada'
+                # Remover referência ao painel
+                solicitacao.painel_contratacao_id = None
+        
+        if not tem_processo:
+            return jsonify({'success': False, 'message': 'Esta triagem não tem processo para cancelar'}), 400
+        
+        # Commit das alterações
+        db.session.commit()
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500 
+

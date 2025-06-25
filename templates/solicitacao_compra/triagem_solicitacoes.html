@@ -195,11 +195,18 @@
                             <th>Data Criação</th>
                             <th>Responsável</th>
                             <th>Qtd. Solicitações</th>
+                            <th>Status</th>
                             <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for triagem in triagens %}
+                        {% set tem_processo = false %}
+                        {% for solicitacao in triagem.solicitacoes %}
+                            {% if solicitacao.painel_contratacao_id %}
+                                {% set tem_processo = true %}
+                            {% endif %}
+                        {% endfor %}
                         <tr>
                             <td>{{ triagem.id }}</td>
                             <td>{{ triagem.titulo }}</td>
@@ -207,10 +214,27 @@
                             <td>{{ triagem.responsavel.nome }}</td>
                             <td>{{ triagem.solicitacoes|length }}</td>
                             <td>
-                                <a href="{{ url_for('solicitacao_compra_bp.criar_processo_form', triagem_id=triagem.id) }}" 
-                                   class="btn btn-sm btn-success">
-                                    <i class="bi bi-arrow-right-circle"></i> Criar Processo
-                                </a>
+                                {% if tem_processo %}
+                                    <span class="badge bg-success">Processo Criado</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Aguardando Processo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if tem_processo %}
+                                    <a href="{{ url_for('painel_bp.visualizar_painel', painel_id=triagem.solicitacoes[0].painel_contratacao_id) }}" 
+                                       class="btn btn-sm btn-primary" title="Visualizar Processo">
+                                        <i class="bi bi-eye"></i> Ver Processo
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-danger" onclick="cancelarProcesso({{ triagem.id }})" title="Cancelar Processo">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                {% else %}
+                                    <a href="{{ url_for('solicitacao_compra_bp.criar_processo_form', triagem_id=triagem.id) }}" 
+                                       class="btn btn-sm btn-success">
+                                        <i class="bi bi-arrow-right-circle"></i> Criar Processo
+                                    </a>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
@@ -566,6 +590,51 @@ function inicializarTriagem() {
         });
     }
 }
+
+// Função para cancelar processo
+window.cancelarProcesso = function(triagemId) {
+    if (!confirm('Tem certeza que deseja cancelar este processo? Esta ação não pode ser desfeita.')) {
+        return;
+    }
+
+    fetch(`/solicitacao-compra/triagem/${triagemId}/cancelar`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Erro ao cancelar processo');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Mostrar mensagem de sucesso
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show';
+            alertDiv.innerHTML = `
+                <strong>Sucesso!</strong> Processo cancelado com sucesso.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            // Inserir alerta no topo da página
+            const container = document.querySelector('.container-fluid');
+            container.insertBefore(alertDiv, container.firstChild);
+            
+            // Recarregar a página após 1 segundo
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            throw new Error(data.message || 'Erro ao cancelar processo');
+        }
+    })
+    .catch(error => {
+        alert('Erro ao cancelar processo: ' + error.message);
+    });
+}
 </script>
 {% endblock %}
-

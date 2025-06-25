@@ -674,3 +674,37 @@ def cancelar_processo(triagem_id):
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500 
 
+@solicitacao_compra_bp.route('/triagem/<int:triagem_id>/atualizar_status', methods=['POST'])
+@login_required
+def atualizar_status_triagem(triagem_id):
+    try:
+        # Buscar a triagem
+        triagem = TriagemSolicitacaoCompra.query.get_or_404(triagem_id)
+        
+        # Obter o novo status do JSON
+        dados = request.get_json()
+        novo_status = dados.get('status')
+        
+        if not novo_status:
+            return jsonify({'success': False, 'message': 'Status não fornecido'}), 400
+            
+        # Verificar se o status é válido
+        status_validos = ['Processo Iniciado', 'Em andamento', 'Concluído', 'Aguardando Definições', 'Cancelada']
+        if novo_status not in status_validos:
+            return jsonify({'success': False, 'message': 'Status inválido'}), 400
+        
+        # Atualizar o status
+        triagem.status = novo_status
+        
+        # Se o status for "Cancelada", atualizar também as solicitações
+        if novo_status == 'Cancelada':
+            for solicitacao in triagem.solicitacoes:
+                solicitacao.status = 'Cancelada'
+        
+        # Commit das alterações
+        db.session.commit()
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500 

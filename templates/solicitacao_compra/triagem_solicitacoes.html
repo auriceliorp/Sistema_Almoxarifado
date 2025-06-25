@@ -201,14 +201,12 @@
                     </thead>
                     <tbody>
                         {% for triagem in triagens %}
+                        {# Pegar o primeiro painel_id encontrado nas solicitações #}
                         {% set tem_processo = false %}
                         {% set painel_id = none %}
-                        {% for solicitacao in triagem.solicitacoes %}
-                            {% if solicitacao.painel_contratacao_id %}
-                                {% set tem_processo = true %}
-                                {% set painel_id = solicitacao.painel_contratacao_id %}
-                                {% break %}
-                            {% endif %}
+                        {% for solicitacao in triagem.solicitacoes if not tem_processo and solicitacao.painel_contratacao_id %}
+                            {% set tem_processo = true %}
+                            {% set painel_id = solicitacao.painel_contratacao_id %}
                         {% endfor %}
                         <tr>
                             <td>{{ triagem.id }}</td>

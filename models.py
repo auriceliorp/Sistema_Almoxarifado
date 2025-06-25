@@ -1,3 +1,4 @@
+# ------------------------------ IMPORTAÇÕES ------------------------------
 from flask_login import UserMixin
 from extensoes import db
 from datetime import datetime
@@ -881,6 +882,7 @@ class TriagemSolicitacaoCompra(db.Model):
     descricao = db.Column(db.Text)
     data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
     responsavel_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    status = db.Column(db.String(50), default='Processo Iniciado')  # Usando os mesmos status do painel
     
     # Relacionamentos
     responsavel = db.relationship('Usuario', backref='triagens_criadas')

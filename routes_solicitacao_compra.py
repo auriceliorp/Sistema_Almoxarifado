@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, Response
 from flask_login import login_required, current_user
 from services.solicitacao_compra_service import SolicitacaoCompraService
-from models import db, Item, SolicitacaoCompra, ItemSolicitacaoCompra, Tarefa, CategoriaTarefa, Atividade, TriagemSolicitacaoCompra, PainelContratacao, NaturezaDespesa, Usuario, UnidadeLocal, Local, Setor
+from models import db, Item, SolicitacaoCompra, ItemSolicitacaoCompra, Tarefa, CategoriaTarefa, Atividade, TriagemSolicitacaoCompra, PainelContratacao, NaturezaDespesa, Usuario, UnidadeLocal, Local, Setor, Grupo
 import logging
 import json
 from datetime import datetime
@@ -566,7 +566,7 @@ def filtrar_triagem():
     try:
         # Parâmetros de paginação
         page = request.args.get('page', 1, type=int)
-        per_page = current_app.config.get('ITEMS_PER_PAGE', 10)  # Configure isso no config.py
+        per_page = current_app.config.get('ITEMS_PER_PAGE', 10)
 
         # Obter parâmetros dos filtros
         solicitante_id = request.args.get('solicitante')
@@ -575,29 +575,41 @@ def filtrar_triagem():
         data_inicio = request.args.get('data_inicio')
         data_fim = request.args.get('data_fim')
 
+        # Debug dos parâmetros recebidos
+        print("Filtros recebidos:", {
+            'solicitante_id': solicitante_id,
+            'status': status,
+            'nd_id': nd_id,
+            'data_inicio': data_inicio,
+            'data_fim': data_fim
+        })
+
         # Query base
         query = SolicitacaoCompra.query
 
-        # Aplicar filtros
-        if solicitante_id:
-            query = query.filter(SolicitacaoCompra.solicitante_id == solicitante_id)
+        # Aplicar filtros (apenas se valores não forem vazios)
+        if solicitante_id and solicitante_id != '':
+            query = query.filter(SolicitacaoCompra.solicitante_id == int(solicitante_id))
         
-        if status:
+        if status and status != '':
             query = query.filter(SolicitacaoCompra.status == status)
         
-        if nd_id:
-            query = query.join(SolicitacaoCompraItem).join(Item).join(Grupo)\
-                        .filter(Grupo.natureza_despesa_id == nd_id)
+        if nd_id and nd_id != '':
+            query = query.join(ItemSolicitacaoCompra, SolicitacaoCompra.id == ItemSolicitacaoCompra.solicitacao_id)\
+                        .join(Item, ItemSolicitacaoCompra.item_id == Item.id)\
+                        .join(Grupo)\
+                        .filter(Grupo.natureza_despesa_id == int(nd_id))\
+                        .distinct()
         
-        if data_inicio:
+        if data_inicio and data_inicio != '':
             data_inicio = datetime.strptime(data_inicio, '%Y-%m-%d')
             query = query.filter(SolicitacaoCompra.data_solicitacao >= data_inicio)
         
-        if data_fim:
+        if data_fim and data_fim != '':
             data_fim = datetime.strptime(data_fim, '%Y-%m-%d')
             query = query.filter(SolicitacaoCompra.data_solicitacao <= data_fim)
 
-        # Contar total de registros para estatísticas
+        # Contar total de registros
         total_registros = query.count()
 
         # Ordenar e paginar
@@ -625,6 +637,7 @@ def filtrar_triagem():
         })
 
     except Exception as e:
+        print("Erro ao filtrar:", str(e))  # Debug do erro
         return jsonify({
             'success': False,
             'message': str(e)

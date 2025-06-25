@@ -214,11 +214,15 @@
                             <td>{{ triagem.responsavel.nome }}</td>
                             <td>{{ triagem.solicitacoes|length }}</td>
                             <td>
-                                {% if tem_processo %}
-                                    <span class="badge bg-success">Processo Criado</span>
-                                {% else %}
-                                    <span class="badge bg-warning">Aguardando Processo</span>
-                                {% endif %}
+                                <select class="form-select form-select-sm status-triagem" 
+                                        data-triagem-id="{{ triagem.id }}"
+                                        {% if tem_processo %}disabled{% endif %}>
+                                    {% for status in ['Processo Iniciado', 'Em andamento', 'Concluído', 'Aguardando Definições', 'Cancelada'] %}
+                                        <option value="{{ status }}" {% if triagem.status == status %}selected{% endif %}>
+                                            {{ status }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
                             </td>
                             <td>
                                 {% if tem_processo %}
@@ -636,5 +640,56 @@ window.cancelarProcesso = function(triagemId) {
         alert('Erro ao cancelar processo: ' + error.message);
     });
 }
+
+// Adicionar evento para atualizar status da triagem
+document.querySelectorAll('.status-triagem').forEach(select => {
+    select.addEventListener('change', function() {
+        const triagemId = this.dataset.triagemId;
+        const novoStatus = this.value;
+        
+        fetch(`/solicitacao-compra/triagem/${triagemId}/atualizar_status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ status: novoStatus })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro ao atualizar status');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Mostrar mensagem de sucesso
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                alertDiv.innerHTML = `
+                    <strong>Sucesso!</strong> Status atualizado com sucesso.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                
+                // Inserir alerta no topo da página
+                const container = document.querySelector('.container-fluid');
+                container.insertBefore(alertDiv, container.firstChild);
+            } else {
+                throw new Error(data.message || 'Erro ao atualizar status');
+            }
+        })
+        .catch(error => {
+            alert('Erro ao atualizar status: ' + error.message);
+            // Reverter a seleção para o valor anterior em caso de erro
+            this.value = this.getAttribute('data-previous-value');
+        });
+        
+        // Guardar o valor atual para caso precise reverter
+        this.setAttribute('data-previous-value', this.value);
+    });
+    
+    // Guardar o valor inicial
+    select.setAttribute('data-previous-value', select.value);
+});
 </script>
 {% endblock %}

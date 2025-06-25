@@ -93,9 +93,9 @@ def buscar_itens():
         elif tipo == 'descricao':
             query = query.filter(Item.nome.ilike(f'%{termo}%'))
         elif tipo == 'grupo':
-            query = query.filter(Item.grupo_id == termo)
+            query = query.filter(Item.grupo_id == int(termo))
         elif tipo == 'nd':
-            query = query.join(Grupo).filter(Grupo.natureza_despesa_id == termo)
+            query = query.join(Grupo).filter(Grupo.natureza_despesa_id == int(termo))
     
     itens = query.order_by(Item.nome).all()
     
@@ -105,5 +105,5 @@ def buscar_itens():
         'nome': item.nome,
         'unidade': item.unidade,
         'grupo': item.grupo.nome if item.grupo else 'N/A',
-        'nd': item.grupo.natureza_despesa.codigo if item.grupo and item.grupo.natureza_despesa else 'N/A'
+        'nd': f"{item.grupo.natureza_despesa.codigo} - {item.grupo.natureza_despesa.nome}" if item.grupo and item.grupo.natureza_despesa else 'N/A'
     } for item in itens])

@@ -894,24 +894,3 @@ class SolicitacaoCompra(db.Model):
 
     def __repr__(self):
         return f"<SolicitacaoCompra {self.id}>"
-
-class TriagemSolicitacaoCompra(db.Model):
-    __tablename__ = 'triagem_solicitacao_compra'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    titulo = db.Column(db.String(200), nullable=False)
-    descricao = db.Column(db.Text)
-    data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
-    responsavel_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
-    totais_itens = db.Column(db.JSON)  # Novo campo para armazenar os totais
-    
-    # Relacionamentos
-    responsavel = db.relationship('Usuario', backref='triagens_criadas')
-    solicitacoes = db.relationship('SolicitacaoCompra', backref='triagem')
-
-# Tabela de associação entre Triagem e Solicitações
-class TriagemSolicitacaoAssociacao(db.Model):
-    __tablename__ = 'triagem_solicitacao_associacao'
-    triagem_id = db.Column(db.Integer, db.ForeignKey('triagem_solicitacao_compra.id'), primary_key=True)
-    solicitacao_id = db.Column(db.Integer, db.ForeignKey('solicitacao_compra.id'), primary_key=True)
-    observacao = db.Column(db.Text)

@@ -619,11 +619,11 @@ function inicializarTriagem() {
         `;
         btnSalvar.disabled = true;
 
+        // Corrigido para enviar os IDs das solicitações
         const dados = {
             titulo: titulo,
             descricao: descricao,
-            grupo_id: grupoId,
-            itens: grupoInfo.itens
+            solicitacoes: grupoInfo.itens.map(item => item.solicitacao_id)
         };
 
         fetch('/solicitacao-compra/criar_triagem', {
@@ -642,35 +642,7 @@ function inicializarTriagem() {
         })
         .then(data => {
             if (data.success) {
-                const modal = bootstrap.Modal.getInstance(document.getElementById('modalCriarTriagem'));
-                modal.hide();
-                
-                const alertDiv = document.createElement('div');
-                alertDiv.className = 'alert alert-success alert-dismissible fade show';
-                alertDiv.innerHTML = `
-                    <strong>Sucesso!</strong> Triagem criada com sucesso.
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                `;
-                
-                const container = document.querySelector('.container-fluid');
-                container.insertBefore(alertDiv, container.firstChild);
-                
-                // Remover apenas os itens selecionados
-                const itensSelecionados = document.querySelectorAll('.item-check:checked');
-                itensSelecionados.forEach(checkbox => {
-                    const row = checkbox.closest('tr');
-                    if (row) {
-                        row.remove();
-                    }
-                });
-                
-                const triagensTab = document.querySelector('[data-bs-target="#triagens"]');
-                const tab = new bootstrap.Tab(triagensTab);
-                tab.show();
-                
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
+                window.location.reload();
             } else {
                 throw new Error(data.message || 'Erro ao criar triagem');
             }
@@ -678,36 +650,34 @@ function inicializarTriagem() {
         .catch(error => {
             console.error('Erro:', error);
             alert('Erro ao criar triagem: ' + error.message);
-            
             btnSalvar.innerHTML = btnText;
             btnSalvar.disabled = false;
         });
     }
 
-    // Adicionar função para agrupar itens por grupo
+    // Função auxiliar para agrupar itens por grupo
     function agruparItensPorGrupo() {
         const itensSelecionados = document.querySelectorAll('.item-check:checked');
-        const grupos = new Map(); // Map de grupo_id -> {nome: string, itens: array}
-        
+        const grupos = new Map();
+
         itensSelecionados.forEach(checkbox => {
-            const grupoId = checkbox.dataset.grupo;
-            const grupoNome = checkbox.dataset.grupoNome;
-            
+            const row = checkbox.closest('tr');
+            const solicitacaoId = checkbox.value;
+            const grupoId = row.getAttribute('data-grupo-id');
+            const grupoNome = row.getAttribute('data-grupo-nome');
+
             if (!grupos.has(grupoId)) {
                 grupos.set(grupoId, {
                     nome: grupoNome,
                     itens: []
                 });
             }
-            
+
             grupos.get(grupoId).itens.push({
-                id: checkbox.value,
-                solicitacaoId: checkbox.dataset.solicitacaoId,
-                itemId: checkbox.dataset.itemId,
-                quantidade: checkbox.dataset.quantidade
+                solicitacao_id: solicitacaoId
             });
         });
-        
+
         return grupos;
     }
 }
@@ -756,5 +726,6 @@ window.cancelarProcesso = function(triagemId) {
 }
 </script>
 {% endblock %}
+
 
 

@@ -1,10 +1,14 @@
 -- Atualizar status das solicitações existentes
 UPDATE solicitacao_compra
 SET status = 'Pendente'
+WHERE status IN ('PENDENTE');
+
+UPDATE solicitacao_compra
+SET status = 'Processo Iniciado'
 WHERE status IN ('PENDENTE', 'PROCESSO_INICIADO', 'Processo Iniciado');
 
 UPDATE solicitacao_compra
-SET status = 'Andamento'
+SET status = 'Em Andamento'
 WHERE status IN ('EM_ANALISE', 'EM_ANDAMENTO', 'Em andamento');
 
 UPDATE solicitacao_compra
@@ -17,5 +21,5 @@ WHERE status IN ('REJEITADA', 'CANCELADA', 'Cancelada');
 
 -- Atualizar outros status que possam existir
 UPDATE solicitacao_compra
-SET status = 'Andamento'
+SET status = 'Aguardando Definições'
 WHERE status IN ('AGUARDANDO_DEFINICOES', 'Aguardando Definições'); 

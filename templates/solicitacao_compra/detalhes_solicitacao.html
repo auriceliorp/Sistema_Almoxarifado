@@ -21,10 +21,12 @@
 
                         <dt class="col-sm-4">Status</dt>
                         <dd class="col-sm-8">
-                            <span class="badge {% if solicitacao.status == 'PENDENTE' %}bg-warning
-                                             {% elif solicitacao.status == 'APROVADA' %}bg-success
-                                             {% elif solicitacao.status == 'REJEITADA' %}bg-danger
-                                             {% elif solicitacao.status == 'CONCLUÍDA' %}bg-info{% endif %}">
+                            <span class="badge {% if solicitacao.status == 'Pendente' %}bg-warning
+                                             {% elif solicitacao.status == 'Em Andamento' %}bg-info
+                                             {% elif solicitacao.status == 'Processo Iniciado' %}bg-primary
+                                             {% elif solicitacao.status == 'Concluido' %}bg-success
+                                             {% elif solicitacao.status == 'Cancelada' %}bg-danger
+                                             {% else %}bg-secondary{% endif %}">
                                 {{ solicitacao.status }}
                             </span>
                         </dd>
@@ -53,6 +55,62 @@
         </div>
     </div>
 
+    {% if solicitacao.status in ['Processo Iniciado', 'Em Andamento', 'Concluido'] and solicitacao.painel_contratacao %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">Informações do Processo</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4">Número SEI</dt>
+                        <dd class="col-sm-8">{{ solicitacao.painel_contratacao.numero_sei }}</dd>
+
+                        <dt class="col-sm-4">Modalidade</dt>
+                        <dd class="col-sm-8">{{ solicitacao.painel_contratacao.modalidade }}</dd>
+
+                        <dt class="col-sm-4">Setor Responsável</dt>
+                        <dd class="col-sm-8">{{ solicitacao.painel_contratacao.setor_responsavel }}</dd>
+
+                        <dt class="col-sm-4">Responsável Condução</dt>
+                        <dd class="col-sm-8">
+                            {% if solicitacao.painel_contratacao.responsavel_conducao %}
+                                {{ solicitacao.painel_contratacao.responsavel_conducao.nome }}
+                            {% endif %}
+                        </dd>
+                    </dl>
+                </div>
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4">Valor Estimado</dt>
+                        <dd class="col-sm-8">
+                            {% if solicitacao.painel_contratacao.valor_estimado %}
+                                R$ {{ "%.2f"|format(solicitacao.painel_contratacao.valor_estimado) }}
+                            {% endif %}
+                        </dd>
+
+                        <dt class="col-sm-4">Valor Homologado</dt>
+                        <dd class="col-sm-8">
+                            {% if solicitacao.painel_contratacao.valor_homologado %}
+                                R$ {{ "%.2f"|format(solicitacao.painel_contratacao.valor_homologado) }}
+                            {% endif %}
+                        </dd>
+
+                        <dt class="col-sm-4">Natureza Despesa</dt>
+                        <dd class="col-sm-8">
+                            {% if solicitacao.painel_contratacao.natureza_despesa %}
+                                {{ solicitacao.painel_contratacao.natureza_despesa.codigo }} - 
+                                {{ solicitacao.painel_contratacao.natureza_despesa.nome }}
+                            {% endif %}
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <div class="card shadow-sm">
         <div class="card-body">
             <h5 class="card-title">Itens Solicitados</h5>
@@ -61,16 +119,41 @@
                     <thead>
                         <tr>
                             <th>Item</th>
+                            <th>Grupo</th>
                             <th>Quantidade</th>
                             <th>Unidade</th>
+                            {% if solicitacao.painel_contratacao %}
+                            <th>Valor Unitário</th>
+                            <th>Valor Total</th>
+                            {% endif %}
                         </tr>
                     </thead>
                     <tbody>
                         {% for item_solicitacao in solicitacao.itens %}
                         <tr>
                             <td>{{ item_solicitacao.item.nome }}</td>
+                            <td>
+                                <span class="badge bg-info">{{ item_solicitacao.item.grupo.nome }}</span>
+                            </td>
                             <td>{{ item_solicitacao.quantidade }}</td>
                             <td>{{ item_solicitacao.item.unidade }}</td>
+                            {% if solicitacao.painel_contratacao %}
+                            <td>
+                                {% set item_painel = item_solicitacao.get_item_painel() %}
+                                {% if item_painel and item_painel.valor_unitario %}
+                                    R$ {{ "%.2f"|format(item_painel.valor_unitario) }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item_painel and item_painel.valor_total %}
+                                    R$ {{ "%.2f"|format(item_painel.valor_total) }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            {% endif %}
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -79,14 +162,6 @@
         </div>
     </div>
 
-    {% if solicitacao.status == 'PENDENTE' and solicitacao.solicitante_id == current_user.id %}
-    <div class="d-flex justify-content-end mt-4">
-        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelarModal">
-            <i class="bi bi-x-circle"></i> Cancelar Solicitação
-        </button>
-    </div>
-    {% endif %}
-
     <div class="card-body">
         <div class="d-flex gap-2">
             <!-- Botão de Impressão -->
@@ -94,12 +169,28 @@
                class="btn btn-outline-primary" target="_blank">
                 <i class="bi bi-printer me-2"></i>Imprimir
             </a>
+            
+            {% if solicitacao.painel_contratacao %}
+            <!-- Botão para visualizar processo -->
+            <a href="{{ url_for('painel_bp.visualizar_painel', painel_id=solicitacao.painel_contratacao.id) }}" 
+               class="btn btn-outline-info">
+                <i class="bi bi-file-text me-2"></i>Visualizar Processo
+            </a>
+            {% endif %}
         </div>
     </div>
+
+    {% if solicitacao.status == 'Pendente' and solicitacao.solicitante_id == current_user.id %}
+    <div class="d-flex justify-content-end mt-4">
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelarModal">
+            <i class="bi bi-x-circle"></i> Cancelar Solicitação
+        </button>
+    </div>
+    {% endif %}
 </div>
 
 <!-- Modal de Cancelamento -->
-{% if solicitacao.status == 'PENDENTE' and solicitacao.solicitante_id == current_user.id %}
+{% if solicitacao.status == 'Pendente' and solicitacao.solicitante_id == current_user.id %}
 <div class="modal fade" id="cancelarModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">

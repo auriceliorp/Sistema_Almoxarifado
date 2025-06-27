@@ -540,20 +540,74 @@ class PainelContratacao(db.Model):
 
 class ItemPainelContratacao(db.Model):
     __tablename__ = 'itens_painel_contratacao'
-    
     id = db.Column(db.Integer, primary_key=True)
-    painel_id = db.Column(db.Integer, db.ForeignKey('painel_contratacoes.id'), nullable=False)
-    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
+    painel_id = db.Column(db.Integer, db.ForeignKey('painel_contratacao.id'), nullable=False)
+    item_solicitacao_compra_id = db.Column(db.Integer, db.ForeignKey('item_solicitacao_compra.id'), nullable=False)
     quantidade = db.Column(db.Integer, nullable=False)
-    valor_unitario = db.Column(db.Numeric(14, 2), nullable=True)
-    valor_total = db.Column(db.Numeric(14, 2), nullable=True)
     
     # Relacionamentos
-    painel = db.relationship('PainelContratacao', backref='itens_painel')
-    item = db.relationship('Item', backref='paineis_contratacao')
+    painel = db.relationship('PainelContratacao', backref='itens')
+    item_solicitacao = db.relationship('ItemSolicitacaoCompra', backref='itens_painel')
+
+class ItemSolicitacaoCompra(db.Model):
+    __tablename__ = 'item_solicitacao_compra'
+    id = db.Column(db.Integer, primary_key=True)
+    solicitacao_id = db.Column(db.Integer, db.ForeignKey('solicitacao_compra.id'), nullable=False)
+    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
+    quantidade = db.Column(db.Integer, nullable=False)
+    
+    # Relacionamentos
+    item = db.relationship('Item', backref='solicitacoes_compra')
+    solicitacao_compra = db.relationship('SolicitacaoCompra', backref='itens')
+
+    def get_item_painel(self):
+        """Retorna o item correspondente no painel de contratações, se existir"""
+        return ItemPainelContratacao.query.filter_by(
+            item_solicitacao_compra_id=self.id  # Corrigido o nome da coluna
+        ).first()
 
     def __repr__(self):
-        return f"<ItemPainelContratacao {self.id} - Painel {self.painel_id}>"
+        return f"<ItemSolicitacaoCompra {self.id}>"
+
+class Atividade(db.Model):
+    __tablename__ = 'atividades'
+    id = db.Column(db.Integer, primary_key=True)
+    numero = db.Column(db.String(50), unique=True, nullable=False)
+    nome = db.Column(db.String(200), nullable=False)
+    descricao = db.Column(db.Text)
+    data_inicio = db.Column(db.Date)
+    data_fim = db.Column(db.Date)
+    status = db.Column(db.String(20), default='ATIVA')  # ATIVA, CONCLUÍDA, CANCELADA
+    
+    responsavel_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
+    responsavel = db.relationship('Usuario', backref='atividades_responsavel')
+    
+    data_cadastro = db.Column(db.DateTime, default=datetime.utcnow)
+    data_atualizacao = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<Atividade {self.numero}>"
+
+class TriagemSolicitacaoCompra(db.Model):
+    __tablename__ = 'triagem_solicitacao_compra'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    titulo = db.Column(db.String(200), nullable=False)
+    descricao = db.Column(db.Text)
+    data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
+    responsavel_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    totais_itens = db.Column(db.JSON)  # Novo campo para armazenar os totais
+    
+    # Relacionamentos
+    responsavel = db.relationship('Usuario', backref='triagens_criadas')
+    solicitacoes = db.relationship('SolicitacaoCompra', backref='triagem')
+
+# Tabela de associação entre Triagem e Solicitações
+class TriagemSolicitacaoAssociacao(db.Model):
+    __tablename__ = 'triagem_solicitacao_associacao'
+    triagem_id = db.Column(db.Integer, db.ForeignKey('triagem_solicitacao_compra.id'), primary_key=True)
+    solicitacao_id = db.Column(db.Integer, db.ForeignKey('solicitacao_compra.id'), primary_key=True)
+    observacao = db.Column(db.Text)
 
 # ------------------- CONTROLE DE BENS -------------------
 from extensoes import db
@@ -840,25 +894,6 @@ class SolicitacaoCompra(db.Model):
 
     def __repr__(self):
         return f"<SolicitacaoCompra {self.id}>"
-
-class ItemSolicitacaoCompra(db.Model):
-    __tablename__ = 'item_solicitacao_compra'
-    id = db.Column(db.Integer, primary_key=True)
-    solicitacao_id = db.Column(db.Integer, db.ForeignKey('solicitacao_compra.id'), nullable=False)
-    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
-    quantidade = db.Column(db.Integer, nullable=False)
-    
-    item = db.relationship('Item', backref='solicitacoes_compra')
-
-    def get_item_painel(self):
-        """Retorna o item correspondente no painel de contratações, se existir"""
-        from models import ItemPainelContratacao
-        return ItemPainelContratacao.query.filter_by(
-            item_solicitacao_id=self.id
-        ).first()
-
-    def __repr__(self):
-        return f"<ItemSolicitacaoCompra {self.id}>"
 
 class Atividade(db.Model):
     __tablename__ = 'atividades'

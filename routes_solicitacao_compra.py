@@ -267,8 +267,8 @@ def criar_triagem():
             solicitacao = SolicitacaoCompra.query.get(solicitacao_id)
             if solicitacao:
                 triagem.solicitacoes.append(solicitacao)
-                # Atualizar o status da solicitação para 'Processo Iniciado'
-                solicitacao.status = 'Processo Iniciado'
+                # Atualizar para Em Andamento quando cria triagem
+                solicitacao.status = 'Em Andamento'
         
         db.session.commit()
         
@@ -350,7 +350,7 @@ def criar_processo_form(triagem_id):
             for solicitacao in triagem.solicitacoes:
                 result = SolicitacaoCompraService.atender_solicitacao(
                     solicitacao_id=solicitacao.id,
-                    novo_status='Andamento',
+                    novo_status='Processo Iniciado',
                     dados_painel=dados_painel
                 )
                 
@@ -680,3 +680,4 @@ def cancelar_processo(triagem_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500 
+

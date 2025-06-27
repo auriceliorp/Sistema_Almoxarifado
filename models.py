@@ -832,11 +832,9 @@ class SolicitacaoCompra(db.Model):
     painel_contratacao_id = db.Column(db.Integer, db.ForeignKey('painel_contratacoes.id'), nullable=True)
     painel_contratacao = db.relationship('PainelContratacao', backref='solicitacao_compra')
     
-    itens = db.relationship(
-        'ItemSolicitacaoCompra',
-        backref='solicitacao',
-        cascade='all, delete-orphan'
-    )
+    itens = db.relationship('ItemSolicitacaoCompra', 
+                          backref=db.backref('solicitacao_compra', lazy=True),
+                          lazy=True)
 
     triagem_id = db.Column(db.Integer, db.ForeignKey('triagem_solicitacao_compra.id'), nullable=True)
 
@@ -851,16 +849,12 @@ class ItemSolicitacaoCompra(db.Model):
     quantidade = db.Column(db.Integer, nullable=False)
     
     item = db.relationship('Item', backref='solicitacoes_compra')
-    solicitacao = db.relationship('SolicitacaoCompra', backref='itens_relacionados')
 
     def get_item_painel(self):
         """Retorna o item correspondente no painel de contratações, se existir"""
-        if not self.solicitacao.painel_contratacao:
-            return None
-            
+        from models import ItemPainelContratacao
         return ItemPainelContratacao.query.filter_by(
-            painel_id=self.solicitacao.painel_contratacao_id,
-            item_id=self.item_id
+            item_solicitacao_id=self.id
         ).first()
 
     def __repr__(self):

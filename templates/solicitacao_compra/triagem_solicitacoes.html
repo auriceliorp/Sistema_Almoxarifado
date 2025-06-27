@@ -619,11 +619,13 @@ function inicializarTriagem() {
         `;
         btnSalvar.disabled = true;
 
-        // Corrigido para enviar os IDs das solicitações
         const dados = {
             titulo: titulo,
             descricao: descricao,
-            solicitacoes: grupoInfo.itens.map(item => item.solicitacao_id)
+            grupo_id: grupoId,
+            grupo_nome: grupoInfo.nome,
+            solicitacoes: Array.from(grupoInfo.solicitacoes),
+            itens: grupoInfo.itens
         };
 
         fetch('/solicitacao-compra/criar_triagem', {
@@ -662,20 +664,27 @@ function inicializarTriagem() {
 
         itensSelecionados.forEach(checkbox => {
             const row = checkbox.closest('tr');
-            const solicitacaoId = checkbox.value;
-            const grupoId = row.getAttribute('data-grupo-id');
-            const grupoNome = row.getAttribute('data-grupo-nome');
+            const solicitacaoId = checkbox.getAttribute('data-solicitacao-id');
+            const grupoId = checkbox.getAttribute('data-grupo');
+            const grupoNome = checkbox.getAttribute('data-grupo-nome');
+            const itemId = checkbox.getAttribute('data-item-id');
+            const quantidade = checkbox.getAttribute('data-quantidade');
 
             if (!grupos.has(grupoId)) {
                 grupos.set(grupoId, {
                     nome: grupoNome,
-                    itens: []
+                    itens: [],
+                    solicitacoes: new Set()
                 });
             }
 
-            grupos.get(grupoId).itens.push({
-                solicitacao_id: solicitacaoId
+            const grupo = grupos.get(grupoId);
+            grupo.itens.push({
+                solicitacao_id: solicitacaoId,
+                item_id: itemId,
+                quantidade: quantidade
             });
+            grupo.solicitacoes.add(solicitacaoId);
         });
 
         return grupos;
@@ -726,6 +735,4 @@ window.cancelarProcesso = function(triagemId) {
 }
 </script>
 {% endblock %}
-
-
 

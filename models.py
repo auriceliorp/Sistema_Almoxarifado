@@ -851,6 +851,17 @@ class ItemSolicitacaoCompra(db.Model):
     quantidade = db.Column(db.Integer, nullable=False)
     
     item = db.relationship('Item', backref='solicitacoes_compra')
+    solicitacao = db.relationship('SolicitacaoCompra', backref='itens_relacionados')
+
+    def get_item_painel(self):
+        """Retorna o item correspondente no painel de contratações, se existir"""
+        if not self.solicitacao.painel_contratacao:
+            return None
+            
+        return ItemPainelContratacao.query.filter_by(
+            painel_id=self.solicitacao.painel_contratacao_id,
+            item_id=self.item_id
+        ).first()
 
     def __repr__(self):
         return f"<ItemSolicitacaoCompra {self.id}>"

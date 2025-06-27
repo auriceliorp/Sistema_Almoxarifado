@@ -541,12 +541,14 @@ class PainelContratacao(db.Model):
 class ItemPainelContratacao(db.Model):
     __tablename__ = 'itens_painel_contratacao'
     id = db.Column(db.Integer, primary_key=True)
-    painel_id = db.Column(db.Integer, db.ForeignKey('painel_contratacao.id'), nullable=False)
+    painel_id = db.Column(db.Integer, db.ForeignKey('painel_contratacoes.id'), nullable=False)
     item_solicitacao_compra_id = db.Column(db.Integer, db.ForeignKey('item_solicitacao_compra.id'), nullable=False)
     quantidade = db.Column(db.Integer, nullable=False)
+    valor_unitario = db.Column(db.Numeric(14, 2))
+    valor_total = db.Column(db.Numeric(14, 2))
     
     # Relacionamentos
-    painel = db.relationship('PainelContratacao', backref='itens')
+    painel = db.relationship('PainelContratacao', backref='itens_painel')
     item_solicitacao = db.relationship('ItemSolicitacaoCompra', backref='itens_painel')
 
 class ItemSolicitacaoCompra(db.Model):

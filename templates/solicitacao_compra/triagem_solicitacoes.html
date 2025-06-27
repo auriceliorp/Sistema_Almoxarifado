@@ -136,13 +136,13 @@
                             <td>{{ solicitacao.data_solicitacao.strftime('%d/%m/%Y') }}</td>
                             <td>{{ solicitacao.solicitante.nome if solicitacao.solicitante else 'N/A' }}</td>
                             <td>
-                                {% set grupos = [] %}
+                                {% set ns = namespace(grupos=[]) %}
                                 {% for item_solicitacao in solicitacao.itens %}
-                                    {% if item_solicitacao.item.grupo and item_solicitacao.item.grupo.nome not in grupos %}
-                                        {% do grupos.append(item_solicitacao.item.grupo.nome) %}
+                                    {% if item_solicitacao.item.grupo and item_solicitacao.item.grupo.nome not in ns.grupos %}
+                                        {% set ns.grupos = ns.grupos + [item_solicitacao.item.grupo.nome] %}
                                     {% endif %}
                                 {% endfor %}
-                                {% for grupo in grupos %}
+                                {% for grupo in ns.grupos %}
                                     <span class="badge bg-info me-1">{{ grupo }}</span>
                                 {% endfor %}
                             </td>
@@ -694,4 +694,5 @@ window.cancelarProcesso = function(triagemId) {
 }
 </script>
 {% endblock %}
+
 

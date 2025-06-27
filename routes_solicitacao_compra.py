@@ -267,8 +267,8 @@ def criar_triagem():
             solicitacao = SolicitacaoCompra.query.get(solicitacao_id)
             if solicitacao:
                 triagem.solicitacoes.append(solicitacao)
-                # Atualizar o status da solicitação
-                solicitacao.status = 'Andamento'  # Usando o status padrão do sistema
+                # Atualizar o status da solicitação para 'Processo Iniciado'
+                solicitacao.status = 'Processo Iniciado'
         
         db.session.commit()
         
@@ -680,4 +680,3 @@ def cancelar_processo(triagem_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500 
-

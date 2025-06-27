@@ -882,6 +882,7 @@ class TriagemSolicitacaoCompra(db.Model):
     descricao = db.Column(db.Text)
     data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
     responsavel_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    totais_itens = db.Column(db.JSON)  # Novo campo para armazenar os totais
     
     # Relacionamentos
     responsavel = db.relationship('Usuario', backref='triagens_criadas')
@@ -893,3 +894,4 @@ class TriagemSolicitacaoAssociacao(db.Model):
     triagem_id = db.Column(db.Integer, db.ForeignKey('triagem_solicitacao_compra.id'), primary_key=True)
     solicitacao_id = db.Column(db.Integer, db.ForeignKey('solicitacao_compra.id'), primary_key=True)
     observacao = db.Column(db.Text)
+

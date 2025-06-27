@@ -4,8 +4,9 @@ from datetime import datetime
 class SolicitacaoCompraService:
     STATUS_CHOICES = [
         'Pendente',
-        'Iniciado',
-        'Em andamento',
+        'Processo Iniciado',
+        'Em Andamento',
+        'Aguardando Definições',
         'Concluido',
         'Cancelada'
     ]

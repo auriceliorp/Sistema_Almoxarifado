@@ -262,23 +262,40 @@ def criar_triagem():
         )
         db.session.add(triagem)
         
-        # Associar solicitações e atualizar seus status
-        for solicitacao_id in dados['solicitacoes']:
+        # Dicionário para armazenar totais por item
+        totais_por_item = {}
+        
+        # Processar os itens e solicitações
+        for item_info in dados['itens']:
+            solicitacao_id = item_info['solicitacao_id']
+            item_id = item_info['item_id']
+            quantidade = int(item_info['quantidade'])
+            
+            # Adicionar ao total do item
+            if item_id not in totais_por_item:
+                totais_por_item[item_id] = 0
+            totais_por_item[item_id] += quantidade
+            
+            # Buscar e associar a solicitação
             solicitacao = SolicitacaoCompra.query.get(solicitacao_id)
             if solicitacao:
                 triagem.solicitacoes.append(solicitacao)
-                # Atualizar para Em Andamento quando cria triagem
                 solicitacao.status = 'Em Andamento'
+        
+        # Armazenar os totais na triagem (você precisará adicionar este campo ao modelo)
+        triagem.totais_itens = totais_por_item
         
         db.session.commit()
         
         return jsonify({
             'success': True,
-            'message': 'Triagem criada com sucesso'
+            'message': 'Triagem criada com sucesso',
+            'triagem_id': triagem.id
         })
         
     except Exception as e:
         db.session.rollback()
+        current_app.logger.error(f"Erro ao criar triagem: {str(e)}")
         return jsonify({
             'success': False,
             'message': f'Erro ao criar triagem: {str(e)}'
@@ -680,4 +697,3 @@ def cancelar_processo(triagem_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500 
-

@@ -560,7 +560,6 @@ class ItemSolicitacaoCompra(db.Model):
     
     # Relacionamentos
     item = db.relationship('Item', backref='solicitacoes_compra')
-    solicitacao_compra = db.relationship('SolicitacaoCompra', backref='itens')
 
     def get_item_painel(self):
         """Retorna o item correspondente no painel de contratações, se existir"""
@@ -889,10 +888,11 @@ class SolicitacaoCompra(db.Model):
     painel_contratacao = db.relationship('PainelContratacao', backref='solicitacao_compra')
     
     itens = db.relationship('ItemSolicitacaoCompra', 
-                          backref=db.backref('solicitacao_compra', lazy=True),
+                          backref=db.backref('solicitacao', lazy=True),
                           lazy=True)
 
     triagem_id = db.Column(db.Integer, db.ForeignKey('triagem_solicitacao_compra.id'), nullable=True)
 
     def __repr__(self):
         return f"<SolicitacaoCompra {self.id}>"
+

@@ -162,7 +162,7 @@
                 </table>
             </div>
 
-            <!-- Paginação inicial -->
+            <!-- Paginação -->
             <div id="areaPaginacao" class="mt-4">
                 {% if solicitacoes.pages > 1 %}
                 <nav aria-label="Navegação de páginas">
@@ -197,10 +197,12 @@
                 {% endif %}
             </div>
 
-            <!-- Botão para criar triagem (só aparece se houver solicitações pendentes selecionadas) -->
-            <button type="button" class="btn btn-primary mt-4" id="btnCriarTriagem" onclick="abrirModalTriagem()" style="display: none;">
-                <i class="bi bi-plus-circle"></i> Criar Nova Triagem
-            </button>
+            <!-- Botão para criar triagem -->
+            <div class="mt-4">
+                <button type="button" class="btn btn-primary" id="btnCriarTriagem" onclick="abrirModalTriagem()" style="display: none;">
+                    <i class="bi bi-plus-circle"></i> Criar Nova Triagem
+                </button>
+            </div>
         </div>
 
         <!-- Tab Triagens Criadas -->
@@ -220,7 +222,6 @@
                     </thead>
                     <tbody>
                         {% for triagem in triagens %}
-                        {# Pegar o primeiro painel_id encontrado nas solicitações #}
                         {% set tem_processo = false %}
                         {% set painel_id = none %}
                         {% for solicitacao in triagem.solicitacoes if not tem_processo and solicitacao.painel_contratacao_id %}
@@ -331,44 +332,18 @@ document.addEventListener('DOMContentLoaded', function() {
     inicializarTriagem();
     inicializarPaginacao();
     inicializarFiltros();
-
-    // Função para controlar visibilidade do botão de criar triagem
-    function atualizarBotaoTriagem() {
-        const checkboxesSelecionados = document.querySelectorAll('.solicitacao-check:checked');
-        const btnCriarTriagem = document.getElementById('btnCriarTriagem');
-        btnCriarTriagem.style.display = checkboxesSelecionados.length > 0 ? 'block' : 'none';
-    }
-
-    // Adicionar listener para checkboxes
-    document.querySelectorAll('.solicitacao-check').forEach(checkbox => {
-        checkbox.addEventListener('change', atualizarBotaoTriagem);
-    });
-
-    // Atualizar quando selecionar todos
-    document.querySelector('.select-all').addEventListener('change', function(e) {
-        const checkboxes = document.querySelectorAll('.solicitacao-check');
-        checkboxes.forEach(cb => {
-            if (!cb.disabled) {
-                cb.checked = e.target.checked;
-            }
-        });
-        atualizarBotaoTriagem();
-    });
 });
 
 function inicializarPaginacao() {
-    // Adicionar eventos aos links de paginação
     document.querySelectorAll('#areaPaginacao .page-link').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             const pagina = this.dataset.page;
             if (pagina) {
-                // Verificar se há filtros ativos
                 const filtrosAtivos = verificarFiltrosAtivos();
                 if (filtrosAtivos) {
                     aplicarFiltros(parseInt(pagina));
                 } else {
-                    // Se não há filtros, apenas navegar para a página
                     carregarPagina(parseInt(pagina));
                 }
             }
@@ -395,7 +370,6 @@ function aplicarFiltros(pagina = 1) {
     formData.append('page', pagina);
     const params = new URLSearchParams(formData);
     
-    // Mostrar indicador de carregamento
     document.querySelector('#areaTabela').innerHTML = `
         <div class="text-center py-4">
             <div class="spinner-border text-primary" role="status">
@@ -404,24 +378,19 @@ function aplicarFiltros(pagina = 1) {
         </div>
     `;
 
-    // Fazer a requisição
     fetch(`/solicitacao-compra/triagem/filtrar?${params.toString()}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Atualizar a tabela
                 const tabelaContainer = document.querySelector('#areaTabela');
                 tabelaContainer.innerHTML = data.html_tabela;
                 
-                // Atualizar a paginação
                 const paginacaoContainer = document.querySelector('#areaPaginacao');
                 paginacaoContainer.innerHTML = data.html_paginacao;
                 
-                // Reinicializar eventos
                 inicializarTriagem();
                 inicializarPaginacao();
 
-                // Mostrar total de registros encontrados
                 if (data.total_registros === 0) {
                     tabelaContainer.innerHTML = `
                         <div class="alert alert-info text-center">
@@ -445,7 +414,6 @@ function aplicarFiltros(pagina = 1) {
         });
 }
 
-// Adicionar console.log para debug
 document.getElementById('formFiltros').addEventListener('submit', function(e) {
     e.preventDefault();
     console.log('Formulário submetido');
@@ -457,16 +425,47 @@ document.getElementById('formFiltros').addEventListener('submit', function(e) {
 });
 
 function limparFiltros() {
-    // Limpar todos os campos do formulário
     document.getElementById('formFiltros').reset();
-    // Aplicar filtros para atualizar a tabela
     aplicarFiltros();
 }
 
 function inicializarTriagem() {
     console.log('Inicializando funções de triagem');
     
-    // Função para visualizar detalhes
+    // Função para atualizar visibilidade do botão de criar triagem
+    function atualizarBotaoTriagem() {
+        const checkboxesSelecionados = document.querySelectorAll('.solicitacao-check:checked');
+        const btnCriarTriagem = document.getElementById('btnCriarTriagem');
+        console.log('Checkboxes selecionados:', checkboxesSelecionados.length);
+        btnCriarTriagem.style.display = checkboxesSelecionados.length > 0 ? 'inline-block' : 'none';
+    }
+
+    // Adicionar listener para todos os checkboxes de solicitação
+    document.querySelectorAll('.solicitacao-check').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            console.log('Checkbox alterado:', this.checked);
+            atualizarBotaoTriagem();
+        });
+    });
+
+    // Listener para o checkbox "selecionar todos"
+    const checkboxSelecionarTodas = document.getElementById('selecionarTodas');
+    if (checkboxSelecionarTodas) {
+        checkboxSelecionarTodas.addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.solicitacao-check');
+            checkboxes.forEach(cb => {
+                if (!cb.disabled) {
+                    cb.checked = this.checked;
+                }
+            });
+            atualizarBotaoTriagem();
+        });
+    }
+
+    // Chamar a função inicialmente
+    atualizarBotaoTriagem();
+    
+    // Visualizar detalhes
     window.visualizarDetalhes = function(solicitacaoId) {
         console.log('Visualizando detalhes da solicitação:', solicitacaoId);
         const modalBody = document.getElementById('detalhesConteudo');
@@ -510,7 +509,7 @@ function inicializarTriagem() {
             });
     }
 
-    // Função para abrir modal de triagem
+    // Abrir modal de triagem
     window.abrirModalTriagem = function() {
         console.log('Abrindo modal de triagem');
         const selecionadas = document.querySelectorAll('.solicitacao-check:checked');
@@ -519,14 +518,12 @@ function inicializarTriagem() {
             return;
         }
         
-        // Limpar formulário
         const titulo = document.getElementById('titulo');
         const descricao = document.getElementById('descricao');
         
         if (titulo) titulo.value = '';
         if (descricao) descricao.value = '';
         
-        // Abrir modal
         const modalElement = document.getElementById('modalCriarTriagem');
         if (!modalElement) {
             console.error('Elemento modalCriarTriagem não encontrado');
@@ -537,7 +534,7 @@ function inicializarTriagem() {
         modal.show();
     }
 
-    // Função para salvar triagem
+    // Salvar triagem
     window.salvarTriagem = function() {
         const titulo = document.getElementById('titulo').value.trim();
         const descricao = document.getElementById('descricao').value.trim();
@@ -556,7 +553,6 @@ function inicializarTriagem() {
             return;
         }
 
-        // Mostrar loading no botão
         const btnSalvar = document.querySelector('#modalCriarTriagem .btn-primary');
         const btnText = btnSalvar.innerHTML;
         btnSalvar.innerHTML = `
@@ -565,14 +561,12 @@ function inicializarTriagem() {
         `;
         btnSalvar.disabled = true;
 
-        // Preparar dados
         const dados = {
             titulo: titulo,
             descricao: descricao,
             solicitacoes: solicitacoesSelecionadas
         };
 
-        // Enviar para o servidor
         fetch('/solicitacao-compra/criar_triagem', {
             method: 'POST',
             headers: {
@@ -589,11 +583,9 @@ function inicializarTriagem() {
         })
         .then(data => {
             if (data.success) {
-                // Fechar modal
                 const modal = bootstrap.Modal.getInstance(document.getElementById('modalCriarTriagem'));
                 modal.hide();
                 
-                // Mostrar mensagem de sucesso
                 const alertDiv = document.createElement('div');
                 alertDiv.className = 'alert alert-success alert-dismissible fade show';
                 alertDiv.innerHTML = `
@@ -601,11 +593,9 @@ function inicializarTriagem() {
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 `;
                 
-                // Inserir alerta no topo da página
                 const container = document.querySelector('.container-fluid');
                 container.insertBefore(alertDiv, container.firstChild);
                 
-                // Remover as solicitações selecionadas da tabela
                 const solicitacoesSelecionadas = document.querySelectorAll('.solicitacao-check:checked');
                 solicitacoesSelecionadas.forEach(checkbox => {
                     const row = checkbox.closest('tr');
@@ -614,12 +604,10 @@ function inicializarTriagem() {
                     }
                 });
                 
-                // Mudar para a aba de triagens criadas
                 const triagensTab = document.querySelector('[data-bs-target="#triagens"]');
                 const tab = new bootstrap.Tab(triagensTab);
                 tab.show();
                 
-                // Recarregar a página após 1 segundo para atualizar a lista de triagens
                 setTimeout(() => {
                     window.location.reload();
                 }, 1000);
@@ -631,18 +619,8 @@ function inicializarTriagem() {
             console.error('Erro:', error);
             alert('Erro ao criar triagem: ' + error.message);
             
-            // Restaurar botão
             btnSalvar.innerHTML = btnText;
             btnSalvar.disabled = false;
-        });
-    }
-
-    // Adicionar funcionalidade ao checkbox "Selecionar Todas"
-    const selecionarTodas = document.getElementById('selecionarTodas');
-    if (selecionarTodas) {
-        selecionarTodas.addEventListener('change', function() {
-            const checkboxes = document.querySelectorAll('.solicitacao-check');
-            checkboxes.forEach(cb => cb.checked = this.checked);
         });
     }
 }
@@ -668,7 +646,6 @@ window.cancelarProcesso = function(triagemId) {
     })
     .then(data => {
         if (data.success) {
-            // Mostrar mensagem de sucesso
             const alertDiv = document.createElement('div');
             alertDiv.className = 'alert alert-success alert-dismissible fade show';
             alertDiv.innerHTML = `
@@ -676,11 +653,9 @@ window.cancelarProcesso = function(triagemId) {
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
             
-            // Inserir alerta no topo da página
             const container = document.querySelector('.container-fluid');
             container.insertBefore(alertDiv, container.firstChild);
             
-            // Recarregar a página após 1 segundo
             setTimeout(() => {
                 window.location.reload();
             }, 1000);
@@ -694,5 +669,6 @@ window.cancelarProcesso = function(triagemId) {
 }
 </script>
 {% endblock %}
+
 
 

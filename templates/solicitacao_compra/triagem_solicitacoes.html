@@ -63,6 +63,21 @@
                     </div>
                 </div>
 
+                <!-- Filtro por Grupo -->
+                <div class="col-md-4">
+                    <div class="form-floating">
+                        <select class="form-select" id="filtroGrupo" name="grupo">
+                            <option value="">Todos os grupos</option>
+                            {% for grupo in grupos %}
+                            <option value="{{ grupo.id }}" {% if filtro_grupo == grupo.id %}selected{% endif %}>
+                                {{ grupo.nome }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <label>Grupo</label>
+                    </div>
+                </div>
+
                 <!-- Filtro por Período -->
                 <div class="col-md-4">
                     <div class="form-floating">
@@ -116,47 +131,53 @@
                     <thead>
                         <tr>
                             <th><input type="checkbox" id="selecionarTodas" class="select-all"></th>
-                            <th>ID</th>
+                            <th>Solicitação</th>
                             <th>Data</th>
                             <th>Solicitante</th>
-                            <th>Grupos</th>
+                            <th>Item</th>
+                            <th>Grupo</th>
+                            <th>Quantidade</th>
                             <th>Status</th>
                             <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for solicitacao in solicitacoes.items %}
-                        <tr>
-                            <td>
-                                {% if solicitacao.status == 'Pendente' %}
-                                <input type="checkbox" class="solicitacao-check" name="solicitacao" value="{{ solicitacao.id }}">
-                                {% endif %}
-                            </td>
-                            <td>{{ solicitacao.id }}</td>
-                            <td>{{ solicitacao.data_solicitacao.strftime('%d/%m/%Y') }}</td>
-                            <td>{{ solicitacao.solicitante.nome if solicitacao.solicitante else 'N/A' }}</td>
-                            <td>
-                                {% set ns = namespace(grupos=[]) %}
-                                {% for item_solicitacao in solicitacao.itens %}
-                                    {% if item_solicitacao.item.grupo and item_solicitacao.item.grupo.nome not in ns.grupos %}
-                                        {% set ns.grupos = ns.grupos + [item_solicitacao.item.grupo.nome] %}
+                            {% for item_solicitacao in solicitacao.itens %}
+                            <tr>
+                                <td>
+                                    {% if solicitacao.status == 'Pendente' %}
+                                    <input type="checkbox" 
+                                           class="item-check" 
+                                           name="item" 
+                                           value="{{ item_solicitacao.id }}"
+                                           data-grupo="{{ item_solicitacao.item.grupo.id }}"
+                                           data-grupo-nome="{{ item_solicitacao.item.grupo.nome }}"
+                                           data-solicitacao-id="{{ solicitacao.id }}"
+                                           data-item-id="{{ item_solicitacao.item.id }}"
+                                           data-quantidade="{{ item_solicitacao.quantidade }}">
                                     {% endif %}
-                                {% endfor %}
-                                {% for grupo in ns.grupos %}
-                                    <span class="badge bg-info me-1">{{ grupo }}</span>
-                                {% endfor %}
-                            </td>
-                            <td>
-                                <span class="badge {% if solicitacao.status == 'Pendente' %}bg-warning{% elif solicitacao.status == 'Concluido' %}bg-success{% else %}bg-primary{% endif %}">
-                                    {{ solicitacao.status }}
-                                </span>
-                            </td>
-                            <td>
-                                <button type="button" class="btn btn-sm btn-info" onclick="visualizarDetalhes({{ solicitacao.id }})">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                            </td>
-                        </tr>
+                                </td>
+                                <td>{{ solicitacao.id }}</td>
+                                <td>{{ solicitacao.data_solicitacao.strftime('%d/%m/%Y') }}</td>
+                                <td>{{ solicitacao.solicitante.nome if solicitacao.solicitante else 'N/A' }}</td>
+                                <td>{{ item_solicitacao.item.nome }}</td>
+                                <td>
+                                    <span class="badge bg-info">{{ item_solicitacao.item.grupo.nome }}</span>
+                                </td>
+                                <td>{{ item_solicitacao.quantidade }}</td>
+                                <td>
+                                    <span class="badge {% if solicitacao.status == 'Pendente' %}bg-warning{% elif solicitacao.status == 'Concluido' %}bg-success{% else %}bg-primary{% endif %}">
+                                        {{ solicitacao.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-info" onclick="visualizarDetalhes({{ solicitacao.id }})">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
                         {% endfor %}
                     </tbody>
                 </table>
@@ -355,10 +376,11 @@ function verificarFiltrosAtivos() {
     const solicitante = document.getElementById('filtroSolicitante').value;
     const status = document.getElementById('filtroStatus').value;
     const nd = document.getElementById('filtroND').value;
+    const grupo = document.getElementById('filtroGrupo').value;
     const dataInicio = document.getElementById('dataInicio').value;
     const dataFim = document.getElementById('dataFim').value;
 
-    return solicitante || status || nd || dataInicio || dataFim;
+    return solicitante || status || nd || grupo || dataInicio || dataFim;
 }
 
 function carregarPagina(pagina) {
@@ -434,14 +456,25 @@ function inicializarTriagem() {
     
     // Função para atualizar visibilidade do botão de criar triagem
     function atualizarBotaoTriagem() {
-        const checkboxesSelecionados = document.querySelectorAll('.solicitacao-check:checked');
+        const itensSelecionados = document.querySelectorAll('.item-check:checked');
         const btnCriarTriagem = document.getElementById('btnCriarTriagem');
-        console.log('Checkboxes selecionados:', checkboxesSelecionados.length);
-        btnCriarTriagem.style.display = checkboxesSelecionados.length > 0 ? 'inline-block' : 'none';
+        console.log('Items selecionados:', itensSelecionados.length);
+        
+        if (itensSelecionados.length > 0) {
+            const grupos = agruparItensPorGrupo();
+            btnCriarTriagem.style.display = grupos.size === 1 ? 'inline-block' : 'none';
+            
+            if (grupos.size > 1) {
+                alert('Selecione apenas itens do mesmo grupo para criar uma triagem.');
+                itensSelecionados.forEach(checkbox => checkbox.checked = false);
+            }
+        } else {
+            btnCriarTriagem.style.display = 'none';
+        }
     }
 
     // Adicionar listener para todos os checkboxes de solicitação
-    document.querySelectorAll('.solicitacao-check').forEach(checkbox => {
+    document.querySelectorAll('.item-check').forEach(checkbox => {
         checkbox.addEventListener('change', function() {
             console.log('Checkbox alterado:', this.checked);
             atualizarBotaoTriagem();
@@ -452,12 +485,26 @@ function inicializarTriagem() {
     const checkboxSelecionarTodas = document.getElementById('selecionarTodas');
     if (checkboxSelecionarTodas) {
         checkboxSelecionarTodas.addEventListener('change', function() {
-            const checkboxes = document.querySelectorAll('.solicitacao-check');
-            checkboxes.forEach(cb => {
-                if (!cb.disabled) {
-                    cb.checked = this.checked;
+            const checkboxes = document.querySelectorAll('.item-check');
+            if (this.checked) {
+                // Se estiver marcando, pegar o primeiro grupo selecionado
+                const primeiroSelecionado = Array.from(checkboxes).find(cb => cb.checked);
+                if (primeiroSelecionado) {
+                    const grupoId = primeiroSelecionado.dataset.grupo;
+                    // Selecionar apenas os do mesmo grupo
+                    checkboxes.forEach(cb => {
+                        if (!cb.disabled && cb.dataset.grupo === grupoId) {
+                            cb.checked = true;
+                        }
+                    });
+                } else {
+                    // Se nenhum estiver selecionado, não fazer nada
+                    this.checked = false;
                 }
-            });
+            } else {
+                // Se estiver desmarcando, desmarcar todos
+                checkboxes.forEach(cb => cb.checked = false);
+            }
             atualizarBotaoTriagem();
         });
     }
@@ -512,16 +559,23 @@ function inicializarTriagem() {
     // Abrir modal de triagem
     window.abrirModalTriagem = function() {
         console.log('Abrindo modal de triagem');
-        const selecionadas = document.querySelectorAll('.solicitacao-check:checked');
-        if (selecionadas.length === 0) {
-            alert('Selecione pelo menos uma solicitação para criar a triagem.');
+        const itensSelecionados = document.querySelectorAll('.item-check:checked');
+        if (itensSelecionados.length === 0) {
+            alert('Selecione pelo menos um item para criar a triagem.');
             return;
         }
         
+        const grupos = agruparItensPorGrupo();
+        if (grupos.size > 1) {
+            alert('Selecione apenas itens do mesmo grupo para criar uma triagem.');
+            return;
+        }
+        
+        const [grupoId, grupoInfo] = grupos.entries().next().value;
         const titulo = document.getElementById('titulo');
         const descricao = document.getElementById('descricao');
         
-        if (titulo) titulo.value = '';
+        if (titulo) titulo.value = `Triagem - ${grupoInfo.nome}`;
         if (descricao) descricao.value = '';
         
         const modalElement = document.getElementById('modalCriarTriagem');
@@ -544,15 +598,19 @@ function inicializarTriagem() {
             return;
         }
 
-        const solicitacoesSelecionadas = Array.from(
-            document.querySelectorAll('.solicitacao-check:checked')
-        ).map(cb => cb.value);
+        const grupos = agruparItensPorGrupo();
+        if (grupos.size === 0) {
+            alert('Selecione pelo menos um item');
+            return;
+        }
         
-        if (solicitacoesSelecionadas.length === 0) {
-            alert('Selecione pelo menos uma solicitação');
+        if (grupos.size > 1) {
+            alert('Selecione apenas itens do mesmo grupo');
             return;
         }
 
+        const [grupoId, grupoInfo] = grupos.entries().next().value;
+        
         const btnSalvar = document.querySelector('#modalCriarTriagem .btn-primary');
         const btnText = btnSalvar.innerHTML;
         btnSalvar.innerHTML = `
@@ -564,7 +622,8 @@ function inicializarTriagem() {
         const dados = {
             titulo: titulo,
             descricao: descricao,
-            solicitacoes: solicitacoesSelecionadas
+            grupo_id: grupoId,
+            itens: grupoInfo.itens
         };
 
         fetch('/solicitacao-compra/criar_triagem', {
@@ -596,8 +655,9 @@ function inicializarTriagem() {
                 const container = document.querySelector('.container-fluid');
                 container.insertBefore(alertDiv, container.firstChild);
                 
-                const solicitacoesSelecionadas = document.querySelectorAll('.solicitacao-check:checked');
-                solicitacoesSelecionadas.forEach(checkbox => {
+                // Remover apenas os itens selecionados
+                const itensSelecionados = document.querySelectorAll('.item-check:checked');
+                itensSelecionados.forEach(checkbox => {
                     const row = checkbox.closest('tr');
                     if (row) {
                         row.remove();
@@ -622,6 +682,33 @@ function inicializarTriagem() {
             btnSalvar.innerHTML = btnText;
             btnSalvar.disabled = false;
         });
+    }
+
+    // Adicionar função para agrupar itens por grupo
+    function agruparItensPorGrupo() {
+        const itensSelecionados = document.querySelectorAll('.item-check:checked');
+        const grupos = new Map(); // Map de grupo_id -> {nome: string, itens: array}
+        
+        itensSelecionados.forEach(checkbox => {
+            const grupoId = checkbox.dataset.grupo;
+            const grupoNome = checkbox.dataset.grupoNome;
+            
+            if (!grupos.has(grupoId)) {
+                grupos.set(grupoId, {
+                    nome: grupoNome,
+                    itens: []
+                });
+            }
+            
+            grupos.get(grupoId).itens.push({
+                id: checkbox.value,
+                solicitacaoId: checkbox.dataset.solicitacaoId,
+                itemId: checkbox.dataset.itemId,
+                quantidade: checkbox.dataset.quantidade
+            });
+        });
+        
+        return grupos;
     }
 }
 
@@ -669,6 +756,5 @@ window.cancelarProcesso = function(triagemId) {
 }
 </script>
 {% endblock %}
-
 
 

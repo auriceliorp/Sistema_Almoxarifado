@@ -6,10 +6,14 @@ CREATE TABLE IF NOT EXISTS itens_painel_contratacao (
     quantidade INTEGER NOT NULL,
     valor_unitario NUMERIC(14, 2),
     valor_total NUMERIC(14, 2),
+    item_solicitacao_compra_id INTEGER,
     CONSTRAINT fk_painel FOREIGN KEY (painel_id)
         REFERENCES painel_contratacoes(id) ON DELETE CASCADE,
     CONSTRAINT fk_item FOREIGN KEY (item_id)
-        REFERENCES item(id)
+        REFERENCES item(id),
+    CONSTRAINT fk_item_solicitacao_compra 
+        FOREIGN KEY (item_solicitacao_compra_id) 
+        REFERENCES item_solicitacao_compra(id)
 );
 
 -- Criar tabela de associação para solicitantes
@@ -48,4 +52,18 @@ INSERT INTO painel_solicitantes (painel_id, usuario_id)
 SELECT DISTINCT painel_contratacao_id, solicitante_id
 FROM solicitacao_compra
 WHERE painel_contratacao_id IS NOT NULL
-ON CONFLICT DO NOTHING; 
+ON CONFLICT DO NOTHING;
+
+-- Adicionar coluna de referência ao item_solicitacao_compra
+ALTER TABLE itens_painel_contratacao 
+ADD COLUMN item_solicitacao_compra_id INTEGER;
+
+-- Adicionar a foreign key
+ALTER TABLE itens_painel_contratacao 
+ADD CONSTRAINT fk_item_solicitacao_compra 
+FOREIGN KEY (item_solicitacao_compra_id) 
+REFERENCES item_solicitacao_compra(id);
+
+-- Criar índice para melhorar performance
+CREATE INDEX idx_itens_painel_contratacao_item_solicitacao 
+ON itens_painel_contratacao(item_solicitacao_compra_id); 

@@ -236,8 +236,8 @@
                         {% for item_painel in processo.itens_painel %}
                         <tr>
                             <td>
-                                <strong>{{ item_painel.item.codigo_sap }}</strong><br>
-                                {{ item_painel.item.nome }}
+                                <strong>{{ item_painel.item.codigo_sap if item_painel.item else 'N/A' }}</strong><br>
+                                {{ item_painel.item.nome if item_painel.item else 'N/A' }}
                             </td>
                             <td>{{ item_painel.quantidade }}</td>
                             <td>R$ {{ "{:,.2f}".format(item_painel.valor_unitario|float) }}</td>

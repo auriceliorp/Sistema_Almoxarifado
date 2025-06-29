@@ -315,4 +315,3 @@ def criar_processo():
         db.session.rollback()
         flash(f'Erro ao criar processo: {str(e)}', 'error')
         return redirect(url_for('painel_bp.lista_painel'))
-

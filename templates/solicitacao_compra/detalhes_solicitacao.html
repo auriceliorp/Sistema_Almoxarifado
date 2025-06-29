@@ -172,7 +172,7 @@
             
             {% if solicitacao.painel_contratacao %}
             <!-- Botão para visualizar processo -->
-            <a href="{{ url_for('painel_bp.visualizar_painel', painel_id=solicitacao.painel_contratacao.id) }}" 
+            <a href="{{ url_for('painel_bp.visualizar_painel', id=solicitacao.painel_contratacao.id) }}" 
                class="btn btn-outline-info">
                 <i class="bi bi-file-text me-2"></i>Visualizar Processo
             </a>
